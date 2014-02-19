@@ -1,3 +1,5 @@
+/*Copyright 2014, Grant Brown*/
+
 #ifndef SPATIALSEIR_INCLUDEFILES
 #define SPATIALSEIR_INCLUDEFILES
 
