@@ -1,0 +1,13 @@
+Coding Conventions (if I don't codify this, I'm going to make a mess). 
+
+1. C++
+    1. Classes, namespaces, and file names: 
+        follow CapitalizeEachWord conventions 
+    2. Public attributes methods:
+        follow camelCase convention 
+
+2. R
+    To be determined
+
+3. Python
+    To be determined
