@@ -26,6 +26,6 @@ namespace SpatialSEIR
             //Attributes
             vector<cl::Platform> platform;
             vector<cl::Device> platformDevices, allDevices, ctxDevices;
-            vector<cl::string> device_names;
+            vector<cl::string> deviceNames;
     }
 }
