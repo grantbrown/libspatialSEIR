@@ -1,8 +1,17 @@
 #define __CL_ENABLE_EXCEPTIONS
 
-#include <iostream>
+#ifndef SPATIALSEIR_INCLUDEFILES
+#define SPATIALSEIR_INCLUDEFILES
+
+#include<iostream>
+#include<stdio.h>
+#include<math.h>
+#include<cstring>
+#include<vector>
+#endif
+
 #include <CL/cl.hpp>
-#include <vector>
+
 
 namespace SpatialSEIR
 {
