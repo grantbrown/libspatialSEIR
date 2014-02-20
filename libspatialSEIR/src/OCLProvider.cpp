@@ -27,7 +27,7 @@ void SpatialSEIR::OCLProvider()
         {
             deviceNames.push_back(ctxDevices[i]);
             cout << "Adding Device: " 
-                 << deviceNames[i].c_str()
+                 << deviceNames[i]
                  << endl;
         }
     }
