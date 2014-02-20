@@ -21,9 +21,13 @@ namespace SpatialSEIR
             // Methods
             
             int genFromCSV(std::string filename);
-            int genFromDataStream(double *data, int *nrow, int *ncol, int *columnMajor);
-            int createEmptyCompartment(int *nrow, int *ncol);
+            int genFromDataStream(double *data, unsigned long *nrow, unsigned long *ncol, int *columnMajor);
+            int createEmptyCompartment(unsigned long *nrow, unsigned long *ncol);
 
             // Attributes
+
+            double *data
+            unsigned long *nrow;
+            unsigned long *ncol;
     };
 }
