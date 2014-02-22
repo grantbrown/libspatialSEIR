@@ -13,21 +13,25 @@
 namespace SpatialSEIR
 {
     using std::cout;
-    using std:endl;
+    using std::endl;
 
     class CompartmentalModelMatrix
     {
         public:
             // Methods
             
-            int genFromCSV(std::string filename);
-            int genFromDataStream(double *data, unsigned long *nrow, unsigned long *ncol, int *columnMajor);
-            int createEmptyCompartment(unsigned long *nrow, unsigned long *ncol);
+            int genFromText(std::string filename);
+            int genFromDataStream(double *indata, unsigned long *inrow, unsigned long *incol, int *columnMajor);
+            int createEmptyCompartment(unsigned long *inrow, unsigned long *incol);
+            ~CompartmentalModelMatrix();
 
             // Attributes
 
-            double *data
+            int *data;
             unsigned long *nrow;
             unsigned long *ncol;
+
+        private:
+            int readDataFile(const char fn[]);
     };
 }
