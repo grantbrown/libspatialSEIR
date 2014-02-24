@@ -21,7 +21,7 @@ namespace SpatialSEIR
             // Methods
             
             int genFromText(std::string filename);
-            int genFromDataStream(double *indata, unsigned long *inrow, unsigned long *incol, int *columnMajor);
+            int genFromDataStream(int *indata, unsigned long *inrow, unsigned long *incol, int *columnMajor);
             int createEmptyCompartment(unsigned long *inrow, unsigned long *incol);
             ~CompartmentalModelMatrix();
 

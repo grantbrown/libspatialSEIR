@@ -23,7 +23,7 @@ namespace SpatialSEIR
         return 0;
     }
 
-    int CompartmentalModelMatrix::genFromDataStream(double *indata,
+    int CompartmentalModelMatrix::genFromDataStream(int *indata,
                                                     unsigned long *inrow, 
                                                     unsigned long *incol, 
                                                     int *columnMajor)
