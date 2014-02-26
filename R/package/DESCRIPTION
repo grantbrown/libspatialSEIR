@@ -1,0 +1,15 @@
+Package: spatialSEIR
+Type: Package
+Title: An framework for fitting Bayesian spatial SEIR epidemic models using OpenCL. 
+Version: 0.01
+Date: 2014-02-26
+Author: Grant Brown
+Maintainer: Who to complain to <grant.brown73@gmail.com>
+Depends: R (>=3.0), Rcpp, OpenCL
+Description: Compartmental epidemic models are flexible and intuitive tools for
+modeling the temporal evolution of epidemics, and can be easily extended to 
+the spatio-temporal world. On the other hand, the computational burden grows 
+greatly for large, or highly interconnected, spatial domains. This package 
+aims to provide a fast method of fitting such models by shifting as much 
+of the computational burden as possible to graphics processors using OpenCL. 
+License: GPL3 
