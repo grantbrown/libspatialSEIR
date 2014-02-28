@@ -1,1 +1,4 @@
-export(spatialSEIR.version)
+useDynLib(spatialSEIR)
+importFrom(Rcpp, evalCpp)
+export(rcppTestEntry)
+

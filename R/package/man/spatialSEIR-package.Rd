@@ -4,7 +4,6 @@
 \docType{package}
 \title{
 A fast framework for fitting Bayesian spatial SEIR models. 
-~~ spatialSEIR ~~
 }
 \description{
 Compartmental epidemic models are flexible and intuitive tools for
@@ -36,9 +35,8 @@ Coming Soon
 
 
 \keyword{ package }
-\seealso{
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
-}
+
+
 \examples{
     # Examples to come
 }
