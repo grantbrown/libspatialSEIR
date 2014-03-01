@@ -1,5 +1,7 @@
 #include <Rcpp.h>
-#include <libspatialSEIR.h>
+#include <CompartmentalModelMatrix.hpp>
+#include <CovariateMatrix.hpp>
+
 
 using namespace Rcpp;
 // [[Rcpp::export]]

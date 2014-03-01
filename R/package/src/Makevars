@@ -1,1 +1,1 @@
-PKG_LIBS = -lspatialSEIR
+PKG_LIBS = -L/usr/local/bin -lSpatialSEIR 

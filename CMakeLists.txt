@@ -10,13 +10,13 @@ include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
 
 
 
-add_library(libSpatialSEIR SHARED 
+add_library(SpatialSEIR SHARED 
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/CompartmentalModelMatrix.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/CovariateMatrix.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CovariateMatrix.hpp")
 
-install (TARGETS libSpatialSEIR DESTINATION bin)
+install (TARGETS SpatialSEIR DESTINATION bin)
 install (FILES 
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CovariateMatrix.hpp"
