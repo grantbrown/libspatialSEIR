@@ -1,4 +1,6 @@
 #include <Rcpp.h>
+#include <libspatialSEIR.h>
+
 using namespace Rcpp;
 // [[Rcpp::export]]
 List rcppTestEntry()
