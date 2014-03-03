@@ -18,14 +18,16 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-    class OCLProvider()
+    class OCLProvider
     {
         public:  
             //Methods 
-            void OCLProvider();
+            OCLProvider();
             //Attributes
-            vector<cl::Platform> platform;
-            vector<cl::Device> platformDevices, allDevices, ctxDevices;
-            vector<cl::string> deviceNames;
-    }
+            std::vector<cl::Platform> *platforms;
+            std::vector<cl::Device> *platformDevices, 
+                                    *allDevices, 
+                                    *ctxDevices;
+            std::vector<std::string> *deviceNames;
+    };
 }
