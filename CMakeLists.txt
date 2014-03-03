@@ -19,7 +19,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/OCLProvider.hpp")
 
 
-install (TARGETS SpatialSEIR DESTINATION bin)
+install (TARGETS SpatialSEIR DESTINATION lib)
 install (FILES 
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CovariateMatrix.hpp"

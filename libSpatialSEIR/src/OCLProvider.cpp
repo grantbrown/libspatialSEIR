@@ -39,3 +39,16 @@ SpatialSEIR::OCLProvider::OCLProvider()
              << e.err() << endl;
     }
 }
+
+
+
+SpatialSEIR::OCLProvider::~OCLProvider()
+{
+    delete[] platforms;
+    delete[] platformDevices;
+    delete[] allDevices;
+    delete[] ctxDevices;
+    delete[] deviceNames;
+}
+
+

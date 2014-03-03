@@ -23,6 +23,7 @@ namespace SpatialSEIR
         public:  
             //Methods 
             OCLProvider();
+            ~OCLProvider();
             //Attributes
             std::vector<cl::Platform> *platforms;
             std::vector<cl::Device> *platformDevices, 
