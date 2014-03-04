@@ -16,9 +16,23 @@
 // Mostly placeholder code, based on Scarpino (2012)
 SpatialSEIR::OCLProvider::OCLProvider()
 {
-    platforms = new std::vector<cl::Platform>();
+    try
+    {
+        platforms = new std::vector<cl::Platform>();
+        platformDevices = new std::vector<cl::Device>();
+        allDevices = new std::vector<cl::Device>();
+        ctxDevices = new std::vector<cl::Device>();
+        deviceNames = new std::vector<std::string>();
+    }
+    catch(cl::Error e)
+    {
+        cout << "Problem getting platforms:" << endl;
+        cout << e.what() << ": Error Code " << e.err() << endl;
+        return;
+    }
 
     cl_uint i;
+
     try
     {
         cl::Platform::get(platforms);
