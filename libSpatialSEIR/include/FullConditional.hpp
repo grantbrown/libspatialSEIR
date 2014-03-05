@@ -116,7 +116,7 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_S_Star,
                       CompartmentalModelMatrix *_I_star,
                       InitData *_A0,
-                      double* _p_rs,
+                      double *_p_rs,
                       double *_p_ir);
 
             virtual int evalCPU();

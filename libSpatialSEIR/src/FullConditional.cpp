@@ -16,8 +16,12 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-    //Implement data containder class InitData
-    
+    /*
+     *
+     * Implement the data container class InitData
+     *
+     */    
+ 
     InitData::InitData(double *_S0, 
                        double *_E0,
                        double *_I0,
@@ -36,9 +40,13 @@ namespace SpatialSEIR
         double* I_star0 = _I_star0;
         double* R_star0 = _R_star0;
     }
-
-    //Implement FC_S_Star
      
+    /*
+     *
+     * Implement the full conditional distribution for S_Star
+     *
+     */    
+
     FC_S_Star::FC_S_Star(CompartmentalModelMatrix *_S_star, 
                          CompartmentalModelMatrix *_E_star, 
                          CompartmentalModelMatrix *_R_star, 
@@ -82,7 +90,13 @@ namespace SpatialSEIR
         return -1;
     }
 
-    //Implement FC_E_Star
+
+    /*
+     *
+     * Implement the full conditional distribution for E_Star
+     *
+     */    
+
     
     FC_E_Star::FC_E_Star(CompartmentalModelMatrix *_S_Star,
                          CompartmentalModelMatrix *_E_Star,
@@ -127,5 +141,45 @@ namespace SpatialSEIR
         return -1;
     }
 
+    /*
+     *
+     * Implement the full conditional distribution for R_Star
+     *
+     */    
+    FC_R_Star::FC_R_Star(CompartmentalModelMatrix *_R_Star,
+                         CompartmentalModelMatrix *_S_Star,
+                         CompartmentalModelMatrix *_I_Star,
+                         InitData *_A0,
+                         double *_p_rs,
+                         double *_p_ir)
+    {
+        CompartmentalModelMatrix* R_Star = _R_Star;
+        CompartmentalModelMatrix* S_Star = _S_Star;
+        CompartmentalModelMatrix* I_Star = _I_Star;
+        InitData* A0 = _A0;
+        double* p_rs = _p_rs;
+        double* p_ir = _p_ir;
+    }
+
+    int FC_R_Star::evalCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_R_Star::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_R_Star::sampleCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_R_Star::sampleOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
 
 }
