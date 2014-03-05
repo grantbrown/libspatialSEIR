@@ -182,4 +182,87 @@ namespace SpatialSEIR
         return -1;
     }
 
+     /*
+     *
+     * Implement the full conditional distribution for the regression
+     * parameters: beta
+     */
+
+
+    FC_Beta::FC_Beta(CompartmentalModelMatrix *_E_Star, 
+                     CompartmentalModelMatrix *_S_Star, 
+                     InitData *_A0,
+                     CovariateMatrix *_X,
+                     double *_p_se, 
+                     double *_beta, 
+                     double *_rho)
+    {
+        CompartmentalModelMatrix* E_star = _E_Star;
+        CompartmentalModelMatrix* S_Star = _S_Star;
+        InitData* A0 = _A0;
+        CovariateMatrix* X = _X;
+        double* p_se = _p_se;
+        double* beta = _beta;
+        double* rho = _rho;
+    }
+    int FC_Beta::evalCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Beta::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Beta::sampleCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Beta::sampleOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    /*
+     *
+     * Implement the full conditional for the R->S transition 
+     * probabilities. 
+     *
+     */
+
+    FC_P_RS::FC_P_RS(CompartmentalModelMatrix *_S_Star, 
+                     CompartmentalModelMatrix *_R_Star,
+                     InitData *_A0,
+                     double *_p_rs)
+    {
+        CompartmentalModelMatrix* S_Star = _S_Star;
+        CompartmentalModelMatrix* R_Star = _R_Star;
+        InitData* A0 = _A0;
+        double* p_rs = _p_rs;
+    }
+    int FC_P_RS::evalCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_RS::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_RS::sampleCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_RS::sampleOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+
 }
+
+
