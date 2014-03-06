@@ -280,6 +280,28 @@ namespace SpatialSEIR
         double* beta = _beta;
         double* rho = rho;
     }
+
+    FC_P_EI::FC_P_EI(CompartmentalModelMatrix *_I_star,
+                     CompartmentalModelMatrix *_E_star,
+                     InitData *_A0,
+                     double *_p_ei)
+    {
+        CompartmentalModelMatrix* I_star = _I_star;
+        CompartmentalModelMatrix* E_star = _E_star;
+        InitData* A0 = _A0;
+        double* p_ei = _p_ei;
+    }
+
+    FC_P_IR::FC_P_IR(CompartmentalModelMatrix *_I_star,
+                     CompartmentalModelMatrix *_R_star,
+                     InitData *_A0,
+                     double *_p_ir)
+    {
+        CompartmentalModelMatrix* I_star = _I_star;
+        CompartmentalModelMatrix* R_star = _R_star;
+        InitData* A0 = _A0;
+        double* p_ir = _p_ir;
+    }
 }
 
 
