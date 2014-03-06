@@ -43,7 +43,7 @@ namespace SpatialSEIR
      
     /*
      *
-     * Implement the full conditional distribution for S_Star
+     * Implement the full conditional distribution for S_star
      *
      */    
 
@@ -98,9 +98,9 @@ namespace SpatialSEIR
      */    
 
     
-    FC_E_Star::FC_E_Star(CompartmentalModelMatrix *_S_Star,
-                         CompartmentalModelMatrix *_E_Star,
-                         CompartmentalModelMatrix *_I_Star,
+    FC_E_Star::FC_E_Star(CompartmentalModelMatrix *_S_star,
+                         CompartmentalModelMatrix *_E_star,
+                         CompartmentalModelMatrix *_I_star,
                          CovariateMatrix *_X,
                          InitData *_A0,
                          double *_p_se,
@@ -108,9 +108,9 @@ namespace SpatialSEIR
                          double *_rho,
                          double *_beta) 
     {
-        CompartmentalModelMatrix* S_Star = _S_Star;
-        CompartmentalModelMatrix* E_Star = _E_Star;
-        CompartmentalModelMatrix* I_Star = _I_Star;
+        CompartmentalModelMatrix* S_star = _S_star;
+        CompartmentalModelMatrix* E_star = _E_star;
+        CompartmentalModelMatrix* I_star = _I_star;
         CovariateMatrix* X = _X;
         InitData* A0 = _A0;
         double* p_se = _p_se;
@@ -146,16 +146,16 @@ namespace SpatialSEIR
      * Implement the full conditional distribution for R_Star
      *
      */    
-    FC_R_Star::FC_R_Star(CompartmentalModelMatrix *_R_Star,
-                         CompartmentalModelMatrix *_S_Star,
-                         CompartmentalModelMatrix *_I_Star,
+    FC_R_Star::FC_R_Star(CompartmentalModelMatrix *_R_star,
+                         CompartmentalModelMatrix *_S_star,
+                         CompartmentalModelMatrix *_I_star,
                          InitData *_A0,
                          double *_p_rs,
                          double *_p_ir)
     {
-        CompartmentalModelMatrix* R_Star = _R_Star;
-        CompartmentalModelMatrix* S_Star = _S_Star;
-        CompartmentalModelMatrix* I_Star = _I_Star;
+        CompartmentalModelMatrix* R_star = _R_star;
+        CompartmentalModelMatrix* S_star = _S_star;
+        CompartmentalModelMatrix* I_star = _I_star;
         InitData* A0 = _A0;
         double* p_rs = _p_rs;
         double* p_ir = _p_ir;
@@ -189,16 +189,16 @@ namespace SpatialSEIR
      */
 
 
-    FC_Beta::FC_Beta(CompartmentalModelMatrix *_E_Star, 
-                     CompartmentalModelMatrix *_S_Star, 
+    FC_Beta::FC_Beta(CompartmentalModelMatrix *_E_star, 
+                     CompartmentalModelMatrix *_S_star, 
                      InitData *_A0,
                      CovariateMatrix *_X,
                      double *_p_se, 
                      double *_beta, 
                      double *_rho)
     {
-        CompartmentalModelMatrix* E_star = _E_Star;
-        CompartmentalModelMatrix* S_Star = _S_Star;
+        CompartmentalModelMatrix* E_star = _E_star;
+        CompartmentalModelMatrix* S_star = _S_star;
         InitData* A0 = _A0;
         CovariateMatrix* X = _X;
         double* p_se = _p_se;
@@ -232,13 +232,13 @@ namespace SpatialSEIR
      *
      */
 
-    FC_P_RS::FC_P_RS(CompartmentalModelMatrix *_S_Star, 
-                     CompartmentalModelMatrix *_R_Star,
+    FC_P_RS::FC_P_RS(CompartmentalModelMatrix *_S_star, 
+                     CompartmentalModelMatrix *_R_star,
                      InitData *_A0,
                      double *_p_rs)
     {
-        CompartmentalModelMatrix* S_Star = _S_Star;
-        CompartmentalModelMatrix* R_Star = _R_Star;
+        CompartmentalModelMatrix* S_star = _S_star;
+        CompartmentalModelMatrix* R_star = _R_star;
         InitData* A0 = _A0;
         double* p_rs = _p_rs;
     }
@@ -263,6 +263,23 @@ namespace SpatialSEIR
         return -1;
     }
 
+
+    FC_Rho::FC_Rho(CompartmentalModelMatrix *_S_star,
+                   CompartmentalModelMatrix *_E_star,
+                   InitData *_A0,
+                   CovariateMatrix *_X,
+                   double *_p_se,
+                   double *_beta,
+                   double *_rho)
+    {
+        CompartmentalModelMatrix* S_star = _S_star;
+        CompartmentalModelMatrix* E_star = _E_star;
+        InitData* A0 = _A0;
+        CovariateMatrix* X = _X;
+        double* p_se = _p_se;
+        double* beta = _beta;
+        double* rho = rho;
+    }
 }
 
 

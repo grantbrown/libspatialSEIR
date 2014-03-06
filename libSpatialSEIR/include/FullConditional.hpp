@@ -112,8 +112,8 @@ namespace SpatialSEIR
     class FC_R_Star : public FullConditional
     {
         public:
-            FC_R_Star(CompartmentalModelMatrix *_R_Star,
-                      CompartmentalModelMatrix *_S_Star,
+            FC_R_Star(CompartmentalModelMatrix *_R_star,
+                      CompartmentalModelMatrix *_S_star,
                       CompartmentalModelMatrix *_I_star,
                       InitData *_A0,
                       double *_p_rs,
@@ -124,8 +124,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
 
-            CompartmentalModelMatrix *R_Star;
-            CompartmentalModelMatrix *S_Star;
+            CompartmentalModelMatrix *R_star;
+            CompartmentalModelMatrix *S_star;
             CompartmentalModelMatrix *I_star;
             InitData *A0;
             double* p_rs;
