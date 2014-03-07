@@ -25,8 +25,38 @@ namespace SpatialSEIR
             ModelContext(CompartmentalModelMatrix *I_star, 
                          CovariateMatrix *X);
             ~ModelContext(); 
+
+
+
+            // Method: calculateS
+            // Accesses: A0, S_star, E_star
+            // Updates: S
+            void calculateS();
+
+            // Method: calculateE
+            // Accesses: A0, I_star, E_star
+            // Updates: E
+            void calculateE();
+
+            // Method: calculateI
+            // Accesses: A0, I_star, R_star
+            // Updates: I
+            void calculateI();
+
+            // Method: calculateR
+            // Accesses: A0, R_star, S_star
+            // Updates: R
+            void calculateR();
+
+            // Method: calculatePi
+            // Accesses: beta, I, N, distMat, rho
+            // Updates: p_se
+            void calculateP_SE();
+
+            // Method: calculateFDmat
+            void calculateFDmat();
         
-            //Attributes
+            //Logic provider classes
             OCLProvider *oclProvider; 
             FC_S_Star *S_star_fc;
             FC_E_Star *E_star_fc;
@@ -37,5 +67,30 @@ namespace SpatialSEIR
             FC_P_EI *p_ei_fc;
             FC_P_IR *p_ir_fc;
 
+            //Data
+            CompartmentalModelMatrix* S;
+            CompartmentalModelMatrix* E;
+            CompartmentalModelMatrix* I;
+            CompartmentalModelMatrix* R;
+            CompartmentalModelMatrix* S_star;
+            CompartmentalModelMatrix* E_star;
+            CompartmentalModelMatrix* I_star;
+            CompartmentalModelMatrix* R_star;
+
+            InitData* A0;
+            CovariateMatrix* X;
+            double* p_se;
+            double* p_ei;
+            double* p_ir;
+            double* p_rs;
+            int* N;// Matrix?
+
+
+
+
+
+
+
+        
     };
 }
