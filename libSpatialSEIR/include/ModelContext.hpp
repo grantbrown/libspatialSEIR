@@ -10,7 +10,7 @@
 #include "OCLProvider.hpp"
 #include "DataStructures/CompartmentalModelMatrix.hpp"
 #include "DataStructures/CovariateMatrix.hpp"
-
+#include "FullConditional.hpp"
 
 namespace SpatialSEIR
 {
@@ -21,8 +21,8 @@ namespace SpatialSEIR
     {
         public:
             //Methods
-            ModelContext();            
             ModelContext(CompartmentalModelMatrix *I_star, 
+                         InitData* A0,
                          CovariateMatrix *X);
             ~ModelContext(); 
 
