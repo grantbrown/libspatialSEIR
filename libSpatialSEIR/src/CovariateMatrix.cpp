@@ -1,8 +1,7 @@
 /*Copyright 2014, Grant Brown*/
 
-#include <DataStructures/CovariateMatrix.hpp>
+#include <CovariateMatrix.hpp>
 #include <iostream>
-#include <fstream>
 #include <sstream>
 
 namespace SpatialSEIR
@@ -25,13 +24,18 @@ namespace SpatialSEIR
     }
 
     int CovariateMatrix::genFromDataStream(double *indata,
-                                                    unsigned long *inrow, 
-                                                    unsigned long *incol, 
-                                                    int *columnMajor)
+                                           int *inrow, 
+                                           int *incol)
     {
-        // NOT IMPLEMENTED
-        throw 20;
-        return 0;
+        double* data = new double[(*incol)*(*inrow)];
+        double* nrow; (*nrow) = (*inrow);
+        double* ncol; (*ncol) = (*incol);
+
+        int i; 
+        for (i = 0; i < (*incol)*(*inrow); i++)
+        {
+            data[i] = indata[i];
+        }
     }
 
     int CovariateMatrix::readDataFile(const char fn[])
@@ -41,7 +45,7 @@ namespace SpatialSEIR
       int status;
       int size;
       int *data;
-      unsigned long m,n,i;
+      int m,n,i;
       FILE* fp;
       fp=fopen(fn,"r");
       if (!fp)
@@ -62,8 +66,8 @@ namespace SpatialSEIR
       }
       rewind(fp);
 
-      fscanf(fp,"%lu %lu",&m, &n);
-      printf("Rows: %lu, Columns:  %lu\n", m, n);
+      fscanf(fp,"%d %d",&m, &n);
+      printf("Rows: %d, Columns:  %d\n", m, n);
       data = new int[m*n];
       for (i=0;i<m*n;i++)
       {
@@ -71,8 +75,8 @@ namespace SpatialSEIR
       }
       fclose(fp);
 
-      nrow = new unsigned long;
-      ncol = new  unsigned long;
+      nrow = new int;
+      ncol = new  int;
       varnames = new std::vector<std::string>();
 
       *nrow = m; *ncol = m; 

@@ -19,3 +19,29 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// spatialSEIRInit
+List spatialSEIRInit(SEXP compMatDim, SEXP xDim, SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_, SEXP Sstar0, SEXP Estar0, SEXP Istar0, SEXP Rstar0, SEXP IStar, SEXP X_);
+RcppExport SEXP spatialSEIR_spatialSEIRInit(SEXP compMatDimSEXP, SEXP xDimSEXP, SEXP S0_SEXP, SEXP E0_SEXP, SEXP I0_SEXP, SEXP R0_SEXP, SEXP Sstar0SEXP, SEXP Estar0SEXP, SEXP Istar0SEXP, SEXP Rstar0SEXP, SEXP IStarSEXP, SEXP X_SEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< SEXP >::type compMatDim(compMatDimSEXP );
+        Rcpp::traits::input_parameter< SEXP >::type xDim(xDimSEXP );
+        Rcpp::traits::input_parameter< SEXP >::type S0_(S0_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type E0_(E0_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type I0_(I0_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type R0_(R0_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type Sstar0(Sstar0SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type Estar0(Estar0SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type Istar0(Istar0SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type Rstar0(Rstar0SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type IStar(IStarSEXP );
+        Rcpp::traits::input_parameter< SEXP >::type X_(X_SEXP );
+        List __result = spatialSEIRInit(compMatDim, xDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, IStar, X_);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}

@@ -1,5 +1,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 
+#include <CL/cl.hpp>
+#include <OCLProvider.hpp>
+
 #ifndef SPATIALSEIR_INCLUDEFILES
 #include<iostream>
 #include<stdio.h>
@@ -8,9 +11,6 @@
 #include<vector>
 #endif
 
-
-#include <CL/cl.hpp>
-#include <OCLProvider.hpp>
 
 // Implement OCLProvider Class
 // Mostly placeholder code, based on Scarpino (2012)

@@ -28,6 +28,8 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CovariateMatrix.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/OCLProvider.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/ModelContext.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditional.hpp"
             DESTINATION include)
 
 

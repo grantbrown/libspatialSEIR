@@ -8,8 +8,8 @@
 #endif
 
 #include "OCLProvider.hpp"
-#include "DataStructures/CompartmentalModelMatrix.hpp"
-#include "DataStructures/CovariateMatrix.hpp"
+#include "CompartmentalModelMatrix.hpp"
+#include "CovariateMatrix.hpp"
 #include "FullConditional.hpp"
 
 namespace SpatialSEIR

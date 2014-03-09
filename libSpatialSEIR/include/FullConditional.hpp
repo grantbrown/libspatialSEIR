@@ -8,8 +8,8 @@
 #endif
 
 #include "OCLProvider.hpp"
-#include "DataStructures/CompartmentalModelMatrix.hpp"
-#include "DataStructures/CovariateMatrix.hpp"
+#include "CompartmentalModelMatrix.hpp"
+#include "CovariateMatrix.hpp"
 
 namespace SpatialSEIR
 {
@@ -43,7 +43,6 @@ namespace SpatialSEIR
             //Methods
             FullConditional();            
             ~FullConditional(); 
-
             int evalCPU();
             int evalOCL();
             int sampleCPU();
@@ -203,6 +202,7 @@ namespace SpatialSEIR
 
     };
     
+
     class FC_P_EI : public FullConditional
     {
         public:

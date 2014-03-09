@@ -1,4 +1,5 @@
 useDynLib(spatialSEIR)
 importFrom(Rcpp, evalCpp)
 export(rcppTestEntry)
+export(spatialSEIRInit)
 

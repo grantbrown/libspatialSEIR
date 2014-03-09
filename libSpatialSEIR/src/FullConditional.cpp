@@ -1,4 +1,4 @@
-
+#include <FullConditional.hpp>
 #ifndef SPATIALSEIR_INCLUDEFILES
 #include<iostream>
 #include<stdio.h>
@@ -6,9 +6,6 @@
 #include<cstring>
 #include<vector>
 #endif
-
-#include "FullConditional.hpp"
-
 
 
 namespace SpatialSEIR
@@ -39,6 +36,28 @@ namespace SpatialSEIR
         double* E_star0 = _E_star0;
         double* I_star0 = _I_star0;
         double* R_star0 = _R_star0;
+    }
+
+    FullConditional::FullConditional()
+    {
+        //This class should not be instantiated directly. 
+        throw(-1);
+    }
+    int FullConditional::evalCPU()
+    {
+        throw(-1);
+    }
+    int FullConditional::evalOCL()
+    {
+        throw(-1);
+    }
+    int FullConditional::sampleCPU()
+    {
+        throw(-1);
+    }
+    int FullConditional::sampleOCL()
+    {
+        throw(-1);
     }
      
     /*
@@ -280,6 +299,29 @@ namespace SpatialSEIR
         double* beta = _beta;
         double* rho = rho;
     }
+    int FC_Rho::evalCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Rho::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Rho::sampleCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Rho::sampleOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+
+
+
 
     FC_P_EI::FC_P_EI(CompartmentalModelMatrix *_I_star,
                      CompartmentalModelMatrix *_E_star,
@@ -291,6 +333,28 @@ namespace SpatialSEIR
         InitData* A0 = _A0;
         double* p_ei = _p_ei;
     }
+    int FC_P_EI::evalCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_EI::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_EI::sampleCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_EI::sampleOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+
+
 
     FC_P_IR::FC_P_IR(CompartmentalModelMatrix *_I_star,
                      CompartmentalModelMatrix *_R_star,
@@ -302,6 +366,28 @@ namespace SpatialSEIR
         InitData* A0 = _A0;
         double* p_ir = _p_ir;
     }
+    int FC_P_IR::evalCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_IR::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_IR::sampleCPU()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_P_IR::sampleOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+
+
 }
 
 

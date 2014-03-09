@@ -1,8 +1,13 @@
 /*Copyright 2014, Grant Brown*/
 
-#include <DataStructures/CompartmentalModelMatrix.hpp>
+
 #include <iostream>
 #include <fstream>
+
+#ifndef COMPARTMENTALMODELMATRIX 
+#define COMPARTMENTALMODELMATRIX
+#include <CompartmentalModelMatrix.hpp>
+#endif
 
 namespace SpatialSEIR
 {
@@ -24,8 +29,8 @@ namespace SpatialSEIR
     }
 
     int CompartmentalModelMatrix::genFromDataStream(int *indata,
-                                                    unsigned long *inrow, 
-                                                    unsigned long *incol, 
+                                                    int *inrow, 
+                                                    int *incol, 
                                                     int *columnMajor)
     {
         // NOT IMPLEMENTED
@@ -33,15 +38,15 @@ namespace SpatialSEIR
         return 0;
     }
 
-    int CompartmentalModelMatrix::createEmptyCompartment(unsigned long *inrow, unsigned long *incol)
+    int CompartmentalModelMatrix::createEmptyCompartment(int *inrow, int *incol)
     {
-        nrow = new unsigned long;
-        ncol = new unsigned long;
+        nrow = new int;
+        ncol = new int;
         *nrow = *inrow;
         *ncol = *incol;
 
         data = new int[(*nrow) * (*ncol)];
-        unsigned long i;
+        int i;
         for (i = 0; i < ((*nrow)*(*ncol)); i ++ )
         {
             data[i] = 0;
@@ -56,7 +61,7 @@ namespace SpatialSEIR
       int status;
       int size;
       int *data;
-      unsigned long m,n,i;
+      int m,n,i;
       FILE* fp;
       fp=fopen(fn,"r");
       if (!fp)
@@ -77,8 +82,8 @@ namespace SpatialSEIR
       }
       rewind(fp);
 
-      fscanf(fp,"%lu %lu",&m, &n);
-      printf("Rows: %lu, Columns:  %lu\n", m, n);
+      fscanf(fp,"%d %d",&m, &n);
+      printf("Rows: %d, Columns:  %d\n", m, n);
       data = new int[m*n];
       for (i=0;i<m*n;i++)
       {
@@ -86,8 +91,8 @@ namespace SpatialSEIR
       }
       fclose(fp);
 
-      nrow = new unsigned long;
-      ncol = new  unsigned long;
+      nrow = new int;
+      ncol = new  int;
       *nrow = m; *ncol = m; 
 
       return(1);

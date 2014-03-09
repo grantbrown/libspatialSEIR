@@ -21,14 +21,15 @@ namespace SpatialSEIR
             // Methods
             
             int genFromText(std::string filename);
-            int genFromDataStream(double *indata, unsigned long *inrow, unsigned long *incol, int *columnMajor);
+            int genFromDataStream(double *indata, int *inrow, 
+                    int *incol);
             ~CovariateMatrix();
 
             // Attributes
             double *data;
             std::vector<std::string>* varnames;
-            unsigned long *nrow;
-            unsigned long *ncol;
+            int *nrow;
+            int *ncol;
 
         private:
             int readDataFile(const char fn[]);
