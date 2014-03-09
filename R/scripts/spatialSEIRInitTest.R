@@ -1,7 +1,7 @@
 library(spatialSEIR)
 
-compMatDim = c(200,50)
-xDim = c(200*50, 5)
+compMatDim = c(20,50)
+xDim = c(20*50, 5)
 
 S0 = -1
 E0 = -1
@@ -12,7 +12,7 @@ Estar0 = -1
 Istar0 = -1
 Rstar0 = -1
 Istar = -1
-X = matrix(rnorm(200*50), ncol = 5)
+X = as.numeric(matrix(rnorm(20*50*5), nrow =20*50 , ncol = 5))
 
 # Doesn't do anything interesting, just testing data transfer
 res = spatialSEIRInit(compMatDim,

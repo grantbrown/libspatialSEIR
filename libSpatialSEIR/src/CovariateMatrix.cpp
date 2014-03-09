@@ -27,10 +27,12 @@ namespace SpatialSEIR
                                            int *inrow, 
                                            int *incol)
     {
-        double* data = new double[(*incol)*(*inrow)];
-        double* nrow; (*nrow) = (*inrow);
-        double* ncol; (*ncol) = (*incol);
-
+        int numToAlloc = (*incol)*(*inrow);
+        double* data = new double[numToAlloc];
+        double* nrow = new double;
+        double * ncol = new double;
+        (*nrow) = (*inrow);
+        (*ncol) = (*incol);
         int i; 
         for (i = 0; i < (*incol)*(*inrow); i++)
         {
@@ -94,6 +96,7 @@ namespace SpatialSEIR
 
     CovariateMatrix::~CovariateMatrix()
     {
+        std::cout << "Covariate Matrix Destroyed" << std::endl;
         delete[] data;
         delete[] nrow;
         delete[] ncol;
