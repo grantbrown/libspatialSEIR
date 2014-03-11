@@ -33,9 +33,17 @@ namespace SpatialSEIR
                                                     int *incol, 
                                                     int *columnMajor)
     {
-        // NOT IMPLEMENTED
-        throw 20;
-        return 0;
+        int numToAlloc = (*incol)*(*inrow);
+        double* data = new double[numToAlloc];
+        double* nrow = new double;
+        double * ncol = new double;
+        (*nrow) = (*inrow);
+        (*ncol) = (*incol);
+        int i; 
+        for (i = 0; i < (*incol)*(*inrow); i++)
+        {
+            data[i] = indata[i];
+        }
     }
 
     int CompartmentalModelMatrix::createEmptyCompartment(int *inrow, int *incol)

@@ -11,8 +11,9 @@ Sstar0 = -1
 Estar0 = -1
 Istar0 = -1
 Rstar0 = -1
-Istar = -1
+Istar = as.numeric(matrix(rbinom(20*50, 500,0.1), ncol = 50))
 X = as.numeric(matrix(rnorm(20*50*5), nrow =20*50 , ncol = 5))
+
 
 # Doesn't do anything interesting, just testing data transfer
 res = spatialSEIRInit(compMatDim,
