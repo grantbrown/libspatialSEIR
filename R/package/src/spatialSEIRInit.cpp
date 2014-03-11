@@ -14,7 +14,7 @@ List spatialSEIRInit(SEXP compMatDim,
                      SEXP Estar0,
                      SEXP Istar0,
                      SEXP Rstar0,
-                     SEXP IStar, 
+                     SEXP Istar, 
                      SEXP X_)
 {
 
@@ -31,7 +31,7 @@ List spatialSEIRInit(SEXP compMatDim,
     Rcpp::IntegerVector I_star0(Istar0);
     Rcpp::IntegerVector R_star0(Rstar0);
 
-    Rcpp::IntegerVector I_star(IStar);
+    Rcpp::IntegerVector I_star(Istar);
     Rcpp::NumericVector X(X_);
 
 
