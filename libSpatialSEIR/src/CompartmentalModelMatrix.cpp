@@ -30,8 +30,7 @@ namespace SpatialSEIR
 
     int CompartmentalModelMatrix::genFromDataStream(int *indata,
                                                     int *inrow, 
-                                                    int *incol, 
-                                                    int *columnMajor)
+                                                    int *incol)
     {
         int numToAlloc = (*incol)*(*inrow);
         double* data = new double[numToAlloc];

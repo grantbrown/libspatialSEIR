@@ -43,7 +43,10 @@ List spatialSEIRInit(SEXP compMatDim,
                                 &covariateDimensions[1]);
 
 
-    //CompartmentalModelMatrix *CompMat = new CompartmentalModelMatrix();
+    CompartmentalModelMatrix *CompMat = new CompartmentalModelMatrix();
+    CompMat -> genFromDataStream(I_star.begin(), 
+                                 &compartmentDimensions[0],
+                                 &compartmentDimensions[1]);
 
     Rcpp::IntegerVector y = Rcpp::IntegerVector::create(0);
     List z = List::create(y);
