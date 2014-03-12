@@ -1,0 +1,952 @@
+Ackley
+Ackworth
+Adair
+Adel
+Afton
+Agency
+Ainsworth
+Akron
+Albert City
+Albia
+Albion
+Alburnett
+Alden
+Alexander
+Algona
+Alleman
+Allerton
+Allison
+Alta
+Alta Vista
+Alton
+Altoona
+Alvord
+Ames
+Anamosa
+Andover
+Andrew
+Anita
+Ankeny
+Anthon
+Aplington
+Arcadia
+Archer
+Aredale
+Arion
+Arispe
+Arlington
+Armstrong
+Arnolds Park
+Arthur
+Asbury
+Ashton
+Aspinwall
+Atalissa
+Atkins
+Atlantic
+Auburn
+Audubon
+Aurelia
+Aurora
+Avoca
+Ayrshire
+Badger
+Bagley
+Baldwin
+Balltown
+Bancroft
+Bankston
+Barnes City
+Barnum
+Bassett
+Batavia
+Battle Creek
+Baxter
+Bayard
+Beacon
+Beaconsfield
+Beaman
+Beaver
+Bedford
+Belle Plaine
+Bellevue
+Belmond
+Bennett
+Benton
+Berkley
+Bernard
+Bertram
+Bettendorf
+Bevington
+Birmingham
+Blairsburg
+Blairstown
+Blakesburg
+Blanchard
+Blencoe
+Blockton
+Bloomfield
+Blue Grass
+Bode
+Bonaparte
+Bondurant
+Boone
+Bouton
+Boxholm
+Boyden
+Braddyville
+Bradgate
+Brandon
+Brayton
+Breda
+Bridgewater
+Brighton
+Bristow
+Britt
+Bronson
+Brooklyn
+Brunsville
+Buckeye
+Buck Grove
+Buffalo
+Buffalo Center
+Burlington
+Burt
+Bussey
+Calamus
+Callender
+Calmar
+Calumet
+Camanche
+Cambridge
+Cantril
+Carbon
+Carlisle
+Carpenter
+Carroll
+Carson
+Carter Lake
+Cascade
+Casey
+Castalia
+Castana
+Cedar Falls
+Cedar Rapids
+Center Junction
+Center Point
+Centerville
+Central City
+Centralia
+Chariton
+Charles City
+Charlotte
+Charter Oak
+Chatsworth
+Chelsea
+Cherokee
+Chester
+Chillicothe
+Churdan
+Cincinnati
+Clare
+Clarence
+Clarinda
+Clarion
+Clarksville
+Clayton
+Clear Lake
+Clearfield
+Cleghorn
+Clemons
+Clermont
+Clinton
+Clio
+Clive
+Clutier
+Coburg
+Coggon
+Coin
+Colesburg
+Colfax
+College Springs
+Collins
+Colo
+Columbus City
+Columbus Junction
+Colwell
+Conesville
+Conrad
+Conway
+Coon Rapids
+Coppock
+Coralville
+Corning
+Correctionville
+Corwith
+Corydon
+Cotter
+Coulter
+Council Bluffs
+Craig
+Crawfordsville
+Crescent
+Cresco
+Creston
+Cromwell
+Crystal Lake
+Cumberland
+Cumming
+Curlew
+Cushing
+Cylinder
+Dakota City
+Dallas Center
+Dana
+Danbury
+Danville
+Davenport
+Davis City
+Dawson
+Dayton
+Decatur City
+Decorah
+Dedham
+Deep River
+Defiance
+Delaware
+Delhi
+Delmar
+Deloit
+Delphos
+Delta
+Denison
+Denver
+Derby
+Des Moines
+De Soto
+De Witt
+Dexter
+Diagonal
+Dickens
+Dike
+Dixon
+Dolliver
+Donahue
+Donnellson
+Doon
+Dougherty
+Dow City
+Dows
+Drakesville
+Dubuque
+Dumont
+Duncombe
+Dundee
+Dunkerton
+Dunlap
+Durango
+Durant
+Dyersville
+Dysart
+Eagle Grove
+Earlham
+Earling
+Earlville
+Early
+East Peru
+Eddyville
+Edgewood
+Elberon
+Eldon
+Eldora
+Eldridge
+Elgin
+Elk Horn
+Elk Run Heights
+Elkader
+Elkhart
+Elkport
+Elliott
+Ellston
+Ellsworth
+Elma
+Ely
+Emerson
+Emmetsburg
+Epworth
+Essex
+Estherville
+Evansdale
+Everly
+Exira
+Exline
+Fairbank
+Fairfax
+Fairfield
+Farley
+Farmersburg
+Farmington
+Farnhamville
+Farragut
+Fayette
+Fenton
+Ferguson
+Fertile
+Floris
+Floyd
+Fonda
+Fontanelle
+Forest City
+Fort Atkinson
+Fort Dodge
+Fort Madison
+Fostoria
+Franklin
+Fraser
+Fredericksburg
+Frederika
+Fredonia
+Fremont
+Fruitland
+Galt
+Galva
+Garber
+Garden Grove
+Garnavillo
+Garner
+Garrison
+Garwin
+Geneva
+George
+Gibson
+Gilbert
+Gilbertville
+Gillett Grove
+Gilman
+Gilmore City
+Gladbrook
+Glenwood
+Glidden
+Goldfield
+Goodell
+Goose Lake
+Gowrie
+Graettinger
+Graf
+Grafton
+Grand Junction
+Grand Mound
+Grand River
+Grandview
+Granger
+Grant
+Granville
+Gravity
+Gray
+Greeley
+Greene
+Greenfield
+Greenville
+Grimes
+Grinnell
+Griswold
+Grundy Center
+Gruver
+Guernsey
+Guthrie Center
+Guttenberg
+Halbur
+Hamburg
+Hamilton
+Hampton
+Hancock
+Hanlontown
+Hansell
+Harcourt
+Hardy
+Harlan
+Harper
+Harpers Ferry
+Harris
+Hartford
+Hartley
+Hartwick
+Harvey
+Hastings
+Havelock
+Haverhill
+Hawarden
+Hawkeye
+Hayesville
+Hazleton
+Hedrick
+Henderson
+Hepburn
+Hiawatha
+Hills
+Hillsboro
+Hinton
+Holland
+Holstein
+Holy Cross
+Hopkinton
+Hornick
+Hospers
+Houghton
+Hubbard
+Hudson
+Hull
+Humboldt
+Humeston
+Huxley
+Ida Grove
+Imogene
+Independence
+Indianola
+Inwood
+Ionia
+Iowa City
+Iowa Falls
+Ireton
+Irwin
+Ira
+Jackson Junction
+Jamaica
+Janesville
+Jefferson
+Jesup
+Jewell Junction
+Johnston
+Joice
+Jolley
+Kalona
+Kamrar
+Kanawha
+Kellerton
+Kelley
+Kellogg
+Kensett
+Kent
+Keokuk
+Keomah Village
+Keosauqua
+Keota
+Keswick
+Keystone
+Kimballton
+Kingsley
+Kinross
+Kirkman
+Kirkville
+Kiron
+Klemme
+Knierim
+Knoxville
+Lacona
+Ladora
+Lake City
+Lake Mills
+Lake Park
+Lake View
+Lakeside
+Lakota
+Lambs Grove
+Lamoni
+Lamont
+La Motte
+Lanesboro
+Lansing
+La Porte City
+Larchwood
+Larrabee
+Latimer
+Laurel
+Laurens
+Lawler
+Lawton
+Le Claire
+Ledyard
+Le Grand
+Lehigh
+Leighton
+Leland
+Le Mars
+Lenox
+Leon
+Le Roy
+Lester
+Letts
+Lewis
+Libertyville
+Lidderdale
+Lime Springs
+Lincoln
+Linden
+Lineville
+Linn Grove
+Lisbon
+Liscomb
+Little Rock
+Little Sioux
+Littleport
+Livermore
+Lockridge
+Logan
+Lohrville
+Lone Rock
+Lone Tree
+Long Grove
+Lorimor
+Lost Nation
+Lovilia
+Low Moor
+Lowden
+Luana
+Lucas
+Luther
+Lu Verne
+Luxemburg
+Luzerne
+Lynnville
+Lytton
+McCallsburg
+McCausland
+McClelland
+Macedonia
+McGregor
+McIntire
+Macksburg
+Madrid
+Magnolia
+Maharishi Vedic City
+Malcom
+Mallard
+Maloy
+Malvern
+Manchester
+Manilla
+Manly
+Manning
+Manson
+Mapleton
+Maquoketa
+Marathon
+Marble Rock
+Marcus
+Marengo
+Marion
+Marne
+Marquette
+Marshalltown
+Martelle
+Martensdale
+Martinsburg
+Marysville
+Mason City
+Masonville
+Massena
+Matlock
+Maurice
+Maxwell
+Maynard
+Maysville
+Mechanicsville
+Mediapolis
+Melbourne
+Melcher-Dallas
+Melrose
+Melvin
+Menlo
+Meriden
+Merrill
+Meservey
+Middletown
+Miles
+Milford
+Millersburg
+Millerton
+Millville
+Milo
+Milton
+Minburn
+Minden
+Mingo
+Missouri Valley
+Mitchell
+Mitchellville
+Modale
+Mondamin
+Monmouth
+Monona
+Monroe
+Montezuma
+Monticello
+Montour
+Montrose
+Moorhead
+Moorland
+Moravia
+Morley
+Morning Sun
+Morrison
+Moulton
+Mount Auburn
+Mount Ayr
+Mount Pleasant
+Mount Sterling
+Mount Union
+Mount Vernon
+Moville
+Murray
+Muscatine
+Mystic
+Nashua
+Nemaha
+Neola
+Nevada
+New Albin
+New Hampton
+New Hartford
+New Liberty
+New London
+New Market
+New Providence
+New Sharon
+New Vienna
+New Virginia
+Newell
+Newhall
+Newton
+Nichols
+Nodaway
+Nora Springs
+North Buena Vista
+North English
+North Liberty
+North Washington
+Northboro
+Northwood
+Norwalk
+Norway
+Numa
+Oakland
+Oakland Acres
+Oakville
+Ocheyedan
+Odebolt
+Oelwein
+Ogden
+Okoboji
+Olds
+Olin
+Ollie
+Onawa
+Onslow
+Orange City
+Orchard
+Orient
+Orleans
+Osage
+Osceola
+Oskaloosa
+Ossian
+Osterdock
+Otho
+Oto
+Ottosen
+Ottumwa
+Owasa
+Oxford
+Oxford Junction
+Oyens
+Pacific Junction
+Packwood
+Palmer
+Palo
+Panama
+Panora
+Panorama Park
+Parkersburg
+Parnell
+Paton
+Patterson
+Paullina
+Pella
+Peosta
+Perry
+Persia
+Peterson
+Pierson
+Pilot Mound
+Pioneer
+Pisgah
+Placid
+Plainfield
+Plano
+Pleasant Hill
+Pleasant Plain
+Pleasanton
+Pleasantville
+Plover
+Plymouth
+Pocahontas
+Polk City
+Pomeroy
+Popejoy
+Portsmouth
+Postville
+Prairie City
+Prairieburg
+Prescott
+Preston
+Primghar
+Princeton
+Promise City
+Protivin
+Pulaski
+Quasqueton
+Quimby
+Radcliffe
+Rake
+Ralston
+Randalia
+Randall
+Randolph
+Rathbun
+Raymond
+Readlyn
+Reasnor
+Red Oak
+Redding
+Redfield
+Reinbeck
+Rembrandt
+Remsen
+Renwick
+Rhodes
+Riceville
+Richland
+Rickardsville
+Ricketts
+Ridgeway
+Rinard
+Ringsted
+Rippey
+Riverdale
+Riverside
+Riverton
+Robins
+Rock Falls
+Rock Rapids
+Rock Valley
+Rockford
+Rockwell
+Rockwell City
+Rodman
+Rodney
+Roland
+Rolfe
+Rome
+Rose Hill
+Rossie
+Rowan
+Rowley
+Royal
+Rudd
+Runnells
+Russell
+Ruthven
+Rutland
+Ryan
+Sabula
+Sac City
+Sageville
+St. Ansgar
+St. Anthony
+St. Charles
+St. Donatus
+St. Lucas
+St. Marys
+St. Olaf
+St. Paul
+Salem
+Salix
+Sanborn
+Sandyville
+Scarville
+Schaller
+Schleswig
+Scranton
+Searsboro
+Sergeant Bluff
+Seymour
+Shambaugh
+Shannon City
+Sharpsburg
+Sheffield
+Shelby
+Sheldahl
+Sheldon
+Shell Rock
+Shellsburg
+Shenandoah
+Sherrill
+Shueyville
+Sibley
+Sidney
+Sigourney
+Silver City
+Sioux Center
+Sioux City
+Sioux Rapids
+Slater
+Sloan
+Smithland
+Soldier
+Solon
+Somers
+South English
+Spencer
+Spillville
+Spirit Lake
+Spragueville
+Spring Hill
+Springbrook
+Springville
+Stacyville
+Stanhope
+Stanley
+Stanton
+Stanwood
+State Center
+Steamboat Rock
+Stockport
+Stockton
+Storm Lake
+Story City
+Stout
+Stratford
+Strawberry Point
+Struble
+Stuart
+Sully
+Sumner
+Superior
+Sutherland
+Swaledale
+Swan
+Swea City
+Swisher
+Tabor
+Tama
+Templeton
+Tennant
+Terril
+Thayer
+Thompson
+Thor
+Thornburg
+Thornton
+Thurman
+Tiffin
+Tingley
+Tipton
+Titonka
+Toledo
+Toronto
+Traer
+Treynor
+Tripoli
+Truesdale
+Truro
+Turin
+Udell
+Underwood
+Union
+Unionville
+University Heights
+University Park
+Urbana
+Urbandale
+Ute
+Vail
+Valeria
+Van Horne
+Van Meter
+Van Wert
+Varina
+Vedic City
+Ventura
+Victor
+Villisca
+Vincent
+Vining
+Vinton
+Volga
+Wadena
+Wahpeton
+Walcott
+Walford
+Walker
+Wallingford
+Wall Lake
+Walnut
+Wapello
+Washington
+Washta
+Waterloo
+Waterville
+Waucoma
+Waukee
+Waukon
+Waverly
+Wayland
+Webb
+Webster
+Webster City
+Weldon
+Wellman
+Wellsburg
+Welton
+Wesley
+West Bend
+West Branch
+West Burlington
+West Chester
+West Des Moines
+West Liberty
+West Okoboji
+West Point
+West Union
+Westfield
+Westgate
+Westphalia
+Westside
+Westwood
+What Cheer
+Wheatland
+Whiting
+Whittemore
+Whitten
+Willey
+Williams
+Williamsburg
+Williamson
+Wilton
+Windsor Heights
+Winfield
+Winterset
+Winthrop
+Wiota
+Woden
+Woodbine
+Woodburn
+Woodward
+Woolstock
+Worthington
+Wyoming
+Yale
+Yetter
+Yorktown
+Zearing
+Zwingle
