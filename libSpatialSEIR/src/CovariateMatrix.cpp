@@ -19,13 +19,13 @@ namespace SpatialSEIR
         int numToAlloc_x = (*incol_x)*(*inrow_x);
         int numToAlloc_z = (*incol_z)*(*inrow_z);
 
-        double* X = new double[numToAlloc_x];
-        double* Z = new double[numToAlloc_z];
+        this -> X = new double[numToAlloc_x];
+        this -> Z = new double[numToAlloc_z];
 
-        double* nrow_x = new double;
-        double* ncol_x = new double;
-        double* nrow_z = new double;
-        double* ncol_z = new double;
+        this -> nrow_x = new int;
+        this -> ncol_x = new int;
+        this -> nrow_z = new int;
+        this -> ncol_z = new int;
 
         (*nrow_x) = (*inrow_x);
         (*ncol_x) = (*incol_x);
@@ -43,6 +43,54 @@ namespace SpatialSEIR
         }
 
     }
+
+    int CovariateMatrix::calculate_eta_CPU(double *eta, double *beta, double *gamma)
+    {
+        // This is a naiive, but hopefully correct implementation. 
+        // TODO: do this in LAPACK
+        try
+        {
+
+            int i; int j;
+            // Initialize eta 
+            for (i = 0; i < ((*ncol_x) + (*ncol_z)); i++)
+            {
+                eta[i] = 0.0;
+            }
+            // Calc eta_x
+            for (i = 0; i < (*ncol_x); i++)
+            {
+                for (j = 0; j < (*nrow_x); j++) 
+                {
+                    eta[i] += X[j + i*(*nrow_x)]*beta[i];                    
+                }
+            }
+
+            // Calc eta_z
+            for (i = 0; i < (*ncol_z); i++)
+            {
+                for (j = 0; j < (*nrow_z); j++)
+                {
+                    eta[i+(*ncol_x)] += Z[j + i*(*ncol_z)]*gamma[i]; 
+                }
+            }
+
+        }
+        catch(int e)
+        {
+            std::cout << "Error calculating eta, code: " << e << std::endl;
+            return(-1);
+        }
+        return(0);
+    }
+
+    int CovariateMatrix::calculate_eta_OCL(double *eta, double *beta, double *gamma)
+    {
+        //Not implemented
+        return(-1);
+    }
+
+
 
     CovariateMatrix::~CovariateMatrix()
     {

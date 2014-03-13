@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <cmath>
 #include <FullConditional.hpp>
 
 using namespace Rcpp;
@@ -38,8 +39,6 @@ List spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
 
-
-
     CovariateMatrix *CovMat = new CovariateMatrix();
 
 
@@ -49,6 +48,38 @@ List spatialSEIRInit(SEXP compMatDim,
                                 &covariateDimensions_x[1],
                                 &covariateDimensions_z[0], 
                                 &covariateDimensions_z[1]);
+    // Test CPU eta calculation. 
+
+    int i;
+    double* beta = new double[covariateDimensions_x[1]];
+    double* gamma = new double[covariateDimensions_z[1]];
+    double* eta = new double[covariateDimensions_x[1] + covariateDimensions_z[1]];
+
+
+    for (i = 0; i < covariateDimensions_x[1]; i++)
+    {
+        beta[i] = 0.0;
+    }
+
+
+    for (i = 0; i < covariateDimensions_z[1]; i++)
+    {
+        gamma[i] = 0.0;
+    }
+
+
+
+    CovMat -> calculate_eta_CPU(eta, beta, gamma);
+    Rcpp::Rcout << "Check eta\n";
+
+    for (i = 0; i < (covariateDimensions_x[1] + covariateDimensions_z[1]); i++)
+    {
+        if (std::abs(eta[i]) > 0.000000001)
+        {
+            Rcpp::Rcout << "Eta " << i << " is not zero\n";
+        }
+    }
+
 
 
     CompartmentalModelMatrix *CompMat = new CompartmentalModelMatrix();
@@ -56,7 +87,18 @@ List spatialSEIRInit(SEXP compMatDim,
                                  &compartmentDimensions[0],
                                  &compartmentDimensions[1]);
 
+
+
+
     Rcpp::IntegerVector y = Rcpp::IntegerVector::create(0);
     List z = List::create(y);
+
+    // Clean up
+
+    delete[] beta;
+    delete[] gamma;
+    delete[] eta;
+
+    Rcpp::Rcout << "Finished.\n";
     return z;
 }

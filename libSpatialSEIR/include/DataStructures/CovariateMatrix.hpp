@@ -23,6 +23,9 @@ namespace SpatialSEIR
             int genFromDataStream(double *indata_x, double *indata_z, 
                                   int *inrow_x, int *incol_x,
                                   int *inrow_z, int *incol_z);
+
+            int calculate_eta_CPU(double *eta, double *beta, double *gamma);
+            int calculate_eta_OCL(double *eta, double *beta, double *gamma); 
             ~CovariateMatrix();
             // Attributes
             double *X; // Time invariant covariates
