@@ -10,14 +10,17 @@
     final library wrapper will be provided when the C++ library actually works. 
 }
 \usage{
-    spatialSEIRInit(compMatDim,xDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,Rstar0,Istar,X_)
+    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,Rstar0,Istar,X_,Z_)
 }
 \arguments{
     \item{compMatDim}{
         Dimension (row column) of the compartmental model matrix object to be populated by Istar.
     }
     \item{xDim}{
-        Dimension (row column) of the covariate matrix X
+        Dimension (row column) of the time fixed covariate matrix X
+    }
+    \item{zDim}{
+        Dimension (row column) of the time varying covariate matrix Z
     }
     \item{S0_}{
         Initial vector for S
@@ -49,6 +52,10 @@
     \item{X_}{
         Covariate data
     }
+    \item{Z_}{
+        Time varying covariate data
+    }
+
 }
 \author{
     Grant Brown

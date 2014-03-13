@@ -19,22 +19,18 @@ namespace SpatialSEIR
     {
         public:
             // Methods
-            
-            int genFromText(std::string filename);
-            int genFromDataStream(double *indata, int *inrow, 
-                    int *incol);
+        
+            int genFromDataStream(double *indata_x, double *indata_z, 
+                                  int *inrow_x, int *incol_x,
+                                  int *inrow_z, int *incol_z);
             ~CovariateMatrix();
-
             // Attributes
-            double *data;
+            double *X; // Time invariant covariates
+            double *Z; // Time varying covariates
             std::vector<std::string>* varnames;
-            int *nrow;
-            int *ncol;
-
-        private:
-            int readDataFile(const char fn[]);
-
-            
-
+            int *nrow_x;
+            int *ncol_x;
+            int *nrow_z;
+            int *ncol_z;
     };
 }

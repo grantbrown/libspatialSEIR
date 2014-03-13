@@ -6,6 +6,7 @@ using namespace SpatialSEIR;
 // [[Rcpp::export]]
 List spatialSEIRInit(SEXP compMatDim,
                      SEXP xDim,
+                     SEXP zDim,
                      SEXP S0_,
                      SEXP E0_,
                      SEXP I0_,
@@ -15,12 +16,14 @@ List spatialSEIRInit(SEXP compMatDim,
                      SEXP Istar0,
                      SEXP Rstar0,
                      SEXP Istar, 
-                     SEXP X_)
+                     SEXP X_,
+                     SEXP Z_)
 {
 
     //Deal with the data conversion from R to c++
     Rcpp::IntegerVector compartmentDimensions(compMatDim);
-    Rcpp::IntegerVector covariateDimensions(xDim);
+    Rcpp::IntegerVector covariateDimensions_x(xDim);
+    Rcpp::IntegerVector covariateDimensions_z(zDim);
     Rcpp::IntegerVector S0(S0_);
     Rcpp::IntegerVector E0(E0_);
     Rcpp::IntegerVector I0(I0_);
@@ -33,14 +36,19 @@ List spatialSEIRInit(SEXP compMatDim,
 
     Rcpp::IntegerVector I_star(Istar);
     Rcpp::NumericVector X(X_);
+    Rcpp::NumericVector Z(Z_);
+
 
 
     CovariateMatrix *CovMat = new CovariateMatrix();
 
 
     CovMat -> genFromDataStream(X.begin(), 
-                                &covariateDimensions[0], 
-                                &covariateDimensions[1]);
+                                Z.begin(),
+                                &covariateDimensions_x[0], 
+                                &covariateDimensions_x[1],
+                                &covariateDimensions_z[0], 
+                                &covariateDimensions_z[1]);
 
 
     CompartmentalModelMatrix *CompMat = new CompartmentalModelMatrix();
