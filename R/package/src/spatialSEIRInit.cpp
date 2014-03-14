@@ -5,7 +5,7 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 // [[Rcpp::export]]
-List spatialSEIRInit(SEXP compMatDim,
+SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP xDim,
                      SEXP zDim,
                      SEXP S0_,
@@ -91,7 +91,9 @@ List spatialSEIRInit(SEXP compMatDim,
 
 
     Rcpp::IntegerVector y = Rcpp::IntegerVector::create(0);
-    List z = List::create(y);
+    //List z = List::create(y);
+    Rcpp::XPtr<CompartmentalModelMatrix*> ptr(&CompMat, true);
+
 
     // Clean up
 
@@ -100,5 +102,5 @@ List spatialSEIRInit(SEXP compMatDim,
     delete[] eta;
 
     Rcpp::Rcout << "Finished.\n";
-    return z;
+    return ptr;
 }

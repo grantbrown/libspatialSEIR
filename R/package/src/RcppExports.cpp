@@ -20,7 +20,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // spatialSEIRInit
-List spatialSEIRInit(SEXP compMatDim, SEXP xDim, SEXP zDim, SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_, SEXP Sstar0, SEXP Estar0, SEXP Istar0, SEXP Rstar0, SEXP Istar, SEXP X_, SEXP Z_);
+SEXP spatialSEIRInit(SEXP compMatDim, SEXP xDim, SEXP zDim, SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_, SEXP Sstar0, SEXP Estar0, SEXP Istar0, SEXP Rstar0, SEXP Istar, SEXP X_, SEXP Z_);
 RcppExport SEXP spatialSEIR_spatialSEIRInit(SEXP compMatDimSEXP, SEXP xDimSEXP, SEXP zDimSEXP, SEXP S0_SEXP, SEXP E0_SEXP, SEXP I0_SEXP, SEXP R0_SEXP, SEXP Sstar0SEXP, SEXP Estar0SEXP, SEXP Istar0SEXP, SEXP Rstar0SEXP, SEXP IstarSEXP, SEXP X_SEXP, SEXP Z_SEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -40,7 +40,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< SEXP >::type Istar(IstarSEXP );
         Rcpp::traits::input_parameter< SEXP >::type X_(X_SEXP );
         Rcpp::traits::input_parameter< SEXP >::type Z_(Z_SEXP );
-        List __result = spatialSEIRInit(compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Istar, X_, Z_);
+        SEXP __result = spatialSEIRInit(compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Istar, X_, Z_);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
