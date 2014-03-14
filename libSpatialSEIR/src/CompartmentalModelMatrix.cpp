@@ -33,9 +33,9 @@ namespace SpatialSEIR
                                                     int *incol)
     {
         int numToAlloc = (*incol)*(*inrow);
-        double* data = new double[numToAlloc];
-        double* nrow = new double;
-        double * ncol = new double;
+        this -> data = new int[numToAlloc];
+        this -> nrow = new int;
+        this -> ncol = new int;
         (*nrow) = (*inrow);
         (*ncol) = (*incol);
         int i; 
@@ -47,8 +47,8 @@ namespace SpatialSEIR
 
     int CompartmentalModelMatrix::createEmptyCompartment(int *inrow, int *incol)
     {
-        nrow = new int;
-        ncol = new int;
+        this -> nrow = new int;
+        this -> ncol = new int;
         *nrow = *inrow;
         *ncol = *incol;
 
