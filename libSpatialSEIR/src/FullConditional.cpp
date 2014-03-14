@@ -64,6 +64,10 @@ namespace SpatialSEIR
         //This class should not be instantiated directly. 
         throw(-1);
     }
+    FullConditional::~FullConditional()
+    {
+        throw(-1);
+    }
     int FullConditional::evalCPU()
     {
         throw(-1);
