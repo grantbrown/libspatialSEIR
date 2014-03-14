@@ -27,14 +27,15 @@ namespace SpatialSEIR
                         double *_E_star0,
                         double *_I_star0,
                         double *_R_star0);
-            double *S0;
-            double *E0;
-            double *I0;
-            double *R0;
-            double *S_star0;
-            double *E_star0;
-            double *I_star0;
-            double *R_star0;
+            ~InitData();
+            double **S0;
+            double **E0;
+            double **I0;
+            double **R0;
+            double **S_star0;
+            double **E_star0;
+            double **I_star0;
+            double **R_star0;
     };
 
     class FullConditional
@@ -67,16 +68,19 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
+            ~FC_S_Star();
 
-            CompartmentalModelMatrix *S_star; 
-            CompartmentalModelMatrix *E_star; 
-            CompartmentalModelMatrix *R_star;
-            InitData *A0;
-            CovariateMatrix *X;
-            double *p_se;
-            double *p_rs;
-            double *beta; 
-            double *rho;
+            CompartmentalModelMatrix **S_star; 
+            CompartmentalModelMatrix **E_star; 
+            CompartmentalModelMatrix **R_star;
+            InitData **A0;
+            CovariateMatrix **X;
+            double **p_se;
+            double **p_rs;
+            double **beta; 
+            double **rho;
+            double* value;
+
     };
 
     class FC_E_Star : public FullConditional 
@@ -91,21 +95,24 @@ namespace SpatialSEIR
                       double *_p_rs,
                       double *_rho,
                       double *_beta);
+            ~FC_E_Star();
 
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
 
-            CompartmentalModelMatrix *S_star; 
-            CompartmentalModelMatrix *E_star; 
-            CompartmentalModelMatrix *I_star; 
-            CovariateMatrix *X;
-            InitData *A0;
-            double *p_se;
-            double *p_rs;
-            double *rho;
-            double *beta;
+            CompartmentalModelMatrix **S_star; 
+            CompartmentalModelMatrix **E_star; 
+            CompartmentalModelMatrix **I_star; 
+            CovariateMatrix **X;
+            InitData **A0;
+            double **p_se;
+            double **p_rs;
+            double **rho;
+            double **beta;
+            double* value;
+
     };
 
     class FC_R_Star : public FullConditional
@@ -117,18 +124,21 @@ namespace SpatialSEIR
                       InitData *_A0,
                       double *_p_rs,
                       double *_p_ir);
+            ~FC_R_Star();
 
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
 
-            CompartmentalModelMatrix *R_star;
-            CompartmentalModelMatrix *S_star;
-            CompartmentalModelMatrix *I_star;
-            InitData *A0;
-            double* p_rs;
-            double *p_ir;
+            CompartmentalModelMatrix **R_star;
+            CompartmentalModelMatrix **S_star;
+            CompartmentalModelMatrix **I_star;
+            InitData **A0;
+            double **p_rs;
+            double **p_ir;
+            double* value;
+
     };
 
     class FC_Beta : public FullConditional 
@@ -141,19 +151,22 @@ namespace SpatialSEIR
                     double *_p_se, 
                     double *_beta,
                     double *_rho); 
+            ~FC_Beta();
 
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
 
-            CompartmentalModelMatrix *E_star; 
-            CompartmentalModelMatrix *S_star; 
-            InitData *A0;
-            CovariateMatrix *X;
-            double *p_se;
-            double *beta;
-            double *rho;
+            CompartmentalModelMatrix **E_star; 
+            CompartmentalModelMatrix **S_star; 
+            InitData **A0;
+            CovariateMatrix **X;
+            double **p_se;
+            double **beta;
+            double **rho;
+            double* value;
+
     };
 
     class FC_P_RS : public FullConditional
@@ -164,15 +177,17 @@ namespace SpatialSEIR
                     InitData *_A0,
                     double *_p_rs 
                     );
+            ~FC_P_RS();
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
 
-            CompartmentalModelMatrix *S_star;
-            CompartmentalModelMatrix *R_star;
-            InitData *A0;
-            double *p_rs;
+            CompartmentalModelMatrix **S_star;
+            CompartmentalModelMatrix **R_star;
+            InitData **A0;
+            double **p_rs;
+            double* value;
 
     };
 
@@ -187,18 +202,20 @@ namespace SpatialSEIR
                    double *_beta, 
                    double *_rho
                    );
+            ~FC_Rho();
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
 
-            CompartmentalModelMatrix *S_star; 
-            CompartmentalModelMatrix *E_star; 
-            InitData *A0;
-            CovariateMatrix *X;
-            double *p_se;
-            double *beta;
-            double *rho;
+            CompartmentalModelMatrix **S_star; 
+            CompartmentalModelMatrix **E_star; 
+            InitData **A0;
+            CovariateMatrix **X;
+            double **p_se;
+            double **beta;
+            double **rho;
+            double* value;
 
     };
     
@@ -214,11 +231,13 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
+            ~FC_P_EI();
 
-            CompartmentalModelMatrix *I_star;
-            CompartmentalModelMatrix *E_star;
-            InitData *A0;
-            double *p_ei;
+            CompartmentalModelMatrix **I_star;
+            CompartmentalModelMatrix **E_star;
+            InitData **A0;
+            double **p_ei;
+            double* value;
     };
 
     class FC_P_IR : public FullConditional 
@@ -229,15 +248,17 @@ namespace SpatialSEIR
                     CompartmentalModelMatrix *_R_star,
                     InitData *_A0,
                     double *_p_ir);
+            ~FC_P_IR();
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
 
-            CompartmentalModelMatrix *I_star;
-            CompartmentalModelMatrix *R_star;
-            InitData *A0;
-            double *p_ir;
+            CompartmentalModelMatrix **I_star;
+            CompartmentalModelMatrix **R_star;
+            InitData **A0;
+            double **p_ir;
+            double* value;
     };
 
 }

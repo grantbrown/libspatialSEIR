@@ -91,15 +91,15 @@ namespace SpatialSEIR
 
       fscanf(fp,"%d %d",&m, &n);
       printf("Rows: %d, Columns:  %d\n", m, n);
-      data = new int[m*n];
+      this -> data = new int[m*n];
       for (i=0;i<m*n;i++)
       {
           fscanf(fp,"%d",&data[i]);
       }
       fclose(fp);
 
-      nrow = new int;
-      ncol = new  int;
+      this -> nrow = new int;
+      this -> ncol = new  int;
       *nrow = m; *ncol = m; 
 
       return(1);
