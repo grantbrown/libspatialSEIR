@@ -19,7 +19,26 @@ namespace SpatialSEIR
      *
      */    
  
+ 
     InitData::InitData(double *_S0, 
+                       double *_E0,
+                       double *_I0,
+                       double *_R0,
+                       double *_S_star0,
+                       double *_E_star0, 
+                       double *_I_star0, 
+                       double *_R_star0)
+    {
+        this -> populate(*&_S0, *&_E0, *&_I0, *&_R0, 
+                *&_S_star0, *&_E_star0, *&_I_star0, *&_R_star0);
+    }
+
+    InitData::InitData()
+    {
+        // Do nothing
+    }
+
+    void InitData::populate(double *_S0, 
                        double *_E0,
                        double *_I0,
                        double *_R0,

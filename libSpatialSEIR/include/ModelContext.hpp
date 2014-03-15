@@ -35,16 +35,7 @@ namespace SpatialSEIR
     {
         public:
             //Methods
-            ModelContext(CompartmentalModelMatrix *S_star, 
-                         CompartmentalModelMatrix *E_star, 
-                         CompartmentalModelMatrix *I_star, 
-                         CompartmentalModelMatrix *R_star, 
-                         CompartmentalModelMatrix *S, 
-                         CompartmentalModelMatrix *E, 
-                         CompartmentalModelMatrix *I, 
-                         CompartmentalModelMatrix *R,  
-                         InitData* A0,
-                         CovariateMatrix *X);
+            ModelContext();
             ~ModelContext(); 
 
 
@@ -89,16 +80,16 @@ namespace SpatialSEIR
             FC_P_IR *p_ir_fc;
 
             //Data
-            CompartmentalModelMatrix** S;
-            CompartmentalModelMatrix** E;
-            CompartmentalModelMatrix** I;
-            CompartmentalModelMatrix** R;
-            CompartmentalModelMatrix** S_star;
-            CompartmentalModelMatrix** E_star;
-            CompartmentalModelMatrix** I_star;
-            CompartmentalModelMatrix** R_star;
-            InitData** A0;
-            CovariateMatrix** X;
+            CompartmentalModelMatrix* S;
+            CompartmentalModelMatrix* E;
+            CompartmentalModelMatrix* I;
+            CompartmentalModelMatrix* R;
+            CompartmentalModelMatrix* S_star;
+            CompartmentalModelMatrix* E_star;
+            CompartmentalModelMatrix* I_star;
+            CompartmentalModelMatrix* R_star;
+            InitData* A0;
+            CovariateMatrix* X;
             double* p_se;
             double* p_ei;
             double* p_ir;

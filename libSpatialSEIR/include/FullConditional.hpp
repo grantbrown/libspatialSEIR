@@ -38,6 +38,16 @@ namespace SpatialSEIR
                         double *_E_star0,
                         double *_I_star0,
                         double *_R_star0);
+            InitData();
+            void populate(double *_S0,
+                          double *_E0,
+                          double *_I0,
+                          double *_R0,
+                          double *_S_star0,
+                          double *_E_star0,
+                          double *_I_star0,
+                          double *_R_star0);
+
             ~InitData();
             double **S0;
             double **E0;
