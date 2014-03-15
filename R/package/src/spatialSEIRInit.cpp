@@ -39,47 +39,33 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
 
+    // Create the empty ModelContext object 
+    
+    ModelContext* context = new ModelContext();
+
+    // Create the covariate matrix object. 
     CovariateMatrix *CovMat = new CovariateMatrix();
-
-
     CovMat -> genFromDataStream(X.begin(), 
                                 Z.begin(),
                                 &covariateDimensions_x[0], 
                                 &covariateDimensions_x[1],
                                 &covariateDimensions_z[0], 
                                 &covariateDimensions_z[1]);
-    // Test CPU eta calculation. 
 
-    int i;
-    double* beta = new double[covariateDimensions_x[1]];
-    double* gamma = new double[covariateDimensions_z[1]];
-    double* eta = new double[covariateDimensions_x[1] + covariateDimensions_z[1]];
-
-
-    for (i = 0; i < covariateDimensions_x[1]; i++)
-    {
-        beta[i] = 0.0;
-    }
-
-
-    for (i = 0; i < covariateDimensions_z[1]; i++)
-    {
-        gamma[i] = 0.0;
-    }
-
-
-
-    CovMat -> calculate_eta_CPU(eta, beta, gamma);
-    Rcpp::Rcout << "Check eta\n";
-
-    for (i = 0; i < (covariateDimensions_x[1] + covariateDimensions_z[1]); i++)
-    {
-        if (std::abs(eta[i]) > 0.000000001)
-        {
-            Rcpp::Rcout << "Eta " << i << " is not zero\n";
-        }
-    }
-
+    // Populate the CompartmentalModelMatrix objects. 
+    
+    (*context.S_star) -> genFromDataStream(S_star.begin(), 
+                                           &compartmentDimensions[0],
+                                           &compartmentDimensions[1])
+    (*context.E_star) -> genFromDataStream(E_star.begin(), 
+                                           &compartmentDimensions[0],
+                                           &compartmentDimensions[1])
+    (*context.I_star) -> genFromDataStream(I_star.begin(), 
+                                           &compartmentDimensions[0],
+                                           &compartmentDimensions[1])
+    (*context.R_star) -> genFromDataStream(R_star.begin(), 
+                                           &compartmentDimensions[0],
+                                           &compartmentDimensions[1])
 
 
     CompartmentalModelMatrix *CompMat = new CompartmentalModelMatrix();

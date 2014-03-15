@@ -34,19 +34,19 @@ compMatDim = c(dim(sim_results$S[1]), prod(sim_results$S[2:3]))
 xDim = dim(X)
 zDim = c(prod(dim(Z)[c(1,3,4)]), dim(Z)[2])
 
-S0 = -1
-E0 = -1
-I0 = -1
-R0 = -1
-Sstar0 = -1
-Estar0 = -1
-Istar0 = -1
-Rstar0 = -1
+S0 = sim_results$S0
+E0 = sim_results$E0
+I0 = sim_results$I0
+R0 = sim_results$R0
+Sstar0 = sim_results$S_star0
+Estar0 = sim_results$E_star0
+Istar0 = sim_results$I_star0
+Rstar0 = sim_results$R_star0
+Sstar = sim_results$S_star
+Estar = sim_results$E_star
 Istar = sim_results$I_star
+Rstar = sim_results$R_star
 
-
-
-# Doesn't do anything interesting, just testing data transfer
 res = spatialSEIRInit(compMatDim,
                       xDim,
                       zDim,
