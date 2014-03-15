@@ -7,11 +7,25 @@
 #include<vector>
 #endif
 
+#ifndef OCL_PROVIDER_INC
+#define OCL_PROVIDER_INC
 #include "OCLProvider.hpp"
-#include "CompartmentalModelMatrix.hpp"
-#include "CovariateMatrix.hpp"
-#include "FullConditional.hpp"
+#endif
 
+#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
+#define COMPARTMENTAL_MODEL_MATRIX_INC
+#include "CompartmentalModelMatrix.hpp"
+#endif
+
+#ifndef COVARIATE_MATRIX_INC
+#define COVARIATE_MATRIX_INC
+#include "CovariateMatrix.hpp"
+#endif
+
+#ifndef FULL_CONDITIONAL_INC
+#define FULL_CONDITIONAL_INC
+#include "FullConditional.hpp"
+#endif
 namespace SpatialSEIR
 {
     using std::cout;
@@ -21,7 +35,14 @@ namespace SpatialSEIR
     {
         public:
             //Methods
-            ModelContext(CompartmentalModelMatrix *I_star, 
+            ModelContext(CompartmentalModelMatrix *S_star, 
+                         CompartmentalModelMatrix *E_star, 
+                         CompartmentalModelMatrix *I_star, 
+                         CompartmentalModelMatrix *R_star, 
+                         CompartmentalModelMatrix *S, 
+                         CompartmentalModelMatrix *E, 
+                         CompartmentalModelMatrix *I, 
+                         CompartmentalModelMatrix *R,  
                          InitData* A0,
                          CovariateMatrix *X);
             ~ModelContext(); 
@@ -62,35 +83,27 @@ namespace SpatialSEIR
             FC_E_Star *E_star_fc;
             FC_R_Star *R_star_fc;
             FC_Beta *beta_fc;
-            FC_P_Rho *rho_fc;
+            FC_Rho *rho_fc;
             FC_P_RS *p_rs_fc;
             FC_P_EI *p_ei_fc;
             FC_P_IR *p_ir_fc;
 
             //Data
-            CompartmentalModelMatrix* S;
-            CompartmentalModelMatrix* E;
-            CompartmentalModelMatrix* I;
-            CompartmentalModelMatrix* R;
-            CompartmentalModelMatrix* S_star;
-            CompartmentalModelMatrix* E_star;
-            CompartmentalModelMatrix* I_star;
-            CompartmentalModelMatrix* R_star;
-
-            InitData* A0;
-            CovariateMatrix* X;
+            CompartmentalModelMatrix** S;
+            CompartmentalModelMatrix** E;
+            CompartmentalModelMatrix** I;
+            CompartmentalModelMatrix** R;
+            CompartmentalModelMatrix** S_star;
+            CompartmentalModelMatrix** E_star;
+            CompartmentalModelMatrix** I_star;
+            CompartmentalModelMatrix** R_star;
+            InitData** A0;
+            CovariateMatrix** X;
             double* p_se;
             double* p_ei;
             double* p_ir;
             double* p_rs;
             int* N;// Matrix?
-
-
-
-
-
-
-
         
     };
 }

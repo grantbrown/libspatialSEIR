@@ -7,9 +7,20 @@
 #include<vector>
 #endif
 
+#ifndef OCL_PROVIDER_INC
+#define OCL_PROVIDER_INC
 #include "OCLProvider.hpp"
+#endif
+
+#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
+#define COMPARTMENTAL_MODEL_MATRIX_INC
 #include "CompartmentalModelMatrix.hpp"
+#endif
+
+#ifndef COVARIATE_MATRIX_INC
+#define COVARIATE_MATRIX_INC
 #include "CovariateMatrix.hpp"
+#endif
 
 namespace SpatialSEIR
 {
