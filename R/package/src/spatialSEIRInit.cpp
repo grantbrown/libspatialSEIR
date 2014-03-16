@@ -43,8 +43,6 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::IntegerVector I_star(Istar);
     Rcpp::IntegerVector R_star(Rstar);
 
-
-
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
 
@@ -53,8 +51,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     ModelContext* context = new ModelContext();
 
     // Create the covariate matrix object. 
-    CovariateMatrix *CovMat = new CovariateMatrix();
-    CovMat -> genFromDataStream(X.begin(), 
+    context -> X -> genFromDataStream(X.begin(), 
                                 Z.begin(),
                                 &covariateDimensions_x[0], 
                                 &covariateDimensions_x[1],
@@ -76,22 +73,11 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                                            &compartmentDimensions[0],
                                            &compartmentDimensions[1]);
 
-
-    CompartmentalModelMatrix *CompMat = new CompartmentalModelMatrix();
-    CompMat -> genFromDataStream(I_star.begin(), 
-                                 &compartmentDimensions[0],
-                                 &compartmentDimensions[1]);
-
-
     context -> A0 ->  populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
                                S_star0.begin(),E_star0.begin(),I_star0.begin(),
                                R_star0.begin(),&compartmentDimensions[1]);
 
-
-
-    Rcpp::IntegerVector y = Rcpp::IntegerVector::create(0);
-    //List z = List::create(y);
-    Rcpp::XPtr<CompartmentalModelMatrix*> ptr(&CompMat, true);
+    Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
 
     // Clean up
