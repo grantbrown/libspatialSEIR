@@ -10,7 +10,7 @@
     final library wrapper will be provided when the C++ library actually works. 
 }
 \usage{
-    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,Rstar0,Istar,X_,Z_)
+    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_)
 }
 \arguments{
     \item{compMatDim}{
@@ -46,7 +46,16 @@
     \item{Rstar0}{
         Initial I to R transition vector
     }
+    \item{Sstar}{
+        Observed infection data
+    }
+    \item{Estar}{
+        Observed infection data
+    }
     \item{Istar}{
+        Observed infection data
+    }
+    \item{Rstar}{
         Observed infection data
     }
     \item{X_}{

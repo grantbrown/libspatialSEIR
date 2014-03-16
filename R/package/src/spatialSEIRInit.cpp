@@ -1,6 +1,6 @@
 #include <Rcpp.h>
 #include <cmath>
-#include <FullConditional.hpp>
+#include <ModelContext.hpp>
 
 using namespace Rcpp;
 using namespace SpatialSEIR;
@@ -16,7 +16,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP Estar0,
                      SEXP Istar0,
                      SEXP Rstar0,
+                     SEXP Sstar, 
+                     SEXP Estar, 
                      SEXP Istar, 
+                     SEXP Rstar, 
                      SEXP X_,
                      SEXP Z_)
 {
@@ -35,7 +38,13 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::IntegerVector I_star0(Istar0);
     Rcpp::IntegerVector R_star0(Rstar0);
 
+    Rcpp::IntegerVector S_star(Sstar);
+    Rcpp::IntegerVector E_star(Estar);
     Rcpp::IntegerVector I_star(Istar);
+    Rcpp::IntegerVector R_star(Rstar);
+
+
+
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
 
@@ -54,18 +63,18 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
     // Populate the CompartmentalModelMatrix objects. 
     
-    (*context.S_star) -> genFromDataStream(S_star.begin(), 
+    context -> S_star -> genFromDataStream(S_star.begin(), 
                                            &compartmentDimensions[0],
-                                           &compartmentDimensions[1])
-    (*context.E_star) -> genFromDataStream(E_star.begin(), 
+                                           &compartmentDimensions[1]);
+    context -> E_star -> genFromDataStream(E_star.begin(), 
                                            &compartmentDimensions[0],
-                                           &compartmentDimensions[1])
-    (*context.I_star) -> genFromDataStream(I_star.begin(), 
+                                           &compartmentDimensions[1]);
+    context -> I_star -> genFromDataStream(I_star.begin(), 
                                            &compartmentDimensions[0],
-                                           &compartmentDimensions[1])
-    (*context.R_star) -> genFromDataStream(R_star.begin(), 
+                                           &compartmentDimensions[1]);
+    context -> R_star -> genFromDataStream(R_star.begin(), 
                                            &compartmentDimensions[0],
-                                           &compartmentDimensions[1])
+                                           &compartmentDimensions[1]);
 
 
     CompartmentalModelMatrix *CompMat = new CompartmentalModelMatrix();
@@ -73,6 +82,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                                  &compartmentDimensions[0],
                                  &compartmentDimensions[1]);
 
+
+    context -> A0 ->  populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
+                               S_star0.begin(),E_star0.begin(),I_star0.begin(),
+                               R_star0.begin(),&compartmentDimensions[1]);
 
 
 
@@ -82,10 +95,6 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
 
     // Clean up
-
-    delete[] beta;
-    delete[] gamma;
-    delete[] eta;
 
     Rcpp::Rcout << "Finished.\n";
     return ptr;

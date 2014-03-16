@@ -58,7 +58,10 @@ res = spatialSEIRInit(compMatDim,
                       Estar0,
                       Istar0,
                       Rstar0,
+                      Sstar,
+                      Estar,
                       Istar,
+                      Rstar,
                       X,
                       Z)
 
