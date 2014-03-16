@@ -30,33 +30,36 @@ namespace SpatialSEIR
     class InitData
     {
         public:
-            InitData(double *_S0,
-                        double *_E0,
-                        double *_I0,
-                        double *_R0,
-                        double *_S_star0,
-                        double *_E_star0,
-                        double *_I_star0,
-                        double *_R_star0);
+            InitData(int *_S0,
+                        int *_E0,
+                        int *_I0,
+                        int *_R0,
+                        int *_S_star0,
+                        int *_E_star0,
+                        int *_I_star0,
+                        int *_R_star0,
+                        int *nLoc);
             InitData();
-            void populate(double *_S0,
-                          double *_E0,
-                          double *_I0,
-                          double *_R0,
-                          double *_S_star0,
-                          double *_E_star0,
-                          double *_I_star0,
-                          double *_R_star0);
+            void populate(int *_S0,
+                          int *_E0,
+                          int *_I0,
+                          int *_R0,
+                          int *_S_star0,
+                          int *_E_star0,
+                          int *_I_star0,
+                          int *_R_star0,
+                          int *nLoc);
 
             ~InitData();
-            double **S0;
-            double **E0;
-            double **I0;
-            double **R0;
-            double **S_star0;
-            double **E_star0;
-            double **I_star0;
-            double **R_star0;
+            int *S0;
+            int *E0;
+            int *I0;
+            int *R0;
+            int *S_star0;
+            int *E_star0;
+            int *I_star0;
+            int *R_star0;
+            int *numLocations;
     };
 
     class FullConditional

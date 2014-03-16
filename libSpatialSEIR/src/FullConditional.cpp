@@ -20,17 +20,19 @@ namespace SpatialSEIR
      */    
  
  
-    InitData::InitData(double *_S0, 
-                       double *_E0,
-                       double *_I0,
-                       double *_R0,
-                       double *_S_star0,
-                       double *_E_star0, 
-                       double *_I_star0, 
-                       double *_R_star0)
+    InitData::InitData(int *_S0, 
+                       int *_E0,
+                       int *_I0,
+                       int *_R0,
+                       int *_S_star0,
+                       int *_E_star0, 
+                       int *_I_star0, 
+                       int *_R_star0,
+                       int *nLoc)
     {
         this -> populate(*&_S0, *&_E0, *&_I0, *&_R0, 
-                *&_S_star0, *&_E_star0, *&_I_star0, *&_R_star0);
+                *&_S_star0, *&_E_star0, *&_I_star0, *&_R_star0,
+                *&nLoc);
     }
 
     InitData::InitData()
@@ -38,32 +40,39 @@ namespace SpatialSEIR
         // Do nothing
     }
 
-    void InitData::populate(double *_S0, 
-                       double *_E0,
-                       double *_I0,
-                       double *_R0,
-                       double *_S_star0,
-                       double *_E_star0, 
-                       double *_I_star0, 
-                       double *_R_star0)
+    void InitData::populate(int *_S0, 
+                       int *_E0,
+                       int *_I0,
+                       int *_R0,
+                       int *_S_star0,
+                       int *_E_star0, 
+                       int *_I_star0, 
+                       int *_R_star0,
+                       int *nLoc
+                       )
     {
-        S0 = new double*;
-        E0 = new double*;
-        I0 = new double*;
-        R0 = new double*;
-        S_star0 = new double*;
-        E_star0 = new double*;
-        I_star0 = new double*;
-        R_star0 = new double*;
-
-        *S0 = _S0;
-        *E0 = _E0;
-        *I0 = _I0;
-        *R0 = _R0;
-        *S_star0 = _S_star0;
-        *E_star0 = _E_star0;
-        *I_star0 = _I_star0;
-        *R_star0 = _R_star0;
+        S0 = new int[*nLoc];
+        E0 = new int[*nLoc];
+        I0 = new int[*nLoc];
+        R0 = new int[*nLoc];
+        S_star0 = new int[*nLoc]; 
+        E_star0 = new int[*nLoc];
+        I_star0 = new int[*nLoc];
+        R_star0 = new int[*nLoc];
+        numLocations = new int;
+        *numLocations = *nLoc;
+        int i;
+        for (i = 0; i < *nLoc; i++)
+        {
+            S0[i] = _S0[i]; 
+            E0[i] = _E0[i];
+            I0[i] = _I0[i];
+            R0[i] = _R0[i];
+            S_star0[i] = _S_star0[i];
+            E_star0[i] = _E_star0[i];
+            I_star0[i] = _I_star0[i];
+            R_star0[i] = _R_star0[i];
+        }
     }
 
     InitData::~InitData()
@@ -76,6 +85,7 @@ namespace SpatialSEIR
         delete E_star0;
         delete I_star0;
         delete R_star0;
+        delete numLocations;
     }
 
     FullConditional::FullConditional()
