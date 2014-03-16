@@ -10,7 +10,7 @@
     final library wrapper will be provided when the C++ library actually works. 
 }
 \usage{
-    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_)
+    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_)
 }
 \arguments{
     \item{compMatDim}{
@@ -63,6 +63,9 @@
     }
     \item{Z_}{
         Time varying covariate data
+    }
+    \item{DistMat_}{
+        Raw distance matrix. 
     }
 
 }

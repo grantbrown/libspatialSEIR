@@ -21,19 +21,23 @@ namespace SpatialSEIR
         R = new CompartmentalModelMatrix();
         A0 = new InitData();
         X = new CovariateMatrix();
+        rawDistMat = new DistanceMatrix();
+        scaledDistMat = new DistanceMatrix();
     }
     ModelContext::~ModelContext()
     {
-        delete[] S_star;
-        delete[] E_star;
-        delete[] I_star;
-        delete[] R_star;
-        delete[] S;
-        delete[] E;
-        delete[] I;
-        delete[] R;
-        delete[] A0;
-        delete[] X;
+        delete S_star;
+        delete E_star;
+        delete I_star;
+        delete R_star;
+        delete S;
+        delete E;
+        delete I;
+        delete R;
+        delete A0;
+        delete X;
+        delete rawDistMat;
+        delete scaledDistMat;
     }
 }
 

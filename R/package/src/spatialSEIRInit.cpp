@@ -21,7 +21,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP Istar, 
                      SEXP Rstar, 
                      SEXP X_,
-                     SEXP Z_)
+                     SEXP Z_,
+                     SEXP DistMat_)
 {
 
     //Deal with the data conversion from R to c++
@@ -45,6 +46,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
+    Rcpp::NumericVector DistMat(DistMat_);
+
 
     // Create the empty ModelContext object 
     
@@ -58,8 +61,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                                 &covariateDimensions_z[0], 
                                 &covariateDimensions_z[1]);
 
-    // Populate the CompartmentalModelMatrix objects. 
-    
+    // Populate the CompartmentalModelMatrix objects.  
     context -> S_star -> genFromDataStream(S_star.begin(), 
                                            &compartmentDimensions[0],
                                            &compartmentDimensions[1]);
@@ -73,15 +75,18 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                                            &compartmentDimensions[0],
                                            &compartmentDimensions[1]);
 
+    context -> rawDistMat -> genFromDataStream(DistMat.begin(), &compartmentDimensions[1]);
+    context -> scaledDistMat -> genFromDataStream(DistMat.begin(), &compartmentDimensions[1]);
+    context -> scaledDistMat -> scaledInvFunc_CPU(60*60*2, context -> rawDistMat -> data);
+
+    // Populate the Time 0 initialization data
     context -> A0 ->  populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
                                S_star0.begin(),E_star0.begin(),I_star0.begin(),
                                R_star0.begin(),&compartmentDimensions[1]);
 
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
-
     // Clean up
-
     Rcpp::Rcout << "Finished.\n";
     return ptr;
 }

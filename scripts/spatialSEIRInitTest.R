@@ -46,6 +46,7 @@ Sstar = sim_results$S_star
 Estar = sim_results$E_star
 Istar = sim_results$I_star
 Rstar = sim_results$R_star
+DM = distmatlist$dcm
 
 res = spatialSEIRInit(compMatDim,
                       xDim,
@@ -63,5 +64,6 @@ res = spatialSEIRInit(compMatDim,
                       Istar,
                       Rstar,
                       X,
-                      Z)
+                      Z, 
+                      DM)
 

@@ -26,6 +26,12 @@
 #define FULL_CONDITIONAL_INC
 #include "FullConditional.hpp"
 #endif
+
+#ifndef DISTANCEMATRIX
+#define DISTANCEMATRIX 
+#include "DistanceMatrix.hpp"
+#endif
+
 namespace SpatialSEIR
 {
     using std::cout;
@@ -38,35 +44,44 @@ namespace SpatialSEIR
             ModelContext();
             ~ModelContext(); 
 
-
-
             // Method: calculateS
             // Accesses: A0, S_star, E_star
             // Updates: S
-            void calculateS();
+            void calculateS_CPU();
+            void calculateS_OCL();
 
             // Method: calculateE
             // Accesses: A0, I_star, E_star
             // Updates: E
-            void calculateE();
+            void calculateE_CPU();
+            void calculateE_OCL();
+
 
             // Method: calculateI
             // Accesses: A0, I_star, R_star
             // Updates: I
-            void calculateI();
+            void calculateI_CPU();
+            void calculateI_OCL();
+
 
             // Method: calculateR
             // Accesses: A0, R_star, S_star
             // Updates: R
-            void calculateR();
+            void calculateR_CPU();
+            void calculateR_OCL();
+
 
             // Method: calculatePi
             // Accesses: beta, I, N, distMat, rho
             // Updates: p_se
-            void calculateP_SE();
+            void calculateP_SE_CPU();
+            void calculateP_SE_OCL();
+
 
             // Method: calculateFDmat
-            void calculateFDmat();
+            void calculateFDmat_CPU();
+            void calculateFDmat_OCL();
+
         
             //Logic provider classes
             OCLProvider *oclProvider; 
@@ -90,6 +105,8 @@ namespace SpatialSEIR
             CompartmentalModelMatrix* R_star;
             InitData* A0;
             CovariateMatrix* X;
+            DistanceMatrix* rawDistMat;
+            DistanceMatrix* scaledDistMat;
             double* p_se;
             double* p_ei;
             double* p_ir;

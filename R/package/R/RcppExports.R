@@ -5,7 +5,7 @@ rcppTestEntry <- function() {
     .Call('spatialSEIR_rcppTestEntry', PACKAGE = 'spatialSEIR')
 }
 
-spatialSEIRInit <- function(compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_) {
-    .Call('spatialSEIR_spatialSEIRInit', PACKAGE = 'spatialSEIR', compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_)
+spatialSEIRInit <- function(compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, DistMat_) {
+    .Call('spatialSEIR_spatialSEIRInit', PACKAGE = 'spatialSEIR', compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, DistMat_)
 }
 
