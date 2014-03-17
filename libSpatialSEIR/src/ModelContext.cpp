@@ -36,20 +36,15 @@ namespace SpatialSEIR
     void ModelContext::calculateS_CPU()
     {
         // Load up S(t=1) from A0
-        std::cout << "P_1\n";
         int i;
         int numLoc = *(A0 -> numLocations);
-        std::cout << "P_2\n";
         int max2 = (*(S -> nrow))*((*(S -> ncol)));
-    
-
         for (i = 0; i < numLoc; i++)
         {
             (S -> data)[i] = ((A0 -> S0)[i] + 
                     (A0 -> S_star0)[i] - 
                     (A0 -> E_star0)[i]);
         }
-        std::cout << "P_3\n";
 
         for (i = numLoc; i < max2; i++)
         {
@@ -57,7 +52,6 @@ namespace SpatialSEIR
                               (S_star -> data)[i] - 
                               (E_star -> data)[i]);
         }
-        std::cout << "P_3\n";
     }
     void ModelContext::calculateS_OCL()
     {

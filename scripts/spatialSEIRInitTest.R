@@ -30,7 +30,7 @@ Z = covariates$Z  # Z is returned by the simulation as an NxQxT1xT2 array,
 
 # The compartmental "matrices" are returned by the simulation as 
 # NxT1xT2 arrays. 
-compMatDim = c(dim(sim_results$S[1]), prod(sim_results$S[2:3]))
+compMatDim = c(dim(sim_results$S)[1], prod(dim(sim_results$S)[2:3]))
 xDim = dim(X)
 zDim = c(prod(dim(Z)[c(1,3,4)]), dim(Z)[2])
 
