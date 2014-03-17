@@ -56,13 +56,11 @@ namespace SpatialSEIR
             void calculateE_CPU();
             void calculateE_OCL();
 
-
             // Method: calculateI
             // Accesses: A0, I_star, R_star
             // Updates: I
             void calculateI_CPU();
             void calculateI_OCL();
-
 
             // Method: calculateR
             // Accesses: A0, R_star, S_star
@@ -70,18 +68,11 @@ namespace SpatialSEIR
             void calculateR_CPU();
             void calculateR_OCL();
 
-
             // Method: calculatePi
             // Accesses: beta, I, N, distMat, rho
             // Updates: p_se
             void calculateP_SE_CPU();
             void calculateP_SE_OCL();
-
-
-            // Method: calculateFDmat
-            void calculateFDmat_CPU();
-            void calculateFDmat_OCL();
-
         
             //Logic provider classes
             OCLProvider *oclProvider; 
@@ -112,6 +103,5 @@ namespace SpatialSEIR
             double* p_ir;
             double* p_rs;
             int* N;// Matrix?
-        
     };
 }

@@ -48,9 +48,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector Z(Z_);
     Rcpp::NumericVector DistMat(DistMat_);
 
-
-    // Create the empty ModelContext object 
-    
+    // Create the empty ModelContext object  
     ModelContext* context = new ModelContext();
 
     // Create the covariate matrix object. 
