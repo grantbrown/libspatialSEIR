@@ -44,6 +44,10 @@ namespace SpatialSEIR
             ModelContext();
             ~ModelContext(); 
 
+            // Allocate N, beta, and eta vectors. 
+            // Can only be called once A0 is initialized.
+            void populate();
+
             // Method: calculateS
             // Accesses: A0, S_star, E_star
             // Updates: S
@@ -109,6 +113,8 @@ namespace SpatialSEIR
             CovariateMatrix* X;
             DistanceMatrix* rawDistMat;
             DistanceMatrix* scaledDistMat;
+            double* beta;
+            double* eta;
             double* p_se;
             double* p_ei;
             double* p_ir;

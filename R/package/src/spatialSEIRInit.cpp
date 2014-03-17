@@ -98,6 +98,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> A0 ->  populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
                                S_star0.begin(),E_star0.begin(),I_star0.begin(),
                                R_star0.begin(),&compartmentDimensions[0]);
+    Rcpp::Rcout << "Allocating beta, eta, N\n";
+    context -> populate();
+    Rcpp::Rcout << "Calculating Eta\n";
+    context -> X -> calculate_eta_CPU(context -> eta, context -> beta);
 
     // Test calculation functions. 
     

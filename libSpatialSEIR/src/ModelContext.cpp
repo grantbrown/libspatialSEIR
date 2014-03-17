@@ -8,6 +8,8 @@
 #include<cblas.h> 
 #endif
 
+#include<cmath>
+
 
 namespace SpatialSEIR
 {
@@ -28,6 +30,29 @@ namespace SpatialSEIR
         X = new CovariateMatrix();
         rawDistMat = new DistanceMatrix();
         scaledDistMat = new DistanceMatrix();
+        N = new int; *N = -1;
+        beta = new double; *beta = -1.0;
+        eta = new double; *eta = -1.0;
+    }
+
+    void ModelContext::populate()
+    { 
+        delete N; delete beta; delete eta;
+        N = new int[*(A0 -> numLocations)]; // Vector, could be changed to
+                                            // a time varying matrix
+        int nbeta = (*(X -> ncol_x) + (*(X -> ncol_z)));
+        int neta = (*(X -> nrow_z));
+        beta = new double[nbeta];
+        eta = new double[neta];
+        int i;
+        for (i = 0; i < nbeta; i++)
+        {
+            beta[i] = 0.0;
+        }
+        for (i = 0; i < neta; i++)
+        {
+            eta[i] = 0.0;
+        }
     }
 
     // Method: calculateS
@@ -127,7 +152,20 @@ namespace SpatialSEIR
     // Updates: p_se
     void ModelContext::calculateP_SE_CPU()
     {
+        int i;
+        //Update Eta
+        this -> X -> calculate_eta_CPU(eta, beta);
+        //Exponentiate
+        int nrowz = *(X->nrow_z);
+        for (i = 0; i < nrowz; i++)
+        {
+            eta[i] = std::exp(eta[i]);
+        }
+        // Calculate dmu: I/N * exp(eta)
+        // Calculate rho*sqrt(idmat)
+        // Calculate probs
         throw(-1);
+            
     }
     void ModelContext::calculateP_SE_OCL()
     {
@@ -148,6 +186,8 @@ namespace SpatialSEIR
         delete X;
         delete rawDistMat;
         delete scaledDistMat;
+        delete[] beta;
+        delete[] eta;
     }
 }
 

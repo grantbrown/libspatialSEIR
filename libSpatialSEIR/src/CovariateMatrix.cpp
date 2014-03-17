@@ -41,7 +41,6 @@ namespace SpatialSEIR
         {
             Z[i] = indata_z[i];
         }
-
     }
 
     // Combined beta/gamma parameters
@@ -53,27 +52,22 @@ namespace SpatialSEIR
         {
             int i; int j;
             // Initialize eta 
-            for (i = 0; i < ((*ncol_x) + (*ncol_z)); i++)
+            for (i = 0; i < (*nrow_z); i++)
             {
                 eta[i] = 0.0;
             }
-            // Calc eta_x
-            for (i = 0; i < (*ncol_x); i++)
+            for (j = 0; j < (*nrow_z); j++)
             {
-                for (j = 0; j < (*nrow_x); j++) 
-                {
-                    eta[i] += X[j + i*(*nrow_x)]*beta[i];                    
-                }
+               for (i = 0; i < (*ncol_x); i++) 
+               {
+                   eta[j] += X[j%(*nrow_x) + i*(*ncol_x)]*beta[i];
+               }
+               for (i = 0; i < (*ncol_z); i++)
+               {
+                   eta[j] += Z[j%(*nrow_x) + i*(*ncol_z)]*beta[i + (*ncol_x)];
+               }
             }
 
-            // Calc eta_z
-            for (i = 0; i < (*ncol_z); i++)
-            {
-                for (j = 0; j < (*nrow_z); j++)
-                {
-                    eta[i+(*ncol_x)] += Z[j + i*(*ncol_z)]*[i + (*ncol_x)]; 
-                }
-            }
 
         }
         catch(int e)
