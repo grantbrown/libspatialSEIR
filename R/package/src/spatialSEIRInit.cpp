@@ -102,46 +102,6 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // Test calculation functions. 
     
     context -> calculateS_CPU();
-    Rcpp::Rcout << "Stored Num Locations: " << *(context -> A0 -> numLocations) << "\n";
-
-    int i;
-    Rcpp::Rcout << "\n\nCalculated S: \n";
-    for (i = 0; i < 10; i++)
-    {
-        Rcpp::Rcout << i << ": " << (context -> S -> data)[i] 
-            << ", " << (context -> S -> data)[i + *(context -> A0 -> numLocations)] 
-            << ", " << (context -> S -> data)[i + *(context -> A0 -> numLocations)*2] << "\n"; 
-    }
-    Rcpp::Rcout << "\n\nStored S_star: \n";
-    for (i = 0; i < 10; i++)
-    {
-        Rcpp::Rcout << i << ": " << (context -> S_star -> data)[i] << ", " 
-            << (context -> S_star -> data)[i + *(context -> A0 -> numLocations)] 
-            << ", " << (context -> S_star -> data)[i + *(context -> A0 -> numLocations)*2] << "\n"; 
-    }
-    Rcpp::Rcout << "\n\nRcpp Provided S_star: \n";
-    for (i = 0; i < 10; i++)
-    {
-        Rcpp::Rcout << i << ": " << S_star[i] << ", " 
-            << S_star[i + *(context -> A0 -> numLocations)] 
-            << ", " << S_star[i + *(context -> A0 -> numLocations)*2] <<"\n"; 
-    }
-
-    Rcpp::Rcout << "\n\nStored E_star: \n";
-    for (i = 0; i < 10; i++)
-    {
-        Rcpp::Rcout << i << ": " << (context -> E_star -> data)[i] << ", " 
-            << (context -> E_star -> data)[i + *(context -> A0 -> numLocations)] 
-            << ", " << (context -> E_star -> data)[i + *(context -> A0 -> numLocations)*2] << "\n"; 
-    }
-    Rcpp::Rcout << "\n\nRcpp Provided E_star: \n";
-    for (i = 0; i < 10; i++)
-    {
-        Rcpp::Rcout << i << ": " << E_star[i] << ", " 
-            << E_star[i + *(context -> A0 -> numLocations)] 
-            << ", " << E_star[i + *(context -> A0 -> numLocations)*2] << "\n"; 
-    }
-
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
     // Clean up

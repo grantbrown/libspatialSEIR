@@ -49,8 +49,8 @@ namespace SpatialSEIR
         for (i = numLoc; i < max2; i++)
         {
             (S -> data)[i] = ((S -> data)[i - numLoc] + 
-                              (S_star -> data)[i] - 
-                              (E_star -> data)[i]);
+                              (S_star -> data)[i - numLoc] - 
+                              (E_star -> data)[i - numLoc]);
         }
     }
     void ModelContext::calculateS_OCL()
