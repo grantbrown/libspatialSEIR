@@ -95,6 +95,23 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // Test calculation functions. 
     
     context -> calculateS_CPU();
+    Rcpp::Rcout << "Stored Num Locations: " << *(context -> A0 -> numLocations) << "\n";
+    int i;
+    Rcpp::Rcout << "\n\nCalculated S: \n";
+    for (i = 0; i < 10; i++)
+    {
+        Rcpp::Rcout << i << ": " << (context -> S -> data)[i] << ", " << (context -> S -> data)[i + *(context -> A0 -> numLocations)] << "\n"; 
+    }
+    Rcpp::Rcout << "\n\nStored S_star: \n";
+    for (i = 0; i < 10; i++)
+    {
+        Rcpp::Rcout << i << ": " << (context -> S_star -> data)[i] << ", " << (context -> S_star -> data)[i + *(context -> A0 -> numLocations)] << "\n"; 
+    }
+    Rcpp::Rcout << "\n\nRcpp Provided S_star: \n";
+    for (i = 0; i < 10; i++)
+    {
+        Rcpp::Rcout << i << ": " << S_star[i] << ", " << S_star[i + *(context -> A0 -> numLocations)] << "\n"; 
+    }
 
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
