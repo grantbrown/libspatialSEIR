@@ -101,7 +101,20 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
     // Test calculation functions. 
     
+    Rcpp::Rcout << "Calculating S\n";
     context -> calculateS_CPU();
+
+    Rcpp::Rcout << "Calculating E\n";
+    context -> calculateE_CPU();
+    
+    Rcpp::Rcout << "Calculating I\n";
+    context -> calculateI_CPU();
+
+    Rcpp::Rcout << "Calculating R\n";
+    context -> calculateR_CPU();
+
+
+
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
     // Clean up

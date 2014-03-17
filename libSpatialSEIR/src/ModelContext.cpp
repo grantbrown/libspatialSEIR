@@ -35,23 +35,9 @@ namespace SpatialSEIR
     // Updates: S
     void ModelContext::calculateS_CPU()
     {
-        // Load up S(t=1) from A0
-        int i;
-        int numLoc = *(A0 -> numLocations);
-        int max2 = (*(S -> nrow))*((*(S -> ncol)));
-        for (i = 0; i < numLoc; i++)
-        {
-            (S -> data)[i] = ((A0 -> S0)[i] + 
-                    (A0 -> S_star0)[i] - 
-                    (A0 -> E_star0)[i]);
-        }
-
-        for (i = numLoc; i < max2; i++)
-        {
-            (S -> data)[i] = ((S -> data)[i - numLoc] + 
-                              (S_star -> data)[i - numLoc] - 
-                              (E_star -> data)[i - numLoc]);
-        }
+        calculateGenericCompartment_CPU(&*(this -> S), &*(this -> A0 -> S0),
+                                    &*(this -> S_star), &*(this -> E_star),
+                                    &*(this -> A0 -> S_star0), &*(this -> A0 -> E_star0));
     }
     void ModelContext::calculateS_OCL()
     {
@@ -63,8 +49,11 @@ namespace SpatialSEIR
     // Updates: E
     void ModelContext::calculateE_CPU()
     {
-        throw(-1);
+        calculateGenericCompartment_CPU(&*(this -> E), &*(this -> A0 -> E0),
+                                    &*(this -> E_star), &*(this -> I_star),
+                                    &*(this -> A0 -> E_star0), &*(this -> A0 -> I_star0));
     }
+
     void ModelContext::calculateE_OCL()
     {
         throw(-1);
@@ -75,7 +64,9 @@ namespace SpatialSEIR
     // Updates: I
     void ModelContext::calculateI_CPU()
     {
-        throw(-1);
+        calculateGenericCompartment_CPU(&*(this -> I), &*(this -> A0 -> I0),
+                                    &*(this -> I_star), &*(this -> R_star),
+                                    &*(this -> A0 -> I_star0), &*(this -> A0 -> R_star0));
     }
     void ModelContext::calculateI_OCL()
     {
@@ -87,9 +78,46 @@ namespace SpatialSEIR
     // Updates: R
     void ModelContext::calculateR_CPU()
     {
-        throw(-1);
+        calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
+                                    &*(this -> R_star), &*(this -> S_star),
+                                    &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0));
     }
     void ModelContext::calculateR_OCL()
+    {
+        throw(-1);
+    }
+
+
+    // Method: calculateGenericCompartment
+    // Access: A0, compartments linked by compStar poitners
+    // Updates: Compartment linked by comp pointer 
+    void ModelContext::calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp,int *comp0, 
+                                                   CompartmentalModelMatrix *compStarAdd, 
+                                                   CompartmentalModelMatrix *compStarSub, 
+                                                   int *compStar0Add,int *compStar0Sub)
+    {
+        int i;
+        int numLoc = *(A0 -> numLocations);
+        int max2 = (*(comp -> nrow))*(*(comp -> ncol));
+        for (i = 0; i < numLoc; i++)
+        {
+            (comp -> data)[i] = ((comp0)[i] + 
+                    (compStar0Add)[i] - 
+                    (compStar0Sub)[i]);
+        }
+
+        for (i = numLoc; i < max2; i++)
+        {
+            (comp -> data)[i] = (comp -> data)[i - numLoc] + 
+                      (compStarAdd -> data)[i - numLoc] - 
+                      (compStarSub -> data)[i - numLoc];
+        }
+       
+    }
+    
+    void ModelContext::calculateGenericCompartment_OCL(int *comp,int *comp0, 
+                                                   int *compStarAdd, int *compStarSub, 
+                                                   int *compStar0Add,int *compStar0Sub)
     {
         throw(-1);
     }

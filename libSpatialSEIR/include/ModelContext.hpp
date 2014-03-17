@@ -68,6 +68,17 @@ namespace SpatialSEIR
             void calculateR_CPU();
             void calculateR_OCL();
 
+            // Method calculateGenericCompartment
+            // Accesses: A0, compartments linked by compStar pointers
+            // Updates: Compartment linked by comp pointer
+            void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, int *comp0,
+                                                 CompartmentalModelMatrix *compStarAdd, 
+                                                 CompartmentalModelMatrix *compStarSub,
+                                                 int *compStar0Add, int *compStar0Sub);
+            void calculateGenericCompartment_OCL(int *comp, int *comp0,
+                                                 int *compStarAdd, int *compStarSub,
+                                                 int *compStar0Add, int *compStar0Sub);
+
             // Method: calculatePi
             // Accesses: beta, I, N, distMat, rho
             // Updates: p_se
