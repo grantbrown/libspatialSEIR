@@ -60,6 +60,16 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                                 &covariateDimensions_z[1]);
 
     // Populate the CompartmentalModelMatrix objects.  
+    
+    context -> S -> createEmptyCompartment(&compartmentDimensions[0],
+                                           &compartmentDimensions[1]); 
+    context -> E -> createEmptyCompartment(&compartmentDimensions[0],
+                                           &compartmentDimensions[1]); 
+    context -> I -> createEmptyCompartment(&compartmentDimensions[0],
+                                           &compartmentDimensions[1]); 
+    context -> R -> createEmptyCompartment(&compartmentDimensions[0],
+                                           &compartmentDimensions[1]); 
+
     context -> S_star -> genFromDataStream(S_star.begin(), 
                                            &compartmentDimensions[0],
                                            &compartmentDimensions[1]);
@@ -81,6 +91,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> A0 ->  populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
                                S_star0.begin(),E_star0.begin(),I_star0.begin(),
                                R_star0.begin(),&compartmentDimensions[1]);
+
+    // Test calculation functions. 
+    
+    context -> calculateS_CPU();
 
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 

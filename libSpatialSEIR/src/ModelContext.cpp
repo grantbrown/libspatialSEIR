@@ -3,6 +3,11 @@
 #include<ModelContext.hpp>
 #endif
 
+#ifndef BLAS_INC
+#define BLAS_INC
+#include<cblas.h> 
+#endif
+
 
 namespace SpatialSEIR
 {
@@ -30,7 +35,29 @@ namespace SpatialSEIR
     // Updates: S
     void ModelContext::calculateS_CPU()
     {
-        throw(-1);
+        // Load up S(t=1) from A0
+        std::cout << "P_1\n";
+        int i;
+        int numLoc = *(A0 -> numLocations);
+        std::cout << "P_2\n";
+        int max2 = (*(S -> nrow))*((*(S -> ncol)));
+    
+
+        for (i = 0; i < numLoc; i++)
+        {
+            (S -> data)[i] = ((A0 -> S0)[i] + 
+                    (A0 -> S_star0)[i] - 
+                    (A0 -> E_star0)[i]);
+        }
+        std::cout << "P_3\n";
+
+        for (i = numLoc; i < max2; i++)
+        {
+            (S -> data)[i] = ((S -> data)[i - numLoc] + 
+                              (S_star -> data)[i] - 
+                              (E_star -> data)[i]);
+        }
+        std::cout << "P_3\n";
     }
     void ModelContext::calculateS_OCL()
     {
@@ -73,6 +100,9 @@ namespace SpatialSEIR
         throw(-1);
     }
 
+    // Method: calculatePi
+    // Accesses: beta, I, N, distMat, rho
+    // Updates: p_se
     void ModelContext::calculateP_SE_CPU()
     {
         throw(-1);
