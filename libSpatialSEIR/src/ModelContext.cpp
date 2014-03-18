@@ -44,6 +44,8 @@ namespace SpatialSEIR
         int neta = (*(X -> nrow_z));
         beta = new double[nbeta];
         eta = new double[neta];
+        tmpContainer = new CompartmentalModelMatrix();
+        tmpContainer -> createEmptyCompartment((S -> nrow), (S -> ncol));
         int i;
         for (i = 0; i < nbeta; i++)
         {

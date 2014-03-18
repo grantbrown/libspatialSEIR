@@ -113,6 +113,8 @@ namespace SpatialSEIR
             CovariateMatrix* X;
             DistanceMatrix* rawDistMat;
             DistanceMatrix* scaledDistMat;
+            CompartmentalModelMatrix* tmpContainer;
+
             double* beta;
             double* eta;
             double* p_se;
