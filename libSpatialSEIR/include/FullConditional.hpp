@@ -27,6 +27,10 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+
+    int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB );
+
+
     class InitData
     {
         public:

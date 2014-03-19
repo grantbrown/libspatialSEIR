@@ -6,12 +6,32 @@
 #include<cstring>
 #include<vector>
 #endif
-
+#include<cblas.h>
 
 namespace SpatialSEIR
 {
     using std::cout;
     using std::endl;
+
+    /*
+     * Helper functions
+     */
+    int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA = false, bool TransB = false)
+    {
+        // Use BLAS to matrix multiply, assume column major, non transposing.
+        // Double check this code when I have internet access. 
+        cblas_dgemm(CblasColMajor,
+                    TransA ? CblasTrans : CblasNoTrans,
+                    TransB ? CblasTrans : CblasNoTrans,
+                    Arow, Bcol, Brow,
+                    1.0, 
+                    A, Arow, 
+                    B, Brow, 
+                    0.0, output, Brow);
+        return 0; 
+    }
+
+
 
     /*
      *

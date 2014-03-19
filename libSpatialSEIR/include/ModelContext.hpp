@@ -116,6 +116,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix* tmpContainer;
 
             double* beta;
+            double* rho;
             double* eta;
             double* p_se;
             double* p_ei;

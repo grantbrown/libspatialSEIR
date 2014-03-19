@@ -49,7 +49,7 @@ namespace SpatialSEIR
             for (i = 0; i < maxVal; i++)
             {
                 tmp = data[i];
-                data[i] = ((tmp < phi && std::abs(tmp) > 0.1) ? 1/tmp : 0);
+                data[i] = std::sqrt(((tmp < phi && std::abs(tmp) > 0.1) ? 1/tmp : 0));
             }
         }
     }

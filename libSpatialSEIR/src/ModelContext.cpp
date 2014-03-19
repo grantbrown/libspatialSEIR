@@ -33,6 +33,7 @@ namespace SpatialSEIR
         N = new int; *N = -1;
         beta = new double; *beta = -1.0;
         eta = new double; *eta = -1.0;
+        rho = new double; *rho = 0.25;
     }
 
     void ModelContext::populate()
@@ -55,6 +56,13 @@ namespace SpatialSEIR
         {
             eta[i] = 0.0;
         }
+        p_se = new double[*(S -> nrow)*(*(S->ncol))];
+        p_ei = new double[*(S -> nrow)*(*(S->ncol))];
+        p_ir = new double[*(S -> nrow)*(*(S->ncol))];
+        p_rs = new double[*(S -> nrow)*(*(S->ncol))];
+
+
+
     }
 
     // Method: calculateS
@@ -154,7 +162,7 @@ namespace SpatialSEIR
     // Updates: p_se
     void ModelContext::calculateP_SE_CPU()
     {
-        int i;
+        int i; int j;
         //Update Eta
         this -> X -> calculate_eta_CPU(eta, beta);
         //Exponentiate
@@ -164,10 +172,33 @@ namespace SpatialSEIR
             eta[i] = std::exp(eta[i]);
         }
         // Calculate dmu: I/N * exp(eta)
+        int nLoc = *(S -> nrow);
+        int nCol = *(S -> ncol);
+        double* scratch = new double[*(S -> nrow)*(*(S -> ncol))];
+        for (j = 0; j < nCol; j++)
+        {
+            for (i = 0; i < nLoc; i++) 
+            {
+                scratch[i + j*nLoc] = // Check to see if just casting will work here.  
+                    ((I -> data)[i + j*nLoc] * exp(eta[i + j*nLoc]))/N[j];
+            }
+        }
         // Calculate rho*sqrt(idmat)
-        // Calculate probs
-        throw(-1);
-            
+        int outsize = *(scaledDistMat -> numLocations)*(*(I -> ncol));
+        SpatialSEIR::matMult(this -> p_se, 
+                scaledDistMat -> data, 
+                scratch, 
+                *(scaledDistMat -> numLocations), 
+                *(scaledDistMat -> numLocations),
+                *(I -> nrow),
+                *(I -> ncol),false,false);
+         
+        for (i = 0; i < outsize; i++)
+        {
+            p_se[i] = 1-std::exp(-scratch[i] - p_se[i]);
+        }
+
+        delete[] scratch;            
     }
     void ModelContext::calculateP_SE_OCL()
     {
@@ -186,10 +217,16 @@ namespace SpatialSEIR
         delete R;
         delete A0;
         delete X;
+        delete tmpContainer;
         delete rawDistMat;
         delete scaledDistMat;
         delete[] beta;
         delete[] eta;
+        delete[] p_se;
+        delete[] p_ei;
+        delete[] p_ir;
+        delete[] p_rs;
+        delete rho;
     }
 }
 

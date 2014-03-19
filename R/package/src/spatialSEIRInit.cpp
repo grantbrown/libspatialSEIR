@@ -117,6 +117,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::Rcout << "Calculating R\n";
     context -> calculateR_CPU();
 
+    Rcpp::Rcout << "Calculating P_SE from Starting Beta, I\n";
+    context -> calculateP_SE_CPU();
+
 
 
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
