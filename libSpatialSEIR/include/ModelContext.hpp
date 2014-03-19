@@ -7,6 +7,11 @@
 #include<vector>
 #endif
 
+#ifndef FULL_CONDITIONAL_INC
+#define FULL_CONDITIONAL_INC
+#include "FullConditional.hpp"
+#endif
+
 #ifndef OCL_PROVIDER_INC
 #define OCL_PROVIDER_INC
 #include "OCLProvider.hpp"
@@ -22,20 +27,27 @@
 #include "CovariateMatrix.hpp"
 #endif
 
-#ifndef FULL_CONDITIONAL_INC
-#define FULL_CONDITIONAL_INC
-#include "FullConditional.hpp"
-#endif
-
 #ifndef DISTANCEMATRIX
 #define DISTANCEMATRIX 
 #include "DistanceMatrix.hpp"
 #endif
 
+
 namespace SpatialSEIR
 {
     using std::cout;
     using std::endl;
+
+
+    class FC_S_Star;
+    class FC_E_Star;
+    class FC_R_Star;
+    class FC_Beta;
+    class FC_P_EI;
+    class FC_P_IR;
+    class FC_P_RS;
+    class FC_Rho;
+    class InitData;
 
     class ModelContext
     {

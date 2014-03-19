@@ -1,4 +1,3 @@
-#include <FullConditional.hpp>
 #ifndef SPATIALSEIR_INCLUDEFILES
 #include<iostream>
 #include<stdio.h>
@@ -7,6 +6,11 @@
 #include<vector>
 #endif
 #include<cblas.h>
+
+#ifndef FULL_CONDITIONAL_INC
+#define FULL_CONDITIONAL_INC
+#include <FullConditional.hpp>
+#endif
 
 namespace SpatialSEIR
 {
@@ -140,7 +144,8 @@ namespace SpatialSEIR
      *
      */    
 
-    FC_S_Star::FC_S_Star(CompartmentalModelMatrix *_S_star, 
+    FC_S_Star::FC_S_Star(ModelContext * _context,
+                         CompartmentalModelMatrix *_S_star, 
                          CompartmentalModelMatrix *_E_star, 
                          CompartmentalModelMatrix *_R_star, 
                          InitData *_A0,
@@ -150,6 +155,7 @@ namespace SpatialSEIR
                          double *_beta,
                          double *_rho)
     {
+       context = new ModelContext*;
        S_star = new CompartmentalModelMatrix*;
        E_star = new CompartmentalModelMatrix*;
        R_star = new CompartmentalModelMatrix*;
@@ -160,7 +166,7 @@ namespace SpatialSEIR
        beta = new double*;
        rho = new double*;
        value = new double;
-
+       *context = _context;
        *S_star = _S_star;
        *E_star = _E_star;
        *R_star = _R_star;
@@ -184,6 +190,7 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete context;
     }
 
     int FC_S_Star::evalCPU()
@@ -215,7 +222,8 @@ namespace SpatialSEIR
      */    
 
     
-    FC_E_Star::FC_E_Star(CompartmentalModelMatrix *_S_star,
+    FC_E_Star::FC_E_Star(ModelContext *_context,
+                         CompartmentalModelMatrix *_S_star,
                          CompartmentalModelMatrix *_E_star,
                          CompartmentalModelMatrix *_I_star,
                          CovariateMatrix *_X,
@@ -225,6 +233,8 @@ namespace SpatialSEIR
                          double *_rho,
                          double *_beta) 
     {
+
+        context = new ModelContext*;
         S_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
         I_star = new CompartmentalModelMatrix*;
@@ -236,6 +246,7 @@ namespace SpatialSEIR
         beta = new double*;
         value = new double;
         
+       *context = _context;
         *S_star = _S_star;
         *E_star = _E_star;
         *I_star = _I_star;
@@ -260,6 +271,7 @@ namespace SpatialSEIR
         delete rho;
         delete beta;
         delete value;
+        delete context;
     }
 
     int FC_E_Star::evalCPU()
@@ -288,13 +300,16 @@ namespace SpatialSEIR
      * Implement the full conditional distribution for R_Star
      *
      */    
-    FC_R_Star::FC_R_Star(CompartmentalModelMatrix *_R_star,
+    FC_R_Star::FC_R_Star(ModelContext *_context,
+                         CompartmentalModelMatrix *_R_star,
                          CompartmentalModelMatrix *_S_star,
                          CompartmentalModelMatrix *_I_star,
                          InitData *_A0,
                          double *_p_rs,
                          double *_p_ir)
     {
+
+        context = new ModelContext*;
         R_star = new CompartmentalModelMatrix*;
         S_star = new CompartmentalModelMatrix*;
         I_star = new CompartmentalModelMatrix*;
@@ -303,6 +318,7 @@ namespace SpatialSEIR
         p_ir = new double*;
         value = new double;
 
+       *context = _context;
         *R_star = _R_star;
         *S_star = _S_star;
         *I_star = _I_star;
@@ -320,6 +336,7 @@ namespace SpatialSEIR
         delete p_rs;
         delete p_ir;
         delete value;
+        delete context;
     }
 
     int FC_R_Star::evalCPU()
@@ -350,7 +367,8 @@ namespace SpatialSEIR
      */
 
 
-    FC_Beta::FC_Beta(CompartmentalModelMatrix *_E_star, 
+    FC_Beta::FC_Beta(ModelContext *_context,
+                     CompartmentalModelMatrix *_E_star, 
                      CompartmentalModelMatrix *_S_star, 
                      InitData *_A0,
                      CovariateMatrix *_X,
@@ -358,6 +376,8 @@ namespace SpatialSEIR
                      double *_beta, 
                      double *_rho)
     {
+
+        context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
         S_star = new CompartmentalModelMatrix*;
         A0 = new InitData*;
@@ -367,6 +387,7 @@ namespace SpatialSEIR
         rho = new double*;
         value = new double;
 
+        *context = _context;
         *E_star = _E_star;
         *S_star = _S_star;
         *A0 = _A0;
@@ -387,6 +408,7 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete context;
     }
     
     int FC_Beta::evalCPU()
@@ -415,17 +437,21 @@ namespace SpatialSEIR
      * probabilities. 
      *
      */
-    FC_P_RS::FC_P_RS(CompartmentalModelMatrix *_S_star, 
+    FC_P_RS::FC_P_RS(ModelContext *_context,
+                     CompartmentalModelMatrix *_S_star, 
                      CompartmentalModelMatrix *_R_star,
                      InitData *_A0,
                      double *_p_rs)
     {
+
+        context = new ModelContext*;
         S_star = new CompartmentalModelMatrix*;
         R_star = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_rs = new double*;
         value = new double;
 
+        *context = _context;
         *S_star = _S_star;
         *R_star = _R_star;
         *A0 = _A0;
@@ -439,6 +465,7 @@ namespace SpatialSEIR
         delete A0;
         delete p_rs;
         delete value;
+        delete context;
     }
     int FC_P_RS::evalCPU()
     {
@@ -462,7 +489,8 @@ namespace SpatialSEIR
     }
 
 
-    FC_Rho::FC_Rho(CompartmentalModelMatrix *_S_star,
+    FC_Rho::FC_Rho(ModelContext *_context,
+                   CompartmentalModelMatrix *_S_star,
                    CompartmentalModelMatrix *_E_star,
                    InitData *_A0,
                    CovariateMatrix *_X,
@@ -470,6 +498,7 @@ namespace SpatialSEIR
                    double *_beta,
                    double *_rho)
     {
+        context = new ModelContext*;
         S_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
         A0 = new InitData*;
@@ -479,6 +508,7 @@ namespace SpatialSEIR
         rho = new double*;
         value = new double;
 
+        *context = _context;
         *S_star = _S_star;
         *E_star = _E_star;
         *A0 = _A0;
@@ -498,6 +528,7 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete context;
     }
     int FC_Rho::evalCPU()
     {
@@ -523,17 +554,21 @@ namespace SpatialSEIR
 
 
 
-    FC_P_EI::FC_P_EI(CompartmentalModelMatrix *_I_star,
+    FC_P_EI::FC_P_EI(ModelContext *_context,
+                     CompartmentalModelMatrix *_I_star,
                      CompartmentalModelMatrix *_E_star,
                      InitData *_A0,
                      double *_p_ei)
     {
+
+        context = new ModelContext*;
         I_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_ei = new double*;
         value = new double;
 
+        *context = _context;
         *I_star = _I_star;
         *E_star = _E_star;
         *A0 = _A0;
@@ -548,6 +583,7 @@ namespace SpatialSEIR
         delete A0;
         delete p_ei;
         delete value;
+        delete context;
     }
     int FC_P_EI::evalCPU()
     {
@@ -572,17 +608,21 @@ namespace SpatialSEIR
 
 
 
-    FC_P_IR::FC_P_IR(CompartmentalModelMatrix *_I_star,
+    FC_P_IR::FC_P_IR(ModelContext *_context,
+                     CompartmentalModelMatrix *_I_star,
                      CompartmentalModelMatrix *_R_star,
                      InitData *_A0,
                      double *_p_ir)
     {
+
+        context = new ModelContext*;
         I_star = new CompartmentalModelMatrix*;
         R_star = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_ir = new double*;
         value = new double;
 
+        *context = _context;
         *I_star = _I_star;
         *R_star = _R_star;
         *A0 = _A0;
@@ -597,6 +637,7 @@ namespace SpatialSEIR
         delete A0;
         delete p_ir;
         delete value;
+        delete context;
     }
     int FC_P_IR::evalCPU()
     {

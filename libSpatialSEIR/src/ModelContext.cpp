@@ -1,6 +1,11 @@
 #ifndef MODEL_CONTEXT_INC
 #define MODEL_CONTEXT_INC
-#include<ModelContext.hpp>
+#include "ModelContext.hpp"
+#endif
+
+#ifndef FULL_CONDITIONAL_INC
+#define FULL_CONDITIONAL_INC
+#include "FullConditional.hpp"
 #endif
 
 #ifndef BLAS_INC
@@ -45,8 +50,12 @@ namespace SpatialSEIR
         int neta = (*(X -> nrow_z));
         beta = new double[nbeta];
         eta = new double[neta];
+
+        // Create empty compartment for calculation.
         tmpContainer = new CompartmentalModelMatrix();
         tmpContainer -> createEmptyCompartment((S -> nrow), (S -> ncol));
+
+        // Initialize beta/eta
         int i;
         for (i = 0; i < nbeta; i++)
         {
@@ -56,13 +65,54 @@ namespace SpatialSEIR
         {
             eta[i] = 0.0;
         }
+
+        // Allocate space for the transition probabilities
+
         p_se = new double[*(S -> nrow)*(*(S->ncol))];
         p_ei = new double[*(S -> nrow)*(*(S->ncol))];
         p_ir = new double[*(S -> nrow)*(*(S->ncol))];
         p_rs = new double[*(S -> nrow)*(*(S->ncol))];
 
+        // Wire up the full conditional classes
+        S_star_fc = new FC_S_Star(this,
+                                  &*S_star,
+                                  &*E_star,
+                                  &*R_star,
+                                  &*A0,
+                                  &*X,
+                                  &*p_se,
+                                  &*p_rs,
+                                  &*beta,
+                                  &*rho);
 
-
+        E_star_fc = new FC_E_Star(this,
+                                  S_star,
+                                  E_star,
+                                  I_star,
+                                  X,A0,p_se,p_rs,
+                                  rho,beta);
+        R_star_fc = new FC_R_Star(this,
+                                  R_star,
+                                  S_star,
+                                  I_star,
+                                  A0,p_rs,p_ir);
+        beta_fc = new FC_Beta(this,
+                              E_star,
+                              S_star,
+                              A0,X,p_se,beta,rho);
+        rho_fc = new FC_Rho(this,
+                            S_star,
+                            E_star,
+                            A0,X,p_se,beta,rho);
+        p_rs_fc = new FC_P_RS(this,S_star,R_star,A0,p_rs);
+        p_ei_fc = new FC_P_EI(this,
+                              I_star,
+                              E_star,
+                              A0,p_ei);
+        p_ir_fc =  new FC_P_IR(this,
+                             I_star,
+                             R_star,
+                             A0,p_ir);
     }
 
     // Method: calculateS
