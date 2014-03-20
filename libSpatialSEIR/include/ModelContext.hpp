@@ -56,9 +56,13 @@ namespace SpatialSEIR
             ModelContext();
             ~ModelContext(); 
 
-            // Allocate N, beta, and eta vectors. 
+            // Allocate numeric vectors owned by ModelContext.. 
             // Can only be called once A0 is initialized.
+            // Option to initialize rho, p_se (via beta), p_ei, p_ir, p_rs with external data. 
             void populate();
+            void populate(double* rho, double* beta, double* p_ei, 
+                          double* p_ir, double* p_rs);
+
 
             // Method: calculateS
             // Accesses: A0, S_star, E_star

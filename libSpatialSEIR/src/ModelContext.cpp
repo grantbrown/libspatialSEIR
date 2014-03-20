@@ -69,9 +69,10 @@ namespace SpatialSEIR
         // Allocate space for the transition probabilities
 
         p_se = new double[*(S -> nrow)*(*(S->ncol))];
-        p_ei = new double[*(S -> nrow)*(*(S->ncol))];
-        p_ir = new double[*(S -> nrow)*(*(S->ncol))];
-        p_rs = new double[*(S -> nrow)*(*(S->ncol))];
+        p_ei = new double;
+        p_ir = new double;
+        p_rs = new double[*(S->ncol)];
+        rho = new double;
 
         // Wire up the full conditional classes
         S_star_fc = new FC_S_Star(this,
@@ -114,6 +115,26 @@ namespace SpatialSEIR
                              R_star,
                              A0,p_ir);
     }
+    void ModelContext::populate(double* rho_, double* beta_, double* p_ei_, double* p_ir_, double* p_rs_)
+    {
+        std::cout << "Populating!!\n";
+        this -> populate();
+        *rho = *rho_;
+        *p_ei = *p_ei_;
+        *p_ir = *p_ir_;
+
+        int i;
+        for (i = 0; i < (*(X -> ncol_x) + (*(X -> ncol_z))); i++)
+        {
+            beta[i] = beta_[i];
+        }
+        for (i = 0; i < *(S -> ncol); i++)
+        {
+            p_rs[i] = p_rs_[i];
+        }
+        
+    }
+
 
     // Method: calculateS
     // Accesses: A0, S_star, E_star
@@ -273,8 +294,8 @@ namespace SpatialSEIR
         delete[] beta;
         delete[] eta;
         delete[] p_se;
-        delete[] p_ei;
-        delete[] p_ir;
+        delete p_ei;
+        delete p_ir;
         delete[] p_rs;
         delete rho;
     }

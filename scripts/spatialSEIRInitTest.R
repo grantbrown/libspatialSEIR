@@ -48,22 +48,27 @@ Istar = sim_results$I_star
 Rstar = sim_results$R_star
 DM = distmatlist$dcm
 
-res = spatialSEIRInit(compMatDim,
-                      xDim,
-                      zDim,
-                      S0,
-                      E0,
-                      I0,
-                      R0,
-                      Sstar0,
-                      Estar0,
-                      Istar0,
-                      Rstar0,
-                      Sstar,
-                      Estar,
-                      Istar,
-                      Rstar,
-                      X,
-                      Z, 
-                      DM)
+rho = 0.6
+
+p_ei = 0.8
+p_ir = 0.6
+p_rs = c(rep(0.1, 8), rep(0.1,4), rep(0.1,8), rep(0.4,4), rep(0.5, 3), 
+         rep(0.9,3), rep(0.1, 4), rep(0.05, 18))
+
+
+beta = c(covariates$true_fixed_beta, covariates$true_time_varying_beta)
+
+
+res = spatialSEIRInit(compMatDim,xDim,
+                      zDim,S0,
+                      E0,I0,
+                      R0,Sstar0,
+                      Estar0,Istar0,
+                      Rstar0,Sstar,
+                      Estar,Istar,
+                      Rstar,X,
+                      Z,DM,
+                      rho,beta,
+                      p_ei,p_ir,
+                      p_rs)
 

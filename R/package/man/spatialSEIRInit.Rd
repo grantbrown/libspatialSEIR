@@ -10,7 +10,9 @@
     final library wrapper will be provided when the C++ library actually works. 
 }
 \usage{
-    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_)
+    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
+                    Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,beta_,
+                    p_ei_,p_ir_,p_rs_)
 }
 \arguments{
     \item{compMatDim}{
@@ -67,7 +69,21 @@
     \item{DistMat_}{
         Raw distance matrix. 
     }
-
+    \item{rho_}{
+        Initial value for spatial dependence parameter.
+    }
+    \item{beta_}{
+        Initial vector for exposure probability
+    }
+    \item{p_ei_}{
+        Initial value for exposed to infectious probability.
+    }
+    \item{p_ir_}{
+        Initial value for infectious to recovered probability.
+    }
+    \item{p_rs_}{
+        Initial vector for recovered to susceptible probability.
+    }
 }
 \author{
     Grant Brown
