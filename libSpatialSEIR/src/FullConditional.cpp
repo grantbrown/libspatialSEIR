@@ -6,7 +6,7 @@
 #include<vector>
 #endif
 #include<cblas.h>
-
+#include<cmath>
 #ifndef FULL_CONDITIONAL_INC
 #define FULL_CONDITIONAL_INC
 #include <FullConditional.hpp>
@@ -146,8 +146,8 @@ namespace SpatialSEIR
 
     FC_S_Star::FC_S_Star(ModelContext * _context,
                          CompartmentalModelMatrix *_S_star, 
-                         CompartmentalModelMatrix *_E_star, 
-                         CompartmentalModelMatrix *_R_star, 
+                         CompartmentalModelMatrix *_S, 
+                         CompartmentalModelMatrix *_R, 
                          InitData *_A0,
                          CovariateMatrix *_X, 
                          double *_p_se,
@@ -157,8 +157,8 @@ namespace SpatialSEIR
     {
        context = new ModelContext*;
        S_star = new CompartmentalModelMatrix*;
-       E_star = new CompartmentalModelMatrix*;
-       R_star = new CompartmentalModelMatrix*;
+       S = new CompartmentalModelMatrix*;
+       R = new CompartmentalModelMatrix*;
        A0 = new InitData*;
        X = new CovariateMatrix*;
        p_se = new double*;
@@ -168,8 +168,8 @@ namespace SpatialSEIR
        value = new double;
        *context = _context;
        *S_star = _S_star;
-       *E_star = _E_star;
-       *R_star = _R_star;
+       *S = _S;
+       *R = _R;
        *A0 = _A0;
        *X = _X;
        *p_se = _p_se;
@@ -181,8 +181,8 @@ namespace SpatialSEIR
     FC_S_Star::~FC_S_Star()
     {
         delete S_star;
-        delete E_star;
-        delete R_star;
+        delete S;
+        delete R;
         delete A0;
         delete X;
         delete p_se;
@@ -193,15 +193,36 @@ namespace SpatialSEIR
         delete context;
     }
 
+    // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        double term1; double term2; double term3;
+        for (j = 0; j < nTpts; j++)     
+        {
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx = i + j*nTpts;
+                tmp = ((*S_star) -> data)[compIdx];
+                if (tmp < 0)
+                {
+                    *value = -std::log(0.0);
+                    return(-1);
+                }
+                term1 += std::log((*p_rs)[j])*tmp; 
+                term2 += std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp);
+                term3 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]) ;
+            }
+        } 
+        *value = term1 + term2 + term3;
+        return(0);
     }
     int FC_S_Star::evalOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return-1;
     }
     int FC_S_Star::sampleCPU()
     {

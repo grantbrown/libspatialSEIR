@@ -76,8 +76,8 @@ namespace SpatialSEIR
         // Wire up the full conditional classes
         S_star_fc = new FC_S_Star(this,
                                   &*S_star,
-                                  &*E_star,
-                                  &*R_star,
+                                  &*S,
+                                  &*R,
                                   &*A0,
                                   &*X,
                                   &*p_se,

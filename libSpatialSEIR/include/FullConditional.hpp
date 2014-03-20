@@ -22,11 +22,6 @@
 #include "CovariateMatrix.hpp"
 #endif
 
-#ifndef MODEL_CONTEXT_INC
-#define MODEL_CONTEXT_INC
-#include "ModelContext.hpp"
-#endif
-
 
 
 
@@ -93,8 +88,8 @@ namespace SpatialSEIR
         public:
             FC_S_Star(ModelContext * _context,
                       CompartmentalModelMatrix *_S_star, 
-                      CompartmentalModelMatrix *_E_star, 
-                      CompartmentalModelMatrix *_R_star,
+                      CompartmentalModelMatrix *_S, 
+                      CompartmentalModelMatrix *_R,
                       InitData *_A0,
                       CovariateMatrix *_X,
                       double *_p_se,
@@ -109,8 +104,8 @@ namespace SpatialSEIR
 
             ModelContext **context;
             CompartmentalModelMatrix **S_star; 
-            CompartmentalModelMatrix **E_star; 
-            CompartmentalModelMatrix **R_star;
+            CompartmentalModelMatrix **S; 
+            CompartmentalModelMatrix **R;
             InitData **A0;
             CovariateMatrix **X;
             double **p_se;
