@@ -115,9 +115,9 @@ namespace SpatialSEIR
                              R_star,
                              A0,p_ir);
     }
-    void ModelContext::populate(double* rho_, double* beta_, double* p_ei_, double* p_ir_, double* p_rs_)
+    void ModelContext::populate(double* rho_, double* beta_, double* p_ei_, 
+                                double* p_ir_, double* p_rs_, int* N_)
     {
-        std::cout << "Populating!!\n";
         this -> populate();
         *rho = *rho_;
         *p_ei = *p_ei_;
@@ -132,9 +132,11 @@ namespace SpatialSEIR
         {
             p_rs[i] = p_rs_[i];
         }
-        
+        for (i = 0; i< *(S -> nrow); i++)
+        {
+            N[i] = N_[i];
+        } 
     }
-
 
     // Method: calculateS
     // Accesses: A0, S_star, E_star
@@ -236,6 +238,7 @@ namespace SpatialSEIR
         int i; int j;
         //Update Eta
         this -> X -> calculate_eta_CPU(eta, beta);
+
         //Exponentiate
         int nrowz = *(X->nrow_z);
         for (i = 0; i < nrowz; i++)
@@ -250,10 +253,11 @@ namespace SpatialSEIR
         {
             for (i = 0; i < nLoc; i++) 
             {
-                scratch[i + j*nLoc] = // Check to see if just casting will work here.  
-                    ((I -> data)[i + j*nLoc] * exp(eta[i + j*nLoc]))/N[j];
+                scratch[i + j*nLoc] = 
+                    ((I -> data)[i + j*nLoc] * (eta[i + j*nLoc]))/N[i];
             }
         }
+
         // Calculate rho*sqrt(idmat)
         int outsize = *(scaledDistMat -> numLocations)*(*(I -> ncol));
         SpatialSEIR::matMult(this -> p_se, 
@@ -264,11 +268,6 @@ namespace SpatialSEIR
                 *(I -> nrow),
                 *(I -> ncol),false,false);
          
-        for (i = 0; i < outsize; i++)
-        {
-            p_se[i] = 1-std::exp(-scratch[i] - p_se[i]);
-        }
-
         delete[] scratch;            
     }
     void ModelContext::calculateP_SE_OCL()

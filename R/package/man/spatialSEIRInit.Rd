@@ -12,7 +12,7 @@
 \usage{
     spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
                     Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,beta_,
-                    p_ei_,p_ir_,p_rs_)
+                    p_ei_,p_ir_,p_rs_,N_)
 }
 \arguments{
     \item{compMatDim}{
@@ -84,6 +84,10 @@
     \item{p_rs_}{
         Initial vector for recovered to susceptible probability.
     }
+    \item{N_}{
+        Population sizes at each spatial location (currently fixed)
+    }
+
 }
 \author{
     Grant Brown

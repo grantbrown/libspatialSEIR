@@ -60,15 +60,13 @@ namespace SpatialSEIR
             {
                for (i = 0; i < (*ncol_x); i++) 
                {
-                   eta[j] += X[j%(*nrow_x) + i*(*ncol_x)]*beta[i];
+                   eta[j] += X[j%(*nrow_x) + i*(*nrow_x)]*beta[i];
                }
                for (i = 0; i < (*ncol_z); i++)
                {
-                   eta[j] += Z[j%(*nrow_x) + i*(*ncol_z)]*beta[i + (*ncol_x)];
+                   eta[j] += Z[j + i*(*nrow_z)]*beta[i + (*ncol_x)];
                }
             }
-
-
         }
         catch(int e)
         {
@@ -85,6 +83,7 @@ namespace SpatialSEIR
         try
         {
             int i; int j;
+
             // Initialize eta 
             for (i = 0; i < (*nrow_z); i++)
             {
@@ -98,7 +97,7 @@ namespace SpatialSEIR
                }
                for (i = 0; i < (*ncol_z); i++)
                {
-                   eta[j] += Z[j%(*nrow_x) + i*(*ncol_z)]*gamma[i];
+                   eta[j] += Z[j + i*(*nrow_z)]*gamma[i];
                }
             }
         }

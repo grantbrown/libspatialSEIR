@@ -38,7 +38,6 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-
     class FC_S_Star;
     class FC_E_Star;
     class FC_R_Star;
@@ -61,7 +60,7 @@ namespace SpatialSEIR
             // Option to initialize rho, p_se (via beta), p_ei, p_ir, p_rs with external data. 
             void populate();
             void populate(double* rho, double* beta, double* p_ei, 
-                          double* p_ir, double* p_rs);
+                          double* p_ir, double* p_rs, int* N);
 
 
             // Method: calculateS
