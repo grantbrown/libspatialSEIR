@@ -196,6 +196,7 @@ namespace SpatialSEIR
     // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
+        *value = 0.0;
         int i, j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
