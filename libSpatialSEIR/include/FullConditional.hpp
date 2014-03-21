@@ -120,13 +120,13 @@ namespace SpatialSEIR
     {
         public:
             FC_E_Star(ModelContext *_context,
-                      CompartmentalModelMatrix *_S_star, 
                       CompartmentalModelMatrix *_E_star, 
-                      CompartmentalModelMatrix *_I_star, 
+                      CompartmentalModelMatrix *_E, 
+                      CompartmentalModelMatrix *_S, 
                       CovariateMatrix *_X,
                       InitData *_A0,
                       double *_p_se,
-                      double *_p_rs,
+                      double *_p_ei,
                       double *_rho,
                       double *_beta);
             ~FC_E_Star();
@@ -137,13 +137,13 @@ namespace SpatialSEIR
             int sampleOCL();
 
             ModelContext **context;
-            CompartmentalModelMatrix **S_star; 
             CompartmentalModelMatrix **E_star; 
-            CompartmentalModelMatrix **I_star; 
+            CompartmentalModelMatrix **E; 
+            CompartmentalModelMatrix **S; 
             CovariateMatrix **X;
             InitData **A0;
             double **p_se;
-            double **p_rs;
+            double **p_ei;
             double **rho;
             double **beta;
             double* value;

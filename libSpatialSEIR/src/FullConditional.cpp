@@ -247,37 +247,37 @@ namespace SpatialSEIR
 
     
     FC_E_Star::FC_E_Star(ModelContext *_context,
-                         CompartmentalModelMatrix *_S_star,
                          CompartmentalModelMatrix *_E_star,
-                         CompartmentalModelMatrix *_I_star,
+                         CompartmentalModelMatrix *_E,  
+                         CompartmentalModelMatrix *_S,
                          CovariateMatrix *_X,
                          InitData *_A0,
                          double *_p_se,
-                         double *_p_rs,
+                         double *_p_ei,
                          double *_rho,
                          double *_beta) 
     {
 
         context = new ModelContext*;
-        S_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
-        I_star = new CompartmentalModelMatrix*;
+        E = new CompartmentalModelMatrix*;
+        S = new CompartmentalModelMatrix*;
         X = new CovariateMatrix*;
         A0 = new InitData*;
         p_se = new double*;
-        p_rs = new double*;
+        p_ei = new double*;
         rho = new double*;
         beta = new double*;
         value = new double;
         
        *context = _context;
-        *S_star = _S_star;
         *E_star = _E_star;
-        *I_star = _I_star;
+        *E = _E;
+        *S = _S;
         *X = _X;
         *A0 = _A0;
         *p_se = _p_se;
-        *p_rs = _p_rs;
+        *p_ei = _p_ei;
         *rho = _rho;
         *beta = _beta;
         *value = -1.0;
@@ -285,13 +285,13 @@ namespace SpatialSEIR
 
     FC_E_Star::~FC_E_Star()
     {
-        delete S_star;
         delete E_star;
-        delete I_star;
+        delete E;
+        delete S;
         delete X;
         delete A0;
         delete p_se;
-        delete p_rs;
+        delete p_ei;
         delete rho;
         delete beta;
         delete value;
@@ -300,8 +300,31 @@ namespace SpatialSEIR
 
     int FC_E_Star::evalCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        *value = 0.0;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        int S_star1sum = 0;
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        for (j = 0; j < nTpts; j++)     
+        {
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx = i + j*nLoc;
+                tmp = ((*E_star) -> data)[compIdx];
+                if (tmp < 0)
+                {
+                    *value = -std::log(0.0);
+                    return(-1);
+                }
+                term1 += std::log((*p_se)[compIdx])*tmp; 
+                term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
+                term3 += std::log(1-(**p_ei))*(((*E) -> data)[compIdx]) ;
+            }
+        } 
+        *value = term1 + term2 + term3;
+        return(0);
     }
     int FC_E_Star::evalOCL()
     {
