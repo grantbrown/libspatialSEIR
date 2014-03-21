@@ -200,12 +200,14 @@ namespace SpatialSEIR
         int i, j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
-        double term1; double term2; double term3;
+        int S_star1sum = 0;
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
         {
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx = i + j*nTpts;
+                compIdx = i + j*nLoc;
                 tmp = ((*S_star) -> data)[compIdx];
                 if (tmp < 0)
                 {

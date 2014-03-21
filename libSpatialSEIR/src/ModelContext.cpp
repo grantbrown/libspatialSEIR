@@ -235,7 +235,7 @@ namespace SpatialSEIR
     // Updates: p_se
     void ModelContext::calculateP_SE_CPU()
     {
-        int i; int j;
+        int i, j, index;
         //Update Eta
         this -> X -> calculate_eta_CPU(eta, beta);
 
@@ -253,13 +253,14 @@ namespace SpatialSEIR
         {
             for (i = 0; i < nLoc; i++) 
             {
-                scratch[i + j*nLoc] = 
-                    ((I -> data)[i + j*nLoc] * (eta[i + j*nLoc]))/N[i];
+                index = i + j*nLoc;
+                p_se[index] = 0.0;
+                scratch[index] = 
+                   ((I -> data)[index] * (eta[index]))/N[i];
             }
         }
 
         // Calculate rho*sqrt(idmat)
-        int outsize = *(scaledDistMat -> numLocations)*(*(I -> ncol));
         SpatialSEIR::matMult(this -> p_se, 
                 scaledDistMat -> data, 
                 scratch, 
@@ -267,7 +268,17 @@ namespace SpatialSEIR
                 *(scaledDistMat -> numLocations),
                 *(I -> nrow),
                 *(I -> ncol),false,false);
-         
+        for (j = 0; j < nCol; j++)
+        {
+            for (i = 0; i < nLoc; i++) 
+            {
+                index = i + j*nLoc;
+                p_se[index] = 1-exp(-scratch[index] - *rho*p_se[index]);
+            }
+        }
+
+
+        
         delete[] scratch;            
     }
     void ModelContext::calculateP_SE_OCL()
