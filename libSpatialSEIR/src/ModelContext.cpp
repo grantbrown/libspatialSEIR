@@ -93,8 +93,8 @@ namespace SpatialSEIR
                                   rho,beta);
         R_star_fc = new FC_R_Star(this,
                                   R_star,
-                                  S_star,
-                                  I_star,
+                                  R,
+                                  I,
                                   A0,p_rs,p_ir);
         beta_fc = new FC_Beta(this,
                               E_star,

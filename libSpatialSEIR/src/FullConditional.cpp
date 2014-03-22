@@ -349,8 +349,8 @@ namespace SpatialSEIR
      */    
     FC_R_Star::FC_R_Star(ModelContext *_context,
                          CompartmentalModelMatrix *_R_star,
-                         CompartmentalModelMatrix *_S_star,
-                         CompartmentalModelMatrix *_I_star,
+                         CompartmentalModelMatrix *_R,
+                         CompartmentalModelMatrix *_I,
                          InitData *_A0,
                          double *_p_rs,
                          double *_p_ir)
@@ -358,8 +358,8 @@ namespace SpatialSEIR
 
         context = new ModelContext*;
         R_star = new CompartmentalModelMatrix*;
-        S_star = new CompartmentalModelMatrix*;
-        I_star = new CompartmentalModelMatrix*;
+        R = new CompartmentalModelMatrix*;
+        I = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_rs = new double*;
         p_ir = new double*;
@@ -367,8 +367,8 @@ namespace SpatialSEIR
 
        *context = _context;
         *R_star = _R_star;
-        *S_star = _S_star;
-        *I_star = _I_star;
+        *R = _R;
+        *I = _I;
         *A0 = _A0;
         *p_rs = _p_rs;
         *p_ir = _p_ir;
@@ -377,8 +377,8 @@ namespace SpatialSEIR
     FC_R_Star::~FC_R_Star()
     {
         delete R_star;
-        delete S_star;
-        delete I_star;
+        delete R;
+        delete I;
         delete A0;
         delete p_rs;
         delete p_ir;
@@ -388,7 +388,34 @@ namespace SpatialSEIR
 
     int FC_R_Star::evalCPU()
     {
-        //NOT IMPLEMENTED
+        *value = 0.0;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*I) -> ncol);
+        int S_star1sum = 0;
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        for (j = 0; j < nTpts; j++)     
+        {
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx = i + j*nLoc;
+                tmp = ((*R_star) -> data)[compIdx];
+                if (tmp < 0)
+                {
+                    *value = -std::log(0.0);
+                    return(-1);
+                }
+                term1 += std::log((**p_ir))*tmp; 
+                term2 += std::log(1-(**p_ir))*(((*I) -> data)[compIdx] - tmp);
+                term3 += std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]) ;
+
+
+            }
+        } 
+        *value = term1 + term2 + term3;
+        return(0);
+
         return -1;
     }
     int FC_R_Star::evalOCL()

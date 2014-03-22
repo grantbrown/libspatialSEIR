@@ -155,8 +155,8 @@ namespace SpatialSEIR
         public:
             FC_R_Star(ModelContext *_context,
                       CompartmentalModelMatrix *_R_star,
-                      CompartmentalModelMatrix *_S_star,
-                      CompartmentalModelMatrix *_I_star,
+                      CompartmentalModelMatrix *_R,
+                      CompartmentalModelMatrix *_I,
                       InitData *_A0,
                       double *_p_rs,
                       double *_p_ir);
@@ -169,8 +169,8 @@ namespace SpatialSEIR
 
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
-            CompartmentalModelMatrix **S_star;
-            CompartmentalModelMatrix **I_star;
+            CompartmentalModelMatrix **R;
+            CompartmentalModelMatrix **I;
             InitData **A0;
             double **p_rs;
             double **p_ir;
