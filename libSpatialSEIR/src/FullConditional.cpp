@@ -200,7 +200,6 @@ namespace SpatialSEIR
         int i, j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
-        int S_star1sum = 0;
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
@@ -304,7 +303,6 @@ namespace SpatialSEIR
         int i, j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
-        int S_star1sum = 0;
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
@@ -392,7 +390,6 @@ namespace SpatialSEIR
         int i, j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*I) -> ncol);
-        int S_star1sum = 0;
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
@@ -409,14 +406,10 @@ namespace SpatialSEIR
                 term1 += std::log((**p_ir))*tmp; 
                 term2 += std::log(1-(**p_ir))*(((*I) -> data)[compIdx] - tmp);
                 term3 += std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]) ;
-
-
             }
         } 
         *value = term1 + term2 + term3;
         return(0);
-
-        return -1;
     }
     int FC_R_Star::evalOCL()
     {
@@ -443,7 +436,7 @@ namespace SpatialSEIR
 
     FC_Beta::FC_Beta(ModelContext *_context,
                      CompartmentalModelMatrix *_E_star, 
-                     CompartmentalModelMatrix *_S_star, 
+                     CompartmentalModelMatrix *_S, 
                      InitData *_A0,
                      CovariateMatrix *_X,
                      double *_p_se, 
@@ -453,7 +446,7 @@ namespace SpatialSEIR
 
         context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
-        S_star = new CompartmentalModelMatrix*;
+        S = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         X = new CovariateMatrix*;
         p_se = new double*;
@@ -463,7 +456,7 @@ namespace SpatialSEIR
 
         *context = _context;
         *E_star = _E_star;
-        *S_star = _S_star;
+        *S = _S;
         *A0 = _A0;
         *X = _X;
         *p_se = _p_se;
@@ -475,7 +468,7 @@ namespace SpatialSEIR
     FC_Beta::~FC_Beta()
     {
         delete E_star;
-        delete S_star;
+        delete S;
         delete A0;
         delete X;
         delete p_se;
@@ -487,8 +480,33 @@ namespace SpatialSEIR
     
     int FC_Beta::evalCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        *value = 0.0;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        for (j = 0; j < nTpts; j++)     
+        {
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx = i + j*nLoc;
+                tmp = ((*E_star) -> data)[compIdx];
+                if (tmp < 0)
+                {
+                    *value = -std::log(0.0);
+                    return(-1);
+                }
+                term1 += std::log((*p_se)[compIdx])*tmp; 
+                term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
+            }
+        } 
+        for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
+        {
+            term3 += pow((*beta)[i],2)/10; // Generalize to allow different prior precisions. 
+        }
+        *value = term1 + term2 + term3;
+        return(0);
     }
     int FC_Beta::evalOCL()
     {

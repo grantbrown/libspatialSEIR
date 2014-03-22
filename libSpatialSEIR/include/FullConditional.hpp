@@ -183,7 +183,7 @@ namespace SpatialSEIR
         public:
             FC_Beta(ModelContext *_context,
                     CompartmentalModelMatrix *_E_star, 
-                    CompartmentalModelMatrix *_S_star, 
+                    CompartmentalModelMatrix *_S, 
                     InitData *_A0,
                     CovariateMatrix *_X,
                     double *_p_se, 
@@ -198,7 +198,7 @@ namespace SpatialSEIR
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
-            CompartmentalModelMatrix **S_star; 
+            CompartmentalModelMatrix **S; 
             InitData **A0;
             CovariateMatrix **X;
             double **p_se;
