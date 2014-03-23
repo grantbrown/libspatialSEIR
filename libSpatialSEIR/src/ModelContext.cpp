@@ -104,7 +104,7 @@ namespace SpatialSEIR
                             S_star,
                             E_star,
                             A0,X,p_se,beta,rho);
-        p_rs_fc = new FC_P_RS(this,S_star,R_star,A0,p_rs);
+        p_rs_fc = new FC_P_RS(this,S_star,R,A0,p_rs);
         p_ei_fc = new FC_P_EI(this,
                               I_star,
                               E_star,

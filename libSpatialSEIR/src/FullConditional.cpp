@@ -35,6 +35,11 @@ namespace SpatialSEIR
         return 0; 
     }
 
+    double dbeta(double x, double a, double b)
+    {
+        // Not Implemented
+        return(0.0);
+    }
 
 
     /*
@@ -531,21 +536,21 @@ namespace SpatialSEIR
      */
     FC_P_RS::FC_P_RS(ModelContext *_context,
                      CompartmentalModelMatrix *_S_star, 
-                     CompartmentalModelMatrix *_R_star,
+                     CompartmentalModelMatrix *_R,
                      InitData *_A0,
                      double *_p_rs)
     {
 
         context = new ModelContext*;
         S_star = new CompartmentalModelMatrix*;
-        R_star = new CompartmentalModelMatrix*;
+        R = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_rs = new double*;
         value = new double;
 
         *context = _context;
         *S_star = _S_star;
-        *R_star = _R_star;
+        *R = _R;
         *A0 = _A0;
         *p_rs = _p_rs;
         *value = -1.0;
@@ -553,7 +558,7 @@ namespace SpatialSEIR
     FC_P_RS::~FC_P_RS()
     {
         delete S_star;
-        delete R_star;
+        delete R;
         delete A0;
         delete p_rs;
         delete value;
@@ -561,7 +566,44 @@ namespace SpatialSEIR
     }
     int FC_P_RS::evalCPU()
     {
-        //NOT IMPLEMENTED
+        *value = 0.0;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*R) -> ncol);
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        int* s_star_i_sum = new int[nTpts];
+        int* r_star_i_diff = new int[nTpts];
+        for (j =0; j<nTpts; j++)
+        {
+            s_star_i_sum[j]=0.0;
+            r_star_i_diff[j]=0.0;
+        }
+
+
+        for (j = 0; j < nTpts; j++)     
+        {
+            for (i = 0; i < nLoc; i++)    
+            {
+               compIdx = i + j*nLoc;
+                tmp = ((*S_star) -> data)[compIdx];
+                if (tmp < 0)
+                {
+                    *value = -std::log(0.0);
+                    return(-1);
+                }
+                s_star_i_sum[j] += tmp; 
+                r_star_i_diff[j] += (((*R) -> data)[compIdx] - tmp);
+            }
+        } 
+        *value = 0;
+        for (j = 0; j < nTpts; j++)
+        {
+            *value += dbeta((*p_rs)[j],1.5 + s_star_i_sum[j], 1.5 + r_star_i_diff[j]);
+        }
+       
+        delete[] s_star_i_sum;
+        delete[] r_star_i_diff;
         return -1;
     }
     int FC_P_RS::evalOCL()

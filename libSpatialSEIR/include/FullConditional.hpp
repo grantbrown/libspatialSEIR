@@ -213,7 +213,7 @@ namespace SpatialSEIR
         public:
             FC_P_RS(ModelContext *_context,
                     CompartmentalModelMatrix *_S_star,
-                    CompartmentalModelMatrix *_R_star,
+                    CompartmentalModelMatrix *_R,
                     InitData *_A0,
                     double *_p_rs 
                     );
@@ -224,7 +224,7 @@ namespace SpatialSEIR
             int sampleOCL();
             ModelContext **context;
             CompartmentalModelMatrix **S_star;
-            CompartmentalModelMatrix **R_star;
+            CompartmentalModelMatrix **R;
             InitData **A0;
             double **p_rs;
             double* value;
