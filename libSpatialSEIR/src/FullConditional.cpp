@@ -497,11 +497,6 @@ namespace SpatialSEIR
             {
                 compIdx = i + j*nLoc;
                 tmp = ((*E_star) -> data)[compIdx];
-                if (tmp < 0)
-                {
-                    *value = -std::log(0.0);
-                    return(-1);
-                }
                 term1 += std::log((*p_se)[compIdx])*tmp; 
                 term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
             }
@@ -587,11 +582,6 @@ namespace SpatialSEIR
             {
                compIdx = i + j*nLoc;
                 tmp = ((*S_star) -> data)[compIdx];
-                if (tmp < 0)
-                {
-                    *value = -std::log(0.0);
-                    return(-1);
-                }
                 s_star_i_sum[j] += tmp; 
                 r_star_i_diff[j] += (((*R) -> data)[compIdx] - tmp);
             }
@@ -624,8 +614,8 @@ namespace SpatialSEIR
 
 
     FC_Rho::FC_Rho(ModelContext *_context,
-                   CompartmentalModelMatrix *_S_star,
                    CompartmentalModelMatrix *_E_star,
+                   CompartmentalModelMatrix *_S,
                    InitData *_A0,
                    CovariateMatrix *_X,
                    double *_p_se,
@@ -633,8 +623,8 @@ namespace SpatialSEIR
                    double *_rho)
     {
         context = new ModelContext*;
-        S_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
+        S = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         X = new CovariateMatrix*;
         p_se = new double*;
@@ -643,8 +633,8 @@ namespace SpatialSEIR
         value = new double;
 
         *context = _context;
-        *S_star = _S_star;
         *E_star = _E_star;
+        *S = _S;
         *A0 = _A0;
         *X = _X;
         *p_se = _p_se;
@@ -654,8 +644,8 @@ namespace SpatialSEIR
     }
     FC_Rho::~FC_Rho()
     {
-        delete S_star;
         delete E_star;
+        delete S;
         delete A0;
         delete X;
         delete p_se;
@@ -666,8 +656,26 @@ namespace SpatialSEIR
     }
     int FC_Rho::evalCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        *value = 0.0;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        for (j = 0; j < nTpts; j++)     
+        {
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx = i + j*nLoc;
+                tmp = ((*E_star) -> data)[compIdx];
+                term1 += std::log((*p_se)[compIdx])*tmp; 
+                term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
+            }
+        } 
+        term3 += (**rho >0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
+                                                        // Prior specification in this area needs work. 
+        *value = term1 + term2 + term3;
+        return(0);
     }
     int FC_Rho::evalOCL()
     {

@@ -235,8 +235,8 @@ namespace SpatialSEIR
     {
         public:
             FC_Rho(ModelContext *_context,
-                   CompartmentalModelMatrix *_S_star, 
                    CompartmentalModelMatrix *_E_star, 
+                   CompartmentalModelMatrix *_S, 
                    InitData *_A0,
                    CovariateMatrix *_X,
                    double *_p_se, 
@@ -249,8 +249,8 @@ namespace SpatialSEIR
             int sampleCPU();
             int sampleOCL();
             ModelContext **context;
-            CompartmentalModelMatrix **S_star; 
             CompartmentalModelMatrix **E_star; 
+            CompartmentalModelMatrix **S; 
             InitData **A0;
             CovariateMatrix **X;
             double **p_se;
