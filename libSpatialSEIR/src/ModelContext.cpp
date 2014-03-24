@@ -109,8 +109,8 @@ namespace SpatialSEIR
                               E,
                               A0,p_ei);
         p_ir_fc =  new FC_P_IR(this,
-                             I_star,
                              R_star,
+                             I,
                              A0,p_ir);
     }
     void ModelContext::populate(double* rho_, double* beta_, double* p_ei_, 

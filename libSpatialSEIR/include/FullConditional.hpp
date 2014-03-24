@@ -287,8 +287,8 @@ namespace SpatialSEIR
         
         public:
             FC_P_IR(ModelContext *_context,
-                    CompartmentalModelMatrix *_I_star, 
                     CompartmentalModelMatrix *_R_star,
+                    CompartmentalModelMatrix *_I, 
                     InitData *_A0,
                     double *_p_ir);
             ~FC_P_IR();
@@ -297,8 +297,8 @@ namespace SpatialSEIR
             int sampleCPU();
             int sampleOCL();
             ModelContext **context;
-            CompartmentalModelMatrix **I_star;
             CompartmentalModelMatrix **R_star;
+            CompartmentalModelMatrix **I;
             InitData **A0;
             double **p_ir;
             double* value;
