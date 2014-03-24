@@ -266,7 +266,7 @@ namespace SpatialSEIR
         public:
             FC_P_EI(ModelContext *_context,
                     CompartmentalModelMatrix *_I_star,
-                    CompartmentalModelMatrix *_E_star,
+                    CompartmentalModelMatrix *_E,
                     InitData *_A0,
                     double *_p_ei);
             int evalCPU();
@@ -276,7 +276,7 @@ namespace SpatialSEIR
             ~FC_P_EI();
             ModelContext** context;
             CompartmentalModelMatrix **I_star;
-            CompartmentalModelMatrix **E_star;
+            CompartmentalModelMatrix **E;
             InitData **A0;
             double **p_ei;
             double* value;

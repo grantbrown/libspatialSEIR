@@ -598,7 +598,7 @@ namespace SpatialSEIR
        
         delete[] s_star_i_sum;
         delete[] r_star_i_diff;
-        return -1;
+        return 0;
     }
     int FC_P_RS::evalOCL()
     {
@@ -702,21 +702,21 @@ namespace SpatialSEIR
 
     FC_P_EI::FC_P_EI(ModelContext *_context,
                      CompartmentalModelMatrix *_I_star,
-                     CompartmentalModelMatrix *_E_star,
+                     CompartmentalModelMatrix *_E,
                      InitData *_A0,
                      double *_p_ei)
     {
 
         context = new ModelContext*;
         I_star = new CompartmentalModelMatrix*;
-        E_star = new CompartmentalModelMatrix*;
+        E = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_ei = new double*;
         value = new double;
 
         *context = _context;
         *I_star = _I_star;
-        *E_star = _E_star;
+        *E = _E;
         *A0 = _A0;
         *p_ei = _p_ei;
         *value = -1.0;
@@ -725,7 +725,7 @@ namespace SpatialSEIR
     FC_P_EI::~FC_P_EI()
     {
         delete I_star;
-        delete E_star;
+        delete E;
         delete A0;
         delete p_ei;
         delete value;
@@ -733,8 +733,23 @@ namespace SpatialSEIR
     }
     int FC_P_EI::evalCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        // In progress
+        *value = 0.0;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*E) -> ncol);
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        int i_star_sum = 0;
+        int e_sum = 0;
+        for (j =0; j<(nLoc*nTpts); j++)
+        {
+            i_star_sum += ((*I_star)-> data)[j];
+            e_sum += ((*E)-> data)[j];
+        }
+
+        *value = dbeta(**p_ei, 1.5 + i_star_sum, 1.5 - i_star_sum + e_sum); 
+        return 0;
     }
     int FC_P_EI::evalOCL()
     {

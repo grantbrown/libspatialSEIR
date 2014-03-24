@@ -152,12 +152,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::Rcout << "Testing rho FC: \n";
     tmp = context -> rho_fc -> evalCPU();
     Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> rho_fc -> value) << "\n";
-
-
-
-
-
-
+    Rcpp::Rcout << "Testing p_ei FC: \n";
+    tmp = context -> p_ei_fc -> evalCPU();
+    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> p_ei_fc -> value) << "\n";
 
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
