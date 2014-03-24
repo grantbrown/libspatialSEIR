@@ -15,7 +15,6 @@
 
 #include<cmath>
 
-
 namespace SpatialSEIR
 {
     using std::cout;

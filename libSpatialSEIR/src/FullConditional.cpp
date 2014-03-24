@@ -7,6 +7,7 @@
 #endif
 #include<cblas.h>
 #include<cmath>
+
 #ifndef FULL_CONDITIONAL_INC
 #define FULL_CONDITIONAL_INC
 #include <FullConditional.hpp>
@@ -35,12 +36,15 @@ namespace SpatialSEIR
         return 0; 
     }
 
+    //Log scale
     double dbeta(double x, double a, double b)
     {
-        // Not Implemented
-        return(0.0);
+        double out = (a-1)*std::log(x) + 
+            (b-1)*std::log(1-x) + 
+            (lgamma(a+b)) - 
+            ((lgamma(a)) + (lgamma(b)));
+        return(out);
     }
-
 
     /*
      *
