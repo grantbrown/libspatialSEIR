@@ -7,6 +7,12 @@
 #endif
 #include<cblas.h>
 #include<cmath>
+#include<algorithm>
+
+#ifndef MODEL_CONTEXT_INC
+#define MODEL_CONTEXT_INC
+#include <ModelContext.hpp>
+#endif
 
 #ifndef FULL_CONDITIONAL_INC
 #define FULL_CONDITIONAL_INC
@@ -211,17 +217,20 @@ namespace SpatialSEIR
         int nTpts = *((*S) -> ncol);
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        compIdx = 0;
         for (j = 0; j < nTpts; j++)     
         {
+            compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx = i + j*nLoc;
+                compIdx += 1;
                 tmp = ((*S_star) -> data)[compIdx];
-                if (tmp < 0)
-                {
-                    *value = -std::log(0.0);
-                    return(-1);
-                }
+                // We're only getting non-negative values
+                //if (tmp < 0)
+                //{
+                //    *value = -std::log(0.0);
+                //    return(-1);
+                //}
                 term1 += std::log((*p_rs)[j])*tmp; 
                 term2 += std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp);
                 term3 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]) ;
@@ -237,8 +246,61 @@ namespace SpatialSEIR
     }
     int FC_S_Star::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        std::cout << "Sample:\n";
+        int i, j, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        double l,r,y,x,x0;
+        int lx;
+        double width = 10.0;
+        int k;
+        int found = 0;
+        (*context) -> calculateS_CPU();
+        (*context) -> calculateR_CPU();
+
+        // Copy S_star into the tmpContainer object for calculation
+        std::cout << "1\n";
+        std::copy((*S_star) -> data, ((*S_star) -> data) + nLoc*nTpts, &*((*context) -> tmpContainer -> data));
+        CompartmentalModelMatrix* Sstar = &*((*context) -> tmpContainer); 
+        CompartmentalModelMatrix* SstarOrig = *S_star;
+        std::cout << "2\n";
+
+   
+        for (j = 0; j < nTpts; j ++)
+        {
+            std::cout << "\n";
+            for (i = 0; i < nLoc; i++)
+            {
+                std::cout << i << "\n";
+                compIdx = i + j*nLoc;
+                x = ((*S_star) -> data)[compIdx];
+                this -> evalCPU();
+                y = (*value) - ((*context) -> random -> gamma());
+                l = 0.0;
+                r = l + width;
+                found = 0;
+                while (true)
+                {
+                    x0 = (((*context) -> random -> uniform()))*(r);
+                    ((*S_star) -> data)[compIdx] = std::floor(x0);
+                    (*context) -> calculateS_CPU(i,j);
+                    this -> evalCPU(); 
+                    if (y < *value)
+                    {
+                        found = 1;
+                        break;
+                    }
+                    lx = (x0 < x);
+                    r = (lx ? r : x0); 
+                }
+                if (found == 0)
+                {
+                    std::cout << "Iter x: " << x0 <<", f(x): " << *value << "(l,r) = (" << l << ", " << r << ")\n";
+                    return(-1);
+                }
+            }
+        }
+        return 0;
     }
     int FC_S_Star::sampleOCL()
     {

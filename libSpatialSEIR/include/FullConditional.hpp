@@ -31,6 +31,7 @@ namespace SpatialSEIR
     using std::endl;
 
     class ModelContext;
+
     int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB );
 
 

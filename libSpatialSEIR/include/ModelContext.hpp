@@ -72,6 +72,7 @@ namespace SpatialSEIR
             // Accesses: A0, S_star, E_star
             // Updates: S
             void calculateS_CPU();
+            void calculateS_CPU(int startLoc, int startTime);
             void calculateS_OCL();
 
             // Method: calculateE
@@ -99,6 +100,12 @@ namespace SpatialSEIR
                                                  CompartmentalModelMatrix *compStarAdd, 
                                                  CompartmentalModelMatrix *compStarSub,
                                                  int *compStar0Add, int *compStar0Sub);
+            void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, int *comp0,
+                                                 CompartmentalModelMatrix *compStarAdd, 
+                                                 CompartmentalModelMatrix *compStarSub,
+                                                 int *compStar0Add, int *compStar0Sub,
+                                                 int startLoc, int startTime);
+
             void calculateGenericCompartment_OCL(int *comp, int *comp0,
                                                  int *compStarAdd, int *compStarSub,
                                                  int *compStar0Add, int *compStar0Sub);

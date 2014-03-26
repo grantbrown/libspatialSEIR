@@ -147,6 +147,14 @@ namespace SpatialSEIR
                                     &*(this -> S_star), &*(this -> E_star),
                                     &*(this -> A0 -> S_star0), &*(this -> A0 -> E_star0));
     }
+    void ModelContext::calculateS_CPU(int startLoc, int startTime)
+    {
+        calculateGenericCompartment_CPU(&*(this -> S), &*(this -> A0 -> S0),
+                                    &*(this -> S_star), &*(this -> E_star),
+                                    &*(this -> A0 -> S_star0), &*(this -> A0 -> E_star0),
+                                    startLoc, startTime);
+    }
+
     void ModelContext::calculateS_OCL()
     {
         throw(-1);
@@ -222,6 +230,37 @@ namespace SpatialSEIR
         }
        
     }
+
+    void ModelContext::calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp,int *comp0, 
+                                                   CompartmentalModelMatrix *compStarAdd, 
+                                                   CompartmentalModelMatrix *compStarSub, 
+                                                   int *compStar0Add,int *compStar0Sub,
+                                                   int startLoc, int startTime)
+    {
+        int i;
+        int numLoc = *(A0 -> numLocations);
+        int numTpts = *(comp -> ncol);
+        int idx;
+
+        if (startTime == 0)
+        {
+            idx = startLoc;
+            (comp -> data)[idx] = ((comp0)[idx] + 
+                    (compStar0Add)[idx] - 
+                    (compStar0Sub)[idx]);
+        }
+
+        startTime = (startTime == 0 ? 1 : startTime);
+
+        for (i = startTime; i < numTpts; i++)
+        {
+            idx = startLoc + i*numLoc;
+            (comp -> data)[idx] = (comp -> data)[idx - numLoc] + 
+                      (compStarAdd -> data)[idx - numLoc] - 
+                      (compStarSub -> data)[idx - numLoc];
+        } 
+    }
+ 
     
     void ModelContext::calculateGenericCompartment_OCL(int *comp,int *comp0, 
                                                    int *compStarAdd, int *compStarSub, 
