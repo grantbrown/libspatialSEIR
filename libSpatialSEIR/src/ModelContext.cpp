@@ -14,6 +14,7 @@
 #endif
 
 #include<cmath>
+#include<ctime>
 
 namespace SpatialSEIR
 {
@@ -22,6 +23,7 @@ namespace SpatialSEIR
 
     ModelContext::ModelContext()
     {
+        random = new RandomNumberProvider(static_cast<unsigned int>(std::time(0)));
         S_star = new CompartmentalModelMatrix();
         E_star = new CompartmentalModelMatrix();
         I_star = new CompartmentalModelMatrix();
@@ -286,6 +288,7 @@ namespace SpatialSEIR
 
     ModelContext::~ModelContext()
     {
+        delete random;
         delete S_star;
         delete E_star;
         delete I_star;

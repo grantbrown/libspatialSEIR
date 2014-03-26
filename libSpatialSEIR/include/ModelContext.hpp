@@ -32,6 +32,11 @@
 #include "DistanceMatrix.hpp"
 #endif
 
+#ifndef RANDOM_NUMBER_PROVIDER_INC
+#define RANDOM_NUMBER_PROVIDER_INC
+#include <RandomNumberProvider.hpp>
+#endif
+
 
 namespace SpatialSEIR
 {
@@ -104,7 +109,8 @@ namespace SpatialSEIR
             void calculateP_SE_CPU();
             void calculateP_SE_OCL();
         
-            //Logic provider classes
+            //Logic provider and utility classes
+            RandomNumberProvider *random;
             OCLProvider *oclProvider; 
             FC_S_Star *S_star_fc;
             FC_E_Star *E_star_fc;
