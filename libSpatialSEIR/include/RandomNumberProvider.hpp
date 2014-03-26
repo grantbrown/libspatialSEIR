@@ -17,26 +17,23 @@
 
 #include<boost/random/mersenne_twister.hpp>
 #include<boost/random/uniform_real.hpp>
-#include <boost/random/gamma_distribution.hpp>
+#include<boost/random/gamma_distribution.hpp>
 
 
 namespace SpatialSEIR
 {
-    class RandomNumberProvider()
+    class RandomNumberProvider
     {
+        boost::random::mt19937 generator;
+        boost::random::uniform_real_distribution<> unidist;
+        boost::random::gamma_distribution<> gammadist;
         public:
             //Methods
-            RandomNumberProvider(int seed);
+            RandomNumberProvider(unsigned int seed);
             double uniform();   
             double* uniform(int n);
             double gamma();
             double* gamma(int n);
             ~RandomNumberProvider();
-
-
-            //Attributes
-            boost::random::mt19337 generator;
-            boost::random::uniform_real_distribution<> unidist;
-            boost::random::gamma_distribution<> gammadist;
     };
 }
