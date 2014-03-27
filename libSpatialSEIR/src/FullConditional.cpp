@@ -259,19 +259,16 @@ namespace SpatialSEIR
         (*context) -> calculateR_CPU();
 
         // Copy S_star into the tmpContainer object for calculation
-        std::cout << "1\n";
         std::copy((*S_star) -> data, ((*S_star) -> data) + nLoc*nTpts, &*((*context) -> tmpContainer -> data));
         CompartmentalModelMatrix* Sstar = &*((*context) -> tmpContainer); 
         CompartmentalModelMatrix* SstarOrig = *S_star;
-        std::cout << "2\n";
 
    
         for (j = 0; j < nTpts; j ++)
         {
-            std::cout << "\n";
+            std::cout << j << "\n";
             for (i = 0; i < nLoc; i++)
             {
-                std::cout << i << "\n";
                 compIdx = i + j*nLoc;
                 x = ((*S_star) -> data)[compIdx];
                 this -> evalCPU();
@@ -279,24 +276,13 @@ namespace SpatialSEIR
                 l = 0.0;
                 r = l + width;
                 found = 0;
-                while (true)
+                while (y >= *value)
                 {
                     x0 = (((*context) -> random -> uniform()))*(r);
                     ((*S_star) -> data)[compIdx] = std::floor(x0);
                     (*context) -> calculateS_CPU(i,j);
                     this -> evalCPU(); 
-                    if (y < *value)
-                    {
-                        found = 1;
-                        break;
-                    }
-                    lx = (x0 < x);
-                    r = (lx ? r : x0); 
-                }
-                if (found == 0)
-                {
-                    std::cout << "Iter x: " << x0 <<", f(x): " << *value << "(l,r) = (" << l << ", " << r << ")\n";
-                    return(-1);
+                    r = (x0 < x ? r : x0); 
                 }
             }
         }
