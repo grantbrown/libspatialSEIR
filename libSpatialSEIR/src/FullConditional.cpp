@@ -325,19 +325,20 @@ namespace SpatialSEIR
         for (j = 0; j < nTpts; j ++)
         {
             std::cout << j << "\n";
+            compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
-                compIdx = i + j*nLoc;
+                compIdx++;
                 x = ((*S_star) -> data)[compIdx];
                 this -> evalCPU(i,j,cachedValues);
                 y = (*value) - ((*context) -> random -> gamma());
                 l = 0.0;
                 r = l + width;
-                found = 0;
+
                 while (y >= *value)
                 {
-                    x0 = (((*context) -> random -> uniform()))*(r);
-                    ((*S_star) -> data)[compIdx] = std::floor(x0);
+                    x0 = std::floor(((*context) -> random -> uniform())*(r));
+                    ((*S_star) -> data)[compIdx] = x0;
                     (*context) -> calculateS_CPU(i,j);
                     this -> evalCPU(i,j,cachedValues);
                     r = (x0 < x ? r : x0); 
