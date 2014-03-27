@@ -134,7 +134,9 @@ namespace SpatialSEIR
                       double *_beta);
             ~FC_E_Star();
 
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
@@ -165,7 +167,9 @@ namespace SpatialSEIR
                       double *_p_ir);
             ~FC_R_Star();
 
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
@@ -194,7 +198,9 @@ namespace SpatialSEIR
                     double *_rho); 
             ~FC_Beta();
 
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
@@ -221,7 +227,9 @@ namespace SpatialSEIR
                     double *_p_rs 
                     );
             ~FC_P_RS();
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
@@ -247,7 +255,9 @@ namespace SpatialSEIR
                    double *_rho
                    );
             ~FC_Rho();
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
@@ -272,7 +282,9 @@ namespace SpatialSEIR
                     CompartmentalModelMatrix *_E,
                     InitData *_A0,
                     double *_p_ei);
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
@@ -295,7 +307,9 @@ namespace SpatialSEIR
                     InitData *_A0,
                     double *_p_ir);
             ~FC_P_IR();
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
