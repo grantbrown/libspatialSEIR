@@ -208,6 +208,28 @@ namespace SpatialSEIR
         delete context;
     }
 
+    // Cache the components of the FC_S_Star calculation in cachedValues
+    int FC_S_Star::cacheEvalCalculation(double* cachedValues)
+    {
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+    
+        compIdx = 0;
+        for (j = 0; j < nTpts; j++)     
+        {
+            compIdx = j*nLoc - 1;
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx += 1;
+                tmp = ((*S_star) -> data)[compIdx];
+                cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp +  
+                                   std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp) +
+                                   std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
+            }
+        } 
+        return(0);
+    }
     // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
@@ -239,6 +261,37 @@ namespace SpatialSEIR
         *value = term1 + term2 + term3;
         return(0);
     }
+    int FC_S_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
+    {
+        *value = 0.0;
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        // Copy the current function value, assuming that it has been calculated
+        // and now needs to be updated. 
+
+        double startVal = *value;
+        compIdx = startLoc + startTime*nLoc;
+        for (j = startTime; j < nTpts; j++)
+        {
+            tmp = ((*S_star) -> data)[compIdx];
+            cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp +  
+                               std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp)+
+                               std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
+            compIdx += nLoc;
+        }
+        for (j = 0; j < nTpts; j++)     
+        {
+            compIdx = j*nLoc - 1;
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx += 1;
+                *value += cachedValues[compIdx]; 
+            }
+        } 
+        return(0);
+    }
+
     int FC_S_Star::evalOCL()
     {
         //NOT IMPLEMENTED

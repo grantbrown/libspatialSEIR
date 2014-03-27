@@ -97,7 +97,9 @@ namespace SpatialSEIR
                       double *_p_rs,
                       double *_beta,
                       double *_rho);
+            int cacheEvalCalculation(double* cachedValues);
             int evalCPU();
+            int evalCPU(int startLoc, int startTime, double* cachedValues);
             int evalOCL();
             int sampleCPU();
             int sampleOCL();
