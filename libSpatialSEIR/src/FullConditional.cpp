@@ -311,11 +311,16 @@ namespace SpatialSEIR
         (*context) -> calculateS_CPU();
         (*context) -> calculateR_CPU();
 
-        // Copy S_star into the tmpContainer object for calculation
+        double* cachedValues = new double[nLoc*nTpts];
+
+        this -> cacheEvalCalculation(cachedValues);
+        this -> evalCPU();
+         // Copy S_star into the tmpContainer object for calculation
+        /* 
         std::copy((*S_star) -> data, ((*S_star) -> data) + nLoc*nTpts, &*((*context) -> tmpContainer -> data));
         CompartmentalModelMatrix* Sstar = &*((*context) -> tmpContainer); 
         CompartmentalModelMatrix* SstarOrig = *S_star;
-
+        */
    
         for (j = 0; j < nTpts; j ++)
         {
@@ -324,7 +329,7 @@ namespace SpatialSEIR
             {
                 compIdx = i + j*nLoc;
                 x = ((*S_star) -> data)[compIdx];
-                this -> evalCPU();
+                this -> evalCPU(i,j,cachedValues);
                 y = (*value) - ((*context) -> random -> gamma());
                 l = 0.0;
                 r = l + width;
@@ -334,11 +339,13 @@ namespace SpatialSEIR
                     x0 = (((*context) -> random -> uniform()))*(r);
                     ((*S_star) -> data)[compIdx] = std::floor(x0);
                     (*context) -> calculateS_CPU(i,j);
-                    this -> evalCPU(); 
+                    this -> evalCPU(i,j,cachedValues);
                     r = (x0 < x ? r : x0); 
                 }
             }
         }
+
+        delete[] cachedValues;
         return 0;
     }
     int FC_S_Star::sampleOCL()
