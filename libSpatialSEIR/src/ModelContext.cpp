@@ -8,6 +8,31 @@
 #include "FullConditional.hpp"
 #endif
 
+#ifndef OCL_PROVIDER_INC
+#define OCL_PROVIDER_INC
+#include "OCLProvider.hpp"
+#endif
+
+#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
+#define COMPARTMENTAL_MODEL_MATRIX_INC
+#include "CompartmentalModelMatrix.hpp"
+#endif
+
+#ifndef COVARIATE_MATRIX_INC
+#define COVARIATE_MATRIX_INC
+#include "CovariateMatrix.hpp"
+#endif
+
+#ifndef DISTANCEMATRIX
+#define DISTANCEMATRIX 
+#include "DistanceMatrix.hpp"
+#endif
+
+#ifndef RANDOM_NUMBER_PROVIDER_INC
+#define RANDOM_NUMBER_PROVIDER_INC
+#include <RandomNumberProvider.hpp>
+#endif
+
 #ifndef BLAS_INC
 #define BLAS_INC
 #include<cblas.h> 

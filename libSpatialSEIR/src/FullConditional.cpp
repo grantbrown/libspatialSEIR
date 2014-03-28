@@ -9,14 +9,34 @@
 #include<cmath>
 #include<algorithm>
 
+#ifndef FULL_CONDITIONAL_INC
+#define FULL_CONDITIONAL_INC
+#include <FullConditional.hpp>
+#endif
+
 #ifndef MODEL_CONTEXT_INC
 #define MODEL_CONTEXT_INC
 #include <ModelContext.hpp>
 #endif
 
-#ifndef FULL_CONDITIONAL_INC
-#define FULL_CONDITIONAL_INC
-#include <FullConditional.hpp>
+#ifndef OCL_PROVIDER_INC
+#define OCL_PROVIDER_INC
+#include "OCLProvider.hpp"
+#endif
+
+#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
+#define COMPARTMENTAL_MODEL_MATRIX_INC
+#include "CompartmentalModelMatrix.hpp"
+#endif
+
+#ifndef COVARIATE_MATRIX_INC
+#define COVARIATE_MATRIX_INC
+#include "CovariateMatrix.hpp"
+#endif
+
+#ifndef RANDOM_NUMBER_PROVIDER_INC
+#define RANDOM_NUMBER_PROVIDER_INC
+#include<RandomNumberProvider.hpp>
 #endif
 
 namespace SpatialSEIR
@@ -127,32 +147,6 @@ namespace SpatialSEIR
         delete numLocations;
     }
 
-    FullConditional::FullConditional()
-    {
-        //This class should not be instantiated directly. 
-        throw(-1);
-    }
-    FullConditional::~FullConditional()
-    {
-        throw(-1);
-    }
-    int FullConditional::evalCPU()
-    {
-        throw(-1);
-    }
-    int FullConditional::evalOCL()
-    {
-        throw(-1);
-    }
-    int FullConditional::sampleCPU()
-    {
-        throw(-1);
-    }
-    int FullConditional::sampleOCL()
-    {
-        throw(-1);
-    }
-     
     /*
      *
      * Implement the full conditional distribution for S_star
@@ -348,6 +342,11 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    double FC_S_Star::getValue()
+    {
+        return(*(this -> value));
+    }
+
 
 
     /*
@@ -546,6 +545,11 @@ namespace SpatialSEIR
         return -1;
     }
 
+    double FC_E_Star::getValue()
+    {
+        return(*(this -> value));
+    }
+
     /*
      *
      * Implement the full conditional distribution for R_Star
@@ -684,6 +688,11 @@ namespace SpatialSEIR
         return -1;
     }
 
+    double FC_R_Star::getValue()
+    {
+        return(*(this -> value));
+    }
+
      /*
      *
      * Implement the full conditional distribution for the regression
@@ -735,6 +744,13 @@ namespace SpatialSEIR
         delete context;
     }
     
+    int FC_Beta::cacheEvalCalculation(double* cachedValues)
+    {
+        //Not Implemented
+        throw(-1);
+    }
+
+
     int FC_Beta::evalCPU()
     {
         *value = 0.0;
@@ -760,6 +776,12 @@ namespace SpatialSEIR
         *value = term1 + term2 + term3;
         return(0);
     }
+    int FC_Beta::evalCPU(int startLoc, int startTime, double* cachedValues)
+    {
+        //NOT IMPLEMENTED
+        throw(-1);
+    }
+
     int FC_Beta::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -774,6 +796,11 @@ namespace SpatialSEIR
     {
         //NOT IMPLEMENTED
         return -1;
+    }
+
+    double FC_Beta::getValue()
+    {
+        return(*(this -> value));
     }
     /*
      *
@@ -811,6 +838,13 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
+    int FC_P_RS::cacheEvalCalculation(double* cachedValues)
+    {
+        //Not Implemented
+        throw(-1);
+    }
+
+
     int FC_P_RS::evalCPU()
     {
         *value = 0.0;
@@ -848,6 +882,12 @@ namespace SpatialSEIR
         delete[] r_star_i_diff;
         return 0;
     }
+    int FC_P_RS::evalCPU(int startLoc, int startTime, double* cachedValues)
+    {
+        //NOT IMPLEMENTED
+        throw(-1);
+    }
+
     int FC_P_RS::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -862,6 +902,11 @@ namespace SpatialSEIR
     {
         //NOT IMPLEMENTED
         return -1;
+    }
+
+    double FC_P_RS::getValue()
+    {
+        return(*(this -> value));
     }
 
 
@@ -906,6 +951,13 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
+    int FC_Rho::cacheEvalCalculation(double* cachedValues)
+    {
+        //Not Implemented
+        throw(-1);
+    }
+
+
     int FC_Rho::evalCPU()
     {
         *value = 0.0;
@@ -929,6 +981,12 @@ namespace SpatialSEIR
         *value = term1 + term2 + term3;
         return(0);
     }
+    int FC_Rho::evalCPU(int startLoc, int startTime, double* cachedValues)
+    {
+        //NOT IMPLEMENTED
+        throw(-1);
+    }
+
     int FC_Rho::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -945,6 +1003,10 @@ namespace SpatialSEIR
         return -1;
     }
 
+    double FC_Rho::getValue()
+    {
+        return(*(this -> value));
+    }
 
 
 
@@ -979,6 +1041,13 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
+    int FC_P_EI::cacheEvalCalculation(double* cachedValues)
+    {
+        //Not Implemented
+        throw(-1);
+    }
+
+
     int FC_P_EI::evalCPU()
     { 
         *value = 0.0;
@@ -998,6 +1067,12 @@ namespace SpatialSEIR
         *value = dbeta(**p_ei, 1.5 + i_star_sum, 1.5 - i_star_sum + e_sum); 
         return 0;
     }
+    int FC_P_EI::evalCPU(int startLoc, int startTime, double* cachedValues)
+    {
+        //NOT IMPLEMENTED
+        throw(-1);
+    }
+
     int FC_P_EI::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -1012,6 +1087,11 @@ namespace SpatialSEIR
     {
         //NOT IMPLEMENTED
         return -1;
+    }
+
+    double FC_P_EI::getValue()
+    {
+        return(*(this -> value));
     }
 
 
@@ -1047,6 +1127,12 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
+    int FC_P_IR::cacheEvalCalculation(double* cachedValues)
+    {
+        //Not Implemented
+        throw(-1);
+    }
+
     int FC_P_IR::evalCPU()
     {
         *value = 0.0;
@@ -1066,6 +1152,11 @@ namespace SpatialSEIR
         *value = dbeta(**p_ir, 1.5 + r_star_sum, 1.5 - r_star_sum + i_sum); 
         return 0;
     }
+    int FC_P_IR::evalCPU(int startLoc, int startTime, double* cachedValues)
+    {
+        //NOT IMPLEMENTED
+        throw(-1);
+    }
     int FC_P_IR::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -1080,6 +1171,11 @@ namespace SpatialSEIR
     {
         //NOT IMPLEMENTED
         return -1;
+    }
+
+    double FC_P_IR::getValue()
+    {
+        return(*(this -> value));
     }
 }
 

@@ -7,23 +7,6 @@
 #include<vector>
 #endif
 
-#ifndef OCL_PROVIDER_INC
-#define OCL_PROVIDER_INC
-#include "OCLProvider.hpp"
-#endif
-
-#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
-#define COMPARTMENTAL_MODEL_MATRIX_INC
-#include "CompartmentalModelMatrix.hpp"
-#endif
-
-#ifndef COVARIATE_MATRIX_INC
-#define COVARIATE_MATRIX_INC
-#include "CovariateMatrix.hpp"
-#endif
-
-
-
 
 namespace SpatialSEIR
 {
@@ -31,6 +14,9 @@ namespace SpatialSEIR
     using std::endl;
 
     class ModelContext;
+    class CompartmentalModelMatrix;
+    class CovariateMatrix;
+    class OCLProvider;
 
     int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB );
 
@@ -74,17 +60,16 @@ namespace SpatialSEIR
     {
         public:
             //Methods
-            FullConditional();            
-            ~FullConditional(); 
-            int evalCPU();
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
-            //Attributes
-            double *value;
+            virtual ~FullConditional(){}; 
+            virtual int cacheEvalCalculation(double* cachedValues) = 0;
+            virtual int evalCPU() = 0;
+            virtual int evalOCL() = 0;
+            virtual int sampleCPU() = 0;
+            virtual int sampleOCL() = 0;
+            virtual double getValue() = 0;
     };
 
-    class FC_S_Star
+    class FC_S_Star : public FullConditional
     {
         public:
             FC_S_Star(ModelContext * _context,
@@ -97,13 +82,14 @@ namespace SpatialSEIR
                       double *_p_rs,
                       double *_beta,
                       double *_rho);
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
-            ~FC_S_Star();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
+            virtual ~FC_S_Star();
 
             ModelContext **context;
             CompartmentalModelMatrix **S_star; 
@@ -119,7 +105,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_E_Star
+    class FC_E_Star : public FullConditional
     {
         public:
             FC_E_Star(ModelContext *_context,
@@ -134,12 +120,13 @@ namespace SpatialSEIR
                       double *_beta);
             ~FC_E_Star();
 
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -155,7 +142,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_R_Star
+    class FC_R_Star : public FullConditional
     {
         public:
             FC_R_Star(ModelContext *_context,
@@ -167,12 +154,13 @@ namespace SpatialSEIR
                       double *_p_ir);
             ~FC_R_Star();
 
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
 
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
@@ -185,7 +173,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_Beta
+    class FC_Beta : public FullConditional
     {
         public:
             FC_Beta(ModelContext *_context,
@@ -198,12 +186,13 @@ namespace SpatialSEIR
                     double *_rho); 
             ~FC_Beta();
 
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -217,7 +206,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_P_RS
+    class FC_P_RS : public FullConditional
     {
         public:
             FC_P_RS(ModelContext *_context,
@@ -227,12 +216,14 @@ namespace SpatialSEIR
                     double *_p_rs 
                     );
             ~FC_P_RS();
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
+
             ModelContext **context;
             CompartmentalModelMatrix **S_star;
             CompartmentalModelMatrix **R;
@@ -242,7 +233,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_Rho 
+    class FC_Rho : public FullConditional 
     {
         public:
             FC_Rho(ModelContext *_context,
@@ -255,12 +246,14 @@ namespace SpatialSEIR
                    double *_rho
                    );
             ~FC_Rho();
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
+
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
             CompartmentalModelMatrix **S; 
@@ -274,7 +267,7 @@ namespace SpatialSEIR
     };
     
 
-    class FC_P_EI
+    class FC_P_EI : public FullConditional
     {
         public:
             FC_P_EI(ModelContext *_context,
@@ -282,12 +275,14 @@ namespace SpatialSEIR
                     CompartmentalModelMatrix *_E,
                     InitData *_A0,
                     double *_p_ei);
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
+
             ~FC_P_EI();
             ModelContext** context;
             CompartmentalModelMatrix **I_star;
@@ -297,7 +292,7 @@ namespace SpatialSEIR
             double* value;
     };
 
-    class FC_P_IR
+    class FC_P_IR : public FullConditional
     {
         
         public:
@@ -307,12 +302,14 @@ namespace SpatialSEIR
                     InitData *_A0,
                     double *_p_ir);
             ~FC_P_IR();
-            int cacheEvalCalculation(double* cachedValues);
-            int evalCPU();
-            int evalCPU(int startLoc, int startTime, double* cachedValues);
-            int evalOCL();
-            int sampleCPU();
-            int sampleOCL();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
+
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
             CompartmentalModelMatrix **I;
@@ -320,5 +317,4 @@ namespace SpatialSEIR
             double **p_ir;
             double* value;
     };
-
 }

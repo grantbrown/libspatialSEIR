@@ -6,7 +6,7 @@
 #include<cstring>
 #include<vector>
 #endif
-
+/*
 #ifndef FULL_CONDITIONAL_INC
 #define FULL_CONDITIONAL_INC
 #include "FullConditional.hpp"
@@ -36,7 +36,7 @@
 #define RANDOM_NUMBER_PROVIDER_INC
 #include <RandomNumberProvider.hpp>
 #endif
-
+*/
 
 namespace SpatialSEIR
 {
@@ -52,6 +52,12 @@ namespace SpatialSEIR
     class FC_P_RS;
     class FC_Rho;
     class InitData;
+
+    class CompartmentalModelMatrix;
+    class CovariateMatrix;
+    class DistanceMatrix;
+    class RandomNumberProvider;
+    class OCLProvider;
 
     class ModelContext
     {
