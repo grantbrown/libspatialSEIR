@@ -137,45 +137,6 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::Rcout << "Calculating P_SE from Starting Beta, I\n";
     context -> calculateP_SE_CPU();
 
-    Rcpp::Rcout << "Testing S_star FC 100 times (Method 1): \n";
-    int tmp;
-    int iter;
-    for (iter = 0; iter < 100; iter ++)
-    {
-        tmp = context -> S_star_fc -> evalCPU();
-    }
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> S_star_fc -> value) << "\n";
-
-    Rcpp::Rcout << "Testing S_star FC 100 times (Method 2): \n";
-    double* cachedValues = new double[(compartmentDimensions[0])*(compartmentDimensions[1])];
-    context -> S_star_fc -> cacheEvalCalculation(cachedValues);
-    for (iter = 0; iter < 100; iter ++)
-    {
-        tmp = context -> S_star_fc -> evalCPU(1,1,cachedValues);
-    }
-    delete[] cachedValues;
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> S_star_fc -> value) << "\n";
-    Rcpp::Rcout << "Testing E_star FC: \n";
-    tmp = context -> E_star_fc -> evalCPU();
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> E_star_fc -> value) << "\n";
-    Rcpp::Rcout << "Testing R_star FC: \n";
-    tmp = context -> R_star_fc -> evalCPU();
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> R_star_fc -> value) << "\n";
-    Rcpp::Rcout << "Testing beta FC: \n";
-    tmp = context -> beta_fc -> evalCPU();
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> beta_fc -> value) << "\n";
-    Rcpp::Rcout << "Testing rho FC: \n";
-    tmp = context -> rho_fc -> evalCPU();
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> rho_fc -> value) << "\n";
-    Rcpp::Rcout << "Testing p_ei FC: \n";
-    tmp = context -> p_ei_fc -> evalCPU();
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> p_ei_fc -> value) << "\n";
-    Rcpp::Rcout << "Testing p_ir FC: \n";
-    tmp = context -> p_ir_fc -> evalCPU();
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> p_ir_fc -> value) << "\n";
-    Rcpp::Rcout << "Testing p_rs FC: \n";
-    tmp = context -> p_rs_fc -> evalCPU();
-    Rcpp::Rcout << "returned: " << tmp << ", value: " << *(context -> p_rs_fc -> value) << "\n"; 
     Rcpp::Rcout << "Testing S_star sampling:\n";
     context -> S_star_fc -> sampleCPU();
     Rcpp::Rcout << "Testing I_star sampling:\n";
