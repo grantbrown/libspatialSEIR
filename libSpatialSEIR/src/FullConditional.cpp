@@ -172,8 +172,47 @@ namespace SpatialSEIR
 
         delete[] cachedValues;
         return 0;
+    }
+
+    int FullConditional::sampleDouble(ModelContext* context,
+                                       InitData* A0,
+                                       double* variable, 
+                                       int varLen, 
+                                       double width)
+    {
+        // Declare required variables
+        int i;
+        double l,r,y,x,x0;
+        
+        // Update the relevant CompartmentalModelMatrix instances
+        this -> calculateRelevantCompartments();
+
+        // Set the "value" attribute appropriately
+        this -> evalCPU();
+   
+        // Main loop: 
+        for (i = 0; i < varLen; i++)
+        { 
+            x = variable[i];
+            this -> calculateRelevantCompartments(); 
+            this -> evalCPU();
+            y = (this->getValue()) - (context -> random -> gamma());
+            l = 0.0;
+            r = l + width;
+
+            while (y >= (this -> getValue()))
+            {
+                x0 = (context -> random -> uniform())*(r);
+                variable[i] = x0;
+                this -> calculateRelevantCompartments();
+                this -> evalCPU();
+                r = (x0 < x ? r : x0);  
+            }
+        }
+        return 0;
 
     }
+
 
     /*
      *
@@ -761,19 +800,20 @@ namespace SpatialSEIR
     }
     int FC_Beta::calculateRelevantCompartments()
     {
-        //NOT VALID
-        throw(-1);
+        ((*context) -> calculateP_SE_CPU());
+        return(0);
+
     }
     int FC_Beta::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        //NOT VALID
+        //NOT IMPLEMENTED
         throw(-1);
     }
 
     int FC_Beta::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 10.0); 
+        return(0);
     }
     int FC_Beta::sampleOCL()
     {

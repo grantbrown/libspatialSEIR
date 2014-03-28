@@ -84,6 +84,11 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* destCompartment,
                                   CompartmentalModelMatrix* starCompartment,
                                   double width); 
+            int sampleDouble(ModelContext* context, 
+                             InitData* A0, 
+                             double* variable,
+                             int varLen,
+                             double width);
     };
 
     class FC_S_Star : public FullConditional
