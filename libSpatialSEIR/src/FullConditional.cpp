@@ -353,53 +353,8 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        // Declare required variables
-        int i, j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
-        double l,r,y,x,x0;
-        double width = 10.0;
-        // For the current value of S_star, make sure 
-        // that we have current value of S and R
-        (*context) -> calculateS_CPU();
-        (*context) -> calculateR_CPU();
-
-        // Allocate storage for the cached components of
-        // the full conditional calculation
-        double* cachedValues = new double[nLoc*nTpts];
-        this -> cacheEvalCalculation(cachedValues);
-
-        // Set the "value" attribute appropriately
-        this -> evalCPU();
-   
-        // Main loop: 
-        for (j = 0; j < nTpts; j ++)
-        { 
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)
-            {
-                compIdx++;
-                x = ((*S_star) -> data)[compIdx];
-                (*context) -> calculateS_CPU(i,j);
-                (*context) -> calculateR_CPU(i,j);
-                this -> evalCPU(i,j,cachedValues);
-                y = (*value) - ((*context) -> random -> gamma());
-                l = 0.0;
-                r = l + width;
-
-                while (y >= *value)
-                {
-                    x0 = std::floor(((*context) -> random -> uniform())*(r));
-                    ((*S_star) -> data)[compIdx] = x0;
-                    (*context) -> calculateS_CPU(i,j);
-                    (*context) -> calculateR_CPU(i,j);
-                    this -> evalCPU(i,j,cachedValues);
-                    r = (x0 < x ? r : x0); 
-                }
-            }
-        }
-
-        delete[] cachedValues;
+        this -> sampleCompartment(*context,*A0,*R,*S,
+                                  *S_star,10);
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -557,61 +512,17 @@ namespace SpatialSEIR
     int FC_E_Star::calculateRelevantCompartments()
     {
         (*context) -> calculateS_CPU();
-        (*context) -> calculateI_CPU();
+        (*context) -> calculateE_CPU();
     }
     int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
-        (*context) -> calculateI_CPU(startLoc, startTime);
+        (*context) -> calculateE_CPU(startLoc, startTime);
     }
     int FC_E_Star::sampleCPU()
     {
-        // Declare required variables
-        int i, j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
-        double l,r,y,x,x0;
-        double width = 10.0;
-        // For the current value of S_star, make sure 
-        // that we have current value of S and R
-        (*context) -> calculateS_CPU();
-        (*context) -> calculateI_CPU();
-
-        // Allocate storage for the cached components of
-        // the full conditional calculation
-        double* cachedValues = new double[nLoc*nTpts];
-        this -> cacheEvalCalculation(cachedValues);
-
-        // Set the "value" attribute appropriately
-        this -> evalCPU();
-   
-        // Main loop: 
-        for (j = 0; j < nTpts; j ++)
-        { 
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)
-            {
-                compIdx++;
-                x = ((*E_star) -> data)[compIdx];
-                (*context) -> calculateS_CPU(i,j);
-                (*context) -> calculateI_CPU(i,j);
-                this -> evalCPU(i,j,cachedValues);
-                y = (*value) - ((*context) -> random -> gamma());
-                l = 0.0;
-                r = l + width;
-
-                while (y >= *value)
-                {
-                    x0 = std::floor(((*context) -> random -> uniform())*(r));
-                    ((*E_star) -> data)[compIdx] = x0;
-                    (*context) -> calculateS_CPU(i,j);
-                    (*context) -> calculateI_CPU(i,j);
-                    this -> evalCPU(i,j,cachedValues);
-                    r = (x0 < x ? r : x0); 
-                }
-            }
-        }
-        delete[] cachedValues;
+        this -> sampleCompartment(*context,*A0,*S,*E,
+                                  *E_star,10);
         return 0;
     }
     int FC_E_Star::sampleOCL()
@@ -767,6 +678,7 @@ namespace SpatialSEIR
     {
         this -> sampleCompartment(*context,*A0,*I,*R,
                                   *R_star,10);
+        return(0);
     }
     int FC_R_Star::sampleOCL()
     {
