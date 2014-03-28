@@ -170,6 +170,15 @@ namespace SpatialSEIR
                                     &*(this -> A0 -> E_star0), &*(this -> A0 -> I_star0));
     }
 
+    void ModelContext::calculateE_CPU(int startLoc, int startTime)
+    {
+        calculateGenericCompartment_CPU(&*(this -> E), &*(this -> A0 -> E0),
+                                    &*(this -> E_star), &*(this -> I_star),
+                                    &*(this -> A0 -> E_star0), &*(this -> A0 -> I_star0),
+                                    startLoc, startTime);
+    }
+
+
     void ModelContext::calculateE_OCL()
     {
         throw(-1);
@@ -184,6 +193,15 @@ namespace SpatialSEIR
                                     &*(this -> I_star), &*(this -> R_star),
                                     &*(this -> A0 -> I_star0), &*(this -> A0 -> R_star0));
     }
+
+    void ModelContext::calculateI_CPU(int startLoc, int startTime)
+    {
+        calculateGenericCompartment_CPU(&*(this -> I), &*(this -> A0 -> I0),
+                                    &*(this -> I_star), &*(this -> R_star),
+                                    &*(this -> A0 -> I_star0), &*(this -> A0 -> R_star0),
+                                    startLoc, startTime);
+    }
+
     void ModelContext::calculateI_OCL()
     {
         throw(-1);
@@ -198,6 +216,15 @@ namespace SpatialSEIR
                                     &*(this -> R_star), &*(this -> S_star),
                                     &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0));
     }
+
+    void ModelContext::calculateR_CPU(int startLoc, int startTime)
+    {
+        calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
+                                    &*(this -> R_star), &*(this -> S_star),
+                                    &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0),
+                                    startLoc, startTime);
+    }
+
     void ModelContext::calculateR_OCL()
     {
         throw(-1);

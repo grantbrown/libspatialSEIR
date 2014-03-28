@@ -294,37 +294,35 @@ namespace SpatialSEIR
     }
     int FC_S_Star::sampleCPU()
     {
-        std::cout << "Sample:\n";
+        // Declare required variables
         int i, j, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
         double l,r,y,x,x0;
-        int lx;
         double width = 10.0;
-        int k;
-        int found = 0;
+        // For the current value of S_star, make sure 
+        // that we have current value of S and R
         (*context) -> calculateS_CPU();
         (*context) -> calculateR_CPU();
 
+        // Allocate storage for the cached components of
+        // the full conditional calculation
         double* cachedValues = new double[nLoc*nTpts];
-
         this -> cacheEvalCalculation(cachedValues);
+
+        // Set the "value" attribute appropriately
         this -> evalCPU();
-         // Copy S_star into the tmpContainer object for calculation
-        /* 
-        std::copy((*S_star) -> data, ((*S_star) -> data) + nLoc*nTpts, &*((*context) -> tmpContainer -> data));
-        CompartmentalModelMatrix* Sstar = &*((*context) -> tmpContainer); 
-        CompartmentalModelMatrix* SstarOrig = *S_star;
-        */
    
+        // Main loop: 
         for (j = 0; j < nTpts; j ++)
-        {
-            std::cout << j << "\n";
+        { 
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
                 compIdx++;
                 x = ((*S_star) -> data)[compIdx];
+                (*context) -> calculateS_CPU(i,j);
+                (*context) -> calculateR_CPU(i,j);
                 this -> evalCPU(i,j,cachedValues);
                 y = (*value) - ((*context) -> random -> gamma());
                 l = 0.0;
@@ -335,6 +333,7 @@ namespace SpatialSEIR
                     x0 = std::floor(((*context) -> random -> uniform())*(r));
                     ((*S_star) -> data)[compIdx] = x0;
                     (*context) -> calculateS_CPU(i,j);
+                    (*context) -> calculateR_CPU(i,j);
                     this -> evalCPU(i,j,cachedValues);
                     r = (x0 < x ? r : x0); 
                 }
@@ -493,8 +492,53 @@ namespace SpatialSEIR
     }
     int FC_E_Star::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        // Declare required variables
+        int i, j, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        double l,r,y,x,x0;
+        double width = 10.0;
+        // For the current value of S_star, make sure 
+        // that we have current value of S and R
+        (*context) -> calculateS_CPU();
+        (*context) -> calculateI_CPU();
+
+        // Allocate storage for the cached components of
+        // the full conditional calculation
+        double* cachedValues = new double[nLoc*nTpts];
+        this -> cacheEvalCalculation(cachedValues);
+
+        // Set the "value" attribute appropriately
+        this -> evalCPU();
+   
+        // Main loop: 
+        for (j = 0; j < nTpts; j ++)
+        { 
+            compIdx = j*nLoc - 1;
+            for (i = 0; i < nLoc; i++)
+            {
+                compIdx++;
+                x = ((*E_star) -> data)[compIdx];
+                (*context) -> calculateS_CPU(i,j);
+                (*context) -> calculateI_CPU(i,j);
+                this -> evalCPU(i,j,cachedValues);
+                y = (*value) - ((*context) -> random -> gamma());
+                l = 0.0;
+                r = l + width;
+
+                while (y >= *value)
+                {
+                    x0 = std::floor(((*context) -> random -> uniform())*(r));
+                    ((*E_star) -> data)[compIdx] = x0;
+                    (*context) -> calculateS_CPU(i,j);
+                    (*context) -> calculateI_CPU(i,j);
+                    this -> evalCPU(i,j,cachedValues);
+                    r = (x0 < x ? r : x0); 
+                }
+            }
+        }
+        delete[] cachedValues;
+        return 0;
     }
     int FC_E_Star::sampleOCL()
     {

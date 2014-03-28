@@ -79,18 +79,21 @@ namespace SpatialSEIR
             // Accesses: A0, I_star, E_star
             // Updates: E
             void calculateE_CPU();
+            void calculateE_CPU(int startLoc, int startTime);
             void calculateE_OCL();
 
             // Method: calculateI
             // Accesses: A0, I_star, R_star
             // Updates: I
             void calculateI_CPU();
+            void calculateI_CPU(int startLoc, int startTime);
             void calculateI_OCL();
 
             // Method: calculateR
             // Accesses: A0, R_star, S_star
             // Updates: R
             void calculateR_CPU();
+            void calculateR_CPU(int startLoc, int startTime);
             void calculateR_OCL();
 
             // Method calculateGenericCompartment
