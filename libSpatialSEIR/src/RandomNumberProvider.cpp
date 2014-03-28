@@ -1,7 +1,5 @@
-#ifndef RANDOM_NUMBER_PROVIDER_INC
-#define RANDOM_NUMBER_PROVIDER_INC
 #include <RandomNumberProvider.hpp>
-#endif
+
 
 namespace SpatialSEIR
 {

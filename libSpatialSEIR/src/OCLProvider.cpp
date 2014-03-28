@@ -2,14 +2,11 @@
 
 #include <CL/cl.hpp>
 #include <OCLProvider.hpp>
-
-#ifndef SPATIALSEIR_INCLUDEFILES
 #include<iostream>
 #include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
-#endif
 
 
 // Implement OCLProvider Class

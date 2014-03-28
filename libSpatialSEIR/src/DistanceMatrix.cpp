@@ -1,14 +1,9 @@
 /*Copyright 2014, Grant Brown*/
 
-
 #include <iostream>
 #include <fstream>
 #include <cmath>
-
-#ifndef DISTANCEMATRIX 
-#define DISTANCEMATRIX
 #include <DistanceMatrix.hpp>
-#endif
 
 namespace SpatialSEIR
 {

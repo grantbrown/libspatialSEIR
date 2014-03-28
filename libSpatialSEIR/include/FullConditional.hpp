@@ -7,6 +7,8 @@
 #include<vector>
 #endif
 
+#ifndef FULL_CONDITIONAL_INC
+#define FULL_CONDITIONAL_INC
 
 namespace SpatialSEIR
 {
@@ -349,3 +351,5 @@ namespace SpatialSEIR
             double* value;
     };
 }
+
+#endif

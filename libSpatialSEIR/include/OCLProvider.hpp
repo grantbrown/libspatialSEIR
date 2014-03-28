@@ -1,3 +1,6 @@
+#ifndef OCL_PROVIDER_INC
+#define OCL_PROVIDER_INC
+
 #define __CL_ENABLE_EXCEPTIONS
 
 #ifndef SPATIALSEIR_INCLUDEFILES
@@ -32,3 +35,5 @@ namespace SpatialSEIR
             std::vector<std::string> *deviceNames;
     };
 }
+
+#endif

@@ -10,6 +10,9 @@
 #include<vector>
 #endif
 
+#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
+#define COMPARTMENTAL_MODEL_MATRIX_INC
+
 namespace SpatialSEIR
 {
     using std::cout;
@@ -35,3 +38,5 @@ namespace SpatialSEIR
             int readDataFile(const char fn[]);
     };
 }
+
+#endif

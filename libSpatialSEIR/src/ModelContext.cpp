@@ -1,37 +1,11 @@
-#ifndef MODEL_CONTEXT_INC
-#define MODEL_CONTEXT_INC
 #include "ModelContext.hpp"
-#endif
-
-#ifndef FULL_CONDITIONAL_INC
-#define FULL_CONDITIONAL_INC
 #include "FullConditional.hpp"
-#endif
-
-#ifndef OCL_PROVIDER_INC
-#define OCL_PROVIDER_INC
 #include "OCLProvider.hpp"
-#endif
-
-#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
-#define COMPARTMENTAL_MODEL_MATRIX_INC
 #include "CompartmentalModelMatrix.hpp"
-#endif
-
-#ifndef COVARIATE_MATRIX_INC
-#define COVARIATE_MATRIX_INC
 #include "CovariateMatrix.hpp"
-#endif
-
-#ifndef DISTANCEMATRIX
-#define DISTANCEMATRIX 
 #include "DistanceMatrix.hpp"
-#endif
-
-#ifndef RANDOM_NUMBER_PROVIDER_INC
-#define RANDOM_NUMBER_PROVIDER_INC
 #include <RandomNumberProvider.hpp>
-#endif
+
 
 #ifndef BLAS_INC
 #define BLAS_INC

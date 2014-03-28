@@ -8,6 +8,10 @@
 #include<vector>
 #endif
 
+#ifndef RANDOM_NUMBER_PROVIDER_INC
+#define RANDOM_NUMBER_PROVIDER_INC
+
+
 // Include logic about boost availability needs 
 // to go here. The library should try to find boost, 
 // but fall back on R. Expandin the CMake scripts
@@ -39,3 +43,5 @@ namespace SpatialSEIR
             ~RandomNumberProvider();
     };
 }
+
+#endif

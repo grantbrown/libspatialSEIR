@@ -1,13 +1,7 @@
 /*Copyright 2014, Grant Brown*/
-
-
 #include <iostream>
 #include <fstream>
-
-#ifndef COMPARTMENTALMODELMATRIX 
-#define COMPARTMENTALMODELMATRIX
 #include <CompartmentalModelMatrix.hpp>
-#endif
 
 namespace SpatialSEIR
 {

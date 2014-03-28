@@ -1,7 +1,10 @@
 #include <Rcpp.h>
 #include <cmath>
 #include <ModelContext.hpp>
-
+#include <FullConditional.hpp>
+#include <CovariateMatrix.hpp>
+#include <CompartmentalModelMatrix.hpp>
+#include <DistanceMatrix.hpp>
 using namespace Rcpp;
 using namespace SpatialSEIR;
 // [[Rcpp::export]]

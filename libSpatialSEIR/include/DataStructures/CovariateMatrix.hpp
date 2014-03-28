@@ -10,6 +10,9 @@
 #include<vector>
 #endif
 
+#ifndef COVARIATE_MATRIX_INC
+#define COVARIATE_MATRIX_INC
+
 namespace SpatialSEIR
 {
     using std::cout;
@@ -42,3 +45,5 @@ namespace SpatialSEIR
             int *ncol_z;
     };
 }
+
+#endif

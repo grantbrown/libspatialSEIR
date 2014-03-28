@@ -1,43 +1,17 @@
-#ifndef SPATIALSEIR_INCLUDEFILES
 #include<iostream>
 #include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
-#endif
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
-
-#ifndef FULL_CONDITIONAL_INC
-#define FULL_CONDITIONAL_INC
-#include <FullConditional.hpp>
-#endif
-
-#ifndef MODEL_CONTEXT_INC
-#define MODEL_CONTEXT_INC
-#include <ModelContext.hpp>
-#endif
-
-#ifndef OCL_PROVIDER_INC
-#define OCL_PROVIDER_INC
-#include "OCLProvider.hpp"
-#endif
-
-#ifndef COMPARTMENTAL_MODEL_MATRIX_INC
-#define COMPARTMENTAL_MODEL_MATRIX_INC
-#include "CompartmentalModelMatrix.hpp"
-#endif
-
-#ifndef COVARIATE_MATRIX_INC
-#define COVARIATE_MATRIX_INC
-#include "CovariateMatrix.hpp"
-#endif
-
-#ifndef RANDOM_NUMBER_PROVIDER_INC
-#define RANDOM_NUMBER_PROVIDER_INC
+#include<FullConditional.hpp>
+#include<ModelContext.hpp>
+#include<OCLProvider.hpp>
+#include<CompartmentalModelMatrix.hpp>
+#include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
-#endif
 
 namespace SpatialSEIR
 {

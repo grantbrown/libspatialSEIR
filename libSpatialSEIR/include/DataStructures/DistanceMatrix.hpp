@@ -10,6 +10,9 @@
 #include<vector>
 #endif
 
+#ifndef DISTANCE_MATRIX_INC
+#define DISTANCE_MATRIX_INC
+
 namespace SpatialSEIR
 {
     using std::cout;
@@ -51,3 +54,5 @@ namespace SpatialSEIR
             int *hasAlloc;;
     };
 }
+
+#endif
