@@ -147,6 +147,60 @@ namespace SpatialSEIR
         delete numLocations;
     }
 
+    int FullConditional::sampleCompartment(ModelContext** context,
+                                       InitData ** A0,
+                                       CompartmentalModelMatrix** drawCompartment,
+                                       CompartmentalModelMatrix** destCompartment,
+                                       CompartmentalModelMatrix** starCompartment,
+                                       double width)
+    {
+        // Declare required variables
+        int i, j, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*drawCompartment) -> ncol);
+        double l,r,y,x,x0;
+        
+        // Update the relevant CompartmentalModelMatrix instances
+        this -> calculateRelevantCompartments();
+
+        // Allocate storage for the cached components of
+        // the full conditional calculation
+        double* cachedValues = new double[nLoc*nTpts];
+        this -> cacheEvalCalculation(cachedValues);
+
+        // Set the "value" attribute appropriately
+        this -> evalCPU();
+   
+        // Main loop: 
+        for (j = 0; j < nTpts; j ++)
+        { 
+            compIdx = j*nLoc - 1;
+            for (i = 0; i < nLoc; i++)
+            {
+                compIdx++;
+                x = ((*starCompartment) -> data)[compIdx];
+                this -> calculateRelevantCompartments(i,j); 
+                this -> evalCPU(i,j,cachedValues);
+                y = (this->getValue()) - ((*context) -> random -> gamma());
+                l = 0.0;
+                r = l + width;
+
+                while (y >= (this -> getValue()))
+                {
+                    x0 = std::floor(((*context) -> random -> uniform())*(r));
+                    ((*starCompartment) -> data)[compIdx] = x0;
+                    this -> calculateRelevantCompartments(i,j);
+                    this -> evalCPU(i,j,cachedValues);
+                    r = (x0 < x ? r : x0); 
+                }
+            }
+        }
+
+        delete[] cachedValues;
+        return 0;
+
+    }
+
     /*
      *
      * Implement the full conditional distribution for S_star
@@ -286,6 +340,17 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return-1;
     }
+    int FC_S_Star::calculateRelevantCompartments()
+    {
+        (*context) -> calculateS_CPU();
+        (*context) -> calculateR_CPU();
+    }
+    int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        (*context) -> calculateS_CPU(startLoc, startTime);
+        (*context) -> calculateR_CPU(startLoc, startTime);
+    }
+
     int FC_S_Star::sampleCPU()
     {
         // Declare required variables
@@ -489,6 +554,16 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    int FC_E_Star::calculateRelevantCompartments()
+    {
+        (*context) -> calculateS_CPU();
+        (*context) -> calculateI_CPU();
+    }
+    int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        (*context) -> calculateS_CPU(startLoc, startTime);
+        (*context) -> calculateI_CPU(startLoc, startTime);
+    }
     int FC_E_Star::sampleCPU()
     {
         // Declare required variables
@@ -677,6 +752,17 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    int FC_R_Star::calculateRelevantCompartments()
+    {
+        (*context) -> calculateI_CPU();
+        (*context) -> calculateR_CPU();
+    }
+    int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        (*context) -> calculateI_CPU(startLoc, startTime);
+        (*context) -> calculateR_CPU(startLoc, startTime);
+    }
+
     int FC_R_Star::sampleCPU()
     {
         //NOT IMPLEMENTED
@@ -787,6 +873,17 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    int FC_Beta::calculateRelevantCompartments()
+    {
+        //NOT VALID
+        throw(-1);
+    }
+    int FC_Beta::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        //NOT VALID
+        throw(-1);
+    }
+
     int FC_Beta::sampleCPU()
     {
         //NOT IMPLEMENTED
@@ -893,6 +990,17 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    int FC_P_RS::calculateRelevantCompartments()
+    {
+        //NOT VALID
+        throw(-1);
+    }
+    int FC_P_RS::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        //NOT VALID
+        throw(-1);
+    }
+
     int FC_P_RS::sampleCPU()
     {
         //NOT IMPLEMENTED
@@ -992,6 +1100,17 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    int FC_Rho::calculateRelevantCompartments()
+    {
+        //NOT VALID
+        throw(-1);
+    }
+    int FC_Rho::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        //NOT VALID
+        throw(-1);
+    }
+
     int FC_Rho::sampleCPU()
     {
         //NOT IMPLEMENTED
@@ -1007,7 +1126,6 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
-
 
 
     FC_P_EI::FC_P_EI(ModelContext *_context,
@@ -1078,6 +1196,17 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    int FC_P_EI::calculateRelevantCompartments()
+    {
+        //NOT VALID
+        throw(-1);
+    }
+    int FC_P_EI::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        //NOT VALID
+        throw(-1);
+    }
+
     int FC_P_EI::sampleCPU()
     {
         //NOT IMPLEMENTED
@@ -1162,6 +1291,17 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+    int FC_P_IR::calculateRelevantCompartments()
+    {
+        //NOT VALID
+        throw(-1);
+    }
+    int FC_P_IR::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        //NOT VALID
+        throw(-1);
+    }
+
     int FC_P_IR::sampleCPU()
     {
         //NOT IMPLEMENTED

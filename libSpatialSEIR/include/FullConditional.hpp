@@ -59,14 +59,29 @@ namespace SpatialSEIR
     class FullConditional
     {
         public:
-            //Methods
+            //Template for shared methods
             virtual ~FullConditional(){}; 
             virtual int cacheEvalCalculation(double* cachedValues) = 0;
             virtual int evalCPU() = 0;
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues) = 0;
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual double getValue() = 0;
+            // The following methods only apply to the compartment full conditionals, 
+            // but require dummy implementations for all FullConditionals to keep 
+            // the R dynamic loader happy. Consider factoring out separate FullConditional
+            // superclasses in the future. 
+            virtual int calculateRelevantCompartments() = 0;
+            virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
+
+            //Declaration for inherited methods
+            int sampleCompartment(ModelContext** context,
+                                  InitData** A0,
+                                  CompartmentalModelMatrix** drawCompartment,
+                                  CompartmentalModelMatrix** destCompartment,
+                                  CompartmentalModelMatrix** starCompartment,
+                                  double width); 
     };
 
     class FC_S_Star : public FullConditional
@@ -89,6 +104,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
             virtual ~FC_S_Star();
 
             ModelContext **context;
@@ -127,6 +144,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -161,6 +180,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
@@ -193,6 +214,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -223,6 +246,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **S_star;
@@ -253,6 +278,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -282,6 +309,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ~FC_P_EI();
             ModelContext** context;
@@ -309,6 +338,8 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
