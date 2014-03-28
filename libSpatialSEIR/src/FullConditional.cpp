@@ -147,17 +147,17 @@ namespace SpatialSEIR
         delete numLocations;
     }
 
-    int FullConditional::sampleCompartment(ModelContext** context,
-                                       InitData ** A0,
-                                       CompartmentalModelMatrix** drawCompartment,
-                                       CompartmentalModelMatrix** destCompartment,
-                                       CompartmentalModelMatrix** starCompartment,
+    int FullConditional::sampleCompartment(ModelContext* context,
+                                       InitData* A0,
+                                       CompartmentalModelMatrix* drawCompartment,
+                                       CompartmentalModelMatrix* destCompartment,
+                                       CompartmentalModelMatrix* starCompartment,
                                        double width)
     {
         // Declare required variables
         int i, j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*drawCompartment) -> ncol);
+        int nLoc = *(A0 -> numLocations);
+        int nTpts = *(drawCompartment -> ncol);
         double l,r,y,x,x0;
         
         // Update the relevant CompartmentalModelMatrix instances
@@ -178,17 +178,17 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++)
             {
                 compIdx++;
-                x = ((*starCompartment) -> data)[compIdx];
+                x = (starCompartment -> data)[compIdx];
                 this -> calculateRelevantCompartments(i,j); 
                 this -> evalCPU(i,j,cachedValues);
-                y = (this->getValue()) - ((*context) -> random -> gamma());
+                y = (this->getValue()) - (context -> random -> gamma());
                 l = 0.0;
                 r = l + width;
 
                 while (y >= (this -> getValue()))
                 {
-                    x0 = std::floor(((*context) -> random -> uniform())*(r));
-                    ((*starCompartment) -> data)[compIdx] = x0;
+                    x0 = std::floor((context -> random -> uniform())*(r));
+                    (starCompartment -> data)[compIdx] = x0;
                     this -> calculateRelevantCompartments(i,j);
                     this -> evalCPU(i,j,cachedValues);
                     r = (x0 < x ? r : x0); 
@@ -765,8 +765,8 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        this -> sampleCompartment(*context,*A0,*I,*R,
+                                  *R_star,10);
     }
     int FC_R_Star::sampleOCL()
     {

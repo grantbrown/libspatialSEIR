@@ -76,11 +76,11 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
 
             //Declaration for inherited methods
-            int sampleCompartment(ModelContext** context,
-                                  InitData** A0,
-                                  CompartmentalModelMatrix** drawCompartment,
-                                  CompartmentalModelMatrix** destCompartment,
-                                  CompartmentalModelMatrix** starCompartment,
+            int sampleCompartment(ModelContext* context,
+                                  InitData* A0,
+                                  CompartmentalModelMatrix* drawCompartment,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  CompartmentalModelMatrix* starCompartment,
                                   double width); 
     };
 
