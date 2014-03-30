@@ -1028,19 +1028,19 @@ namespace SpatialSEIR
     }
     int FC_Rho::calculateRelevantCompartments()
     {
-        //NOT VALID
-        throw(-1);
+       (*context) -> calculateP_SE_CPU();
+       return(0); 
     }
     int FC_Rho::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        //NOT VALID
+        //NOT IMPLEMENTED
         throw(-1);
     }
 
     int FC_Rho::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        sampleDouble(*context, *A0, *rho, 1, 0.5); 
+        return(0);
     }
     int FC_Rho::sampleOCL()
     {
