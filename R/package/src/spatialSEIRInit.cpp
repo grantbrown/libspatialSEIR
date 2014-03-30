@@ -122,35 +122,42 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
     // Test calculation functions. 
     
-    Rcpp::Rcout << "Calculating S\n";
-    context -> calculateS_CPU();
+    int tmp;
+    for (tmp = 0; tmp < 10; tmp ++)
+    {
+        Rcpp::Rcout << "Calculating S\n";
+        context -> calculateS_CPU();
 
-    Rcpp::Rcout << "Calculating E\n";
-    context -> calculateE_CPU();
-    
-    Rcpp::Rcout << "Calculating I\n";
-    context -> calculateI_CPU();
+        Rcpp::Rcout << "Calculating E\n";
+        context -> calculateE_CPU();
+        
+        Rcpp::Rcout << "Calculating I\n";
+        context -> calculateI_CPU();
 
-    Rcpp::Rcout << "Calculating R\n";
-    context -> calculateR_CPU();
+        Rcpp::Rcout << "Calculating R\n";
+        context -> calculateR_CPU();
 
-    Rcpp::Rcout << "Calculating P_SE from Starting Beta, I\n";
-    context -> calculateP_SE_CPU();
+        Rcpp::Rcout << "Calculating P_SE from Starting Beta, I\n";
+        context -> calculateP_SE_CPU();
 
-    Rcpp::Rcout << "Testing S_star sampling:\n";
-    context -> S_star_fc -> sampleCPU();
-    Rcpp::Rcout << "Testing I_star sampling:\n";
-    context -> E_star_fc -> sampleCPU();
-    Rcpp::Rcout << "Testing R_star sampling:\n";
-    context -> R_star_fc -> sampleCPU();
-    Rcpp::Rcout << "Testing Beta sampling:\n";
-    context -> beta_fc -> sampleCPU();
-    Rcpp::Rcout << "Testing P_RS sampling:\n";
-    context -> p_rs_fc -> sampleCPU();
-    Rcpp::Rcout << "Testing Rho sampling:\n";
-    context -> rho_fc -> sampleCPU();
-    Rcpp::Rcout << "Testing P_EI sampling:\n";
-    context -> p_ei_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing S_star sampling:\n";
+        context -> S_star_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing I_star sampling:\n";
+        context -> E_star_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing R_star sampling:\n";
+        context -> R_star_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing Beta sampling:\n";
+        context -> beta_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing P_RS sampling:\n";
+        context -> p_rs_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing Rho sampling:\n";
+        context -> rho_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing P_EI sampling:\n";
+        context -> p_ei_fc -> sampleCPU();
+        Rcpp::Rcout << "Testing P_IR sampling:\n";
+        context -> p_ir_fc -> sampleCPU();
+    }
+
 
 
 

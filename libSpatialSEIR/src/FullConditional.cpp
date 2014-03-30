@@ -812,7 +812,7 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 10.0); 
+        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 1.0); 
         return(0);
     }
     int FC_Beta::sampleOCL()
@@ -929,7 +929,7 @@ namespace SpatialSEIR
 
     int FC_P_RS::sampleCPU()
     {
-        sampleDouble(*context, *A0, *p_rs, *((*R)->ncol), 10.0); 
+        sampleDouble(*context, *A0, *p_rs, *((*R)->ncol), 0.2); 
         return(0);
     }
     int FC_P_RS::sampleOCL()
@@ -1039,7 +1039,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDouble(*context, *A0, *rho, 1, 0.5); 
+        sampleDouble(*context, *A0, *rho, 1, 0.2); 
         return(0);
     }
     int FC_Rho::sampleOCL()
@@ -1135,7 +1135,7 @@ namespace SpatialSEIR
 
     int FC_P_EI::sampleCPU()
     {
-        sampleDouble(*context, *A0, *p_ei, 1, 0.5); 
+        sampleDouble(*context, *A0, *p_ei, 1, 0.2); 
         return(0);
     }
     int FC_P_EI::sampleOCL()
@@ -1219,8 +1219,8 @@ namespace SpatialSEIR
     }
     int FC_P_IR::calculateRelevantCompartments()
     {
-        //NOT VALID
-        throw(-1);
+        // Not used, do nothing. 
+        return(0);
     }
     int FC_P_IR::calculateRelevantCompartments(int startLoc, int startTime)
     {
@@ -1230,8 +1230,8 @@ namespace SpatialSEIR
 
     int FC_P_IR::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        sampleDouble(*context, *A0, *p_ir, 1, 0.2); 
+        return(0);
     }
     int FC_P_IR::sampleOCL()
     {
