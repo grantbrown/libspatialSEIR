@@ -918,19 +918,19 @@ namespace SpatialSEIR
     }
     int FC_P_RS::calculateRelevantCompartments()
     {
-        //NOT VALID
-        throw(-1);
+        // Not used. Do nothing
+        return(0);
     }
     int FC_P_RS::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        //NOT VALID
-        throw(-1);
+        //Not used. Do nothing. 
+        return(0);
     }
 
     int FC_P_RS::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        sampleDouble(*context, *A0, *p_rs, *((*R)->ncol), 10.0); 
+        return(0);
     }
     int FC_P_RS::sampleOCL()
     {
@@ -945,7 +945,7 @@ namespace SpatialSEIR
 
 
     FC_Rho::FC_Rho(ModelContext *_context,
-                   CompartmentalModelMatrix *_E_star,
+                   CompartmentalModelMatrix *_E_star,  
                    CompartmentalModelMatrix *_S,
                    InitData *_A0,
                    CovariateMatrix *_X,

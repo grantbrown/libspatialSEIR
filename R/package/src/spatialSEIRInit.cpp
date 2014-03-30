@@ -145,6 +145,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> R_star_fc -> sampleCPU();
     Rcpp::Rcout << "Testing Beta sampling:\n";
     context -> beta_fc -> sampleCPU();
+    Rcpp::Rcout << "Testing P_RS sampling:\n";
+    context -> p_rs_fc -> sampleCPU();
+
 
 
 
