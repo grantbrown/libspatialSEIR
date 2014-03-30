@@ -1124,8 +1124,8 @@ namespace SpatialSEIR
     }
     int FC_P_EI::calculateRelevantCompartments()
     {
-        //NOT VALID
-        throw(-1);
+        // Not used, Do nothing
+        return(0);
     }
     int FC_P_EI::calculateRelevantCompartments(int startLoc, int startTime)
     {
@@ -1135,8 +1135,8 @@ namespace SpatialSEIR
 
     int FC_P_EI::sampleCPU()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        sampleDouble(*context, *A0, *p_ei, 1, 0.5); 
+        return(0);
     }
     int FC_P_EI::sampleOCL()
     {

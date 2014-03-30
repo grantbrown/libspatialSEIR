@@ -149,6 +149,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> p_rs_fc -> sampleCPU();
     Rcpp::Rcout << "Testing Rho sampling:\n";
     context -> rho_fc -> sampleCPU();
+    Rcpp::Rcout << "Testing P_EI sampling:\n";
+    context -> p_ei_fc -> sampleCPU();
+
 
 
 
