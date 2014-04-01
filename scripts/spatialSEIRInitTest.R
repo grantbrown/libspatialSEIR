@@ -86,7 +86,9 @@ p_rs = rep(c(rep(0.1, 8), rep(0.1,4), rep(0.1,8), rep(0.4,4), rep(0.5, 3),
 
 beta = c(covariates$true_fixed_beta, covariates$true_time_varying_beta)
 N = data_list[["pop"]][,2]
-
+outFileName = "./chainOutput.txt"
+logFileList = rep(0,10)
+iterationStride = 1
 res = spatialSEIRInit(compMatDim,xDim,
                       zDim,S0,
                       E0,I0,
@@ -98,6 +100,6 @@ res = spatialSEIRInit(compMatDim,xDim,
                       Z,DM,
                       rho,beta,
                       p_ei,p_ir,
-                      p_rs,N)
+                      p_rs,N,outFileName, logFileList, iterationStride)
 
 
