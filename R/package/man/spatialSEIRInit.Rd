@@ -12,7 +12,7 @@
 \usage{
     spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
                     Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,beta_,
-                    p_ei_,p_ir_,p_rs_,N_)
+                    p_ei_,p_ir_,p_rs_,N_,outFile,logVarList,iterationStride)
 }
 \arguments{
     \item{compMatDim}{
@@ -87,6 +87,18 @@
     \item{N_}{
         Population sizes at each spatial location (currently fixed)
     }
+    \item{outFile}{
+        Path to file where chain output will be stored. 
+    }
+    \item{logVarList}{
+        An integer vector, which must currently be of length 10. Nonzero entries indicate the the corresponding set of parameters should be saved to the output file specified in outFile. The entries correspond to: beta, rho, p_se, p_ei, p_ir, p_rs, S*, E*, I*, and R*.   
+    }
+    \item{iterationStride}{
+        Thinning to be used when saving iterations to disk. A stride of 1 will save all samples. 
+    }
+
+
+
 
 }
 \author{
