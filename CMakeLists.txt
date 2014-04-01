@@ -14,13 +14,18 @@ if(Boost_FOUND)
 	set(SpatialSEIR_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 	message(${SpatialSEIR_Boost_LIBRARIES})
 	message(${SpatialSEIR_Boost_INCLUDE_DIRS})
+else()
+    message("Error: Boost was not found on the system. This dependency 
+             will be relaxed in the release version of libSpatialSEIR,
+             which will allow the required random number generation
+             to be supplied by R, or potentially an embedded version
+             of the boost random library.")
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures"
                     "."
-					"${SpatialSEIR_Boost_INCLUDE_DIRS}"
-)
+					"${SpatialSEIR_Boost_INCLUDE_DIRS}")
 
 
 
