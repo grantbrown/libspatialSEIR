@@ -32,6 +32,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/ModelContext.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditional.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IOProvider.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/RandomNumberProvider.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CovariateMatrix.hpp"
@@ -39,6 +40,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/OCLProvider.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/ModelContext.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditional.hpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
 	"${SpatialSEIR_Boost_LIBRARIES}"
 	)
 
@@ -52,6 +54,7 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/OCLProvider.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/ModelContext.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditional.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
             DESTINATION include)
 
 

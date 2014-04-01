@@ -30,6 +30,7 @@ namespace SpatialSEIR
     class DistanceMatrix;
     class RandomNumberProvider;
     class OCLProvider;
+    class IOProvider;
 
     class ModelContext
     {
@@ -98,6 +99,7 @@ namespace SpatialSEIR
             void calculateP_SE_OCL();
         
             //Logic provider and utility classes
+            IOProvider *fileProvider;
             RandomNumberProvider *random;
             OCLProvider *oclProvider; 
             FC_S_Star *S_star_fc;

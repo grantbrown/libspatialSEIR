@@ -31,7 +31,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP p_ei_,
                      SEXP p_ir_,
                      SEXP p_rs_,
-                     SEXP N_)
+                     SEXP N_
+                     SEXP outFile,
+                     SEXP logVarList,
+                     SEXP iterationStride)
 {
     Rcpp::Rcout << "Wrapping input data in Rcpp vectors.\n";
     //Deal with the data conversion from R to c++
@@ -63,6 +66,12 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector p_ir(p_ir_);
     Rcpp::NumericVector p_rs(p_rs_);
     Rcpp::IntegerVector N(N_);
+
+    Rcpp::CharacterVector chainOutput(outFile);
+    Rcpp::IntegerVector chainOutputControl(logVarList); 
+    // logVarList: (Beta, rho,p_se,p_ei,p_ir,p_rs,S*, E*, I*, R*)
+    // Nonzero if respective variables are to be output
+    Rcpp::IntegerVector chainStride(iterationStride);
 
     Rcpp::Rcout << "Creating Model Context\n";
     // Create the empty ModelContext object  
@@ -119,10 +128,12 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                         p_ir.begin(),p_rs.begin(),N.begin());
     Rcpp::Rcout << "Calculating Eta\n";
     context -> X -> calculate_eta_CPU(context -> eta, context -> beta);
-
-    // Test calculation functions. 
     
-    int tmp;
+    //Initialize output file
+
+
+    // Test calculation functions.  
+    int tm;
     for (tmp = 0; tmp < 10; tmp ++)
     {
         Rcpp::Rcout << "Calculating S\n";
