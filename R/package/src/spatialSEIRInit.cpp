@@ -5,6 +5,7 @@
 #include <CovariateMatrix.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <DistanceMatrix.hpp>
+#include <IOProvider.hpp>
 using namespace Rcpp;
 using namespace SpatialSEIR;
 // [[Rcpp::export]]
@@ -31,7 +32,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP p_ei_,
                      SEXP p_ir_,
                      SEXP p_rs_,
-                     SEXP N_
+                     SEXP N_,
                      SEXP outFile,
                      SEXP logVarList,
                      SEXP iterationStride)
@@ -67,7 +68,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector p_rs(p_rs_);
     Rcpp::IntegerVector N(N_);
 
-    Rcpp::CharacterVector chainOutput(outFile);
+    std::string* chainOutputFile = new std::string(); 
+    *chainOutputFile = Rcpp::as<std::string>(outFile);
     Rcpp::IntegerVector chainOutputControl(logVarList); 
     // logVarList: (Beta, rho,p_se,p_ei,p_ir,p_rs,S*, E*, I*, R*)
     // Nonzero if respective variables are to be output
@@ -111,13 +113,18 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                                            &compartmentDimensions[0],
                                            &compartmentDimensions[1]);
 
-    Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[0] << "\n";
-    Rcpp::Rcout << "Rcpp Provided Num Times: " << compartmentDimensions[1] << "\n";
+    Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[0] 
+        << "\n";
+    Rcpp::Rcout << "Rcpp Provided Num Times: " << compartmentDimensions[1] 
+        << "\n";
 
     Rcpp::Rcout << "Creating raw and scaled distance matrices.\n";
-    context -> rawDistMat -> genFromDataStream(DistMat.begin(), &compartmentDimensions[0]);
-    context -> scaledDistMat -> genFromDataStream(DistMat.begin(), &compartmentDimensions[0]);
-    context -> scaledDistMat -> scaledInvFunc_CPU(60*60*2, context -> rawDistMat -> data);
+    context -> rawDistMat -> genFromDataStream(DistMat.begin(), 
+            &compartmentDimensions[0]);
+    context -> scaledDistMat -> genFromDataStream(DistMat.begin(), 
+            &compartmentDimensions[0]);
+    context -> scaledDistMat -> scaledInvFunc_CPU(60*60*2, context -> 
+            rawDistMat -> data);
 
     // Populate the Time 0 initialization data
     context -> A0 ->  populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
@@ -128,12 +135,13 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                         p_ir.begin(),p_rs.begin(),N.begin());
     Rcpp::Rcout << "Calculating Eta\n";
     context -> X -> calculate_eta_CPU(context -> eta, context -> beta);
-    
-    //Initialize output file
 
+    // Set up output stream
+    context -> fileProvider -> populate(context, chainOutputFile,
+            (int*) chainOutputControl.begin(),(int*) chainStride.begin());
 
     // Test calculation functions.  
-    int tm;
+    int tmp;
     for (tmp = 0; tmp < 10; tmp ++)
     {
         Rcpp::Rcout << "Calculating S\n";
@@ -171,16 +179,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
 
 
-
-
-
-
-
-
-
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
     // Clean up
     Rcpp::Rcout << "Finished.\n";
+    delete chainOutputFile;
     return ptr;
 }

@@ -14,10 +14,18 @@ namespace SpatialSEIR
     {
         public:
             //methods
+            //Empty Constructor
+            IOProvider();
+            //Full Constructor
             IOProvider(ModelContext* context,
                        std::string* outFilePath, 
                        int* variableList,
                        int* iterationStride);
+            //Initialize
+            int populate(ModelContext* context,
+                         std::string* outFilePath,
+                         int* variableList,
+                         int* iterationStride);
             int close();
             int fileInit();
             int catIter(int iteration);

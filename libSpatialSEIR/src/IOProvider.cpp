@@ -5,7 +5,23 @@
 namespace SpatialSEIR
 {
 
+
+    IOProvider::IOProvider()
+    {
+        // Empty constructor, do nothing. 
+    }
+
     IOProvider::IOProvider(ModelContext* _context,
+                           std::string* _outFilePath,
+                           int* _variableList,
+                           int* _iterationStride)
+    {
+        this -> populate(&*_context,&*_outFilePath, &*_variableList, 
+                &*_iterationStride);
+    }
+
+
+    int IOProvider::populate(ModelContext* _context,
                            std::string* _outFilePath,
                            int* _variableList,
                            int* _iterationStride)
@@ -25,7 +41,7 @@ namespace SpatialSEIR
         {
             variableList[i] = _variableList[i];
         } 
-        this -> fileInit();
+        return(this -> fileInit());
     }
 
     int IOProvider::fileInit()

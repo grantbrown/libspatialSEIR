@@ -40,6 +40,7 @@ namespace SpatialSEIR
         beta = new double; *beta = -1.0;
         eta = new double; *eta = -1.0;
         rho = new double; *rho = 0.25;
+        fileProvider = new IOProvider();
     }
 
     void ModelContext::populate()
@@ -354,6 +355,7 @@ namespace SpatialSEIR
 
     ModelContext::~ModelContext()
     {
+        delete fileProvider;
         delete random;
         delete S_star;
         delete E_star;
