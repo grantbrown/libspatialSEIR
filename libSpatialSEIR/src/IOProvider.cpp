@@ -46,6 +46,11 @@ namespace SpatialSEIR
 
     int IOProvider::fileInit()
     {
+        int i, j;
+
+        int nLoc = *((*context)->S->ncol);
+        int nTpt = *((*context)->S->ncol);
+
         // Clear file 
         FILE* tmp = fopen(outFilePath -> c_str(), "w");
         fclose(tmp);
@@ -54,49 +59,100 @@ namespace SpatialSEIR
         *isOpen = true;
         outFileStream -> open(outFilePath -> c_str());
 
-        // Write header.
         // Is there a more concise way to code this?
-        // Write Iteration header
         if (variableList[0] != 0)
         {
-            // Write beta header
+            int betaLen = ((*context) -> X -> ncol_x) + ((*context) -> X -> ncol_z); 
+            for (i = 0; i < betaLen; i++)
+            {
+                (*outFileStream) << "B" << i << ", "; 
+            }    
         }
         if (variableList[1] != 0)
         {
             // Write rho header
+            (*outFileStream) << "rho,";
+        
         }
         if (variableList[2] != 0)
         {
             // Write p_se header
+            for (i = 0; i < nLoc; i++)
+            {
+                for (j = 0; j < nLoc, j++)
+                {
+                    (*outFileStream) << "pSE_" << i << "_" << j << ",";
+                }
+            }
         }
         if (variableList[3] != 0)
         {
             // Write p_ei header
+            (*outFileStream) << "p_ei" << ",";
         }
         if (variableList[4] != 0)
         {
             // Write p_ir header
+            (*outFileStream) << "p_ir" << ",";
+
         }
         if (variableList[5] != 0)
         {
             // Write p_rs header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "pRS_" << j << ",";
+            }
+
         }
         if (variableList[6] != 0)
         {
             // Write S* header
+            for (i = 0; i < nLoc; i++)
+            {
+                for (j = 0; j < nLoc, j++)
+                {
+                    (*outFileStream) << "Sstar" << i << "_" << j << ",";
+                }
+            }
         }
         if (variableList[7] != 0)
         {
             // Write E* header
+            for (i = 0; i < nLoc; i++)
+            {
+                for (j = 0; j < nLoc, j++)
+                {
+                    (*outFileStream) << "Estar" << i << "_" << j << ",";
+                }
+            }
+
         }
         if (variableList[8] != 0)
         {
             // Write I* header
+            for (i = 0; i < nLoc; i++)
+            {
+                for (j = 0; j < nLoc, j++)
+                {
+                    (*outFileStream) << "Istar" << i << "_" << j << ",";
+                }
+            }
+
         }
         if (variableList[9] != 0)
         {
             // Write R* header
+            for (i = 0; i < nLoc; i++)
+            {
+                for (j = 0; j < nLoc, j++)
+                {
+                    (*outFileStream) << "Rstar" << i << "_" << j << ",";
+                }
+            }
         }
+        (*outFileStream) << "Iteration\n";
+        // Write iteration number
         //Newline
         return(0);
     }
