@@ -1,5 +1,7 @@
 #include <IOProvider.hpp>
 #include <ModelContext.hpp>
+#include <CompartmentalModelMatrix.hpp>
+#include <CovariateMatrix.hpp>
 
 
 namespace SpatialSEIR
@@ -62,7 +64,7 @@ namespace SpatialSEIR
         // Is there a more concise way to code this?
         if (variableList[0] != 0)
         {
-            int betaLen = ((*context) -> X -> ncol_x) + ((*context) -> X -> ncol_z); 
+            int betaLen = (*((*context) -> X -> ncol_x)) + (*((*context) -> X -> ncol_z)); 
             for (i = 0; i < betaLen; i++)
             {
                 (*outFileStream) << "B" << i << ", "; 
@@ -79,7 +81,7 @@ namespace SpatialSEIR
             // Write p_se header
             for (i = 0; i < nLoc; i++)
             {
-                for (j = 0; j < nLoc, j++)
+                for (j = 0; j < nTpt; j++)
                 {
                     (*outFileStream) << "pSE_" << i << "_" << j << ",";
                 }
@@ -110,7 +112,7 @@ namespace SpatialSEIR
             // Write S* header
             for (i = 0; i < nLoc; i++)
             {
-                for (j = 0; j < nLoc, j++)
+                for (j = 0; j < nTpt; j++)
                 {
                     (*outFileStream) << "Sstar" << i << "_" << j << ",";
                 }
@@ -121,7 +123,7 @@ namespace SpatialSEIR
             // Write E* header
             for (i = 0; i < nLoc; i++)
             {
-                for (j = 0; j < nLoc, j++)
+                for (j = 0; j < nTpt; j++)
                 {
                     (*outFileStream) << "Estar" << i << "_" << j << ",";
                 }
@@ -133,7 +135,7 @@ namespace SpatialSEIR
             // Write I* header
             for (i = 0; i < nLoc; i++)
             {
-                for (j = 0; j < nLoc, j++)
+                for (j = 0; j < nTpt; j++)
                 {
                     (*outFileStream) << "Istar" << i << "_" << j << ",";
                 }
@@ -145,7 +147,7 @@ namespace SpatialSEIR
             // Write R* header
             for (i = 0; i < nLoc; i++)
             {
-                for (j = 0; j < nLoc, j++)
+                for (j = 0; j < nTpt; j++)
                 {
                     (*outFileStream) << "Rstar" << i << "_" << j << ",";
                 }
