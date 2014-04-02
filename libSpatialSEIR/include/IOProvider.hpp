@@ -1,6 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include<cstdio>
+#include<time.h>
 
 #ifndef IO_PROVIDER_INC
 #define IO_PROVIDER_INC
@@ -36,6 +37,8 @@ namespace SpatialSEIR
             int* variableList;
             int* iterationStride;
             bool* isOpen;
+            time_t* timer;
+            time_t* startTime;
             std::ofstream* outFileStream;
             std::string* outFilePath;
     };

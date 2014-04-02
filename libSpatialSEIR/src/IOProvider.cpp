@@ -2,6 +2,7 @@
 #include <ModelContext.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <CovariateMatrix.hpp>
+#include<time.h>
 
 
 namespace SpatialSEIR
@@ -43,6 +44,9 @@ namespace SpatialSEIR
         {
             variableList[i] = _variableList[i];
         } 
+        timer = new time_t;
+        startTime = new time_t;
+        time(&*startTime); // Set start time
         return(this -> fileInit());
     }
 
@@ -152,7 +156,7 @@ namespace SpatialSEIR
                 }
             }
         }
-        (*outFileStream) << "Iteration\n";
+        (*outFileStream) << "Iteration,Time\n";
         // Write iteration number
         //Newline
         return(0);
@@ -251,10 +255,9 @@ namespace SpatialSEIR
             {
                 (*outFileStream) << ((*context) -> R_star -> data)[i] << ",";
             }
-
         }
 
-        (*outFileStream) << iteration << "\n";
+        (*outFileStream) << iteration << difftime(time(&*timer), *startTime)  <<"\n";
         return(0);
     }
     int IOProvider::close()
@@ -275,6 +278,7 @@ namespace SpatialSEIR
         delete[] variableList;
         delete outFilePath;
         delete outFileStream;
+        delete timer;
     }
 
 }
