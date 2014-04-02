@@ -18,6 +18,13 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    struct compartmentArgs
+    {
+        int *inData;
+        int *inRow;
+        int *inCol;
+    };
+
     class CompartmentalModelMatrix
     {
         public:

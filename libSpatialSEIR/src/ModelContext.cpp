@@ -43,8 +43,59 @@ namespace SpatialSEIR
         fileProvider = new IOProvider();
     }
 
-    void ModelContext::populate()
-    { 
+    void ModelContext::populate(InitData* _A0,
+                                covariateArgs* xArgs, 
+                                compartmentArgs* S_starArgs,
+                                compartmentArgs* E_starArgs,
+                                compartmentArgs* I_starArgs,
+                                compartmentArgs* R_starArgs,
+                                distanceArgs* rawDistArgs,
+                                scaledDistanceArgs* scaledDistArgs,
+                                double* rho_, double* beta_, double* p_ei_, 
+                                double* p_ir_, double* p_rs_, int* N_)
+    {
+        *A0 = *_A0;
+
+        X -> genFromDataStream(xArgs -> inData_x, 
+                               xArgs -> inData_z,
+                               xArgs -> inRow_x,
+                               xArgs -> inCol_x,
+                               xArgs -> inRow_z,
+                               xArgs -> inCol_z);
+        S_star -> genFromDataStream(S_starArgs -> inData,
+                                    S_starArgs -> inRow,
+                                    S_starArgs -> inCol);
+        E_star -> genFromDataStream(E_starArgs -> inData,
+                                    E_starArgs -> inRow,
+                                    E_starArgs -> inCol);
+        I_star -> genFromDataStream(I_starArgs -> inData,
+                                    I_starArgs -> inRow,
+                                    I_starArgs -> inCol);
+        R_star -> genFromDataStream(R_starArgs -> inData,
+                                    R_starArgs -> inRow,
+                                    R_starArgs -> inCol);
+
+
+
+        S -> createEmptyCompartment(S_starArgs -> inRow,
+                                    S_starArgs -> inCol);
+
+        E -> createEmptyCompartment(S_starArgs -> inRow,
+                                    S_starArgs -> inCol);
+
+        I -> createEmptyCompartment(S_starArgs -> inRow,
+                                    S_starArgs -> inCol);
+
+        R -> createEmptyCompartment(S_starArgs -> inRow,
+                                    S_starArgs -> inCol);
+
+        rawDistMat -> genFromDataStream(rawDistArgs -> inData,
+                                        rawDistArgs -> dim);
+        scaledDistMat -> genFromDataStream(rawDistArgs -> inData,
+                                           rawDistArgs -> dim);
+        scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi), 
+                                           &*(scaledDistArgs -> inData));
+
         delete N; delete beta; delete eta;
         N = new int[*(A0 -> numLocations)]; // Vector, could be changed to
                                             // a time varying matrix
@@ -115,16 +166,13 @@ namespace SpatialSEIR
                              R_star,
                              I,
                              A0,p_ir);
-    }
-    void ModelContext::populate(double* rho_, double* beta_, double* p_ei_, 
-                                double* p_ir_, double* p_rs_, int* N_)
-    {
-        this -> populate();
+
+        // Add initial data 
+
         *rho = *rho_;
         *p_ei = *p_ei_;
         *p_ir = *p_ir_;
 
-        int i;
         for (i = 0; i < (*(X -> ncol_x) + (*(X -> ncol_z))); i++)
         {
             beta[i] = beta_[i];
@@ -138,6 +186,7 @@ namespace SpatialSEIR
             N[i] = N_[i];
         } 
     }
+
     void ModelContext::simulationIter(int* useOCL, bool verbose = false)
     {
         if (verbose){std::cout << "Sampling S_star\n";}

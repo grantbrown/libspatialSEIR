@@ -18,6 +18,16 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    struct covariateArgs
+    {
+        double* inData_x;
+        double* inData_z;
+        int* inRow_x;
+        int* inCol_x;
+        int* inRow_z;
+        int* inCol_z;
+    };
+
     class CovariateMatrix
     {
         public:

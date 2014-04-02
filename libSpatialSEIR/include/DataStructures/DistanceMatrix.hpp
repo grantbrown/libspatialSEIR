@@ -18,6 +18,19 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    struct distanceArgs
+    {
+        double* inData;
+        int* dim; 
+    };
+
+    struct scaledDistanceArgs
+    {
+        double* phi;
+        double* inData;
+        int* dim;
+    };
+
     // Begin with a naive implementation, this should eventually 
     // be updated to take advantage of the inherent sparsity of 
     // a distance matrix with a max range, as well as the structure 

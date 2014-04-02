@@ -75,66 +75,67 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // Nonzero if respective variables are to be output
     Rcpp::IntegerVector chainStride(iterationStride);
 
-    Rcpp::Rcout << "Creating Model Context\n";
-    // Create the empty ModelContext object  
-    ModelContext* context = new ModelContext();
-
-    Rcpp::Rcout << "Loading covariate information into model context object\n";
-    // Create the covariate matrix object. 
-    context -> X -> genFromDataStream(X.begin(), 
-                                Z.begin(),
-                                &covariateDimensions_x[0], 
-                                &covariateDimensions_x[1],
-                                &covariateDimensions_z[0], 
-                                &covariateDimensions_z[1]);
-
-    Rcpp::Rcout << "Creating empty S,E,I,R matrices.\n";
-    // Populate the CompartmentalModelMatrix objects.  
-    context -> S -> createEmptyCompartment(&compartmentDimensions[0],
-                                           &compartmentDimensions[1]); 
-    context -> E -> createEmptyCompartment(&compartmentDimensions[0],
-                                           &compartmentDimensions[1]); 
-    context -> I -> createEmptyCompartment(&compartmentDimensions[0],
-                                           &compartmentDimensions[1]); 
-    context -> R -> createEmptyCompartment(&compartmentDimensions[0],
-                                           &compartmentDimensions[1]); 
-
-    Rcpp::Rcout << "Filling initial S_star, E_star, I_star_ R_star matrices.\n";
-    context -> S_star -> genFromDataStream(S_star.begin(), 
-                                           &compartmentDimensions[0],
-                                           &compartmentDimensions[1]);
-    context -> E_star -> genFromDataStream(E_star.begin(), 
-                                           &compartmentDimensions[0],
-                                           &compartmentDimensions[1]);
-    context -> I_star -> genFromDataStream(I_star.begin(), 
-                                           &compartmentDimensions[0],
-                                           &compartmentDimensions[1]);
-    context -> R_star -> genFromDataStream(R_star.begin(), 
-                                           &compartmentDimensions[0],
-                                           &compartmentDimensions[1]);
 
     Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[0] 
         << "\n";
     Rcpp::Rcout << "Rcpp Provided Num Times: " << compartmentDimensions[1] 
         << "\n";
 
-    Rcpp::Rcout << "Creating raw and scaled distance matrices.\n";
-    context -> rawDistMat -> genFromDataStream(DistMat.begin(), 
-            &compartmentDimensions[0]);
-    context -> scaledDistMat -> genFromDataStream(DistMat.begin(), 
-            &compartmentDimensions[0]);
-    context -> scaledDistMat -> scaledInvFunc_CPU(60*60*2, context -> 
-            rawDistMat -> data);
+    // Gather information for the creation of the 
+    // covariate matrix
+    covariateArgs xArgs;
+    xArgs.inData_x = X.begin();
+    xArgs.inData_z = Z.begin();
+    xArgs.inRow_x = &covariateDimensions_x[0];
+    xArgs.inCol_x = &covariateDimensions_x[1];
+    xArgs.inRow_z = &covariateDimensions_z[0];
+    xArgs.inCol_z = &covariateDimensions_z[1];
 
-    // Populate the Time 0 initialization data
-    context -> A0 ->  populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
-                               S_star0.begin(),E_star0.begin(),I_star0.begin(),
-                               R_star0.begin(),&compartmentDimensions[0]);
+    // Gather information for the creation of the compartment matrices 
+    
+    compartmentArgs S_starArgs, E_starArgs, I_starArgs, R_starArgs;
+    S_starArgs.inData = S_star.begin();
+    S_starArgs.inRow = &compartmentDimensions[0];
+    S_starArgs.inCol = &compartmentDimensions[1];
+
+    E_starArgs.inData = S_star.begin();
+    E_starArgs.inRow = &compartmentDimensions[0];
+    E_starArgs.inCol = &compartmentDimensions[1];
+
+    I_starArgs.inData = S_star.begin();
+    I_starArgs.inRow = &compartmentDimensions[0];
+    I_starArgs.inCol = &compartmentDimensions[1];
+
+    R_starArgs.inData = S_star.begin();
+    R_starArgs.inRow = &compartmentDimensions[0];
+    R_starArgs.inCol = &compartmentDimensions[1];
+
+    // Gather information for the creation of the distance matrices
+
+    double phi = 60*60*2.0;
+    distanceArgs rawDistArgs; scaledDistanceArgs scaledDistArgs;
+    rawDistArgs.inData = DistMat.begin(); 
+    rawDistArgs.dim = &compartmentDimensions[0];
+    scaledDistArgs.phi = &phi; 
+    scaledDistArgs.inData = DistMat.begin();
+    scaledDistArgs.dim = &compartmentDimensions[0];
+    Rcpp::Rcout << "Loading covariate information into model context object\n";
+
+    // Create the InitData object 
+    InitData A0;
+    A0.populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
+                S_star0.begin(),E_star0.begin(),I_star0.begin(),
+                R_star0.begin(),&compartmentDimensions[0]);
+
+    Rcpp::Rcout << "Creating Model Context\n";
+    // Create the empty ModelContext object  
+    ModelContext* context = new ModelContext();
+
     Rcpp::Rcout << "Populating Model Context\n";
-    context -> populate(rho.begin(), beta.begin(), p_ei.begin(), 
-                        p_ir.begin(),p_rs.begin(),N.begin());
-    Rcpp::Rcout << "Calculating Eta\n";
-    context -> X -> calculate_eta_CPU(context -> eta, context -> beta);
+    context -> populate(&A0, &xArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
+                        &R_starArgs, &rawDistArgs,&scaledDistArgs,rho.begin(),
+                        beta.begin(),p_ei.begin(), p_ir.begin(),p_rs.begin(),
+                        N.begin());
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
@@ -142,11 +143,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
     // Test calculation functions.  
     context -> runSimulation_CPU(2,true);
-
     context -> fileProvider -> close();
-
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
-
     // Clean up
     Rcpp::Rcout << "Finished.\n";
     delete chainOutputFile;

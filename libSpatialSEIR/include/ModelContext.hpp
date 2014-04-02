@@ -31,6 +31,10 @@ namespace SpatialSEIR
     class RandomNumberProvider;
     class OCLProvider;
     class IOProvider;
+    struct covariateArgs;
+    struct compartmentArgs;
+    struct distanceArgs;
+    struct scaledDistanceArgs;
 
     class ModelContext
     {
@@ -39,11 +43,15 @@ namespace SpatialSEIR
             ModelContext();
             ~ModelContext(); 
 
-            // Allocate numeric vectors owned by ModelContext.. 
-            // Can only be called once A0 is initialized.
-            // Option to initialize rho, p_se (via beta), p_ei, p_ir, p_rs with external data. 
-            void populate();
-            void populate(double* rho, double* beta, double* p_ei, 
+            void populate(InitData* _A0,
+                          covariateArgs* xArgs,
+                          compartmentArgs* S_starArgs, 
+                          compartmentArgs* E_starArgs,
+                          compartmentArgs* I_starArgs,
+                          compartmentArgs* R_starArgs,
+                          distanceArgs* rawDistArgs,
+                          scaledDistanceArgs* scaledDistArgs,
+                          double* rho, double* beta, double* p_ei, 
                           double* p_ir, double* p_rs, int* N);
 
 
