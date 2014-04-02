@@ -49,7 +49,6 @@ namespace SpatialSEIR
     int IOProvider::fileInit()
     {
         int i, j;
-
         int nLoc = *((*context)->S->ncol);
         int nTpt = *((*context)->S->ncol);
 
@@ -160,8 +159,103 @@ namespace SpatialSEIR
     }
     int IOProvider::catIter(int iteration)
     {
-        //Not Implemented 
-        throw(-1);
+        int i, j;
+        int nLoc = *((*context)->S->ncol);
+        int nTpt = *((*context)->S->ncol);
+
+        if (iteration % (*iterationStride) != 0)
+        {
+            return(1);
+        }
+
+        // Is there a more concise way to code this?
+        if (variableList[0] != 0)
+        {
+            int betaLen = (*((*context) -> X -> ncol_x)) + (*((*context) -> X -> ncol_z)); 
+            for (i = 0; i < betaLen; i++)
+            {
+                (*outFileStream) << ((*context) -> beta)[i] << ", "; 
+            }    
+        }
+
+        if (variableList[1] != 0)
+        {
+            // Write rho header
+            (*outFileStream) << *((*context) -> rho) << ",";
+        
+        }
+
+        if (variableList[2] != 0)
+        {
+            // Write p_se header
+            for (i = 0; i < nLoc; i++)
+            {
+                for (j = 0; j < nTpt; j++)
+                {
+                    (*outFileStream) << ((*context)->p_se)[i] <<  ",";
+                }
+            }
+        }
+
+        if (variableList[3] != 0)
+        {
+            // Write p_ei header
+            (*outFileStream) << *((*context) -> p_ei) << ",";
+        }
+
+        if (variableList[4] != 0)
+        {
+            // Write p_ir header
+            (*outFileStream) << *((*context) -> p_ir) << ",";
+
+        }
+        if (variableList[5] != 0)
+        {
+            // Write p_rs header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << ((*context)->p_rs)[j] << ",";
+            }
+
+        }
+
+        if (variableList[6] != 0)
+        {
+            // Write S* header
+            for (i = 0; i < nTpt*nLoc; i++)
+            {
+                (*outFileStream) << ((*context) -> S_star -> data)[i] << ",";
+            }
+        }
+
+        if (variableList[7] != 0)
+        {
+            // Write E* header
+            for (i = 0; i < nTpt*nLoc; i++)
+            {
+                (*outFileStream) << ((*context) -> E_star -> data)[i] << ",";
+            }
+        }
+        if (variableList[8] != 0)
+        {
+            // Write I* header
+            for (i = 0; i < nTpt*nLoc; i++)
+            {
+                (*outFileStream) << ((*context) -> I_star -> data)[i] << ",";
+            }
+        }
+        if (variableList[9] != 0)
+        {
+            // Write R* header
+            for (i = 0; i < nTpt*nLoc; i++)
+            {
+                (*outFileStream) << ((*context) -> R_star -> data)[i] << ",";
+            }
+
+        }
+
+        (*outFileStream) << iteration << "\n";
+        return(0);
     }
     int IOProvider::close()
     {
