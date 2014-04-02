@@ -138,6 +138,66 @@ namespace SpatialSEIR
             N[i] = N_[i];
         } 
     }
+    void ModelContext::simulationIter(int* useOCL, bool verbose = false)
+    {
+        if (verbose){std::cout << "Sampling S_star\n";}
+        if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
+        else {S_star_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling E_star\n";}
+        if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
+        else {E_star_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling R_star\n";}
+        if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
+        else {S_star_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling beta\n";}
+        if (useOCL[3] == 0){beta_fc -> sampleCPU();}
+        else {beta_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling p_rs\n";}
+        if (useOCL[4] == 0){p_rs_fc -> sampleCPU();}
+        else {p_rs_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling p_ei\n";}
+        if (useOCL[5] == 0){p_ei_fc -> sampleCPU();}
+        else {p_ei_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling p_ir\n";}
+        if (useOCL[6] == 0){p_ir_fc -> sampleCPU();}
+        else {p_ir_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling rho\n";}
+        if (useOCL[7] == 0){rho_fc -> sampleCPU();}
+        else {rho_fc -> sampleOCL();}
+    }
+
+
+    // Method: runSimulation
+    // Accesses: Everything lol
+    // Updates: Everything lol
+    void ModelContext::runSimulation(int nIterations, int* useOCL, bool verbose = false)
+    {
+        int i;
+        for (i = 0; i < nIterations; i++)
+        {
+            this -> simulationIter(&*useOCL, verbose);
+            this -> fileProvider -> catIter(i);
+        }
+
+    }
+
+    void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false)
+    {
+        int i;
+        int useOCL[8] = {0};
+        for (i = 0; i < nIterations; i++)
+        {
+            this -> simulationIter(&*useOCL, verbose);
+            this -> fileProvider -> catIter(i);
+        }
+    }
 
     // Method: calculateS
     // Accesses: A0, S_star, E_star

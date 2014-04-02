@@ -92,6 +92,12 @@ namespace SpatialSEIR
                                                  int *compStarAdd, int *compStarSub,
                                                  int *compStar0Add, int *compStar0Sub);
 
+            // Run main simulation 
+            void simulationIter(int* useOCL, bool verbose);
+            void runSimulation(int nIterations, int* useOCL, bool verbose);
+            void runSimulation_CPU(int nIterations, bool verbose);
+
+
             // Method: calculatePi
             // Accesses: beta, I, N, distMat, rho
             // Updates: p_se
