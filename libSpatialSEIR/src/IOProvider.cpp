@@ -167,7 +167,7 @@ namespace SpatialSEIR
         int nLoc = *((*context)->S->ncol);
         int nTpt = *((*context)->S->ncol);
 
-        if (iteration % (*iterationStride) != 0)
+        if ((iteration % (*iterationStride)) != 0)
         {
             return(1);
         }
@@ -256,8 +256,8 @@ namespace SpatialSEIR
                 (*outFileStream) << ((*context) -> R_star -> data)[i] << ",";
             }
         }
-
-        (*outFileStream) << iteration << difftime(time(&*timer), *startTime)  <<"\n";
+        (*outFileStream) << iteration << "," << difftime(time(&*timer), *startTime)  <<"\n";
+        outFileStream -> flush();
         return(0);
     }
     int IOProvider::close()

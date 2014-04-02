@@ -143,6 +143,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // Test calculation functions.  
     context -> runSimulation_CPU(2,true);
 
+    context -> fileProvider -> close();
+
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
 
     // Clean up
