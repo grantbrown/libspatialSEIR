@@ -937,9 +937,9 @@ namespace SpatialSEIR
         for (j = 0; j < *((*R) -> ncol); j++)
         {
             a = ((*S_star)-> marginSum(2,j));
-            b = ((*R) -> marginSum(2,j)) - a; 
-            std::cout << "Parms: " << a +1.5 << ", " << b + 1.5 << "\n";
-            (*p_rs)[j] = ((*context) -> random -> beta(a+1.5, b+1.5));
+            b = ((*R) -> marginSum(2,j)); 
+            std::cout << "Parms: " << a << ", " << b << "\n";
+            (*p_rs)[j] = ((*context) -> random -> beta(a+1.5, b-a+1.5));
         }
         return(0);
     }

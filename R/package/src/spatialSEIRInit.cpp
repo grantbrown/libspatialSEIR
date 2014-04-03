@@ -98,15 +98,15 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     S_starArgs.inRow = &compartmentDimensions[0];
     S_starArgs.inCol = &compartmentDimensions[1];
 
-    E_starArgs.inData = S_star.begin();
+    E_starArgs.inData = E_star.begin();
     E_starArgs.inRow = &compartmentDimensions[0];
     E_starArgs.inCol = &compartmentDimensions[1];
 
-    I_starArgs.inData = S_star.begin();
+    I_starArgs.inData = I_star.begin();
     I_starArgs.inRow = &compartmentDimensions[0];
     I_starArgs.inCol = &compartmentDimensions[1];
 
-    R_starArgs.inData = S_star.begin();
+    R_starArgs.inData = R_star.begin();
     R_starArgs.inRow = &compartmentDimensions[0];
     R_starArgs.inCol = &compartmentDimensions[1];
 
@@ -141,7 +141,6 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> fileProvider -> populate(context, chainOutputFile,
             (int*) chainOutputControl.begin(),(int*) chainStride.begin());
 
-    // Test calculation functions.  
     context -> runSimulation_CPU(3,true);
     context -> fileProvider -> close();
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
