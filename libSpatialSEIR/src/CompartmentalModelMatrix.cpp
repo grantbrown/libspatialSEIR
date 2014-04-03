@@ -53,6 +53,38 @@ namespace SpatialSEIR
             data[i] = 0;
         }
     }
+    int CompartmentalModelMatrix::marginSum(int margin, int slice)
+    {
+        int output = 0;
+        int startIdx, i;
+        // Rowsum
+        if (margin == 1)
+        {
+            startIdx = slice;
+            for (i = 0; i < (*ncol); i++)
+            {
+                output += data[startIdx + i*(*nrow)];    
+            }
+            return(output);
+        }
+        // Colsum
+        else if (margin == 2)
+        {
+            startIdx = slice*(*nrow);
+            for (i = 0; i < (*nrow); i++)
+            {
+                output += data[startIdx + i];
+            }
+            return(output);
+        }
+        // Anything else indicates a total sum
+        int maxIdx = (*nrow)*(*ncol);
+        for (i = 0; i < maxIdx; i++)
+        {
+            output += data[i];
+        }
+        return(output);
+    }
 
 
     int CompartmentalModelMatrix::readDataFile(const char fn[])

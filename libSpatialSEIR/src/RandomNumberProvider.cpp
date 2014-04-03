@@ -37,6 +37,11 @@ namespace SpatialSEIR
     {
         return(gammadist(generator));
     }
+    double RandomNumberProvider::gamma(double a)
+    {
+        boost::random::gamma_distribution<> gdist(a);
+        return(gdist(generator));  
+    }
     double* RandomNumberProvider::gamma(int n)
     {
         double* output = new double[n];
@@ -55,6 +60,12 @@ namespace SpatialSEIR
             output[i] = gammadist(generator);
         }
         return(output);
+    }
+    double RandomNumberProvider::beta(double a, double b)
+    {
+        double v1 = gamma(a); 
+        double v2 = gamma(b);
+        return(v1/(v1 + v2));
     }
     RandomNumberProvider::~RandomNumberProvider()
     {

@@ -33,6 +33,7 @@ namespace SpatialSEIR
             int genFromText(std::string filename);
             int genFromDataStream(int *indata, int *inrow, int *incol);
             int createEmptyCompartment(int *inrow, int *incol);
+            int marginSum(int margin, int slice);
             ~CompartmentalModelMatrix();
 
             // Attributes

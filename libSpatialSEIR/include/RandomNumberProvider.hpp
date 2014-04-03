@@ -38,8 +38,10 @@ namespace SpatialSEIR
             double* uniform(int n);
             double* uniform(int n, double* output);
             double gamma();
+            double gamma(double a);
             double* gamma(int n);
             double* gamma(int n, double* output);
+            double beta(double a, double b);
             ~RandomNumberProvider();
     };
 }

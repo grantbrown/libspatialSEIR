@@ -148,6 +148,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
+            std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
@@ -156,17 +157,17 @@ namespace SpatialSEIR
                 this -> calculateRelevantCompartments(i,j); 
                 this -> evalCPU(i,j,cachedValues);
                 y = (this->getValue()) - (context -> random -> gamma());
-                l = 0.0;
+                l = std::max(0.0, (x - (context -> random -> uniform())*width));
                 r = l + width;
 
-                while (y >= (this -> getValue()))
+                do 
                 {
                     x0 = std::floor((context -> random -> uniform())*(r));
                     (starCompartment -> data)[compIdx] = x0;
                     this -> calculateRelevantCompartments(i,j);
                     this -> evalCPU(i,j,cachedValues);
                     r = (x0 < x ? r : x0); 
-                }
+                } while (y >= (this -> getValue()));
             }
         }
 
@@ -197,17 +198,17 @@ namespace SpatialSEIR
             this -> calculateRelevantCompartments(); 
             this -> evalCPU();
             y = (this->getValue()) - (context -> random -> gamma());
-            l = 0.0;
+            l = x - ((context -> random -> uniform())*width);
             r = l + width;
 
-            while (y >= (this -> getValue()))
+            do
             {
-                x0 = (context -> random -> uniform())*(r);
+                x0 = ((context -> random -> uniform())*(r-l) + l);
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
                 this -> evalCPU();
                 r = (x0 < x ? r : x0);  
-            }
+            } while (y >= (this -> getValue()));
         }
         return 0;
 
@@ -280,10 +281,10 @@ namespace SpatialSEIR
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx += 1;
+                compIdx++;
                 tmp = ((*S_star) -> data)[compIdx];
-                cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp +  
-                                   std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp) +
+                cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp - 
+                                   std::log(1-(*p_rs)[j])*(tmp) +
                                    std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
             }
         } 
@@ -304,7 +305,7 @@ namespace SpatialSEIR
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx += 1;
+                compIdx++;
                 tmp = ((*S_star) -> data)[compIdx];
                 // We're only getting non-negative values
                 //if (tmp < 0)
@@ -313,7 +314,7 @@ namespace SpatialSEIR
                 //    return(-1);
                 //}
                 term1 += std::log((*p_rs)[j])*tmp; 
-                term2 += std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp);
+                term2 -= std::log(1-(*p_rs)[j])*(tmp);
                 term3 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]) ;
             }
         } 
@@ -331,8 +332,8 @@ namespace SpatialSEIR
         for (j = startTime; j < nTpts; j++)
         {
             tmp = ((*S_star) -> data)[compIdx];
-            cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp +  
-                               std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp)+
+            cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp - 
+                               std::log(1-(*p_rs)[j])*(tmp) +
                                std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
             compIdx += nLoc;
         }
@@ -341,7 +342,7 @@ namespace SpatialSEIR
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx += 1;
+                compIdx++;
                 *value += cachedValues[compIdx]; 
             }
         } 
@@ -452,10 +453,10 @@ namespace SpatialSEIR
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx += 1;
+                compIdx++;
                 tmp = ((*E_star) -> data)[compIdx];
-                cachedValues[compIdx] = (std::log((*p_se)[compIdx])*tmp +
-                                         std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp) +
+                cachedValues[compIdx] = (std::log((*p_se)[compIdx])*tmp -
+                                         std::log(1-(*p_se)[compIdx])*(tmp) +
                                          std::log(1-(**p_ei))*(((*E) -> data)[compIdx]));
             }
         } 
@@ -482,7 +483,7 @@ namespace SpatialSEIR
                     return(-1);
                 }
                 term1 += std::log((*p_se)[compIdx])*tmp; 
-                term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
+                term2 -= std::log(1-(*p_se)[compIdx])*(tmp);
                 term3 += std::log(1-(**p_ei))*(((*E) -> data)[compIdx]) ;
             }
         } 
@@ -500,8 +501,8 @@ namespace SpatialSEIR
         for (j = startTime; j < nTpts; j++)
         {
             tmp = ((*E_star) -> data)[compIdx];
-            cachedValues[compIdx] = (std::log((*p_se)[compIdx])*tmp +
-                                     std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp) +
+            cachedValues[compIdx] = (std::log((*p_se)[compIdx])*tmp -
+                                     std::log(1-(*p_se)[compIdx])*(tmp) +
                                      std::log(1-(**p_ei))*(((*E) -> data)[compIdx]));
             compIdx += nLoc;
         }
@@ -510,7 +511,7 @@ namespace SpatialSEIR
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx += 1;
+                compIdx++;
                 *value += cachedValues[compIdx]; 
             }
         } 
@@ -604,10 +605,10 @@ namespace SpatialSEIR
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx += 1;
+                compIdx++;
                 tmp = ((*R_star) -> data)[compIdx];
-                cachedValues[compIdx] = (std::log((**p_ir))*tmp + 
-                                std::log(1-(**p_ir))*(((*I) -> data)[compIdx] - tmp) +
+                cachedValues[compIdx] = (std::log((**p_ir))*tmp - 
+                                std::log(1-(**p_ir))*(tmp) +
                                 std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx])) ;
             }
         } 
@@ -625,9 +626,10 @@ namespace SpatialSEIR
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
         {
+            compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
-            {
-                compIdx = i + j*nLoc;
+            { 
+                compIdx ++;
                 tmp = ((*R_star) -> data)[compIdx];
                 if (tmp < 0)
                 {
@@ -635,7 +637,7 @@ namespace SpatialSEIR
                     return(-1);
                 }
                 term1 += std::log((**p_ir))*tmp; 
-                term2 += std::log(1-(**p_ir))*(((*I) -> data)[compIdx] - tmp);
+                term2 -= std::log(1-(**p_ir))*(tmp);
                 term3 += std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]) ;
             }
         } 
@@ -654,8 +656,8 @@ namespace SpatialSEIR
         for (j = startTime; j < nTpts; j++)
         {
             tmp = ((*R_star) -> data)[compIdx];
-            cachedValues[compIdx] = (std::log((**p_ir))*tmp + 
-                                std::log(1-(**p_ir))*(((*I) -> data)[compIdx] - tmp) +
+            cachedValues[compIdx] = (std::log((**p_ir))*tmp - 
+                                std::log(1-(**p_ir))*(tmp) +
                                 std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]));
             compIdx += nLoc;
         }
@@ -664,7 +666,7 @@ namespace SpatialSEIR
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx += 1;
+                compIdx++;
                 *value += cachedValues[compIdx]; 
             }
         } 
@@ -772,9 +774,10 @@ namespace SpatialSEIR
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
         {
+            compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx = i + j*nLoc;
+                compIdx++;
                 tmp = ((*E_star) -> data)[compIdx];
                 term1 += std::log((*p_se)[compIdx])*tmp; 
                 term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
@@ -812,7 +815,7 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 1.0); 
+        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.1); 
         return(0);
     }
     int FC_Beta::sampleOCL()
@@ -887,9 +890,10 @@ namespace SpatialSEIR
 
         for (j = 0; j < nTpts; j++)     
         {
+            compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-               compIdx = i + j*nLoc;
+               compIdx++;
                 tmp = ((*S_star) -> data)[compIdx];
                 s_star_i_sum[j] += tmp; 
                 r_star_i_diff[j] += (((*R) -> data)[compIdx] - tmp);
@@ -929,7 +933,14 @@ namespace SpatialSEIR
 
     int FC_P_RS::sampleCPU()
     {
-        sampleDouble(*context, *A0, *p_rs, *((*R)->ncol), 0.2); 
+        int j; double a,b;
+        for (j = 0; j < *((*R) -> ncol); j++)
+        {
+            a = ((*S_star)-> marginSum(2,j));
+            b = ((*R) -> marginSum(2,j)) - a; 
+            std::cout << "Parms: " << a +1.5 << ", " << b + 1.5 << "\n";
+            (*p_rs)[j] = ((*context) -> random -> beta(a+1.5, b+1.5));
+        }
         return(0);
     }
     int FC_P_RS::sampleOCL()
@@ -995,19 +1006,22 @@ namespace SpatialSEIR
     int FC_Rho::evalCPU()
     {
         *value = 0.0;
-        int i, j, tmp, compIdx;
+        int i, j, Es, compIdx;
+        double pse;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
         {
+            compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)    
             {
-                compIdx = i + j*nLoc;
-                tmp = ((*E_star) -> data)[compIdx];
-                term1 += std::log((*p_se)[compIdx])*tmp; 
-                term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
+                compIdx++;
+                Es = ((*E_star) -> data)[compIdx];
+                pse = (*p_se)[compIdx];
+                term1 += std::log(pse)*Es; 
+                term2 += std::log(1-pse)*(((*S) -> data)[compIdx] - Es);
             }
         } 
         term3 += (**rho >0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
@@ -1039,7 +1053,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDouble(*context, *A0, *rho, 1, 0.2); 
+        sampleDouble(*context, *A0, *rho, 1, 0.05); 
         return(0);
     }
     int FC_Rho::sampleOCL()
@@ -1135,8 +1149,10 @@ namespace SpatialSEIR
 
     int FC_P_EI::sampleCPU()
     {
-        sampleDouble(*context, *A0, *p_ei, 1, 0.2); 
-        return(0);
+        double a, b;
+        a = ((*I_star) -> marginSum(3, -1));
+        b = ((*E) -> marginSum(3, -1)) - a;
+        return(((*context) -> random -> beta(a+1.5, b+1.5)));
     }
     int FC_P_EI::sampleOCL()
     {
@@ -1230,8 +1246,10 @@ namespace SpatialSEIR
 
     int FC_P_IR::sampleCPU()
     {
-        sampleDouble(*context, *A0, *p_ir, 1, 0.2); 
-        return(0);
+        double a,b;
+        a = (*R_star) -> marginSum(3,-1);
+        b = ((*I) -> marginSum(3,-1));
+        return(((*context)->random->beta(a+1.5, b+1.5)));
     }
     int FC_P_IR::sampleOCL()
     {

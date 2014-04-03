@@ -142,7 +142,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
             (int*) chainOutputControl.begin(),(int*) chainStride.begin());
 
     // Test calculation functions.  
-    context -> runSimulation_CPU(2,true);
+    context -> runSimulation_CPU(3,true);
     context -> fileProvider -> close();
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
     // Clean up
