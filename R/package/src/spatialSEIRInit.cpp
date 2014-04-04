@@ -141,7 +141,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> fileProvider -> populate(context, chainOutputFile,
             (int*) chainOutputControl.begin(),(int*) chainStride.begin());
 
-    context -> runSimulation_CPU(3,true);
+    context -> runSimulation_CPU(1000,true);
     context -> fileProvider -> close();
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
     // Clean up

@@ -206,31 +206,18 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
-        int itrs;
+
         // Main loop: 
         for (i = 0; i < varLen; i++)
         { 
-            std::cout << "-" << i << "\n";
             x = variable[i];
             this -> calculateRelevantCompartments(); 
             this -> evalCPU();
             y = (this->getValue()) - (context -> random -> gamma());
             l = x - ((context -> random -> uniform())*width);
             r = l + width;
-
-            itrs = 0;
             do
             {
-                itrs ++;
-                if (itrs > 0)
-                {
-                    std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
-                    std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
-                    std::cout << "l,r: " << l << ", " << r << "\n";
-                    if (itrs >= 20){throw(-1);}
-
-                }
-
                 x0 = ((context -> random -> uniform())*(r-l) + l);
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
@@ -889,6 +876,11 @@ namespace SpatialSEIR
             term3 += pow((*beta)[i],2)/10; // Generalize to allow different prior precisions. 
         }
         *value = term1 + term2 + term3;
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
         return(0);
     }
     int FC_Beta::evalCPU(int startLoc, int startTime, double* cachedValues)
@@ -1127,6 +1119,12 @@ namespace SpatialSEIR
         term3 += (**rho >0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
                                                         // Prior specification in this area needs work. 
         *value = term1 + term2 + term3;
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
         return(0);
     }
     int FC_Rho::evalCPU(int startLoc, int startTime, double* cachedValues)

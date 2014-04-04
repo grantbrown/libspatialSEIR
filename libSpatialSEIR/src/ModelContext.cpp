@@ -230,6 +230,7 @@ namespace SpatialSEIR
         else {R_star_fc -> sampleOCL();}
         */
 
+        /*
         int i;
         int rowCol = (*(R->ncol))*(*(R->nrow));
         for (i = 0; i < rowCol;i++)
@@ -247,7 +248,6 @@ namespace SpatialSEIR
                 break;
             }
         }
-        std::cout << "1\n";
         for (i = 0; i < rowCol;i++)
         {
             if ((E_star -> data)[i] > (S -> data)[i])
@@ -262,8 +262,6 @@ namespace SpatialSEIR
             }
 
         }
-        std::cout << "2\n";
-
         for (i = 0; i < rowCol;i++)
         {
             if ((I_star -> data)[i] > (E -> data)[i])
@@ -279,7 +277,6 @@ namespace SpatialSEIR
 
 
         }
-        std::cout << "3\n";
 
         for (i = 0; i < rowCol;i++)
         {
@@ -298,24 +295,14 @@ namespace SpatialSEIR
             }
 
         }
-        std::cout << "4\n";
-
-
+        */
         if (verbose){std::cout << "Sampling rho\n";}
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
         else {rho_fc -> sampleOCL();}
 
-        std::cout << "Beta Val 1: " << beta_fc -> getValue() << "\n";
-        beta_fc -> evalCPU();
-        std::cout << "Beta Val 2: " << beta_fc -> getValue() << "\n";
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
-        std::cout << "Beta Val 3: " << beta_fc -> getValue() << "\n";
-        beta_fc -> evalCPU();
-        std::cout << "Beta Val 4: " << beta_fc -> getValue() << "\n";
-
-
 
         if (verbose){std::cout << "Sampling p_rs\n";}
         if (useOCL[4] == 0){p_rs_fc -> sampleCPU();}
