@@ -206,9 +206,11 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
+        int itrs;
         // Main loop: 
         for (i = 0; i < varLen; i++)
         { 
+            std::cout << "-" << i << "\n";
             x = variable[i];
             this -> calculateRelevantCompartments(); 
             this -> evalCPU();
@@ -216,12 +218,24 @@ namespace SpatialSEIR
             l = x - ((context -> random -> uniform())*width);
             r = l + width;
 
+            itrs = 0;
             do
             {
+                itrs ++;
+                if (itrs > 0)
+                {
+                    std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
+                    std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
+                    std::cout << "l,r: " << l << ", " << r << "\n";
+                    if (itrs >= 20){throw(-1);}
+
+                }
+
                 x0 = ((context -> random -> uniform())*(r-l) + l);
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
                 this -> evalCPU();
+                l = (x0 >= x ? l : x0);
                 r = (x0 < x ? r : x0);  
             } while (y >= (this -> getValue()));
         }
@@ -902,7 +916,7 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.1); 
+        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.05); 
         return(0);
     }
     int FC_Beta::sampleOCL()

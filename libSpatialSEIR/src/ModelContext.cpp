@@ -216,6 +216,7 @@ namespace SpatialSEIR
         std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
         std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
 
+        /*
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
@@ -227,6 +228,7 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling R_star\n";}
         if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
+        */
 
         int i;
         int rowCol = (*(R->ncol))*(*(R->nrow));
@@ -303,9 +305,17 @@ namespace SpatialSEIR
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
         else {rho_fc -> sampleOCL();}
 
+        std::cout << "Beta Val 1: " << beta_fc -> getValue() << "\n";
+        beta_fc -> evalCPU();
+        std::cout << "Beta Val 2: " << beta_fc -> getValue() << "\n";
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
+        std::cout << "Beta Val 3: " << beta_fc -> getValue() << "\n";
+        beta_fc -> evalCPU();
+        std::cout << "Beta Val 4: " << beta_fc -> getValue() << "\n";
+
+
 
         if (verbose){std::cout << "Sampling p_rs\n";}
         if (useOCL[4] == 0){p_rs_fc -> sampleCPU();}
@@ -398,40 +408,43 @@ namespace SpatialSEIR
     // Updates: I
     void ModelContext::calculateI_CPU()
     {
+
         int i;
         int maxItr = (*(I -> nrow))*(*(I -> ncol));
         for (i = 0; i < maxItr; i++)
         {
             (I->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (R->data)[i]; 
         }
+
+
         /*
         calculateGenericCompartment_CPU(&*(this -> I), &*(this -> A0 -> I0),
                                     &*(this -> I_star), &*(this -> R_star),
                                     &*(this -> A0 -> I_star0), &*(this -> A0 -> R_star0));
-        */
+                                    */
     }
 
     void ModelContext::calculateI_CPU(int startLoc, int startTime)
     {
+ 
 
-        calculateI_CPU();
-        /*
+        int i,j,startIdx,idx;
+        startIdx = startTime*(*(R->nrow)) + startLoc;
 
-        int i,startIdx,idx;
-        startIdx = startTime*(*(I->nrow)) + startLoc;
-
-        for (i = startTime; i < *(I->ncol); i++)
+        j = 0;
+        for (i = startTime; i < *(R->ncol); i++)
         {
-            idx = startIdx + i*(*(I->nrow));
+            idx = startIdx + j*(*(R->nrow));
             (I -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (R->data)[idx];  
+            j += 1;
         }
-        */
+
         /*
         calculateGenericCompartment_CPU(&*(this -> I), &*(this -> A0 -> I0),
                                     &*(this -> I_star), &*(this -> R_star),
                                     &*(this -> A0 -> I_star0), &*(this -> A0 -> R_star0),
                                     startLoc, startTime);
-        */
+            */
     }
 
     void ModelContext::calculateI_OCL()
@@ -444,17 +457,21 @@ namespace SpatialSEIR
     // Updates: R
     void ModelContext::calculateR_CPU()
     {
+
         calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
                                     &*(this -> R_star), &*(this -> S_star),
                                     &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0));
+
     }
 
     void ModelContext::calculateR_CPU(int startLoc, int startTime)
     {
+
         calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
                                     &*(this -> R_star), &*(this -> S_star),
                                     &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0),
                                     startLoc, startTime);
+
     }
 
     void ModelContext::calculateR_OCL()
