@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(200)
+    control_code(100)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -85,7 +85,7 @@ p_rs = rep(c(rep(0.1, 8), rep(0.1,4), rep(0.1,8), rep(0.4,4), rep(0.5, 3),
          rep(0.9,3), rep(0.1, 4), rep(0.05, 18)), dim(sim_results$S)[3])
 
 beta = c(covariates$true_fixed_beta, covariates$true_time_varying_beta)
-N = data_list[["pop"]][,2]
+N = matrix(data_list[["pop"]][,2], nrow = compMatDim[1], ncol = compMatDim[2])
 outFileName = "./chainOutput.txt"
 # beta, rho, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
 logFileList = c(1,1,0,1,1,1,0,0,0,0)

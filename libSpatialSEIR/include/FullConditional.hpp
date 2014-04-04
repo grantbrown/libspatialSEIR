@@ -98,6 +98,7 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_S_star, 
                       CompartmentalModelMatrix *_S, 
                       CompartmentalModelMatrix *_R,
+                      CompartmentalModelMatrix *_E_star,
                       InitData *_A0,
                       CovariateMatrix *_X,
                       double *_p_se,
@@ -119,6 +120,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **S_star; 
             CompartmentalModelMatrix **S; 
             CompartmentalModelMatrix **R;
+            CompartmentalModelMatrix **E_star;
             InitData **A0;
             CovariateMatrix **X;
             double **p_se;
@@ -136,6 +138,7 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_E_star, 
                       CompartmentalModelMatrix *_E, 
                       CompartmentalModelMatrix *_S, 
+                      CompartmentalModelMatrix *_I_star,
                       CovariateMatrix *_X,
                       InitData *_A0,
                       double *_p_se,
@@ -158,6 +161,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **E_star; 
             CompartmentalModelMatrix **E; 
             CompartmentalModelMatrix **S; 
+            CompartmentalModelMatrix **I_star;
             CovariateMatrix **X;
             InitData **A0;
             double **p_se;
@@ -175,6 +179,7 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_R_star,
                       CompartmentalModelMatrix *_R,
                       CompartmentalModelMatrix *_I,
+                      CompartmentalModelMatrix *_S_star,
                       InitData *_A0,
                       double *_p_rs,
                       double *_p_ir);
@@ -194,6 +199,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **R_star;
             CompartmentalModelMatrix **R;
             CompartmentalModelMatrix **I;
+            CompartmentalModelMatrix **S_star;
             InitData **A0;
             double **p_rs;
             double **p_ir;

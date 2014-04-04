@@ -63,6 +63,11 @@ namespace SpatialSEIR
     }
     double RandomNumberProvider::beta(double a, double b)
     {
+        if (a < 0 || b < 0)
+        {
+            std::cerr << "Invalid (negative) Paramter Values to RandomNumberProvider::beta.\n";
+            throw(-1);
+        }
         double v1 = gamma(a); 
         double v2 = gamma(b);
         return(v1/(v1 + v2));
