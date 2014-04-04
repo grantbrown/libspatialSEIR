@@ -136,55 +136,6 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                         &R_starArgs, &rawDistArgs,&scaledDistArgs,rho.begin(),
                         beta.begin(),p_ei.begin(), p_ir.begin(),p_rs.begin(),
                         N.begin());
-    std::cout << "Beta: \n";
-    std::cout << (context -> beta)[0] << ", " << (context -> beta)[1] << ", " << (context -> beta)[2] << "\n";
-    std::cout << "Eta: \n";
-    std::cout << (context -> eta)[0] << ", " << (context -> eta)[1] << ", " << (context -> eta)[2] << "\n";
-
-    std::cout << "I: \n";
-    int i,j;
-    for (i = 0; i < 10; i++)
-    {
-        for (j = 0; j < 10; j++)
-        {
-            std::cout << (context -> I -> data)[j + i*(compartmentDimensions[0])] << ", ";
-        }
-        std::cout << "\n";
-    }
-
-
-
-    std::cout << "DistMat: \n";
-
-    for (i = 0; i < 10; i++)
-    {
-        for (j = 0; j < 10; j++)
-        {
-            std::cout << (context -> rawDistMat -> data)[j + i*(compartmentDimensions[0])] << ", ";
-        }
-        std::cout << "\n";
-    }
-
-    std::cout << "ScaledDistMat: " << *(context -> scaledDistMat -> numLocations) << "\n";
-    for (i = 0; i < 10; i++)
-    {
-        for (j = 0; j < 10; j++)
-        {
-            std::cout << (context -> scaledDistMat -> data)[j + i*(compartmentDimensions[0])] << ", ";
-        }
-        std::cout << "\n";
-    }
-
-    std::cout << "p_se: \n";
-    for (i = 0; i < 10; i++)
-    {
-        for (j = 0; j < 10; j++)
-        {
-            std::cout << (context -> p_se)[j + i*(compartmentDimensions[0])] << ", ";
-        }
-        std::cout << "\n";
-
-    }
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,

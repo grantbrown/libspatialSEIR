@@ -216,6 +216,88 @@ namespace SpatialSEIR
         std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
         std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
 
+        if (verbose){std::cout << "Sampling S_star\n";}
+        if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
+        else {S_star_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling E_star\n";}
+        if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
+        else {E_star_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling R_star\n";}
+        if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
+        else {R_star_fc -> sampleOCL();}
+
+        int i;
+        int rowCol = (*(R->ncol))*(*(R->nrow));
+        for (i = 0; i < rowCol;i++)
+        {
+            if ((S_star -> data)[i] > (R -> data)[i])
+            {
+                std::cout << "S_star too big: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
+                S_star_fc -> evalCPU();
+                std::cout << "Value 2: " << S_star_fc -> getValue() << "\n"; 
+                break;
+            }
+            if ((S_star -> data)[i] < 0)
+            {
+                std::cout << "S_star <0: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
+                break;
+            }
+        }
+        std::cout << "1\n";
+        for (i = 0; i < rowCol;i++)
+        {
+            if ((E_star -> data)[i] > (S -> data)[i])
+            {
+                std::cout << "E_star too big: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
+                break;
+            }
+            if ((E_star -> data)[i] < 0)
+            {
+                std::cout << "E_star <0: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
+                break;
+            }
+
+        }
+        std::cout << "2\n";
+
+        for (i = 0; i < rowCol;i++)
+        {
+            if ((I_star -> data)[i] > (E -> data)[i])
+            {
+                std::cout << "I_star too big: " << i << "\n";
+                break;
+            }
+            if ((I_star -> data)[i] < 0)
+            {
+                std::cout << "I_star <0: " << i << ", val: \n";
+                break;
+            }
+
+
+        }
+        std::cout << "3\n";
+
+        for (i = 0; i < rowCol;i++)
+        {
+            if ((R_star -> data)[i] > (I -> data)[i])
+            {
+                
+                std::cout << "R_star too big: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
+                R_star_fc -> evalCPU();
+                std::cout << "Value 2: " << R_star_fc -> getValue() << "\n"; 
+                break;
+            }
+            if ((R_star -> data)[i] < 0)
+            {
+                std::cout << "R_star <0: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
+                break;
+            }
+
+        }
+        std::cout << "4\n";
+
 
         if (verbose){std::cout << "Sampling rho\n";}
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
@@ -236,57 +318,6 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling p_ir\n";}
         if (useOCL[6] == 0){p_ir_fc -> sampleCPU();}
         else {p_ir_fc -> sampleOCL();}
-
-        if (verbose){std::cout << "Sampling E_star\n";}
-        if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
-        else {E_star_fc -> sampleOCL();}
-
-        if (verbose){std::cout << "Sampling S_star\n";}
-        if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
-        else {S_star_fc -> sampleOCL();}
-
-        if (verbose){std::cout << "Sampling R_star\n";}
-        if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
-        else {R_star_fc -> sampleOCL();}
-
-
-
-        int i;
-        int rowCol = (*(R->ncol))*(*(R->nrow));
-        for (i = 0; i < rowCol;i++)
-        {
-            if ((S_star -> data)[i] > (R -> data)[i])
-            {
-                S_star_fc -> evalCPU();
-                std::cout << "S_star too big: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
-            }
-        }
-        for (i = 0; i < rowCol;i++)
-        {
-            E_star_fc -> evalCPU();
-            if ((E_star -> data)[i] > (S -> data)[i])
-            {
-                std::cout << "E_star too big: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
-            }
-        }
-        for (i = 0; i < rowCol;i++)
-        {
-            if ((I_star -> data)[i] > (E -> data)[i])
-            {
-                std::cout << "I_star too big: " << i << "\n";
-            }
-
-        }
-        for (i = 0; i < rowCol;i++)
-        {
-            if ((R_star -> data)[i] > (I -> data)[i])
-            {
-                
-                std::cout << "R_star too big: " << i << "\n";
-            }
-        }
-
-
 
     }
 
@@ -382,6 +413,10 @@ namespace SpatialSEIR
 
     void ModelContext::calculateI_CPU(int startLoc, int startTime)
     {
+
+        calculateI_CPU();
+        /*
+
         int i,startIdx,idx;
         startIdx = startTime*(*(I->nrow)) + startLoc;
 
@@ -390,6 +425,7 @@ namespace SpatialSEIR
             idx = startIdx + i*(*(I->nrow));
             (I -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (R->data)[idx];  
         }
+        */
         /*
         calculateGenericCompartment_CPU(&*(this -> I), &*(this -> A0 -> I0),
                                     &*(this -> I_star), &*(this -> R_star),

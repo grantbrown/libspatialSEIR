@@ -150,7 +150,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
-            std::cout << j << "\n";
+            //std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
@@ -176,6 +176,8 @@ namespace SpatialSEIR
                     x0 = ((context -> random -> uniform())*(r-l) + l);
                     (starCompartment -> data)[compIdx] = std::floor(x0);
                     this -> calculateRelevantCompartments(i,j);
+                    //this -> calculateRelevantCompartments();
+
                     this -> evalCPU(i,j,cachedValues);
                     l = (x0 >= x ? l : x0);
                     r = (x0 < x ? r : x0); 
@@ -405,7 +407,7 @@ namespace SpatialSEIR
     int FC_S_Star::sampleCPU()
     {
         this -> sampleCompartment(*context,*A0,*R,*S,
-                                  *S_star,5);
+                                  *S_star,10);
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -596,7 +598,7 @@ namespace SpatialSEIR
     int FC_E_Star::sampleCPU()
     {
         this -> sampleCompartment(*context,*A0,*S,*E,
-                                  *E_star,5);
+                                  *E_star,10);
         return 0;
     }
     int FC_E_Star::sampleOCL()
@@ -777,7 +779,7 @@ namespace SpatialSEIR
     int FC_R_Star::sampleCPU()
     {
         this -> sampleCompartment(*context,*A0,*I,*R,
-                                  *R_star,5);
+                                  *R_star,10);
         return(0);
     }
     int FC_R_Star::sampleOCL()
