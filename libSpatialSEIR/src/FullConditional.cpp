@@ -349,6 +349,12 @@ namespace SpatialSEIR
             }
         } 
         *value = term1 + term2 + term3;
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
         return(0);
     }
     int FC_S_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
@@ -384,6 +390,12 @@ namespace SpatialSEIR
                 *value += cachedValues[compIdx]; 
             }
         } 
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
         return(0);
     }
 
@@ -541,6 +553,12 @@ namespace SpatialSEIR
             }
         } 
         *value = term1 + term2 + term3;
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
         return(0);
     }
     int FC_E_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
@@ -576,6 +594,12 @@ namespace SpatialSEIR
                 *value += cachedValues[compIdx]; 
             }
         } 
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
         return(0);
     }
 
@@ -722,6 +746,12 @@ namespace SpatialSEIR
             }
         } 
         *value = term1 + term2 + term3;
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
         return(0);
     }
 
@@ -758,6 +788,12 @@ namespace SpatialSEIR
                 *value += cachedValues[compIdx]; 
             }
         } 
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
         return(0);
     }
 
