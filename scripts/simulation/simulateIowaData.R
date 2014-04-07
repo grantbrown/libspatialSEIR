@@ -220,7 +220,7 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
                 mu = exp(true_fixed_eta + true_time_varying_eta[,mr_week,mr_year])
                 # Calculate Infectious Ratio
                 delta = I[,mr_week,mr_year]/N
-                dmatrix = delta*(1/dcm)*true_rho
+                dmatrix =(1/sqrt(dcm))*true_rho
                 diag(dmatrix) = 0
                 p = 1-exp(-delta*mu - as.numeric(dmatrix %*% (delta*mu)))
 
@@ -244,7 +244,6 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
                 I[,week,year] = I[,mr_week,mr_year] + I_star - R_star
                 R[,week,year] = R[,mr_week,mr_year] + R_star - S_star
             }
-
         }
     }
     return(list("S" = S, "E" = E, "I"=I, "R"=R, 

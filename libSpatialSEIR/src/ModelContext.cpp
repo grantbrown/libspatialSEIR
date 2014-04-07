@@ -219,6 +219,7 @@ namespace SpatialSEIR
         std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
 
 
+        /*
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
@@ -261,7 +262,6 @@ namespace SpatialSEIR
                 std::cout << "E_star <0: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
                 break;
             }
-
         }
         for (i = 0; i < rowCol;i++)
         {
@@ -275,8 +275,6 @@ namespace SpatialSEIR
                 std::cout << "I_star <0: " << i << ", val: \n";
                 break;
             }
-
-
         }
 
         for (i = 0; i < rowCol;i++)
@@ -296,20 +294,21 @@ namespace SpatialSEIR
             }
 
         }
-
+        */
         if (verbose){std::cout << "Sampling rho\n";}
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
         else {rho_fc -> sampleOCL();}
-
+        /*
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
 
-        /*
+
         if (verbose){std::cout << "Sampling p_rs\n";}
         if (useOCL[4] == 0){p_rs_fc -> sampleCPU();}
         else {p_rs_fc -> sampleOCL();}
         */
+        /*
         if (verbose){std::cout << "Sampling p_ei\n";}
         if (useOCL[5] == 0){p_ei_fc -> sampleCPU();}
         else {p_ei_fc -> sampleOCL();}
@@ -317,6 +316,7 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling p_ir\n";}
         if (useOCL[6] == 0){p_ir_fc -> sampleCPU();}
         else {p_ir_fc -> sampleOCL();}
+        */
 
     }
 
@@ -552,7 +552,7 @@ namespace SpatialSEIR
                 index = i + j*nLoc;
                 p_se[index] = 0.0;
                 p_se_components[index] = 
-                   ((I -> data)[index] * (eta[index]))/N[i];
+                   ((I -> data)[index] * (eta[index]))/N[index];
             }
         }
 
@@ -569,7 +569,7 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++) 
             {
                 index = i + j*nLoc;
-                p_se[index] = 1-exp(-p_se_components[index] - *rho*p_se[index]);
+                p_se[index] = 1-exp(-p_se_components[index] - (*rho)*p_se[index]);
             }
         }        
     }
@@ -617,7 +617,7 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++) 
             {
                 index = i + j*nLoc;
-                p_se[index] = 1-exp(-p_se_components[index] - *rho*p_se[index]);
+                p_se[index] = 1-exp(-p_se_components[index] - (*rho)*p_se[index]);
             }
         } 
     }
