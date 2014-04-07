@@ -83,7 +83,7 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* drawCompartment,
                                   CompartmentalModelMatrix* destCompartment,
                                   CompartmentalModelMatrix* starCompartment,
-                                  double width); 
+                                  double width, double* compartmentCache); 
             int sampleDouble(ModelContext* context, 
                              InitData* A0, 
                              double* variable,

@@ -127,7 +127,7 @@ namespace SpatialSEIR
                                        CompartmentalModelMatrix* drawCompartment,
                                        CompartmentalModelMatrix* destCompartment,
                                        CompartmentalModelMatrix* starCompartment,
-                                       double width)
+                                       double width,double* cachedValues)
     {
         // Declare required variables
         int i, j, compIdx;
@@ -137,10 +137,8 @@ namespace SpatialSEIR
         
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments();
-
-        // Allocate storage for the cached components of
-        // the full conditional calculation
-        double* cachedValues = new double[nLoc*nTpts];
+        
+        // Cache Eval Calculation
         this -> cacheEvalCalculation(cachedValues);
 
         // Set the "value" attribute appropriately
@@ -150,7 +148,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
-            //std::cout << j << "\n";
+            std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
@@ -179,14 +177,11 @@ namespace SpatialSEIR
                     //this -> calculateRelevantCompartments();
 
                     this -> evalCPU(i,j,cachedValues);
-                    l = (x0 >= x ? l : x0);
-                    r = (x0 < x ? r : x0); 
+                    if (x0 >= x){r = x0;}
+                    else{l = x0;}
                 } while (y >= (this -> getValue()));
             }
         }
-
-        delete[] cachedValues;
-        context -> calculateI_CPU();
         return 0;
     }
 
@@ -199,14 +194,13 @@ namespace SpatialSEIR
         // Declare required variables
         int i;
         double l,r,y,x,x0;
-        
+        int itrs; 
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments();
 
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
-
         // Main loop: 
         for (i = 0; i < varLen; i++)
         { 
@@ -216,8 +210,18 @@ namespace SpatialSEIR
             y = (this->getValue()) - (context -> random -> gamma());
             l = x - ((context -> random -> uniform())*width);
             r = l + width;
+            itrs = 0;
             do
             {
+                itrs ++;
+                if (itrs > 1000)
+                {
+                    std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
+                    std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
+                    std::cout << "l,r: " << l << ", " << r << "\n";
+                    if (itrs >= 1002){throw(-1);} 
+                }
+
                 x0 = ((context -> random -> uniform())*(r-l) + l);
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
@@ -227,7 +231,6 @@ namespace SpatialSEIR
             } while (y >= (this -> getValue()));
         }
         return 0;
-
     }
 
 
@@ -409,18 +412,21 @@ namespace SpatialSEIR
         (*context) -> calculateS_CPU();
         (*context) -> calculateR_CPU();
         (*context) -> calculateI_CPU();
+        ((*context) -> calculateP_SE_CPU());
+
     }
     int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateR_CPU(startLoc, startTime);
         (*context) -> calculateI_CPU(startLoc, startTime);
+        ((*context) -> calculateP_SE_CPU(startLoc, startTime));
     }
 
     int FC_S_Star::sampleCPU()
     {
         this -> sampleCompartment(*context,*A0,*R,*S,
-                                  *S_star,10);
+                                  *S_star,10,(*context) -> compartmentCache);
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -613,17 +619,21 @@ namespace SpatialSEIR
         (*context) -> calculateS_CPU();
         (*context) -> calculateE_CPU();
         (*context) -> calculateI_CPU();
+        ((*context) -> calculateP_SE_CPU());
+
     }
     int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateE_CPU(startLoc, startTime);
         (*context) -> calculateI_CPU(startLoc, startTime);
+        ((*context) -> calculateP_SE_CPU(startLoc, startTime));
+
     }
     int FC_E_Star::sampleCPU()
     {
         this -> sampleCompartment(*context,*A0,*S,*E,
-                                  *E_star,10);
+                                  *E_star,10,(*context) -> compartmentCache);
         return 0;
     }
     int FC_E_Star::sampleOCL()
@@ -806,17 +816,19 @@ namespace SpatialSEIR
     {
         (*context) -> calculateR_CPU();
         (*context) -> calculateI_CPU();
+        //((*context) -> calculateP_SE_CPU());
     }
     int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateR_CPU(startLoc, startTime);
         (*context) -> calculateI_CPU(startLoc, startTime);
+        //((*context) -> calculateP_SE_CPU(startLoc, startTime));
     }
 
     int FC_R_Star::sampleCPU()
     {
         this -> sampleCompartment(*context,*A0,*I,*R,
-                                  *R_star,10);
+                                  *R_star,10,(*context) -> compartmentCache);
         return(0);
     }
     int FC_R_Star::sampleOCL()
@@ -944,7 +956,7 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.05); 
+        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.1); 
         return(0);
     }
     int FC_Beta::sampleOCL()
@@ -1152,7 +1164,7 @@ namespace SpatialSEIR
                 term2 += std::log(1-pse)*(((*S) -> data)[compIdx] - Es);
             }
         } 
-        term3 += (**rho >0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
+        term3 += (**rho > 0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
                                                         // Prior specification in this area needs work. 
         *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 
@@ -1187,7 +1199,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDouble(*context, *A0, *rho, 1, 0.05); 
+        sampleDouble(*context, *A0, *rho, 1, 0.1); 
         return(0);
     }
     int FC_Rho::sampleOCL()

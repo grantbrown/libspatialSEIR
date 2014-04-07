@@ -109,7 +109,9 @@ namespace SpatialSEIR
             // Method: calculatePi
             // Accesses: beta, I, N, distMat, rho
             // Updates: p_se
+            void cacheP_SE_Calculation();
             void calculateP_SE_CPU();
+            void calculateP_SE_CPU(int startLoc, int startTime);
             void calculateP_SE_OCL();
         
             //Logic provider and utility classes
@@ -144,6 +146,8 @@ namespace SpatialSEIR
             double* rho;
             double* eta;
             double* p_se;
+            double* p_se_components;
+            double* compartmentCache;
             double* p_ei;
             double* p_ir;
             double* p_rs;
