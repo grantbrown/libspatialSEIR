@@ -163,12 +163,12 @@ namespace SpatialSEIR
                 do 
                 {
                     itrs ++;
-                    if (false)
+                    if (itrs > 1000)
                     {
                         std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
                         std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
                         std::cout << "l,r: " << l << ", " << r << "\n";
-                        if (itrs >= 10){throw(-1);}
+                        if (itrs >= 1005){throw(-1);}
 
                     }
                     x0 = ((context -> random -> uniform())*(r-l) + l);
@@ -411,16 +411,16 @@ namespace SpatialSEIR
     {
         (*context) -> calculateS_CPU();
         (*context) -> calculateR_CPU();
-        (*context) -> calculateI_CPU();
-        ((*context) -> calculateP_SE_CPU());
+        //(*context) -> calculateI_CPU();
+        //((*context) -> calculateP_SE_CPU());
 
     }
     int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateR_CPU(startLoc, startTime);
-        (*context) -> calculateI_CPU(startLoc, startTime);
-        ((*context) -> calculateP_SE_CPU(startLoc, startTime));
+        //(*context) -> calculateI_CPU(startLoc, startTime);
+        //((*context) -> calculateP_SE_CPU(startLoc, startTime));
     }
 
     int FC_S_Star::sampleCPU()
@@ -618,16 +618,18 @@ namespace SpatialSEIR
     {
         (*context) -> calculateS_CPU();
         (*context) -> calculateE_CPU();
-        (*context) -> calculateI_CPU();
-        ((*context) -> calculateP_SE_CPU());
+        (*context) -> calculateR_CPU();
+        //((*context) -> calculateP_SE_CPU());
 
     }
     int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateE_CPU(startLoc, startTime);
-        (*context) -> calculateI_CPU(startLoc, startTime);
-        ((*context) -> calculateP_SE_CPU(startLoc, startTime));
+        (*context) -> calculateR_CPU(startLoc, startTime);
+
+        //(*context) -> calculateI_CPU(startLoc, startTime);
+        //((*context) -> calculateP_SE_CPU(startLoc, startTime));
 
     }
     int FC_E_Star::sampleCPU()
@@ -814,15 +816,15 @@ namespace SpatialSEIR
     }
     int FC_R_Star::calculateRelevantCompartments()
     {
-        (*context) -> calculateR_CPU();
         (*context) -> calculateI_CPU();
-        //((*context) -> calculateP_SE_CPU());
+        (*context) -> calculateR_CPU();
+        ((*context) -> calculateP_SE_CPU());
     }
     int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        (*context) -> calculateR_CPU(startLoc, startTime);
         (*context) -> calculateI_CPU(startLoc, startTime);
-        //((*context) -> calculateP_SE_CPU(startLoc, startTime));
+        (*context) -> calculateR_CPU(startLoc, startTime);
+        ((*context) -> calculateP_SE_CPU(startLoc, startTime));
     }
 
     int FC_R_Star::sampleCPU()
