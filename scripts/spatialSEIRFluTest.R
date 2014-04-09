@@ -1,4 +1,5 @@
 library(spatialSEIR)
+set.seed(12313)
 
 ####################################
 # Part 1: Read in and Process Data #
@@ -87,31 +88,56 @@ Z = as.numeric(Z_ar)
 N = matrix(fluPopulation$Pop, nrow = nrow(Y), ncol = ncol(Y))
 
 # Guess Initial Compartments. 
-E_star = Y[,c(2:(ncol(Y)-1),1)]
+
+
+
 I_star = Y
 
-S = E = I = R = S_star = R_star = I_star*0
+S0 = floor(0.95*N[,1]) 
+E0 = rbinom(rep(1, length(S0)), 10, 0.2)
+I0 = floor(Y[,1]/2)
+R0 = N[,1] - floor(S0 - E0 - I0)
 
-for (loc in 1:nrow(R))
+S_star0 = rbinom(rep(1,length(S0)), R0, 0.05)
+E_star0 = rbinom(rep(1,length(S0)), S0, 0.05)
+I_star0 = rbinom(rep(1,length(S0)), E0, 0.8)
+R_star0 = rbinom(rep(1,length(S0)), I0, 0.75)
+
+S = E = I = R = S_star = E_star = R_star = I_star*0
+
+for (tpt in 1:ncol(R))
 {
-    for (tpt in 1:ncol(R))
+    if (tpt == 1)
     {
-        if (tpt == 1)
-        {
-            S[loc,tpt] = min(floor(0.95*N[loc,tpt]), N[loc,tpt]-I_star[loc,tpt])
-            E[loc,tpt] = E_star[loc, tpt] + Y[loc,tpt] 
-            I[loc, tpt] = I_star[loc,tpt] 
-            R[loc,tpt] = N[loc,tpt] - S[loc,tpt] - E[loc, tpt] - I[loc,tpt]              
-        }
-        S_star[loc,tpt] = rbinom(1,R[loc,tpt], 0.1)
-        R_star[loc,tpt] = rbinom(1,I[loc,tpt], 0.8)
+        S[,1] = S0 + S_star0 - E_star0
+        E[,1] = E0 + E_star0 - I_star0
+        I[,1] = I0 + I_star0 - R_star0
+        R[,1] = R0 + R_star0 - S_star0
+        S_star[,1] = rbinom(rep(1, length(S0)), R[,1], 0.05)
+        E_star[,1] = I_star[,2]
+        # I_star fixed
+        R_star[,1] = rbinom(rep(1, length(S0)), I[,1], 0.8)
+    }
+    else
+    {
+        S[,tpt] = S[,tpt-1] + S_star[,tpt-1] - E_star[,tpt-1]
+        E[,tpt] = E[,tpt-1] + E_star[,tpt-1] - I_star[,tpt-1]
+        I[,tpt] = I[,tpt-1] + I_star[,tpt-1] - R_star[,tpt-1]
+        R[,tpt] = R[,tpt-1] + R_star[,tpt-1] - S_star[,tpt-1]
+
+        S_star[,tpt] = rbinom(rep(1,length(S0)), R[,tpt], 0.05)
         if (tpt != ncol(R))
         {
-            S[loc, tpt+1] = S[loc, tpt] + S_star[loc,tpt] - E_star[loc,tpt]
-            E[loc, tpt+1] = E[loc, tpt] + E_star[loc,tpt] - I_star[loc,tpt]
-            I[loc, tpt+1] = I[loc, tpt] + I_star[loc,tpt] - R_star[loc,tpt]
-            R[loc, tpt+1] = R[loc, tpt] + R_star[loc,tpt] - S_star[loc,tpt]
+            E_star[,tpt] = rbinom(rep(1,length(S0)), I_star[,tpt+1], 0.95)
+            #E_star[,tpt] = I_star[,tpt+1]
         }
+        else
+        {
+            E_star[,tpt] = E_star[,tpt-1]
+        }
+        # I_star fuced
+        R_star[,tpt] = rbinom(rep(1,length(S0)), I[,tpt], 0.8)
+
     }
 }
 
@@ -119,43 +145,24 @@ for (loc in 1:nrow(R))
 xDim = dim(X)
 zDim = c(dim(Z_ar)[1], prod(dim(Z_ar)[2:3]))
 
-S0 = S[,1]
-E0 = E[,1]
-I0 = I[,1]
-R0 = R[,1]
-
-S_star0 = rep(0, nrow(S))
-E_star0 = rep(0, nrow(S))
-I_star0 = rep(0, nrow(S))
-R_star0 = rep(0, nrow(S))
-
-#S = S[,2:ncol(S)]
-#E = E[,2:ncol(S)]
-#I = I[,2:ncol(S)]
-#R = R[,2:ncol(S)]
-
-#S_star = S_star[,2:ncol(S_star)]
-#E_star = E_star[,2:ncol(S_star)]
-#I_star = I_star[,2:ncol(S_star)]
-#R_star = R_star[,2:ncol(S_star)]
-
 compMatDim = c(nrow(S), ncol(S))
 
 
 DM = as.numeric(neighborhood)
 
-rho = 0.6
+rho = 0.02
 
 p_ei = 0.8
 p_ir = 0.6
 p_rs = rep(0.1, ncol(S))
 
-beta = c(1,0.0,0.0)
+beta = c(-2,0.1,0.1)
 
 outFileName = "./chainOutput.txt"
 # beta, rho, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
 logFileList = c(1,1,0,1,1,1,0,0,0,0)
 iterationStride = 1
+stop("Fug")
 res = spatialSEIRInit(compMatDim,xDim,
                       zDim,S0,
                       E0,I0,
