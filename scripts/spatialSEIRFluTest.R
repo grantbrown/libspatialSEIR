@@ -52,10 +52,18 @@ temperature = temperature[tempKeepDates,]
 temperature = data.frame(State = temperature$State, Date = temperature$Date, Temp = temperature$Temp)
 temperature$uqId = paste(as.character(temperature$State), as.character(temperature$Date), sep = "-")
 
+
+# Read in neighborhood information
+neighborhood = as.matrix(read.csv("./scriptData/fluTrends/neighborhood.csv"))
+rownames(neighborhood) = colnames(neighborhood)
+neighborhood = neighborhood[order(colnames(neighborhood)), order(colnames(neighborhood))]
+
+
 #####################################
 # Part 2: Format for libSpatialSEIR #
 #####################################
 
+# Prepare Covariates
 X  = cbind(1, fluPopulation$Prop)  
 Z_ar = array(0, dim=c(nrow(Y),ncol(Y),1)) # Just a matrix in this case
 # Multiple observations per monthly temperature adjustment
@@ -75,3 +83,49 @@ for (i in 1:length(states))
 Z = as.numeric(Z_ar)
 
 
+# Create N Matrix (not time varying at this point)
+N = matrix(fluPopulation$Pop, nrow = nrow(Y), ncol = ncol(Y))
+
+# Guess Initial Compartments. 
+
+#I_star = Y[,2:ncol(Y)]
+#I_star0 = Y[,1] 
+
+#R_star = rbinom(Y, 0.8)[,2:ncol(Y)]
+#R_star0 = rbinom(Y[,1], 0.8)
+
+#E_star = Y[,1:(ncol(Y)-1)]
+#E_star0 = Y[,ncol(Y)]  
+
+E_star = Y[,c(2:(ncol(Y)-1),1)]
+I_star = Y
+
+#R_star = matrix(rbinom(rep(1, prod(dim(Y)),Y, 0.9)), nrow = nrow(Y), ncol = ncol(Y))
+#E_star = cbind(Y[,2:(ncol(Y))], Y[,1])
+#I = t(apply(I_star, 1, cumsum) - apply(R_star,1,cumsum))
+#E = (Y[,1] + t((apply(E_star,1,cumsum))) - t(apply(I_star,1,cumsum)))
+
+S = E = I = R = S_star = R_star = I_star*0
+
+for (loc in 1:nrow(R))
+{
+    for (tpt in 1:ncol(R))
+    {
+        if (tpt == 1)
+        {
+            S[loc,tpt] = min(floor(0.95*N[loc,tpt]), N[loc,tpt]-I_star[loc,tpt])
+            E[loc,tpt] = E_star[loc, tpt] + Y[loc,tpt] 
+            I[loc, tpt] = I_star[loc,tpt] 
+            R[loc,tpt] = N[loc,tpt] - S[loc,tpt] - E[loc, tpt] - I[loc,tpt]              
+        }
+        S_star[loc,tpt] = rbinom(1,R[loc,tpt], 0.1)
+        R_star[loc,tpt] = rbinom(1,I[loc,tpt], 0.8)
+        if (tpt != ncol(R))
+        {
+            S[loc, tpt+1] = S[loc, tpt] + S_star[loc,tpt] - E_star[loc,tpt]
+            E[loc, tpt+1] = E[loc, tpt] + E_star[loc,tpt] - I_star[loc,tpt]
+            I[loc, tpt+1] = I[loc, tpt] + I_star[loc,tpt] - R_star[loc,tpt]
+            R[loc, tpt+1] = R[loc, tpt] + R_star[loc,tpt] - S_star[loc,tpt]
+        }
+    }
+}
