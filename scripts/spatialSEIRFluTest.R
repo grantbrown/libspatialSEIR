@@ -87,23 +87,8 @@ Z = as.numeric(Z_ar)
 N = matrix(fluPopulation$Pop, nrow = nrow(Y), ncol = ncol(Y))
 
 # Guess Initial Compartments. 
-
-#I_star = Y[,2:ncol(Y)]
-#I_star0 = Y[,1] 
-
-#R_star = rbinom(Y, 0.8)[,2:ncol(Y)]
-#R_star0 = rbinom(Y[,1], 0.8)
-
-#E_star = Y[,1:(ncol(Y)-1)]
-#E_star0 = Y[,ncol(Y)]  
-
 E_star = Y[,c(2:(ncol(Y)-1),1)]
 I_star = Y
-
-#R_star = matrix(rbinom(rep(1, prod(dim(Y)),Y, 0.9)), nrow = nrow(Y), ncol = ncol(Y))
-#E_star = cbind(Y[,2:(ncol(Y))], Y[,1])
-#I = t(apply(I_star, 1, cumsum) - apply(R_star,1,cumsum))
-#E = (Y[,1] + t((apply(E_star,1,cumsum))) - t(apply(I_star,1,cumsum)))
 
 S = E = I = R = S_star = R_star = I_star*0
 
@@ -129,3 +114,59 @@ for (loc in 1:nrow(R))
         }
     }
 }
+
+
+xDim = dim(X)
+zDim = c(dim(Z_ar)[1], prod(dim(Z_ar)[2:3]))
+
+S0 = S[,1]
+E0 = E[,1]
+I0 = I[,1]
+R0 = R[,1]
+
+S_star0 = rep(0, nrow(S))
+E_star0 = rep(0, nrow(S))
+I_star0 = rep(0, nrow(S))
+R_star0 = rep(0, nrow(S))
+
+#S = S[,2:ncol(S)]
+#E = E[,2:ncol(S)]
+#I = I[,2:ncol(S)]
+#R = R[,2:ncol(S)]
+
+#S_star = S_star[,2:ncol(S_star)]
+#E_star = E_star[,2:ncol(S_star)]
+#I_star = I_star[,2:ncol(S_star)]
+#R_star = R_star[,2:ncol(S_star)]
+
+compMatDim = c(nrow(S), ncol(S))
+
+
+DM = as.numeric(neighborhood)
+
+rho = 0.6
+
+p_ei = 0.8
+p_ir = 0.6
+p_rs = rep(0.1, ncol(S))
+
+beta = c(1,0.0,0.0)
+
+outFileName = "./chainOutput.txt"
+# beta, rho, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
+logFileList = c(1,1,0,1,1,1,0,0,0,0)
+iterationStride = 1
+res = spatialSEIRInit(compMatDim,xDim,
+                      zDim,S0,
+                      E0,I0,
+                      R0,S_star0,
+                      E_star0,I_star0,
+                      R_star0,S_star,
+                      E_star,I_star,
+                      R_star,X,
+                      Z,DM,
+                      rho,beta,
+                      p_ei,p_ir,
+                      p_rs,N,outFileName, logFileList, iterationStride)
+
+
