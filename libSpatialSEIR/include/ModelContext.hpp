@@ -60,6 +60,7 @@ namespace SpatialSEIR
             // Updates: S
             void calculateS_CPU();
             void calculateS_CPU(int startLoc, int startTime);
+            void calculateS_givenE_CPU(int startLoc, int startTime);
             void calculateS_OCL();
 
             // Method: calculateE
@@ -67,6 +68,7 @@ namespace SpatialSEIR
             // Updates: E
             void calculateE_CPU();
             void calculateE_CPU(int startLoc, int startTime);
+            void calculateE_givenI_CPU(int startLoc, int startTime);
             void calculateE_OCL();
 
             // Method: calculateI
@@ -74,6 +76,7 @@ namespace SpatialSEIR
             // Updates: I
             void calculateI_CPU();
             void calculateI_CPU(int startLoc, int startTime);
+            void calculateI_givenR_CPU(int startLoc, int startTime);
             void calculateI_OCL();
 
             // Method: calculateR
@@ -81,6 +84,7 @@ namespace SpatialSEIR
             // Updates: R
             void calculateR_CPU();
             void calculateR_CPU(int startLoc, int startTime);
+            void calculateR_givenS_CPU(int startLoc, int startTime);
             void calculateR_OCL();
 
             // Method calculateGenericCompartment
