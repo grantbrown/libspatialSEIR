@@ -223,7 +223,7 @@ namespace SpatialSEIR
         if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
         else {E_star_fc -> sampleOCL();}
 
-        /*
+
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
@@ -316,8 +316,6 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling rho\n";}
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
         else {rho_fc -> sampleOCL();}
-
-        */
     }
 
 
