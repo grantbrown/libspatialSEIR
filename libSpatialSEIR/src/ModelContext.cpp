@@ -363,6 +363,11 @@ namespace SpatialSEIR
                                     startLoc, startTime);
     }
 
+    void ModelContext::calculateS_givenE_CPU(int startLoc, int startTime)
+    {
+        throw(-1);
+    }
+
     void ModelContext::calculateS_OCL()
     {
         throw(-1);
@@ -384,6 +389,11 @@ namespace SpatialSEIR
                                     &*(this -> E_star), &*(this -> I_star),
                                     &*(this -> A0 -> E_star0), &*(this -> A0 -> I_star0),
                                     startLoc, startTime);
+    }
+
+    void ModelContext::calculateE_givenI_CPU(int startLoc, int startTime)
+    {
+        throw(-1);
     }
 
 
@@ -432,6 +442,12 @@ namespace SpatialSEIR
                                     startLoc, startTime);
     }
 
+    void ModelContext::calculateI_givenR_CPU(int startLoc, int startTime)
+    {
+        throw(-1);
+    }
+
+
     void ModelContext::calculateI_OCL()
     {
         throw(-1);
@@ -444,21 +460,24 @@ namespace SpatialSEIR
     {
 
 
+        /*
         int i;
         int maxItr = (*(R -> nrow))*(*(R -> ncol));
         for (i = 0; i < maxItr; i++)
         {
             (R->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (I->data)[i]; 
         }
-        /*
+        */
+
         calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
                                     &*(this -> R_star), &*(this -> S_star),
                                     &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0));
-        */
+
     }
 
     void ModelContext::calculateR_CPU(int startLoc, int startTime)
     {
+        /*
         int i,j,startIdx,idx;
         startIdx = startTime*(*(R->nrow)) + startLoc;
 
@@ -469,14 +488,18 @@ namespace SpatialSEIR
             (R -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (I->data)[idx];  
             j += 1;
         }
+        */
 
-
-        /*
         calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
                                     &*(this -> R_star), &*(this -> S_star),
                                     &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0),
                                     startLoc, startTime);
-        */
+
+    }
+
+    void ModelContext::calculateR_givenS_CPU(int startLoc, int startTime)
+    {
+        throw(-1);
     }
 
     void ModelContext::calculateR_OCL()
