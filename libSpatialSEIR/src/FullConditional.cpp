@@ -410,7 +410,7 @@ namespace SpatialSEIR
     int FC_S_Star::calculateRelevantCompartments()
     {
         (*context) -> calculateS_CPU();
-        (*context) -> calculateR_CPU();
+        (*context) -> calculateR_givenS_CPU();
         //(*context) -> calculateI_CPU();
         //((*context) -> calculateP_SE_CPU());
 
@@ -418,7 +418,7 @@ namespace SpatialSEIR
     int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
-        (*context) -> calculateR_CPU(startLoc, startTime);
+        (*context) -> calculateR_givenS_CPU(startLoc, startTime);
         //(*context) -> calculateI_CPU(startLoc, startTime);
         //((*context) -> calculateP_SE_CPU(startLoc, startTime));
     }
@@ -616,21 +616,13 @@ namespace SpatialSEIR
     }
     int FC_E_Star::calculateRelevantCompartments()
     {
-        (*context) -> calculateS_CPU();
         (*context) -> calculateE_CPU();
-        (*context) -> calculateR_CPU();
-        //((*context) -> calculateP_SE_CPU());
-
+        (*context) -> calculateS_givenE_CPU();
     }
     int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateE_CPU(startLoc, startTime);
-        (*context) -> calculateR_CPU(startLoc, startTime);
-
-        //(*context) -> calculateI_CPU(startLoc, startTime);
-        //((*context) -> calculateP_SE_CPU(startLoc, startTime));
-
+        (*context) -> calculateS_givenE_CPU(startLoc, startTime);
     }
     int FC_E_Star::sampleCPU()
     {
@@ -816,14 +808,14 @@ namespace SpatialSEIR
     }
     int FC_R_Star::calculateRelevantCompartments()
     {
-        (*context) -> calculateI_CPU();
         (*context) -> calculateR_CPU();
+        (*context) -> calculateI_givenR_CPU();
         ((*context) -> calculateP_SE_CPU());
     }
     int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        (*context) -> calculateI_CPU(startLoc, startTime);
         (*context) -> calculateR_CPU(startLoc, startTime);
+        (*context) -> calculateI_givenR_CPU(startLoc, startTime);
         ((*context) -> calculateP_SE_CPU(startLoc, startTime));
     }
 

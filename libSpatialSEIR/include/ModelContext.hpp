@@ -60,6 +60,7 @@ namespace SpatialSEIR
             // Updates: S
             void calculateS_CPU();
             void calculateS_CPU(int startLoc, int startTime);
+            void calculateS_givenE_CPU();
             void calculateS_givenE_CPU(int startLoc, int startTime);
             void calculateS_OCL();
 
@@ -68,6 +69,7 @@ namespace SpatialSEIR
             // Updates: E
             void calculateE_CPU();
             void calculateE_CPU(int startLoc, int startTime);
+            void calculateE_givenI_CPU();
             void calculateE_givenI_CPU(int startLoc, int startTime);
             void calculateE_OCL();
 
@@ -76,6 +78,7 @@ namespace SpatialSEIR
             // Updates: I
             void calculateI_CPU();
             void calculateI_CPU(int startLoc, int startTime);
+            void calculateI_givenR_CPU();
             void calculateI_givenR_CPU(int startLoc, int startTime);
             void calculateI_OCL();
 
@@ -84,6 +87,7 @@ namespace SpatialSEIR
             // Updates: R
             void calculateR_CPU();
             void calculateR_CPU(int startLoc, int startTime);
+            void calculateR_givenS_CPU();
             void calculateR_givenS_CPU(int startLoc, int startTime);
             void calculateR_OCL();
 
@@ -94,6 +98,7 @@ namespace SpatialSEIR
                                                  CompartmentalModelMatrix *compStarAdd, 
                                                  CompartmentalModelMatrix *compStarSub,
                                                  int *compStar0Add, int *compStar0Sub);
+
             void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, int *comp0,
                                                  CompartmentalModelMatrix *compStarAdd, 
                                                  CompartmentalModelMatrix *compStarSub,

@@ -363,9 +363,27 @@ namespace SpatialSEIR
                                     startLoc, startTime);
     }
 
+    void ModelContext::calculateS_givenE_CPU()
+    {
+        int i;
+        int maxItr = (*(S -> nrow))*(*(S -> ncol));
+        for (i = 0; i < maxItr; i++)
+        {
+            (S->data)[i] = N[i] - (E->data)[i] - (I->data)[i] - (R->data)[i]; 
+        }
+    }
+
     void ModelContext::calculateS_givenE_CPU(int startLoc, int startTime)
     {
-        throw(-1);
+        int i,j,startIdx,idx;
+        startIdx = startTime*(*(S->nrow)) + startLoc;
+        j = 0;
+        for (i = startTime; i < *(S->ncol); i++)
+        {
+            idx = startIdx + j*(*(S->nrow));
+            (S -> data)[idx] = N[idx] - (R->data)[idx] - (E->data)[idx] - (I->data)[idx];  
+            j += 1;
+        }
     }
 
     void ModelContext::calculateS_OCL()
@@ -391,9 +409,28 @@ namespace SpatialSEIR
                                     startLoc, startTime);
     }
 
+    void ModelContext::calculateE_givenI_CPU()
+    {
+        int i;
+        int maxItr = (*(E -> nrow))*(*(E -> ncol));
+        for (i = 0; i < maxItr; i++)
+        {
+            (E->data)[i] = N[i] - (S->data)[i] - (I->data)[i] - (R->data)[i]; 
+        }
+    }
+
+
     void ModelContext::calculateE_givenI_CPU(int startLoc, int startTime)
     {
-        throw(-1);
+        int i,j,startIdx,idx;
+        startIdx = startTime*(*(E->nrow)) + startLoc;
+        j = 0;
+        for (i = startTime; i < *(E->ncol); i++)
+        {
+            idx = startIdx + j*(*(E->nrow));
+            (E -> data)[idx] = N[idx] - (S->data)[idx] - (R->data)[idx] - (I->data)[idx];  
+            j += 1;
+        }
     }
 
 
@@ -442,9 +479,27 @@ namespace SpatialSEIR
                                     startLoc, startTime);
     }
 
+    void ModelContext::calculateI_givenR_CPU()
+    {
+        int i;
+        int maxItr = (*(I -> nrow))*(*(I -> ncol));
+        for (i = 0; i < maxItr; i++)
+        {
+            (I->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (R->data)[i]; 
+        }
+    }
+
     void ModelContext::calculateI_givenR_CPU(int startLoc, int startTime)
     {
-        throw(-1);
+        int i,j,startIdx,idx;
+        startIdx = startTime*(*(I->nrow)) + startLoc;
+        j = 0;
+        for (i = startTime; i < *(I->ncol); i++)
+        {
+            idx = startIdx + j*(*(I->nrow));
+            (I -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (R->data)[idx];  
+            j += 1;
+        }
     }
 
 
@@ -497,9 +552,27 @@ namespace SpatialSEIR
 
     }
 
+    void ModelContext::calculateR_givenS_CPU()
+    {
+        int i;
+        int maxItr = (*(I -> nrow))*(*(I -> ncol));
+        for (i = 0; i < maxItr; i++)
+        {
+            (R->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (I->data)[i]; 
+        }
+    }
+
     void ModelContext::calculateR_givenS_CPU(int startLoc, int startTime)
     {
-        throw(-1);
+        int i,j,startIdx,idx;
+        startIdx = startTime*(*(R->nrow)) + startLoc;
+        j = 0;
+        for (i = startTime; i < *(R->ncol); i++)
+        {
+            idx = startIdx + j*(*(R->nrow));
+            (R -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (I->data)[idx];  
+            j += 1;
+        }
     }
 
     void ModelContext::calculateR_OCL()
