@@ -42,6 +42,7 @@ namespace SpatialSEIR
         {
             Z[i] = indata_z[i];
         }
+        return(0);
     }
 
     // Combined beta/gamma parameters

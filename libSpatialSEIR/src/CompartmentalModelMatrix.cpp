@@ -37,6 +37,7 @@ namespace SpatialSEIR
         {
             data[i] = indata[i];
         }
+        return(0);
     }
 
     int CompartmentalModelMatrix::createEmptyCompartment(int *inrow, int *incol)
@@ -52,6 +53,7 @@ namespace SpatialSEIR
         {
             data[i] = 0;
         }
+        return(0);
     }
     long unsigned int CompartmentalModelMatrix::marginSum(int margin, int slice)
     {

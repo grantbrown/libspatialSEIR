@@ -415,16 +415,14 @@ namespace SpatialSEIR
     {
         (*context) -> calculateS_CPU();
         (*context) -> calculateR_givenS_CPU();
-        //(*context) -> calculateI_CPU();
-        //((*context) -> calculateP_SE_CPU());
+        return(0);
 
     }
     int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateR_givenS_CPU(startLoc, startTime);
-        //(*context) -> calculateI_CPU(startLoc, startTime);
-        //((*context) -> calculateP_SE_CPU(startLoc, startTime));
+        return(0);
     }
 
     int FC_S_Star::sampleCPU()
@@ -622,11 +620,13 @@ namespace SpatialSEIR
     {
         (*context) -> calculateE_CPU();
         (*context) -> calculateS_givenE_CPU();
+        return(0);
     }
     int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateE_CPU(startLoc, startTime);
         (*context) -> calculateS_givenE_CPU(startLoc, startTime);
+        return(0);
     }
     int FC_E_Star::sampleCPU()
     {
@@ -825,6 +825,7 @@ namespace SpatialSEIR
         (*context) -> calculateR_CPU(startLoc, startTime);
         (*context) -> calculateI_givenR_CPU(startLoc, startTime);
         ((*context) -> calculateP_SE_CPU(startLoc, startTime));
+        return(0);
     }
 
     int FC_R_Star::sampleCPU()

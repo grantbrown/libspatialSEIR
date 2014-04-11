@@ -29,6 +29,7 @@ namespace SpatialSEIR
         {
             data[i] = indata[i];
         }
+        return(0);
     }
     int DistanceMatrix::scaledInvFunc_CPU(double phi, double* indata)
     {
@@ -47,6 +48,7 @@ namespace SpatialSEIR
                 data[i] = std::sqrt(((tmp < phi && std::abs(tmp) > 0.1) ? 1/tmp : 0));
             }
         }
+        return(0);
     }
     int DistanceMatrix::scaledInvFunc_CPU(double phi, double* indata, int* indim)
     {
@@ -64,6 +66,7 @@ namespace SpatialSEIR
                 data[i] = std::sqrt((tmp < phi && std::abs(tmp) > 0.1) ? 1/tmp : 0);
             }
         }
+        return(0);
     }
 
     DistanceMatrix::~DistanceMatrix()
