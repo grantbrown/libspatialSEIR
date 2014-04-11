@@ -1085,6 +1085,7 @@ namespace SpatialSEIR
         }
         return(0);
     }
+
     int FC_P_RS::sampleOCL()
     {
         //NOT IMPLEMENTED
@@ -1300,7 +1301,8 @@ namespace SpatialSEIR
         double a, b;
         a = ((*I_star) -> marginSum(3, -1));
         b = ((*E) -> marginSum(3, -1)) - a;
-        return(((*context) -> random -> beta(a+1.5, b+1.5)));
+        (**p_ei) = ((*context) -> random -> beta(a+1.5, b-a+1.5));
+        return(0);
     }
     int FC_P_EI::sampleOCL()
     {
@@ -1346,6 +1348,7 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
+
     int FC_P_IR::cacheEvalCalculation(double* cachedValues)
     {
         //Not Implemented
@@ -1397,8 +1400,10 @@ namespace SpatialSEIR
         double a,b;
         a = (*R_star) -> marginSum(3,-1);
         b = ((*I) -> marginSum(3,-1));
-        return(((*context)->random->beta(a+1.5, b+1.5)));
+        (**p_ir) = ((*context)->random->beta(a+1.5, b+1.5));
+        return(0);
     }
+
     int FC_P_IR::sampleOCL()
     {
         //NOT IMPLEMENTED

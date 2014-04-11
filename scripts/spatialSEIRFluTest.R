@@ -65,7 +65,7 @@ neighborhood = neighborhood[order(colnames(neighborhood)), order(colnames(neighb
 #####################################
 
 # Prepare Covariates
-X  = cbind(1, fluPopulation$Prop)  
+X  = cbind(1, (fluPopulation$Prop-mean(fluPopulation$Prop)))  
 Z_ar = array(0, dim=c(nrow(Y),ncol(Y),1)) # Just a matrix in this case
 # Multiple observations per monthly temperature adjustment
 idx = c()
@@ -88,14 +88,13 @@ for (idx in 2:(dim(Z_ar)[2]))
 {
     Z = rbind(Z, matrix(Z_ar[,idx,], ncol = 1)) 
 }
+Z = Z - mean(Z)
 
 
 # Create N Matrix (not time varying at this point)
 N = matrix(fluPopulation$Pop, nrow = nrow(Y), ncol = ncol(Y))
 
 # Guess Initial Compartments. 
-
-
 
 I_star = floor(sqrt(Y))
 
@@ -120,7 +119,7 @@ for (tpt in 1:ncol(R))
         I[,1] = I0 + I_star0 - R_star0
         R[,1] = R0 + R_star0 - S_star0
         S_star[,1] = rbinom(rep(1, length(S0)), R[,1], 0.05)
-        E_star[,1] = I_star[,2]
+        E_star[,1] = rbinom(rep(1, length(S0)), I_star[,2], 0.95)
         # I_star fixed
         R_star[,1] = rbinom(rep(1, length(S0)), I[,1], 0.8)
     }
@@ -134,7 +133,7 @@ for (tpt in 1:ncol(R))
         S_star[,tpt] = rbinom(rep(1,length(S0)), R[,tpt], 0.05)
         if (tpt != ncol(R))
         {
-            E_star[,tpt] = rbinom(rep(1,length(S0)), I_star[,tpt+1], 0.95)
+            E_star[,tpt] = rbinom(rep(1,length(S0)), I_star[,tpt+1], 0.9)
             #E_star[,tpt] = I_star[,tpt+1]
         }
         else
@@ -143,7 +142,6 @@ for (tpt in 1:ncol(R))
         }
         # I_star fuced
         R_star[,tpt] = rbinom(rep(1,length(S0)), I[,tpt], 0.8)
-
     }
 }
 
@@ -169,9 +167,10 @@ outFileName = "./chainOutput.txt"
 logFileList = c(1,1,0,1,1,1,0,0,0,0)
 iterationStride = 1
 
-if (!all((S+E+I+R) == N))
+if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
+    any(R<0) || any(S_star<0) || any(E_star<0) || any(R_star<0))
 {
-    stop("Don't be silly, the compartments must add up to N!")
+    stop("Invalid Compartment Values")
 }
 
 res = spatialSEIRInit(compMatDim,xDim,
