@@ -53,9 +53,9 @@ namespace SpatialSEIR
             data[i] = 0;
         }
     }
-    int CompartmentalModelMatrix::marginSum(int margin, int slice)
+    long unsigned int CompartmentalModelMatrix::marginSum(int margin, int slice)
     {
-        int output = 0;
+        long unsigned int output = 0; 
         int startIdx, i;
         // Rowsum
         if (margin == 1)
