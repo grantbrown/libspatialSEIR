@@ -64,7 +64,7 @@ namespace SpatialSEIR
             int *numLocations;
 
         private:
-            int *hasAlloc;;
+            int *hasAlloc;
     };
 }
 

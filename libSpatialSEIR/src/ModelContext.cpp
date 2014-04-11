@@ -712,19 +712,6 @@ namespace SpatialSEIR
                ((I -> data)[index] * (eta[index]))/N[i];
         }
 
-        // Calculate rho*sqrt(idmat)
-        // Full version:
-        /*
-        SpatialSEIR::matMult(this -> p_se, 
-                scaledDistMat -> data, 
-                p_se_components, 
-                *(scaledDistMat -> numLocations), 
-                *(scaledDistMat -> numLocations),
-                *(I -> nrow),
-                *(I -> ncol),false,false);
-        */ 
-        // Start at current time
-        int numTimeUpdate = (nCol - startTime);
         SpatialSEIR::matMult(&((this -> p_se)[startTime*nLoc]), 
                 scaledDistMat -> data, 
                 &(p_se_components[startTime*nLoc]), 
