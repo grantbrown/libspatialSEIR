@@ -19,13 +19,14 @@ namespace SpatialSEIR
         int numToAlloc_x = (*incol_x)*(*inrow_x);
         int numToAlloc_z = (*incol_z)*(*inrow_z);
 
-        this -> X = new double[numToAlloc_x];
-        this -> Z = new double[numToAlloc_z];
+        X = new double[numToAlloc_x];
+        Z = new double[numToAlloc_z];
 
-        this -> nrow_x = new int;
-        this -> ncol_x = new int;
-        this -> nrow_z = new int;
-        this -> ncol_z = new int;
+        nrow_x = new int;
+        ncol_x = new int;
+        nrow_z = new int;
+        ncol_z = new int;
+
 
         (*nrow_x) = (*inrow_x);
         (*ncol_x) = (*incol_x);

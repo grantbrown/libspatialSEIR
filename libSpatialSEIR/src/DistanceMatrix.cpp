@@ -21,8 +21,8 @@ namespace SpatialSEIR
     {
         *hasAlloc = 1;
         int numToAlloc = (*indim)*(*indim);
-        this -> data = new double[numToAlloc];
-        this -> numLocations = new int;
+        data = new double[numToAlloc];
+        numLocations = new int;
         (*numLocations) = (*indim);
         int i; 
         for (i = 0; i < numToAlloc; i++)

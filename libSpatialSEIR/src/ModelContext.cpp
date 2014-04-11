@@ -61,16 +61,20 @@ namespace SpatialSEIR
                                xArgs -> inRow_x,
                                xArgs -> inCol_x,
                                xArgs -> inRow_z,
-                               xArgs -> inCol_z);
+                               xArgs -> inCol_z); 
+
         S_star -> genFromDataStream(S_starArgs -> inData,
                                     S_starArgs -> inRow,
                                     S_starArgs -> inCol);
+
         E_star -> genFromDataStream(E_starArgs -> inData,
                                     E_starArgs -> inRow,
                                     E_starArgs -> inCol);
+
         I_star -> genFromDataStream(I_starArgs -> inData,
                                     I_starArgs -> inRow,
                                     I_starArgs -> inCol);
+
         R_star -> genFromDataStream(R_starArgs -> inData,
                                     R_starArgs -> inRow,
                                     R_starArgs -> inCol);
@@ -89,8 +93,10 @@ namespace SpatialSEIR
 
         rawDistMat -> genFromDataStream(rawDistArgs -> inData,
                                         rawDistArgs -> dim);
+
         scaledDistMat -> genFromDataStream(rawDistArgs -> inData,
                                            rawDistArgs -> dim);
+
         scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi), 
                                            &*(scaledDistArgs -> inData));
 
@@ -124,7 +130,7 @@ namespace SpatialSEIR
         p_ei = new double;
         p_ir = new double;
         p_rs = new double[*(S->ncol)];
-        rho = new double;
+        rho = new double; 
 
         // Wire up the full conditional classes
         S_star_fc = new FC_S_Star(this,

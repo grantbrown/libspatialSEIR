@@ -1,6 +1,10 @@
 library(spatialSEIR)
 set.seed(12313)
 
+dataSubsetStartDate = "2008-01-01"
+dataSubsetEndDate = "2009-06-01"
+
+
 ####################################
 # Part 1: Read in and Process Data #
 ####################################
@@ -14,8 +18,8 @@ fluData = read.csv("./scriptData/fluTrends/fluDataProcessed.csv")
 fluDates = as.Date(as.character(fluData[,1]), format = "%m/%d/%Y")
 
 fluData[,1] = fluDates
-keepDates = (fluDates >= as.Date("2008-01-01", format = "%Y-%m-%d") & 
-             fluDates < as.Date("2011-06-01", format = "%Y-%m-%d"))
+keepDates = (fluDates >= as.Date(dataSubsetStartDate, format = "%Y-%m-%d") & 
+             fluDates < as.Date(dataSubsetEndDate, format = "%Y-%m-%d"))
 fluData = fluData[keepDates,]
 fluDates = fluDates[keepDates]
 
@@ -45,8 +49,8 @@ temperature$Date = as.Date(paste(as.character(temperature$Year),
                                  as.character(temperature$Month),
                                  rep("01", nrow(temperature)),
                                  sep = "-"), format = "%Y-%m-%d")
-tempKeepDates = (temperature$Date >= as.Date("2008-01-01", format = "%Y-%m-%d") & 
-                 temperature$Date < as.Date("2011-06-01", format = "%Y-%m-%d"))
+tempKeepDates = (temperature$Date >= as.Date(dataSubsetStartDate, format = "%Y-%m-%d") & 
+                 temperature$Date < as.Date(dataSubsetEndDate, format = "%Y-%m-%d"))
 temperature = temperature[tempKeepDates,]
 
 
@@ -172,6 +176,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 {
     stop("Invalid Compartment Values")
 }
+
 
 res = spatialSEIRInit(compMatDim,xDim,
                       zDim,S0,

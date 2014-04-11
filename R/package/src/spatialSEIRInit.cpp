@@ -132,6 +132,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     ModelContext* context = new ModelContext();
 
     Rcpp::Rcout << "Populating Model Context\n";
+    //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
+    //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
     context -> populate(&A0, &xArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs,rho.begin(),
                         beta.begin(),p_ei.begin(), p_ir.begin(),p_rs.begin(),
