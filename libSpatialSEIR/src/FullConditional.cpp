@@ -148,7 +148,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
-            std::cout << j << "\n";
+            //std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
@@ -165,17 +165,21 @@ namespace SpatialSEIR
                     itrs ++;
                     if (itrs > 1000)
                     {
-                        std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
-                        std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
-                        std::cout << "l,r: " << l << ", " << r << "\n";
-                        if (itrs >= 1005){throw(-1);}
-
+                        if (!std::isfinite(this -> getValue()))
+                        {
+                            std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
+                            std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
+                            std::cout << "l,r: " << l << ", " << r << "\n";
+                            throw(-1);
+                        }
+                        else
+                        {
+                            y = -INFINITY;
+                        }
                     }
                     x0 = ((context -> random -> uniform())*(r-l) + l);
                     (starCompartment -> data)[compIdx] = std::floor(x0);
                     this -> calculateRelevantCompartments(i,j);
-                    //this -> calculateRelevantCompartments();
-
                     this -> evalCPU(i,j,cachedValues);
                     if (x0 >= x){r = x0;}
                     else{l = x0;}
