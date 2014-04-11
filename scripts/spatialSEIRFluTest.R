@@ -81,7 +81,13 @@ for (i in 1:length(states))
     Z_ar[i,,1] = (stateSub$Temp - mean(temperature$Temp))[idx]
 }
 
-Z = as.numeric(Z_ar)
+Z = matrix(Z_ar[,1,], ncol = 1)
+
+# Flatten the Z array 
+for (idx in 2:(dim(Z_ar)[2]))
+{
+    Z = rbind(Z, matrix(Z_ar[,idx,], ncol = 1)) 
+}
 
 
 # Create N Matrix (not time varying at this point)
@@ -91,12 +97,12 @@ N = matrix(fluPopulation$Pop, nrow = nrow(Y), ncol = ncol(Y))
 
 
 
-I_star = Y
+I_star = floor(sqrt(Y))
 
 S0 = floor(0.95*N[,1]) 
 E0 = rbinom(rep(1, length(S0)), 10, 0.2)
-I0 = floor(Y[,1]/2)
-R0 = N[,1] - floor(S0 - E0 - I0)
+I0 = floor(sqrt(Y[,1])/2)
+R0 = N[,1] - floor(S0 + E0 + I0)
 
 S_star0 = rbinom(rep(1,length(S0)), R0, 0.05)
 E_star0 = rbinom(rep(1,length(S0)), S0, 0.05)
@@ -143,26 +149,31 @@ for (tpt in 1:ncol(R))
 
 
 xDim = dim(X)
-zDim = c(dim(Z_ar)[1], prod(dim(Z_ar)[2:3]))
+zDim = dim(Z)
 
 compMatDim = c(nrow(S), ncol(S))
 
+DM = neighborhood
 
-DM = as.numeric(neighborhood)
+rho = 0.1
 
-rho = 0.02
-
-p_ei = 0.8
-p_ir = 0.6
+p_ei = 0.99
+p_ir = 0.8
 p_rs = rep(0.1, ncol(S))
 
-beta = c(-2,0.1,0.1)
+#beta = c(-2,0.1,0.1)
+beta = c(0,0,0)
 
 outFileName = "./chainOutput.txt"
 # beta, rho, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
 logFileList = c(1,1,0,1,1,1,0,0,0,0)
 iterationStride = 1
-stop("Fug")
+
+if (!all((S+E+I+R) == N))
+{
+    stop("Don't be silly, the compartments must add up to N!")
+}
+
 res = spatialSEIRInit(compMatDim,xDim,
                       zDim,S0,
                       E0,I0,

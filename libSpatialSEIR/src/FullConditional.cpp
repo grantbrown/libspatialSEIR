@@ -708,7 +708,11 @@ namespace SpatialSEIR
                         ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx])
                 {
                     cachedValues[compIdx] = -INFINITY;
-                    std::cerr << "Error caching R_Star FC\n";
+                    std::cerr << "Error caching R_Star FC, index: " << compIdx << "\n";
+                    if (tmp < 0){std::cout << "R_star Value " << tmp << " < 0\n";}
+                    if (tmp > ((*I)->data)[compIdx]){std::cout << "R_star Value " << tmp << " > I: " << ((*I)->data)[compIdx]<<"\n";}
+                    if (((*S_star)->data)[compIdx] > ((*R)->data)[compIdx]){std::cout 
+                        << "S_star Value " <<  ((*S_star)->data)[compIdx]<< " > R: " << ((*R)->data)[compIdx]<<"\n";}
                     throw(-1);
                 }
                 else

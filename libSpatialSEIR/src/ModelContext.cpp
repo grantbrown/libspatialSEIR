@@ -207,34 +207,8 @@ namespace SpatialSEIR
         this -> R_star_fc -> evalCPU();
     }
 
-    void ModelContext::simulationIter(int* useOCL, bool verbose = false)
+    void ModelContext::checkCompartmentBounds()
     {
-        std::cout << "Beta: " << beta_fc ->getValue() << "\n";
-        std::cout << "p_rs: " << p_rs_fc ->getValue() << "\n";
-        std::cout << "p_ei: " << p_ei_fc ->getValue() << "\n";
-        std::cout << "p_ir: " << p_ir_fc ->getValue() << "\n";
-        std::cout << "rho: " << rho_fc ->getValue() << "\n";
-        std::cout << "S_star: " << S_star_fc ->getValue() << "\n";
-        std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
-        std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
-
-
-        if (verbose){std::cout << "Sampling E_star\n";}
-        if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
-        else {E_star_fc -> sampleOCL();}
-
-
-        if (verbose){std::cout << "Sampling S_star\n";}
-        if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
-        else {S_star_fc -> sampleOCL();}
-
-
-        if (verbose){std::cout << "Sampling R_star\n";}
-        if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
-        else {R_star_fc -> sampleOCL();}
-
-
-
         int i;
         int rowCol = (*(R->ncol))*(*(R->nrow));
         for (i = 0; i < rowCol;i++)
@@ -296,6 +270,39 @@ namespace SpatialSEIR
             }
 
         }
+    }
+
+    void ModelContext::simulationIter(int* useOCL, bool verbose = false)
+    {
+        std::cout << "Beta: " << beta_fc ->getValue() << "\n";
+        std::cout << "p_rs: " << p_rs_fc ->getValue() << "\n";
+        std::cout << "p_ei: " << p_ei_fc ->getValue() << "\n";
+        std::cout << "p_ir: " << p_ir_fc ->getValue() << "\n";
+        std::cout << "rho: " << rho_fc ->getValue() << "\n";
+        std::cout << "S_star: " << S_star_fc ->getValue() << "\n";
+        std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
+        std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
+
+
+        if (verbose){std::cout << "Sampling E_star\n";}
+        if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
+        else {E_star_fc -> sampleOCL();}
+
+        this -> checkCompartmentBounds();
+
+        if (verbose){std::cout << "Sampling S_star\n";}
+        if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
+        else {S_star_fc -> sampleOCL();}
+
+        this -> checkCompartmentBounds();
+
+        if (verbose){std::cout << "Sampling R_star\n";}
+        if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
+        else {R_star_fc -> sampleOCL();}
+
+        this -> checkCompartmentBounds();
+
+
 
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
