@@ -169,7 +169,7 @@ beta = c(0,0,0)
 outFileName = "./chainOutput.txt"
 # beta, rho, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
 logFileList = c(1,1,0,1,1,1,0,0,0,0)
-iterationStride = 1
+iterationStride = 10
 
 if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     any(R<0) || any(S_star<0) || any(E_star<0) || any(R_star<0))

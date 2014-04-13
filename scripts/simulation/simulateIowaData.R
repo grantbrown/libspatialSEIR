@@ -88,9 +88,9 @@ gen_covariates = function(dcm, nweek = 52, nyear =5)
 
 
     #true_fixed_beta = c(-1.2,-0.03,0,-0.025, -0.02, rnorm(ncol(dcm),0, 0.01))
-    true_fixed_beta = c(-1.2,-0.03,0,-0.025, -0.02)
+    true_fixed_beta = c(-12,-0.03,0,-0.025, -0.02)
 
-    true_time_varying_beta = c(0.004,0.0006, 0.001, -0.0004)
+    true_time_varying_beta = c(0.004,0.0007, 0.004, -0.0004)
     
     true_fixed_eta = X %*% true_fixed_beta
     true_time_varying_eta = array(0, dim = c(nrow(X), nweek, nyear))
@@ -229,7 +229,7 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
                     stop("Invalid P")
                 }
 
-                E_star = rbinom(rep(1, length(S0)),S[,mr_week, mr_year], p)
+                E_star = rbinom(rep(1, length(S0)),S[,mr_week, mr_year], p) + rbinom(rep(1,length(S0)), S[,mr_week,mr_year], 0.0002)
                 I_star = rbinom(rep(1, length(E0)),E[,mr_week,mr_year], p_i)
                 R_star = rbinom(rep(1, length(I0)),I[,mr_week,mr_year], p_r)
                 S_star = rbinom(rep(1, length(R0)),R[,mr_week,mr_year], p_s[week])
