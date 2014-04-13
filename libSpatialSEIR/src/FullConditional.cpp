@@ -821,6 +821,7 @@ namespace SpatialSEIR
         (*context) -> calculateR_CPU();
         (*context) -> calculateI_givenR_CPU();
         ((*context) -> calculateP_SE_CPU());
+        return(0);
     }
     int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
@@ -1023,8 +1024,6 @@ namespace SpatialSEIR
         int i, j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
-        double term1, term2, term3;
-        term1 = 0.0; term2 = 0.0; term3 = 0.0;
         int* s_star_i_sum = new int[nTpts];
         int* r_star_i_diff = new int[nTpts];
         for (j =0; j<nTpts; j++)
@@ -1261,11 +1260,9 @@ namespace SpatialSEIR
     int FC_P_EI::evalCPU()
     { 
         *value = 0.0;
-        int i, j, tmp, compIdx;
+        int j;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*E) -> ncol);
-        double term1, term2, term3;
-        term1 = 0.0; term2 = 0.0; term3 = 0.0;
         int i_star_sum = 0;
         int e_sum = 0;
         for (j =0; j<(nLoc*nTpts); j++)
@@ -1361,11 +1358,9 @@ namespace SpatialSEIR
     int FC_P_IR::evalCPU()
     {
         *value = 0.0;
-        int i, j, tmp, compIdx;
+        int j;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*I) -> ncol);
-        double term1, term2, term3;
-        term1 = 0.0; term2 = 0.0; term3 = 0.0;
         int r_star_sum = 0;
         int i_sum = 0;
         for (j =0; j<(nLoc*nTpts); j++)

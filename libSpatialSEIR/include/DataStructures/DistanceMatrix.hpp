@@ -46,10 +46,8 @@ namespace SpatialSEIR
             int genFromDataStream(double *indata, int *dim); 
 
             // Scaled options for already allocated distance matrix
-            int scaledInvFunc_CPU(double phi, double *indata);
-            int scaledInvFunc_OCL(double phi, double *indata);
-            int gravityFunc_CPU(double phi, double *indata);
-            int gravityFunc_OCL(double phi, double *indata);
+            int scaledInvFunc_CPU(double phi);
+            int scaledInvFunc_OCL(double phi);
 
             // Scaled options for unallocated distance matrix
             int scaledInvFunc_CPU(double phi, double *indata, int *dim);

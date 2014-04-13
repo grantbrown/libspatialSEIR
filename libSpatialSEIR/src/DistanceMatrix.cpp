@@ -31,7 +31,7 @@ namespace SpatialSEIR
         }
         return(0);
     }
-    int DistanceMatrix::scaledInvFunc_CPU(double phi, double* indata)
+    int DistanceMatrix::scaledInvFunc_CPU(double phi)
     {
         if (*hasAlloc != 1)
         {

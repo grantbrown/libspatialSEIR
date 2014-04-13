@@ -97,8 +97,7 @@ namespace SpatialSEIR
         scaledDistMat -> genFromDataStream(rawDistArgs -> inData,
                                            rawDistArgs -> dim);
 
-        scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi), 
-                                           &*(scaledDistArgs -> inData));
+        scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
 
         delete N; delete beta; delete eta;
         N = new int[(*(S -> nrow))*(*(S -> ncol))];                                          
