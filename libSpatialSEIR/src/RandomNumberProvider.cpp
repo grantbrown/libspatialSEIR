@@ -14,6 +14,15 @@ namespace SpatialSEIR
     {
         return(unidist(generator));
     }
+    int RandomNumberProvider::uniform_int()
+    {
+        return(unidist_int(generator));
+    }
+    int RandomNumberProvider::uniform_int(int a, int b)
+    {
+        boost::random::uniform_int_distribution<> udist(a,b);
+        return(udist(generator));
+    }
     double* RandomNumberProvider::uniform(int n)
     {
         double* output = new double[n];

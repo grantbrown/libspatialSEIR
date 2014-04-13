@@ -192,6 +192,93 @@ namespace SpatialSEIR
         return 0;
     }
 
+    int FullConditional::sampleCompartmentDiscretely(ModelContext* context,
+                                       InitData* A0,
+                                       CompartmentalModelMatrix* starCompartment,
+                                       int width,double* cachedValues)
+    {
+        // Declare required variables
+        int i, j, compIdx;
+        int nLoc = *(A0 -> numLocations);
+        int nTpts = *(starCompartment -> ncol);
+        int l,r;
+        int x, x0;
+        double y;
+        
+        // Update the relevant CompartmentalModelMatrix instances
+        this -> calculateRelevantCompartments();
+        
+        // Cache Eval Calculation
+        this -> cacheEvalCalculation(cachedValues);
+
+        // Set the "value" attribute appropriately
+        this -> evalCPU();
+   
+        int itrs;
+        int tmp;
+        int maxItrs = 10*width;
+        int scratchIdxStart;
+        // Main loop: 
+        int* scratchFilled = new int[width];
+        double* scratch = new double[width];
+        for (j = 0; j < width; j++){scratch[j] = 0.0; scratchFilled[j] = 0;}
+        for (j = 0; j < nTpts; j++)
+        { 
+            std::cout << j << "\n";
+            compIdx = j*nLoc - 1;
+            for (i = 0; i < nLoc; i++)
+            {
+                compIdx++;
+                x = (starCompartment -> data)[compIdx];
+                this -> calculateRelevantCompartments(i,j); 
+                this -> evalCPU(i,j,cachedValues);
+                y = (this->getValue()) - (context -> random -> gamma());
+                l = std::max(0, x-width/2);
+                r = l + width;
+                scratchIdxStart = l;
+                itrs = 0;
+                do 
+                {
+                    itrs ++;
+                    if (itrs > maxItrs)
+                    {
+                        if (!std::isfinite(this -> getValue()))
+                        {
+                            std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
+                            std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
+                            std::cout << "l,r: " << l << ", " << r << "\n";
+                            throw(-1);
+                        }
+                        else
+                        {
+                            y = -INFINITY;
+                        }
+                    }
+                    x0 = (context -> random -> uniform_int(l,r));
+                    tmp = x0-scratchIdxStart;
+                    if (scratchFilled[tmp])
+                    {
+                        this -> setValue(scratch[tmp]);
+                    }
+                    else
+                    {
+                        (starCompartment -> data)[compIdx] = x0;
+                        this -> calculateRelevantCompartments(i,j);
+                        this -> evalCPU(i,j,cachedValues);
+                        if (x0 >= x){r = x0;}
+                        else{l = x0;}
+                        scratchFilled[tmp] = 1;
+                        scratch[tmp] = this -> getValue();
+                    }
+                } while (y >= (this -> getValue()));
+            }
+        }
+        delete[] scratch;
+        delete[] scratchFilled;
+        return 0;
+    }
+
+
     int FullConditional::sampleDouble(ModelContext* context,
                                        double* variable, 
                                        int varLen, 
@@ -429,7 +516,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentDiscretely(*context,*A0,
                                   *S_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -442,6 +529,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_S_Star::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
 
 
 
@@ -632,7 +725,7 @@ namespace SpatialSEIR
     }
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentDiscretely(*context,*A0,
                                   *E_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -646,6 +739,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_E_Star::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
 
     /*
      *
@@ -833,7 +932,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentDiscretely(*context,*A0,
                                   *R_star,10,(*context) -> compartmentCache);
         return(0);
     }
@@ -847,6 +946,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_R_Star::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
 
      /*
      *
@@ -975,6 +1080,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_Beta::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
     /*
      *
      * Implement the full conditional for the R->S transition 
@@ -1067,13 +1178,13 @@ namespace SpatialSEIR
     }
     int FC_P_RS::calculateRelevantCompartments()
     {
-        // Not used. Do nothing
-        return(0);
+        // Not used.
+        throw(-1);
     }
     int FC_P_RS::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        //Not used. Do nothing. 
-        return(0);
+        //Not used.
+        throw(-1);
     }
 
     int FC_P_RS::sampleCPU()
@@ -1098,6 +1209,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_P_RS::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
 
 
     FC_Rho::FC_Rho(ModelContext *_context,
@@ -1217,6 +1334,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_Rho::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
 
 
     FC_P_EI::FC_P_EI(ModelContext *_context,
@@ -1314,6 +1437,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_P_EI::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
 
 
 
@@ -1412,6 +1541,12 @@ namespace SpatialSEIR
     {
         return(*(this -> value));
     }
+    void FC_P_IR::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
+
+
 }
 
 

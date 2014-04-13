@@ -70,6 +70,7 @@ namespace SpatialSEIR
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual double getValue() = 0;
+            virtual void setValue(double value) = 0;
             // The following methods only apply to the compartment full conditionals, 
             // but require dummy implementations for all FullConditionals to keep 
             // the R dynamic loader happy. Consider factoring out separate FullConditional
@@ -82,6 +83,11 @@ namespace SpatialSEIR
                                   InitData* A0, 
                                   CompartmentalModelMatrix* destCompartment,
                                   double width, double* compartmentCache); 
+            int sampleCompartmentDiscretely(ModelContext* context,
+                                            InitData* A0, 
+                                            CompartmentalModelMatrix* destCompartment,
+                                            int width, double* compartmentCache); 
+
             int sampleDouble(ModelContext* context, 
                              double* variable,
                              int varLen,
@@ -109,6 +115,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
             virtual ~FC_S_Star();
@@ -151,6 +158,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
@@ -189,6 +197,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
@@ -224,6 +233,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
@@ -256,6 +266,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
@@ -288,6 +299,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
@@ -319,6 +331,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
@@ -348,6 +361,7 @@ namespace SpatialSEIR
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
+            virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
