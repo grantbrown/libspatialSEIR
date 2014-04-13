@@ -25,6 +25,11 @@ namespace SpatialSEIR
     {
         // Use BLAS to matrix multiply, assume column major, non transposing.
         // Double check this code when I have internet access. 
+        if (Acol != Brow)
+        {
+            std::cerr << "Invalid Matrix Dimensions" << std::endl;
+            throw(-1);
+        }
         cblas_dgemm(CblasColMajor,
                     TransA ? CblasTrans : CblasNoTrans,
                     TransB ? CblasTrans : CblasNoTrans,
@@ -124,15 +129,13 @@ namespace SpatialSEIR
 
     int FullConditional::sampleCompartment(ModelContext* context,
                                        InitData* A0,
-                                       CompartmentalModelMatrix* drawCompartment,
-                                       CompartmentalModelMatrix* destCompartment,
                                        CompartmentalModelMatrix* starCompartment,
                                        double width,double* cachedValues)
     {
         // Declare required variables
         int i, j, compIdx;
         int nLoc = *(A0 -> numLocations);
-        int nTpts = *(drawCompartment -> ncol);
+        int nTpts = *(starCompartment -> ncol);
         double l,r,y,x,x0;
         
         // Update the relevant CompartmentalModelMatrix instances
@@ -148,7 +151,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
-            //std::cout << j << "\n";
+            std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
@@ -427,7 +430,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,*R,*S,
+        this -> sampleCompartment(*context,*A0,
                                   *S_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -630,7 +633,7 @@ namespace SpatialSEIR
     }
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,*S,*E,
+        this -> sampleCompartment(*context,*A0,
                                   *E_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -830,7 +833,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,*I,*R,
+        this -> sampleCompartment(*context,*A0,
                                   *R_star,10,(*context) -> compartmentCache);
         return(0);
     }

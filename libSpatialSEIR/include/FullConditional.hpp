@@ -79,10 +79,8 @@ namespace SpatialSEIR
 
             //Declaration for inherited methods
             int sampleCompartment(ModelContext* context,
-                                  InitData* A0,
-                                  CompartmentalModelMatrix* drawCompartment,
+                                  InitData* A0, 
                                   CompartmentalModelMatrix* destCompartment,
-                                  CompartmentalModelMatrix* starCompartment,
                                   double width, double* compartmentCache); 
             int sampleDouble(ModelContext* context, 
                              InitData* A0, 
