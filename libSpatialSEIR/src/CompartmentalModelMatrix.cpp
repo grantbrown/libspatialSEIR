@@ -95,7 +95,6 @@ namespace SpatialSEIR
       /* rest of input file is data vals in row major order */
       int status;
       int size;
-      int *data;
       int m,n,i;
       FILE* fp;
       fp=fopen(fn,"r");
@@ -119,7 +118,7 @@ namespace SpatialSEIR
 
       fscanf(fp,"%d %d",&m, &n);
       printf("Rows: %d, Columns:  %d\n", m, n);
-      this -> data = new int[m*n];
+      data = new int[m*n];
       for (i=0;i<m*n;i++)
       {
           fscanf(fp,"%d",&data[i]);
