@@ -193,7 +193,6 @@ namespace SpatialSEIR
     }
 
     int FullConditional::sampleDouble(ModelContext* context,
-                                       InitData* A0,
                                        double* variable, 
                                        int varLen, 
                                        double width)
@@ -962,7 +961,7 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDouble(*context, *A0, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.1); 
+        sampleDouble(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.1); 
         return(0);
     }
     int FC_Beta::sampleOCL()
@@ -1206,7 +1205,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDouble(*context, *A0, *rho, 1, 0.1); 
+        sampleDouble(*context, *rho, 1, 0.1); 
         return(0);
     }
     int FC_Rho::sampleOCL()

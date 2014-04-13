@@ -83,7 +83,6 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* destCompartment,
                                   double width, double* compartmentCache); 
             int sampleDouble(ModelContext* context, 
-                             InitData* A0, 
                              double* variable,
                              int varLen,
                              double width);
