@@ -1,0 +1,415 @@
+\documentclass[12pt]{article}
+\oddsidemargin .15in \evensidemargin .0in \topmargin 0in
+\columnsep 10pt \columnseprule 0pt
+\marginparwidth 19pt \marginparsep 11pt \marginparpush 5pt
+\headheight 0pt \headsep 0pt
+\textheight 8in
+\textwidth 6in 
+\pagestyle{plain}
+\usepackage{graphicx, latexsym}
+\usepackage{alltt}
+\usepackage{float}
+\usepackage{amsmath}
+
+\newcommand \noi {\noindent}
+\newcommand \itx {\indent \indent \indent}
+\newcommand \bg {\begin}
+\newcommand \en {\end}
+\newcommand \mth {\begin{math}}
+\newcommand \mthx {\end{math}}
+\newcommand \ds {\displaystyle}
+\newcommand \mbreak {\\ \vspace{0.1in}}
+\begin{document}
+
+\begin{center}    
+    \noi \bf SEIR Derivation and Algorithm\\
+    \vspace{.05in}
+    \noi Spring 2014\\
+    \vspace{.05in}
+
+    \vspace{.15in}
+    \noi Grant Brown\\ 
+
+\end{center}
+
+\section{Problem Set Up}
+\subsection{SEIR Structure}
+
+    \subsubsection{Compartments}
+        Denote the spatial locations (cities) $\left\{s_i : i = 1, ...,n \right\}$ \mbreak
+        Let $d(s_i, s_l) = d_{il}$ define a measure of distance between 
+        spatial locations $s_i$ and $s_l$. $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$ \mbreak
+        Let time (in weeks) be denoted ${t_j : j = 1, ...,T}$ \mbreak
+        $\bf{N_j} = (N_{1j}, ..., N_{nj})$ is the vector of population sizes at time i \mbreak
+        $\bf{S_j} = (S_{1j}, ..., S_{nj})$ is the vector of susceptable counts at time i \mbreak
+        $\bf{E_j} = (E_{1j}, ..., E_{nj})$ is the vector of exposed counts at time i \mbreak
+        $\bf{I_j} = (I_{1j}, ..., I_{nj})$ is the vector of infectious counts at time i \mbreak
+        $\bf{R_j} = (R_{1j}, ..., R_{nj})$ is the vector of removed counts at time i. \mbreak
+        $\bf{N_j} = \bf{S_j + E_j + I_j + R_j}$ for all $j$
+
+    \subsubsection{Disease Evolution Process Model}
+    \begin{center}
+        $\bf{S_{j+1}} = \bf{S_j} - \bf{E_j^*} + \bf{S_j^*}$\mbreak
+        $\bf{E_{j+1}} = \bf{E_j} - \bf{I_j^*} + \bf{E_j^*}$\mbreak
+        $\bf{I_{j+1}} = \bf{I_j} - \bf{R_j^*} + \bf{I_j^*}$\mbreak
+        $\bf{R_{j+1}} = \bf{R_j} - \bf{S_j^*} + \bf{R_j^*}$\mbreak
+    \end{center}
+    \vspace{0.15in}
+
+    \vspace{0.15in}
+        \noi
+        $\{S_{ij}^*\} \sim\ iid\  binom(R_{ij}, \pi_j^{(RS)})$\\
+        $\{E_{ij}^*\} \sim binom(S_{ij}, \pi^{SE}_{ij})\\$
+        $\{I_{ij}^*\} \sim\ iid\  binom(E_{ij}, \pi^{(EI)})$\\
+        $\{R_{ij}^*\} \sim\ iid\  binom(I_{ij}, \pi^{(IR)})$\\
+
+
+
+$\pi^{RS}$, $\pi^{EI}$, and $\pi^{IR}$ are easily modeled with standard prior distributions. 
+More care must be given to the development of a model for the $\left\{\pi^{SE}_{ij} \right\}$, which 
+describe the actual infection process, and must account for predictor variables as well as the 
+spatial structure of $\left\{ s_i \right\}$
+
+\subsection{Infection Process - CAR Model Motivation}
+
+Consider the process by which people become infected with a communicable disease. 
+Namely, consider the situation in which a person `A' has contacted another person, `B', 
+who is infectious (for some suitable definition of contacted). 
+Let $p$ be the probability that person `A' becomes infected with the disease, and
+let $q=1-p$. Now we introduce a number of assumptions:
+
+\begin{itemize}
+
+    \item Assume that the number of `contacts' $K_i$ between a person of interest 
+    and other individuals within a spatial unit $s_i$ at a given time point follows a poisson 
+    distribution:\\
+    \begin{center}
+        $K_j \sim Po(\lambda_i)$
+    \end{center}
+    \item Assume that when individuals travel to other spatial locations, their 
+        contact behavior is well modeled by the contact behavior of that spatial unit (when in Rome).  
+    \item Contact between spatial locations is proportional to some known function $f(d_{il})$
+        of the driving distance (in minutes) between the centroids of $s_i$ and $s_l$
+    \item Unknown and unmeasureable mixing with external populations results in some overall
+        probability of infection for each person in a population. Parameterize this probability as $1-exp(-\gamma_j)$, and let 
+        the $Inf(ext,t_j)$ denote the infection event such that $P(Inf(ext,t_j)) = 1-exp(-\gamma_j)$ and 
+        $P(!Inf(ext,t_j)) = exp(-\gamma_j)$.
+\end{itemize}
+
+
+Define $\delta_{ij}$ to be the proportion of persons who are infectious in spatial unit $s_i$ 
+at time $t_j$. Then, letting $Inf(s_i, t_j)$ be the event that a person becomes 
+infected from contact within spatial unit $s_i$ at time $t_j$, we can derive:
+
+\begin{center}
+
+    $P(Inf(.,t_j)) = 1 - P(!Inf(s_i, t_j)) \cdot  P(!Inf(s_{-i}, t_j)) \cdot P(!Inf(ext))$ \mbreak
+    where \mbreak 
+    $P(!Inf(s_i, t_j)) = E(!Inf(s_i, t_j)) = E(E(!Inf(s_i, t_j)|K_i=k_i))$  \mbreak 
+    $\displaystyle =E(((1-\delta_{ij})q)^{k_i})$  \mbreak 
+    $\displaystyle = \sum_{k=0}^{\infty} ((1-\delta_{ij})q)^k(\frac{\lambda_i^ke^{-\lambda_i}}{k!})$\mbreak
+    $\displaystyle =  \sum_{k=0}^{\infty} q_{ij}^k (\frac{\lambda_i^ke^{-\lambda_i}}{k!})$\mbreak
+    $\displaystyle = \frac{e^{-\lambda_i}}{e^{-q_{ij}\lambda_i}}(1)$
+    $ = e^{-\lambda_i\cdot(1-q_{ij})} $
+    $ = e^{-\lambda_i \cdot p_{ij}} $
+    $ = e^{-\lambda_i \cdot (\delta_{ij}p)}$ \mbreak
+    Therefore,  $P(Inf(s_i, t_j)) = 1 - e^{-\lambda_i \cdot (\delta_{ij}p)} $ \mbreak
+    Similarly,\mbreak
+    $\displaystyle P(!Inf(s_{-i}, t_j)) = \prod_{\left\{l \ne i\right\}}\left[P(!Inf(s_l, t_j)) \right]$ \mbreak
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[E(!Inf(s_{-i}, t_j))\right] $
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[E(E(!Inf(s_{-i}, t_j)|K_i=k_i)) \right]$  \mbreak 
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ E((1-\delta_{lj})q)^k )  \right]$\mbreak 
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ \sum_{k=0}^{\infty}(q_{lj}(i))^k\frac{(\lambda_l\cdot f(d_{il}))^ke^{-\lambda_l \cdot f(d_{il})}}{k!}    \right] $
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ \frac{e^{-\lambda_l \cdot f(d_{il})}}{e^{-q_{lj}\lambda_l f(d_{il})}}(1)  \right]$\mbreak
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ e^{-\lambda_l \cdot f(d_{il}) p_{lj}}  \right]$
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ e^{-\lambda_l\cdot f(d_{il}) \cdot (\delta_{lj}p) }  \right]$\mbreak
+    $\displaystyle = exp\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}$ \mbreak
+    Thus, for the probabilty of infection for a person living in $s_i$ at time $t_j$ we have: \mbreak 
+    $\displaystyle 1-\left(e^{-\lambda_i \cdot (\delta_{ij}p)}\right) \left( 
+        e^{\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}}\right)\left(e^{-\gamma_j}\right)
+     $ \mbreak 
+
+    $\displaystyle = 1- exp\left\{-\gamma_j-\delta_{ij}e^{\theta_{i}} - \sum_{\left\{ l \ne i  \right\}}
+        (f(d_{il})\delta_{il}e^{\theta_{l}})   \right\}$ 
+    , where $\theta_{v} = log(\lambda_{v}p)$
+ 
+\end{center}
+
+Notes: 
+\begin{enumerate}
+    \item By defining $f(d_{ii})$ to be equal to $1$ for all $i$, the above expression has a simple 
+        matrix form. 
+    \item WLOG, we can make the mixing parameters dependent on space and time, defining $\lambda_{v_1, v_2}$,
+        and correspondingly $\theta_{v_1,v_2}$
+
+\end{enumerate}
+
+
+\section{Posterior Distribution and Full Conditionals}
+
+\subsection{Posterior Distribution}
+\subsubsection{Summary of Distribution Components}
+$\{S_{ij}^*\} \sim\  binom(R_{ij}, \pi_j^{(RS)})$\mbreak
+$\{E_{ij}^*\} \sim binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
+$\{I_{ij}^*\} \sim\  binom(E_{ij}, \pi^{(EI)})$\mbreak
+$\{R_{ij}^*\} \sim\  binom(I_{ij}, \pi^{(IR)})$\mbreak
+\noi
+$\left\{\pi_j^{RS}  \right\} \sim (iid)\ beta(0.5, 0.5)$\mbreak 
+$\left\{\pi^{EI}  \right\} \sim beta(0.5, 0.5)$\mbreak 
+$\left\{\pi_j^{IR}  \right\} \sim beta(0.5, 0.5)$\mbreak 
+$\left\{ \theta_{ij}\right\} \sim \mathcal{N}(\eta_{ij}, \sigma^2_{\theta})$ \mbreak
+$\left\{ \beta \right\} \sim \mathcal{N}(0, 10) $\mbreak 
+$\sigma^2_{\theta} \sim \Gamma(\alpha_\theta, \beta_\theta)$\mbreak
+$\gamma_j \sim \Gamma(\alpha_\gamma, \beta_\gamma)$\mbreak
+$\rho \sim U(0,1)$
+
+\subsubsection{Deterministic Functions}
+$S = f_S(S_0, E^*_0, S^*_0, S^*, E^*)$ \mbreak
+$E = f_E(E_0, I^*_0, E^*_0, E^*, I^*)$ \mbreak
+$I = f_I(I_0, R^*_0, I^*_0, I^*, R^*)$ \mbreak
+$R = f_R(R_0, S^*_0, R^*_0, R^*, S^*)$ \mbreak
+$\displaystyle log(\pi^{(SE)}_{ij}) = -\gamma_j-\delta_{ij}e^{\theta_{ij}} - \sum_{\left\{ l \ne i \right\}}d_{il}\delta_{il}e^{\theta_{il}}$\mbreak
+$d_{il} = f(\rho, s_i, s_l)$\mbreak
+$\delta_{ij} = \frac{I_{ij}}{N_{ij}}$ \mbreak
+$\eta_{ij} = X_{ij}\beta$
+\subsubsection{Posterior Distribution}
+
+\begin{center}
+\begin{multline}
+\displaystyle
+log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[ 
+    \sum_{i=1}^n \bigg\{ \sum_{j=1}^T
+        \Big\{
+            (S^*_{ij}log(\pi_j^{(RS)}) + (R_{ij} - S^*_{ij})log(1-\pi_j^{(RS)})) \\
+            + (E^*_{ij}log(\pi_{ij}^{(SE)})) + (S_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)}) \\
+            + (I^*_{ij}log(\pi^{(EI)})) + (E_{ij} - I^*_{ij})log(1-\pi^{(EI)}) \\
+            + (R^*_{ij}log(\pi^{(IR)})) + (I_{ij} - R^*_{ij})log(1-\pi^{(IR)}) \\
+    - \frac{1}{2}log(\sigma^2_{\theta}) - \frac{(\theta_{ij}-\eta_{ij})^2}{2\sigma^2_{\theta}}\Big\}\bigg\} \\
+    + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
+            + (log(\pi(\sigma^2_{\theta})))
+            + (log(\pi(\rho)))\\
+            +  \sum_{j=1}^{T} \bigg\{\frac{1}{2}log(\pi^{(RS)}_j) + \frac{1}{2}log(1-\pi^{(RS)}_j)   \bigg\} \\
+            + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
+            + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)})))    \\
+            + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\} \Bigg]\\
+\end{multline}
+\end{center}
+
+For simplicity, and because the model is sufficiently flexible without the added over-dispersion, set $\theta_{ij} = \eta_{ij}$ with probability 1. This 
+gives the following simplified posterior distribution:
+
+\begin{center}
+\begin{multline}
+\displaystyle
+log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[ 
+    \sum_{i=1}^n \bigg\{ \sum_{j=1}^T
+        \Big\{
+            (S^*_{ij}log(\pi_j^{(RS)}) + (R_{ij} - S^*_{ij})log(1-\pi_j^{(RS)})) \\
+            + (E^*_{ij}log(\pi_{ij}^{(SE)})) + (S_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)}) \\
+            + (I^*_{ij}log(\pi^{(EI)})) + (E_{ij} - I^*_{ij})log(1-\pi^{(EI)}) \\
+            + (R^*_{ij}log(\pi^{(IR)})) + (I_{ij} - R^*_{ij})log(1-\pi^{(IR)}) \Big\}\bigg\} \\
+    + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
+            + (log(\pi(\rho)))\\
+            +  \sum_{j=1}^{T} \bigg\{\frac{1}{2}log(\pi^{(RS)}_j) + \frac{1}{2}log(1-\pi^{(RS)}_j)   \bigg\} \\
+            + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
+            + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)}))) \\
+            + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\}\Bigg]\\
+\end{multline}
+\end{center}
+
+Now define the fixed set $A_0 = \{S_0, E_0, I_0, R_0, S^*_0, E^*_0, I^*_0, R^*_0\}$,
+and reparameterize $S, E, I, R$ as explicit functions of the transition matrices. 
+
+
+\begin{center}
+\begin{multline}
+\displaystyle
+log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[ 
+            %% S Piece
+            \sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\sum_{i=1}^n\{S^*_{ij}\} + 
+            log(1-\pi_j^{(RS)})\sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big\} \\ 
+            %% E Piece
+            +\sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+            (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
+            %% I Piece
+            + log(\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\} 
+            + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\\
+            %% R Piece
+            + log(\pi^{(IR)})\sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\} + 
+            log(1-\pi^{IR})\sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\\
+            %% Beta
+            + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
+            %% Rho prior
+            + (log(\pi(\rho)))\\
+            %% \pi_j^{RS}
+            +  \sum_{j=1}^{T} \bigg\{\frac{1}{2}log(\pi^{(RS)}_j) + \frac{1}{2}log(1-\pi^{(RS)}_j)   \bigg\} \\
+            %% \pi^{EI}
+            + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
+            %% \pi^{IR}
+            + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)})))   
+            %% Gamma
+            + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\}\Bigg]\\
+\end{multline}
+\begin{multline}
+\displaystyle
+= \Bigg[ 
+            %% S Piece
+    \sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{S^*_{ij}\}\Big] + 
+            log(1-\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big]\Big\}\\ 
+            %% E Piece
+            +\sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+            (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
+            %% I Piece
+            + log(\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\}\Big] 
+            + log(1-\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\Big]\\
+            %% R Piece
+            + log(\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\}\Big] + 
+            log(1-\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\Big]\\
+            %% Beta
+            + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
+            %% Rho prior
+            + (log(\pi(\rho)))\\
+            %% Gamma prior
+            + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\}\\
+\end{multline}
+
+\end{center}
+
+
+\subsection{Full Conditional Distributions}
+Depending on when the disease of interest is expected to be detected, the data can be 
+introduced as the $E^*$ exposure counts, or as the $I^*$ infection counts. Other latent 
+processes could also be introduced. For this reason, full conditional distributions are 
+introduced for all categories. 
+
+\begin{itemize}
+    \item{Full Conditional For $S^*$}
+%\subsubsection{$p(S^*|.)$}
+    \begin{center}
+        \begin{multline}
+        \displaystyle
+        log(p(S^*|.))\propto 
+            \sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\sum_{i=1}^n\{S^*_{ij}\} + 
+                log(1-\pi_j^{(RS)})\sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big\}\\ 
+                +\sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+                f_S(S^*, E^*, A_0)_{ij}log(1-\pi_{ij}^{(SE)})\Big\}\bigg\}
+        \end{multline}
+    \end{center}
+
+    \item{Full Conditional for $E^*$}
+%\subsubsection{$p(E^*|.)$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(E^*|.))\propto \sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+                (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
+                + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij}\}\\
+    \end{multline}
+    \end{center}
+
+    \item{Full Conditional for $I^*$}
+%\subsubsection{$p(I^*|.)$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(I^*|.)) \propto log(\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\} 
+            + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\\
+            + log(1-\pi^{IR})\sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij}\}\\
+    \end{multline}
+    \end{center}
+
+    \item{Full Conditional for $R^*$}
+%\subsubsection{$p(R^*|.)$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(R^*|.)) \propto log(\pi^{(IR)})\sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\} + 
+            log(1-\pi^{IR})\sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\\
+            +   \sum_{j=1}^T\Big\{log(1-\pi_j^{(RS)})\sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij}\}\Big\}\\ 
+    \end{multline}
+    \end{center}
+    \item{Full Conditional for $\{\theta\}$}
+%\subsubsection{$p(\{\theta\})|.)$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(\{\theta\}|.)) \propto \sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+            (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
+    \end{multline}
+    \end{center}
+
+    \item{Full Conditional for $\{\beta\}$}
+%\subsubsection{$p(\{\beta\}|.)$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(\{\beta\}|.)) \propto
+            \sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+            (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
+             + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
+    \end{multline}
+    \end{center}
+%\subsubsection{$p(\rho|.)$}
+
+    \item{Full Conditional for $\rho$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(\rho|.)) \propto\sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+            (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
+            + (log(\pi(\rho)))\\
+    \end{multline}
+    \end{center}
+
+    \item{Full Conditional for $\gamma_j$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(\rho|.)) \propto\sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
+            (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
+            + (\sum_{j=1}^{T}log(\pi(\gamma_j)))\\
+    \end{multline}
+    \end{center}
+
+
+\item{Full Conditional for $\{\pi_{j}^{(RS)}\}$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(\{\pi_{j}^{(RS)}\}|.))\propto\sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{S^*_{ij}\}\Big] \\
+            \ \ \ \ + 
+            log(1-\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big]\Big\}\\ 
+            \Rightarrow \pi_j^{(RS)} \sim\ (indep)\ beta(\frac{3}{2} + \sum_{i=1}^n\{S^*_{ij}\},
+            \frac{3}{2} + \sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij}\} - \sum_{i=1}^n\{S^*_{ij}\})
+    \end{multline}
+\end{center}
+
+\item{Full Conditional for $\pi^{(EI)}$} 
+    \begin{center}
+        \begin{multline}
+            \displaystyle
+            log(p(\pi^{(EI)})) \propto log(\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\}\Big] 
+            \\+ log(1-\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\Big]\\
+            \Rightarrow \pi^{(EI)} \sim beta(\frac{3}{2} + \sum_{i=1}^n\{I^*_{ij}\}, 
+            \frac{3}{2} + \sum_{i=1}^n\{f_E(E^*, I^*, A_0)_{ij}\} - \sum_{i=1}^n\{I^*_{ij}\}) 
+        \end{multline}
+    \end{center}
+\item{Full Conditional for $\pi^{(IR)}$} 
+    \begin{center}
+        \begin{multline}
+            \displaystyle
+            log(p(\pi^{(IR)})) \propto log(\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\}\Big] + 
+            log(1-\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\Big]\\
+            \Rightarrow \pi^{(IR)} \sim beta(\frac{3}{2} + \sum_{i=1}^n\{R^*_{ij}\}, 
+            \frac{3}{2} + \sum_{i=1}^n\{f_I(I^*, R^*, A_0)_{ij}\} - \sum_{i=1}^n\{R^*_{ij}\})
+        \end{multline}
+    \end{center}
+
+
+
+
+\end{itemize}
+
+
+
+\end{document}
