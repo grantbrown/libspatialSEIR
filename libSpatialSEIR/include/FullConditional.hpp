@@ -314,7 +314,46 @@ namespace SpatialSEIR
             double* value;
 
     };
-    
+
+    class FC_Gamma : public FullConditional 
+    {
+        public:
+            FC_Gamma(ModelContext *_context,
+                   CompartmentalModelMatrix *_E_star, 
+                   CompartmentalModelMatrix *_S, 
+                   InitData *_A0,
+                   CovariateMatrix *_X,
+                   double *_p_se, 
+                   double *_beta, 
+                   double *_gamma,
+                   double *_priorAlpha,
+                   double *_priorBeta
+                   );
+            ~FC_Gamma();
+            virtual int cacheEvalCalculation(double* cachedValues);
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual double getValue();
+            virtual void setValue(double val);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
+
+            ModelContext **context;
+            CompartmentalModelMatrix **E_star; 
+            CompartmentalModelMatrix **S; 
+            InitData **A0;
+            CovariateMatrix **X;
+            double **p_se;
+            double **beta;
+            double **gamma;
+            double* priorAlpha;
+            double* priorBeta;
+            double* value;
+
+    };    
 
     class FC_P_EI : public FullConditional
     {

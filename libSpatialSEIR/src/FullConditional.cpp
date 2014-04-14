@@ -1350,8 +1350,133 @@ namespace SpatialSEIR
         *(this -> value) = val;
     }
 
+    FC_Gamma::FC_Gamma(ModelContext *_context,
+                   CompartmentalModelMatrix *_E_star,  
+                   CompartmentalModelMatrix *_S,
+                   InitData *_A0,
+                   CovariateMatrix *_X,
+                   double *_p_se,
+                   double *_beta,
+                   double *_gamma,
+                   double *_priorAlpha,
+                   double *_priorBeta)
+    {
+        context = new ModelContext*;
+        E_star = new CompartmentalModelMatrix*;
+        S = new CompartmentalModelMatrix*;
+        A0 = new InitData*;
+        X = new CovariateMatrix*;
+        p_se = new double*;
+        beta = new double*;
+        gamma = new double*;
+        priorAlpha = new double;
+        priorBeta = new double;
+        value = new double;
 
+        *context = _context;
+        *E_star = _E_star;
+        *S = _S;
+        *A0 = _A0;
+        *X = _X;
+        *p_se = _p_se;
+        *beta = _beta;
+        *gamma = _gamma;
+        *priorAlpha = *_priorAlpha;
+        *priorBeta = *_priorBeta;
+        *value = -1.0;
+    }
+    FC_Gamma::~FC_Gamma()
+    {
+        delete E_star;
+        delete S;
+        delete A0;
+        delete X;
+        delete p_se;
+        delete beta;
+        delete gamma;
+        delete priorAlpha;
+        delete priorBeta;
+        delete value;
+        delete context;
+    }
+    int FC_Gamma::cacheEvalCalculation(double* cachedValues)
+    {
+        //Not Implemented
+        throw(-1);
+    }
 
+    int FC_Gamma::evalCPU()
+    {
+        *value = 0.0;
+        int i, j, Es, compIdx;
+        double pse;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+        double term1, term2, term3;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        for (j = 0; j < nTpts; j++)     
+        {
+            compIdx = j*nLoc - 1;
+            for (i = 0; i < nLoc; i++)    
+            {
+                compIdx++;
+                Es = ((*E_star) -> data)[compIdx];
+                pse = (*p_se)[compIdx];
+                term1 += std::log(pse)*Es; 
+                term2 += std::log(1-pse)*(((*S) -> data)[compIdx] - Es);
+            }
+            term3 += (*priorAlpha)*std::log((*gamma)[j]) - ((*gamma)[j])/(*priorBeta); 
+        } 
+        *value = term1 + term2 + term3;
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+
+        return(0);
+    }
+    int FC_Gamma::evalCPU(int startLoc, int startTime, double* cachedValues)
+    {
+        //NOT IMPLEMENTED
+        throw(-1);
+    }
+
+    int FC_Gamma::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Gamma::calculateRelevantCompartments()
+    {
+       (*context) -> calculateP_SE_CPU();
+       return(0); 
+    }
+    int FC_Gamma::calculateRelevantCompartments(int startLoc, int startTime)
+    {
+        //NOT IMPLEMENTED
+        throw(-1);
+    }
+
+    int FC_Gamma::sampleCPU()
+    {
+        sampleDouble(*context, *gamma, *((*A0) -> numLocations), 1); 
+        return(0);
+    }
+    int FC_Gamma::sampleOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+
+    double FC_Gamma::getValue()
+    {
+        return(*(this -> value));
+    }
+    void FC_Gamma::setValue(double val)
+    {
+        *(this -> value) = val;
+    }
 
     FC_P_EI::FC_P_EI(ModelContext *_context,
                      CompartmentalModelMatrix *_I_star,
