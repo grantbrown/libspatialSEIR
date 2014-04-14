@@ -197,6 +197,9 @@ namespace SpatialSEIR
                                        CompartmentalModelMatrix* starCompartment,
                                        int width,double* cachedValues)
     {
+        int* scratchFilled = new int[width];
+        double* scratch = new double[width];
+
         // Declare required variables
         int i, j, compIdx;
         int nLoc = *(A0 -> numLocations);
@@ -205,6 +208,10 @@ namespace SpatialSEIR
         int x, x0;
         double y;
         
+        int itrs;
+        int tmp;
+        int maxItrs = 1000;
+        int scratchIdxStart;
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments();
         
@@ -214,20 +221,14 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
-        int itrs;
-        int tmp;
-        int maxItrs = 10*width;
-        int scratchIdxStart;
         // Main loop: 
-        int* scratchFilled = new int[width];
-        double* scratch = new double[width];
-        for (j = 0; j < width; j++){scratch[j] = 0.0; scratchFilled[j] = 0;}
         for (j = 0; j < nTpts; j++)
         { 
-            std::cout << j << "\n";
+            //std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
+                for (tmp = 0; tmp < width; tmp++){scratchFilled[tmp] = 0;}
                 compIdx++;
                 x = (starCompartment -> data)[compIdx];
                 this -> calculateRelevantCompartments(i,j); 
@@ -256,7 +257,7 @@ namespace SpatialSEIR
                     }
                     x0 = (context -> random -> uniform_int(l,r));
                     tmp = x0-scratchIdxStart;
-                    if (scratchFilled[tmp])
+                    if (scratchFilled[tmp] != 0)
                     {
                         this -> setValue(scratch[tmp]);
                     }

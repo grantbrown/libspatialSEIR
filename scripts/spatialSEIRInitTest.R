@@ -88,7 +88,7 @@ beta = c(covariates$true_fixed_beta, covariates$true_time_varying_beta)
 N = matrix(data_list[["pop"]][,2], nrow = compMatDim[1], ncol = compMatDim[2])
 outFileName = "./chainOutput_sim.txt"
 # beta, rho, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
-logFileList = c(1,1,1,1,1,1,1,1,1,1)
+logFileList = c(1,1,1,1,1,1,0,1,0,0)
 iterationStride = 5
 
 res = spatialSEIRInit(compMatDim,xDim,
