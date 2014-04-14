@@ -209,7 +209,8 @@ namespace SpatialSEIR
         double y;
         
         int itrs;
-        int tmp;
+        int lastCached = 0;
+        int tmp1, tmp2;
         int maxItrs = 1000;
         int scratchIdxStart;
         // Update the relevant CompartmentalModelMatrix instances
@@ -224,17 +225,18 @@ namespace SpatialSEIR
         // Main loop: 
         for (j = 0; j < nTpts; j++)
         { 
-            //std::cout << j << "\n";
+            std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
-                for (tmp = 0; tmp < width; tmp++){scratchFilled[tmp] = 0;}
+                //std::cout << "  " << i << "\n";
+                for (tmp1 = 0; tmp1 < width; tmp1++){scratchFilled[tmp1] = 0;}
                 compIdx++;
                 x = (starCompartment -> data)[compIdx];
                 this -> calculateRelevantCompartments(i,j); 
                 this -> evalCPU(i,j,cachedValues);
                 y = (this->getValue()) - (context -> random -> gamma());
-                l = std::max(0, x-width/2);
+                l = std::max(0, (x-width/2));
                 r = l + width;
                 scratchIdxStart = l;
                 itrs = 0;
@@ -256,10 +258,12 @@ namespace SpatialSEIR
                         }
                     }
                     x0 = (context -> random -> uniform_int(l,r));
-                    tmp = x0-scratchIdxStart;
-                    if (scratchFilled[tmp] != 0)
+                    tmp2 = x0-scratchIdxStart;
+                    if (scratchFilled[tmp2] > 0)
                     {
-                        this -> setValue(scratch[tmp]);
+                        (starCompartment -> data)[compIdx] = x0;
+                        this -> setValue(scratch[tmp2]);
+                        lastCached = 1;
                     }
                     else
                     {
@@ -268,10 +272,16 @@ namespace SpatialSEIR
                         this -> evalCPU(i,j,cachedValues);
                         if (x0 >= x){r = x0;}
                         else{l = x0;}
-                        scratchFilled[tmp] = 1;
-                        scratch[tmp] = this -> getValue();
+                        scratchFilled[tmp2] = 1;
+                        scratch[tmp2] = this -> getValue();
+                        lastCached = 0;
                     }
                 } while (y >= (this -> getValue()));
+                if (lastCached)
+                {
+                    this -> calculateRelevantCompartments(i,j); 
+                    this -> evalCPU(i,j,cachedValues);
+                }
             }
         }
         delete[] scratch;
@@ -517,7 +527,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartmentDiscretely(*context,*A0,
+        this -> sampleCompartment(*context,*A0,
                                   *S_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -726,7 +736,7 @@ namespace SpatialSEIR
     }
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartmentDiscretely(*context,*A0,
+        this -> sampleCompartment(*context,*A0,
                                   *E_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -933,7 +943,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartmentDiscretely(*context,*A0,
+        this -> sampleCompartment(*context,*A0,
                                   *R_star,10,(*context) -> compartmentCache);
         return(0);
     }
