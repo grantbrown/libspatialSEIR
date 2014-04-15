@@ -65,11 +65,27 @@ namespace SpatialSEIR
             int *numLocations;
     };
 
+    // Full conditional distribution parent class
     class FullConditional
     {
         public:
             //Template for shared methods
             virtual ~FullConditional(){}; 
+            virtual int evalCPU() = 0;
+            virtual int evalOCL() = 0;
+            virtual int sampleCPU() = 0;
+            virtual int sampleOCL() = 0;
+            virtual double getValue() = 0;
+            virtual void setValue(double value) = 0;
+            virtual int calculateRelevantCompartments() = 0;
+    };
+
+    // Parent class for compartment full conditional distributions
+    class CompartmentFullConditional : public FullConditional 
+    {
+        public:
+            //Template for shared methods
+            virtual ~CompartmentFullConditional(){}; 
             virtual int cacheEvalCalculation(double* cachedValues) = 0;
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues) = 0;
             virtual int evalCPU() = 0;
@@ -79,10 +95,6 @@ namespace SpatialSEIR
             virtual int sampleOCL() = 0;
             virtual double getValue() = 0;
             virtual void setValue(double value) = 0;
-            // The following methods only apply to the compartment full conditionals, 
-            // but require dummy implementations for all FullConditionals to keep 
-            // the R dynamic loader happy. Consider factoring out separate FullConditional
-            // superclasses in the future. 
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
 
@@ -95,14 +107,29 @@ namespace SpatialSEIR
                                             InitData* A0, 
                                             CompartmentalModelMatrix* destCompartment,
                                             int width, double* compartmentCache); 
+    };
 
+    // Parent class for double precision scalar/vector full conditionals
+    class ParameterFullConditional : public FullConditional
+    {
+        public:
+            //Template for shared methods
+            virtual ~ParameterFullConditional(){}; 
+            virtual int evalCPU() = 0;
+            virtual int evalOCL() = 0;
+            virtual int sampleCPU() = 0;
+            virtual int sampleOCL() = 0;
+            virtual double getValue() = 0;
+            virtual void setValue(double value) = 0;
+            virtual int calculateRelevantCompartments() = 0;
             int sampleDouble(ModelContext* context, 
                              double* variable,
                              int varLen,
                              double width);
+
     };
 
-    class FC_S_Star : public FullConditional
+    class FC_S_Star : public CompartmentFullConditional
     {
         public:
             FC_S_Star(ModelContext * _context,
@@ -141,10 +168,9 @@ namespace SpatialSEIR
             double **beta; 
             double **rho;
             double* value;
-
     };
 
-    class FC_E_Star : public FullConditional
+    class FC_E_Star : public CompartmentFullConditional
     {
         public:
             FC_E_Star(ModelContext *_context,
@@ -187,7 +213,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_R_Star : public FullConditional
+    class FC_R_Star : public CompartmentFullConditional
     {
         public:
             FC_R_Star(ModelContext *_context,
@@ -224,7 +250,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_Beta : public FullConditional
+    class FC_Beta : public ParameterFullConditional
     {
         public:
             FC_Beta(ModelContext *_context,
@@ -237,17 +263,13 @@ namespace SpatialSEIR
                     double *_rho); 
             ~FC_Beta();
 
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
             virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -261,7 +283,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_P_RS : public FullConditional
+    class FC_P_RS : public ParameterFullConditional
     {
         public:
             FC_P_RS(ModelContext *_context,
@@ -271,17 +293,13 @@ namespace SpatialSEIR
                     double *_p_rs 
                     );
             ~FC_P_RS();
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
             virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **S_star;
@@ -292,7 +310,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_Rho : public FullConditional 
+    class FC_Rho : public ParameterFullConditional 
     {
         public:
             FC_Rho(ModelContext *_context,
@@ -305,17 +323,13 @@ namespace SpatialSEIR
                    double *_rho
                    );
             ~FC_Rho();
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
             virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -329,7 +343,7 @@ namespace SpatialSEIR
 
     };
 
-    class FC_Gamma : public FullConditional 
+    class FC_Gamma : public ParameterFullConditional 
     {
         public:
             FC_Gamma(ModelContext *_context,
@@ -344,17 +358,13 @@ namespace SpatialSEIR
                    double *_priorBeta
                    );
             ~FC_Gamma();
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
             virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -370,7 +380,7 @@ namespace SpatialSEIR
 
     };    
 
-    class FC_P_EI : public FullConditional
+    class FC_P_EI : public ParameterFullConditional
     {
         public:
             FC_P_EI(ModelContext *_context,
@@ -378,17 +388,13 @@ namespace SpatialSEIR
                     CompartmentalModelMatrix *_E,
                     InitData *_A0,
                     double *_p_ei);
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
             virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ~FC_P_EI();
             ModelContext** context;
@@ -399,7 +405,7 @@ namespace SpatialSEIR
             double* value;
     };
 
-    class FC_P_IR : public FullConditional
+    class FC_P_IR : public ParameterFullConditional
     {
         
         public:
@@ -409,17 +415,13 @@ namespace SpatialSEIR
                     InitData *_A0,
                     double *_p_ir);
             ~FC_P_IR();
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual double getValue();
             virtual void setValue(double val);
             virtual int calculateRelevantCompartments();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
 
             ModelContext **context;
             CompartmentalModelMatrix **R_star;

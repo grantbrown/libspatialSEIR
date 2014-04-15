@@ -127,7 +127,7 @@ namespace SpatialSEIR
     }
 
 
-    int FullConditional::sampleCompartment(ModelContext* context,
+    int CompartmentFullConditional::sampleCompartment(ModelContext* context,
                                        InitData* A0,
                                        CompartmentalModelMatrix* starCompartment,
                                        double width,double* cachedValues)
@@ -192,7 +192,7 @@ namespace SpatialSEIR
         return 0;
     }
 
-    int FullConditional::sampleCompartmentMemoized(ModelContext* context,
+    int CompartmentFullConditional::sampleCompartmentMemoized(ModelContext* context,
                                            InitData* A0,
                                            CompartmentalModelMatrix* starCompartment,
                                            int width,double* cachedValues)
@@ -291,7 +291,7 @@ namespace SpatialSEIR
     }
 
 
-    int FullConditional::sampleDouble(ModelContext* context,
+    int ParameterFullConditional::sampleDouble(ModelContext* context,
                                        double* variable, 
                                        int varLen, 
                                        double width)
@@ -429,7 +429,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
-        int i, j, tmp, compIdx;
+        int j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
 
@@ -450,6 +450,7 @@ namespace SpatialSEIR
             }
             compIdx += nLoc;
         }
+        return 0;
     }
 
     // Evaluate the S_star FC at the current values provided by the context.
@@ -670,7 +671,7 @@ namespace SpatialSEIR
 
     int FC_E_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
-        int i, j, tmp, compIdx;
+        int j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
      
@@ -691,7 +692,7 @@ namespace SpatialSEIR
             }
             compIdx += nLoc;
         }
-       
+       return 0;
     }
 
 
@@ -898,7 +899,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
-        int i, j, tmp, compIdx;
+        int j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
      
@@ -919,6 +920,7 @@ namespace SpatialSEIR
             }
             compIdx += nLoc;
         } 
+        return 0;
     }
 
 
@@ -1093,20 +1095,6 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
-    
-    int FC_Beta::cacheEvalCalculation(double* cachedValues)
-    {
-        //Not Implemented
-        throw(-1);
-    }
-
-    int FC_Beta::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        //Not needed 
-        throw(-1);
-    }
-
-
 
     int FC_Beta::evalCPU()
     {
@@ -1139,11 +1127,6 @@ namespace SpatialSEIR
         }
         return(0);
     }
-    int FC_Beta::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
-    }
 
     int FC_Beta::evalOCL()
     {
@@ -1155,11 +1138,6 @@ namespace SpatialSEIR
         ((*context) -> calculateP_SE_CPU());
         return(0);
 
-    }
-    int FC_Beta::calculateRelevantCompartments(int startLoc, int startTime)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
     }
 
     int FC_Beta::sampleCPU()
@@ -1219,18 +1197,6 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
-    int FC_P_RS::cacheEvalCalculation(double* cachedValues)
-    {
-        //Not Implemented
-        throw(-1);
-    }
-    int FC_P_RS::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        //Not Needed
-        throw(-1);
-    }
-
-
 
     int FC_P_RS::evalCPU()
     {
@@ -1268,11 +1234,6 @@ namespace SpatialSEIR
         delete[] r_star_i_diff;
         return 0;
     }
-    int FC_P_RS::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
-    }
 
     int FC_P_RS::evalOCL()
     {
@@ -1282,11 +1243,6 @@ namespace SpatialSEIR
     int FC_P_RS::calculateRelevantCompartments()
     {
         // Not used.
-        throw(-1);
-    }
-    int FC_P_RS::calculateRelevantCompartments(int startLoc, int startTime)
-    {
-        //Not used.
         throw(-1);
     }
 
@@ -1316,9 +1272,6 @@ namespace SpatialSEIR
     {
         *(this -> value) = val;
     }
-
-
-
 
     FC_Rho::FC_Rho(ModelContext *_context,
                    CompartmentalModelMatrix *_E_star,  
@@ -1361,18 +1314,6 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
-    int FC_Rho::cacheEvalCalculation(double* cachedValues)
-    {
-        //Not Implemented
-        throw(-1);
-    }
-    int FC_Rho::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        //Not Needed
-        throw(-1);
-    }
-
-
 
     int FC_Rho::evalCPU()
     {
@@ -1406,11 +1347,6 @@ namespace SpatialSEIR
 
         return(0);
     }
-    int FC_Rho::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
-    }
 
     int FC_Rho::evalOCL()
     {
@@ -1421,11 +1357,6 @@ namespace SpatialSEIR
     {
        (*context) -> calculateP_SE_CPU();
        return(0); 
-    }
-    int FC_Rho::calculateRelevantCompartments(int startLoc, int startTime)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
     }
 
     int FC_Rho::sampleCPU()
@@ -1498,17 +1429,6 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
-    int FC_Gamma::cacheEvalCalculation(double* cachedValues)
-    {
-        //Not Implemented
-        throw(-1);
-    }
-    int FC_Gamma::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        //Not Needed
-        throw(-1);
-    }
-
 
     int FC_Gamma::evalCPU()
     {
@@ -1541,11 +1461,6 @@ namespace SpatialSEIR
 
         return(0);
     }
-    int FC_Gamma::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
-    }
 
     int FC_Gamma::evalOCL()
     {
@@ -1556,11 +1471,6 @@ namespace SpatialSEIR
     {
        (*context) -> calculateP_SE_CPU();
        return(0); 
-    }
-    int FC_Gamma::calculateRelevantCompartments(int startLoc, int startTime)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
     }
 
     int FC_Gamma::sampleCPU()
@@ -1614,18 +1524,6 @@ namespace SpatialSEIR
         delete value;
         delete context;
     }
-    int FC_P_EI::cacheEvalCalculation(double* cachedValues)
-    {
-        //Not Implemented
-        throw(-1);
-    }
-
-    int FC_P_EI::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        //Not Needed
-        throw(-1);
-    }
-
 
     int FC_P_EI::evalCPU()
     { 
@@ -1644,11 +1542,6 @@ namespace SpatialSEIR
         *value = dbeta(**p_ei, 1.5 + i_star_sum, 1.5 - i_star_sum + e_sum); 
         return 0;
     }
-    int FC_P_EI::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
-    }
 
     int FC_P_EI::evalOCL()
     {
@@ -1659,11 +1552,6 @@ namespace SpatialSEIR
     {
         // Not used, Do nothing
         return(0);
-    }
-    int FC_P_EI::calculateRelevantCompartments(int startLoc, int startTime)
-    {
-        //NOT VALID
-        throw(-1);
     }
 
     int FC_P_EI::sampleCPU()
@@ -1688,9 +1576,6 @@ namespace SpatialSEIR
     {
         *(this -> value) = val;
     }
-
-
-
 
 
     FC_P_IR::FC_P_IR(ModelContext *_context,
@@ -1725,17 +1610,6 @@ namespace SpatialSEIR
         delete context;
     }
 
-    int FC_P_IR::cacheEvalCalculation(double* cachedValues)
-    {
-        //Not Implemented
-        throw(-1);
-    }
-    int FC_P_IR::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        //Not Needed
-        throw(-1);
-    }
-
 
     int FC_P_IR::evalCPU()
     {
@@ -1754,11 +1628,7 @@ namespace SpatialSEIR
         *value = dbeta(**p_ir, 1.5 + r_star_sum, 1.5 - r_star_sum + i_sum); 
         return 0;
     }
-    int FC_P_IR::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        //NOT IMPLEMENTED
-        throw(-1);
-    }
+
     int FC_P_IR::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -1768,11 +1638,6 @@ namespace SpatialSEIR
     {
         // Not used, do nothing. 
         return(0);
-    }
-    int FC_P_IR::calculateRelevantCompartments(int startLoc, int startTime)
-    {
-        //NOT VALID
-        throw(-1);
     }
 
     int FC_P_IR::sampleCPU()
