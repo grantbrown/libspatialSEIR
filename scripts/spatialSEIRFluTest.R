@@ -181,7 +181,6 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     stop("Invalid Compartment Values")
 }
 
-
 res = spatialSEIRInit(compMatDim,xDim,
                       zDim,S0,
                       E0,I0,

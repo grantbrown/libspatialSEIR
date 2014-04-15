@@ -60,6 +60,23 @@ namespace SpatialSEIR
         // Delete stuff that needs to be resized
         delete N; delete beta; delete eta; delete gamma;
 
+        // Allocate space for the transition probabilities
+        p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
+        p_se_components = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
+        compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
+        p_ei = new double;
+        p_ir = new double;
+        p_rs = new double[*(S_starArgs -> inCol)];
+        N = new int[(*(S_starArgs -> inRow))*(*(S_starArgs -> inCol))];                                          
+        int nbeta = (*(xArgs -> inCol_x) + (*(xArgs -> inCol_z)));
+        int neta = (*(xArgs -> inRow_z));
+        beta = new double[nbeta];
+        eta = new double[neta];
+        gamma = new double[*(S_starArgs -> inCol)];
+        // Create empty compartment for calculation.
+        tmpContainer = new CompartmentalModelMatrix();
+        tmpContainer -> createEmptyCompartment((S_starArgs -> inRow), (S_starArgs -> inCol));
+
         // Initialize Stuff
         *A0 = *_A0;
         X -> genFromDataStream(xArgs -> inData_x, 
@@ -105,22 +122,12 @@ namespace SpatialSEIR
 
         scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
 
-        N = new int[(*(S -> nrow))*(*(S -> ncol))];                                          
-        int nbeta = (*(X -> ncol_x) + (*(X -> ncol_z)));
-        int neta = (*(X -> nrow_z));
-        beta = new double[nbeta];
-        eta = new double[neta];
-        gamma = new double[*(S -> ncol)];
-
-        // Create empty compartment for calculation.
-        tmpContainer = new CompartmentalModelMatrix();
-        tmpContainer -> createEmptyCompartment((S -> nrow), (S -> ncol));
 
         // Initialize Data
         int i;
         for (i = 0; i < nbeta; i++)
         {
-            beta[i] = 0.0;
+            beta[i] = beta_[i];
         }
         for (i = 0; i < neta; i++)
         {
@@ -131,7 +138,6 @@ namespace SpatialSEIR
         {
             gamma[i] = (gammaFCArgs -> gamma)[i];
         }
-
         for (i = 0; i < *(S -> ncol); i++)
         {
             p_rs[i] = p_rs_[i];
@@ -140,18 +146,10 @@ namespace SpatialSEIR
         {
             N[i] = N_[i];
         } 
+
         *rho = *rho_;
         *p_ei = *p_ei_;
         *p_ir = *p_ir_;
-
-        // Allocate space for the transition probabilities
-        p_se = new double[*(S -> nrow)*(*(S->ncol))];
-        p_se_components = new double[*(S -> nrow)*(*(S->ncol))];
-        compartmentCache = new double[*(S -> nrow)*(*(S->ncol))];
-        p_ei = new double;
-        p_ir = new double;
-        p_rs = new double[*(S->ncol)];
-
 
         // Wire up the full conditional classes
         S_star_fc = new FC_S_Star(this,
@@ -165,6 +163,7 @@ namespace SpatialSEIR
                                   p_rs,
                                   beta,
                                   rho);
+
         E_star_fc = new FC_E_Star(this,
                                   E_star,
                                   E,
@@ -172,16 +171,19 @@ namespace SpatialSEIR
                                   I_star,
                                   X,A0,p_se,p_ei,
                                   rho,beta);
+
         R_star_fc = new FC_R_Star(this,
                                   R_star,
                                   R,
                                   I,
                                   S_star,
                                   A0,p_rs,p_ir);
+
         beta_fc = new FC_Beta(this,
                               E_star,
                               S_star,
                               A0,X,p_se,beta,rho);
+
         rho_fc = new FC_Rho(this,
                             E_star,
                             S,
@@ -194,10 +196,12 @@ namespace SpatialSEIR
                                 (gammaFCArgs -> priorBeta));
 
         p_rs_fc = new FC_P_RS(this,S_star,R,A0,p_rs);
+
         p_ei_fc = new FC_P_EI(this,
                               I_star,
                               E,
                               A0,p_ei);
+
         p_ir_fc =  new FC_P_IR(this,
                              R_star,
                              I,
@@ -266,7 +270,6 @@ namespace SpatialSEIR
                 break;
             }
         }
-
         for (i = 0; i < rowCol;i++)
         {
             if ((R_star -> data)[i] > (I -> data)[i])
@@ -282,7 +285,6 @@ namespace SpatialSEIR
                 std::cout << "R_star <0: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
                 break;
             }
-
         }
     }
 
