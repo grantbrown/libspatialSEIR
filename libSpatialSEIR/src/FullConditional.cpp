@@ -192,27 +192,24 @@ namespace SpatialSEIR
         return 0;
     }
 
-    int FullConditional::sampleCompartmentDiscretely(ModelContext* context,
-                                       InitData* A0,
-                                       CompartmentalModelMatrix* starCompartment,
-                                       int width,double* cachedValues)
+    int FullConditional::sampleCompartmentMemoized(ModelContext* context,
+                                           InitData* A0,
+                                           CompartmentalModelMatrix* starCompartment,
+                                           int width,double* cachedValues)
     {
-        int* scratchFilled = new int[width];
-        double* scratch = new double[width];
-
         // Declare required variables
-        int i, j, compIdx;
+        double* memo = new double[width + 1];
+        int* memoStored = new int[width + 1];
+
+        int i, j, compIdx, memoStart, memoIdx, lastItrMemo;
+        int memoIdxBytes = sizeof(int)*(width+1);
         int nLoc = *(A0 -> numLocations);
         int nTpts = *(starCompartment -> ncol);
-        int l,r;
-        int x, x0;
-        double y;
+        double l,r,y,x,x0,x0_floor;
         
-        int itrs;
-        int lastCached = 0;
-        int tmp1, tmp2;
-        int maxItrs = 1000;
-        int scratchIdxStart;
+        memset(memo, 0, memoIdxBytes);
+        memset(memoStored, 0, memoIdxBytes);
+
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments();
         
@@ -222,28 +219,32 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
+        int itrs;
         // Main loop: 
-        for (j = 0; j < nTpts; j++)
+        for (j = 0; j < nTpts; j ++)
         { 
-            std::cout << j << "\n";
+            //std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
-                //std::cout << "  " << i << "\n";
-                for (tmp1 = 0; tmp1 < width; tmp1++){scratchFilled[tmp1] = 0;}
+                memset(memoStored, 0, memoIdxBytes);
+                lastItrMemo = 0;
                 compIdx++;
                 x = (starCompartment -> data)[compIdx];
                 this -> calculateRelevantCompartments(i,j); 
                 this -> evalCPU(i,j,cachedValues);
                 y = (this->getValue()) - (context -> random -> gamma());
-                l = std::max(0, (x-width/2));
+                l = std::max(0.0, (x - (context -> random -> uniform())*width));
                 r = l + width;
-                scratchIdxStart = l;
+                memoStart = l;
+                memoIdx = (x-memoStart);
+                memo[memoIdx] = (this->getValue());
+                memoStored[memoIdx] = 1;
                 itrs = 0;
                 do 
                 {
                     itrs ++;
-                    if (itrs > maxItrs)
+                    if (itrs > 1000)
                     {
                         if (!std::isfinite(this -> getValue()))
                         {
@@ -257,36 +258,36 @@ namespace SpatialSEIR
                             y = -INFINITY;
                         }
                     }
-                    x0 = (context -> random -> uniform_int(l,r));
-                    tmp2 = x0-scratchIdxStart;
-                    if (scratchFilled[tmp2] > 0)
+                    x0 = ((context -> random -> uniform())*(r-l) + l);
+                    x0_floor = std::floor(x0);
+                    memoIdx = (x0_floor - memoStart);
+                    if (memoStored[memoIdx])
                     {
-                        (starCompartment -> data)[compIdx] = x0;
-                        this -> setValue(scratch[tmp2]);
-                        lastCached = 1;
+                        lastItrMemo = 1;
+                        (starCompartment -> data)[compIdx] = x0_floor;
+                        (this -> setValue(memo[memoIdx]));  
+                        this -> calculateRelevantCompartments(i,j);
                     }
-                    else
+                    else 
                     {
-                        (starCompartment -> data)[compIdx] = x0;
+                        lastItrMemo = 0;
+                        (starCompartment -> data)[compIdx] = x0_floor;
                         this -> calculateRelevantCompartments(i,j);
                         this -> evalCPU(i,j,cachedValues);
                         if (x0 >= x){r = x0;}
                         else{l = x0;}
-                        scratchFilled[tmp2] = 1;
-                        scratch[tmp2] = this -> getValue();
-                        lastCached = 0;
+                        memoStored[memoIdx] = 1;
+                        memo[memoIdx] = (this->getValue());
                     }
                 } while (y >= (this -> getValue()));
-                if (lastCached)
+                if (lastItrMemo)
                 {
-                    this -> calculateRelevantCompartments(i,j); 
-                    this -> evalCPU(i,j,cachedValues);
+                    this -> updateEvalCache(i,j,cachedValues);
                 }
             }
         }
-        delete[] scratch;
-        delete[] scratchFilled;
         return 0;
+
     }
 
 
@@ -425,6 +426,32 @@ namespace SpatialSEIR
         } 
         return(0);
     }
+
+    int FC_S_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+
+        compIdx = startLoc + startTime*nLoc;
+        for (j = startTime; j < nTpts; j++)
+        {
+            tmp = ((*S_star) -> data)[compIdx];
+            if (tmp < 0 || tmp > ((*R) -> data)[compIdx] ||
+                    ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+            {
+                cachedValues[compIdx] = -INFINITY;
+            }
+            else
+            {
+                cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp - 
+                               std::log(1-(*p_rs)[j])*(tmp) +
+                               std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
+            }
+            compIdx += nLoc;
+        }
+    }
+
     // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
@@ -527,7 +554,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentMemoized(*context,*A0,
                                   *S_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -641,6 +668,33 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_E_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*S) -> ncol);
+     
+        compIdx = startLoc + startTime*nLoc;
+        for (j = startTime; j < nTpts; j++)
+        {
+            tmp = ((*E_star) -> data)[compIdx];
+            if (tmp < 0 || tmp > ((*S) -> data)[compIdx] || 
+                    ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx])
+            {
+                cachedValues[compIdx] = -INFINITY;
+            }
+            else
+            {
+                cachedValues[compIdx] = (std::log((*p_se)[compIdx])*tmp -
+                                         std::log(1-(*p_se)[compIdx])*(tmp) +
+                                         std::log(1-(**p_ei))*(((*E) -> data)[compIdx]));
+            }
+            compIdx += nLoc;
+        }
+       
+    }
+
+
     int FC_E_Star::evalCPU()
     {
         *value = 0.0;
@@ -736,7 +790,7 @@ namespace SpatialSEIR
     }
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentMemoized(*context,*A0,
                                   *E_star,10,(*context) -> compartmentCache);
         return 0;
     }
@@ -842,6 +896,31 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_R_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        int i, j, tmp, compIdx;
+        int nLoc = *((*A0) -> numLocations);
+        int nTpts = *((*R) -> ncol);
+     
+        compIdx = startLoc + startTime*nLoc;
+        for (j = startTime; j < nTpts; j++)
+        {
+            tmp = ((*R_star) -> data)[compIdx];
+            if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
+                    ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx])
+            {
+                cachedValues[compIdx] = -INFINITY;
+            }
+            else
+            {
+                cachedValues[compIdx] = (std::log((**p_ir))*tmp - 
+                                std::log(1-(**p_ir))*(tmp) +
+                                std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]));
+            }
+            compIdx += nLoc;
+        } 
+    }
+
 
     int FC_R_Star::evalCPU()
     {
@@ -943,7 +1022,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentMemoized(*context,*A0,
                                   *R_star,10,(*context) -> compartmentCache);
         return(0);
     }
@@ -1020,6 +1099,13 @@ namespace SpatialSEIR
         //Not Implemented
         throw(-1);
     }
+
+    int FC_Beta::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        //Not needed 
+        throw(-1);
+    }
+
 
 
     int FC_Beta::evalCPU()
@@ -1138,6 +1224,12 @@ namespace SpatialSEIR
         //Not Implemented
         throw(-1);
     }
+    int FC_P_RS::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        //Not Needed
+        throw(-1);
+    }
+
 
 
     int FC_P_RS::evalCPU()
@@ -1274,6 +1366,12 @@ namespace SpatialSEIR
         //Not Implemented
         throw(-1);
     }
+    int FC_Rho::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        //Not Needed
+        throw(-1);
+    }
+
 
 
     int FC_Rho::evalCPU()
@@ -1405,6 +1503,12 @@ namespace SpatialSEIR
         //Not Implemented
         throw(-1);
     }
+    int FC_Gamma::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        //Not Needed
+        throw(-1);
+    }
+
 
     int FC_Gamma::evalCPU()
     {
@@ -1461,7 +1565,7 @@ namespace SpatialSEIR
 
     int FC_Gamma::sampleCPU()
     {
-        sampleDouble(*context, *gamma, *((*A0) -> numLocations), 1); 
+        sampleDouble(*context, *gamma, *((*A0) -> numLocations), 0.5); 
         return(0);
     }
     int FC_Gamma::sampleOCL()
@@ -1513,6 +1617,12 @@ namespace SpatialSEIR
     int FC_P_EI::cacheEvalCalculation(double* cachedValues)
     {
         //Not Implemented
+        throw(-1);
+    }
+
+    int FC_P_EI::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        //Not Needed
         throw(-1);
     }
 
@@ -1620,6 +1730,12 @@ namespace SpatialSEIR
         //Not Implemented
         throw(-1);
     }
+    int FC_P_IR::updateEvalCache(int startLoc, int startTime, double* cachedValues)
+    {
+        //Not Needed
+        throw(-1);
+    }
+
 
     int FC_P_IR::evalCPU()
     {
