@@ -171,8 +171,8 @@ priorBeta_gamma = 1
 beta = c(0,0,0)
 
 outFileName = "./chainOutput.txt"
-# beta, rho, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
-logFileList = c(1,1,0,1,1,1,0,0,0,0)
+# beta, rho,gamma, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
+logFileList = c(1,1,1,0,1,1,1,0,0,0,0)
 iterationStride = 10
 
 if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||

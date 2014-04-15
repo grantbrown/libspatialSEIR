@@ -79,7 +79,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     std::string* chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
     Rcpp::IntegerVector chainOutputControl(logVarList); 
-    // logVarList: (Beta, rho,p_se,p_ei,p_ir,p_rs,S*, E*, I*, R*)
+    // logVarList: (Beta, rho,gamma,p_se,p_ei,p_ir,p_rs,S*, E*, I*, R*)
     // Nonzero if respective variables are to be output
     Rcpp::IntegerVector chainStride(iterationStride);
 

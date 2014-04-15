@@ -76,10 +76,17 @@ namespace SpatialSEIR
         if (variableList[1] != 0)
         {
             // Write rho header
-            (*outFileStream) << "rho,";
-        
+            (*outFileStream) << "rho,";        
         }
         if (variableList[2] != 0)
+        {
+            // Write rho header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "gamma_" << j << ",";        
+            }
+        }
+        if (variableList[3] != 0)
         {
             // Write p_se header
             for (i = 0; i < nLoc; i++)
@@ -90,18 +97,18 @@ namespace SpatialSEIR
                 }
             }
         }
-        if (variableList[3] != 0)
+        if (variableList[4] != 0)
         {
             // Write p_ei header
             (*outFileStream) << "p_ei" << ",";
         }
-        if (variableList[4] != 0)
+        if (variableList[5] != 0)
         {
             // Write p_ir header
             (*outFileStream) << "p_ir" << ",";
 
         }
-        if (variableList[5] != 0)
+        if (variableList[6] != 0)
         {
             // Write p_rs header
             for (j = 0; j < nTpt; j++)
@@ -110,7 +117,7 @@ namespace SpatialSEIR
             }
 
         }
-        if (variableList[6] != 0)
+        if (variableList[7] != 0)
         {
             // Write S* header
             for (i = 0; i < nLoc; i++)
@@ -121,7 +128,7 @@ namespace SpatialSEIR
                 }
             }
         }
-        if (variableList[7] != 0)
+        if (variableList[8] != 0)
         {
             // Write E* header
             for (i = 0; i < nLoc; i++)
@@ -133,7 +140,7 @@ namespace SpatialSEIR
             }
 
         }
-        if (variableList[8] != 0)
+        if (variableList[9] != 0)
         {
             // Write I* header
             for (i = 0; i < nLoc; i++)
@@ -145,7 +152,7 @@ namespace SpatialSEIR
             }
 
         }
-        if (variableList[9] != 0)
+        if (variableList[10] != 0)
         {
             // Write R* header
             for (i = 0; i < nLoc; i++)
@@ -184,14 +191,22 @@ namespace SpatialSEIR
 
         if (variableList[1] != 0)
         {
-            // Write rho header
-            (*outFileStream) << *((*context) -> rho) << ",";
-        
+            // Write rho
+            (*outFileStream) << *((*context) -> rho) << ",";        
         }
 
         if (variableList[2] != 0)
         {
-            // Write p_se header
+            // Write gamma
+            for (j = 0; j< nTpt; j++)
+            {
+                (*outFileStream) << ((*context) -> gamma)[j] << ","; 
+            }
+        }
+
+        if (variableList[3] != 0)
+        {
+            // Write p_se
             for (i = 0; i < nLoc; i++)
             {
                 for (j = 0; j < nTpt; j++)
@@ -201,19 +216,19 @@ namespace SpatialSEIR
             }
         }
 
-        if (variableList[3] != 0)
+        if (variableList[4] != 0)
         {
             // Write p_ei header
             (*outFileStream) << *((*context) -> p_ei) << ",";
         }
 
-        if (variableList[4] != 0)
+        if (variableList[5] != 0)
         {
             // Write p_ir header
             (*outFileStream) << *((*context) -> p_ir) << ",";
 
         }
-        if (variableList[5] != 0)
+        if (variableList[6] != 0)
         {
             // Write p_rs header
             for (j = 0; j < nTpt; j++)
@@ -223,7 +238,7 @@ namespace SpatialSEIR
 
         }
 
-        if (variableList[6] != 0)
+        if (variableList[7] != 0)
         {
             // Write S* header
             for (i = 0; i < nTpt*nLoc; i++)
@@ -232,7 +247,7 @@ namespace SpatialSEIR
             }
         }
 
-        if (variableList[7] != 0)
+        if (variableList[8] != 0)
         {
             // Write E* header
             for (i = 0; i < nTpt*nLoc; i++)
@@ -240,7 +255,7 @@ namespace SpatialSEIR
                 (*outFileStream) << ((*context) -> E_star -> data)[i] << ",";
             }
         }
-        if (variableList[8] != 0)
+        if (variableList[9] != 0)
         {
             // Write I* header
             for (i = 0; i < nTpt*nLoc; i++)
@@ -248,7 +263,7 @@ namespace SpatialSEIR
                 (*outFileStream) << ((*context) -> I_star -> data)[i] << ",";
             }
         }
-        if (variableList[9] != 0)
+        if (variableList[10] != 0)
         {
             // Write R* header
             for (i = 0; i < nTpt*nLoc; i++)
