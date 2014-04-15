@@ -84,6 +84,10 @@ p_ir = 0.6
 p_rs = rep(c(rep(0.1, 8), rep(0.1,4), rep(0.1,8), rep(0.4,4), rep(0.5, 3), 
          rep(0.9,3), rep(0.1, 4), rep(0.05, 18)), dim(sim_results$S)[3])
 
+gamma = rep(0.1, ncol(Sstar))
+priorAlpha_gamma = 0.1
+priorBeta_gamma = 1
+
 beta = c(covariates$true_fixed_beta, covariates$true_time_varying_beta)
 N = matrix(data_list[["pop"]][,2], nrow = compMatDim[1], ncol = compMatDim[2])
 outFileName = "./chainOutput_sim.txt"
@@ -100,6 +104,9 @@ res = spatialSEIRInit(compMatDim,xDim,
                       Estar,Istar,
                       Rstar,X,
                       Z,DM,
+                      gamma,
+                      priorAlpha_gamma,
+                      priorBeta_gamma,
                       rho,beta,
                       p_ei,p_ir,
                       p_rs,N,outFileName, logFileList, iterationStride)

@@ -40,6 +40,7 @@ namespace SpatialSEIR
         beta = new double; *beta = -1.0;
         eta = new double; *eta = -1.0;
         rho = new double; *rho = 0.25;
+        gamma = new double; *gamma = 1.0;
         fileProvider = new IOProvider();
     }
 
@@ -51,11 +52,16 @@ namespace SpatialSEIR
                                 compartmentArgs* R_starArgs,
                                 distanceArgs* rawDistArgs,
                                 scaledDistanceArgs* scaledDistArgs,
-                                double* rho_, double* beta_, double* p_ei_, 
-                                double* p_ir_, double* p_rs_, int* N_)
+                                gammaArgs* gammaFCArgs,
+                                double* rho_, double* beta_, 
+                                double* p_ei_, double* p_ir_, double* p_rs_, 
+                                int* N_)
     {
-        *A0 = *_A0;
+        // Delete stuff that needs to be resized
+        delete N; delete beta; delete eta; delete gamma;
 
+        // Initialize Stuff
+        *A0 = *_A0;
         X -> genFromDataStream(xArgs -> inData_x, 
                                xArgs -> inData_z,
                                xArgs -> inRow_x,
@@ -99,18 +105,18 @@ namespace SpatialSEIR
 
         scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
 
-        delete N; delete beta; delete eta;
         N = new int[(*(S -> nrow))*(*(S -> ncol))];                                          
         int nbeta = (*(X -> ncol_x) + (*(X -> ncol_z)));
         int neta = (*(X -> nrow_z));
         beta = new double[nbeta];
         eta = new double[neta];
+        gamma = new double[*(S -> ncol)];
 
         // Create empty compartment for calculation.
         tmpContainer = new CompartmentalModelMatrix();
         tmpContainer -> createEmptyCompartment((S -> nrow), (S -> ncol));
 
-        // Initialize beta/eta
+        // Initialize Data
         int i;
         for (i = 0; i < nbeta; i++)
         {
@@ -121,15 +127,31 @@ namespace SpatialSEIR
             eta[i] = 0.0;
         }
 
-        // Allocate space for the transition probabilities
+        for (i = 0; i < *(S->ncol); i++)
+        {
+            gamma[i] = (gammaFCArgs -> gamma)[i];
+        }
 
+        for (i = 0; i < *(S -> ncol); i++)
+        {
+            p_rs[i] = p_rs_[i];
+        }
+        for (i = 0; i< (*(S -> nrow))*(*(S->ncol)); i++)
+        {
+            N[i] = N_[i];
+        } 
+        *rho = *rho_;
+        *p_ei = *p_ei_;
+        *p_ir = *p_ir_;
+
+        // Allocate space for the transition probabilities
         p_se = new double[*(S -> nrow)*(*(S->ncol))];
         p_se_components = new double[*(S -> nrow)*(*(S->ncol))];
         compartmentCache = new double[*(S -> nrow)*(*(S->ncol))];
         p_ei = new double;
         p_ir = new double;
         p_rs = new double[*(S->ncol)];
-        rho = new double; 
+
 
         // Wire up the full conditional classes
         S_star_fc = new FC_S_Star(this,
@@ -164,6 +186,13 @@ namespace SpatialSEIR
                             E_star,
                             S,
                             A0,X,p_se,beta,rho);
+
+        gamma_fc = new FC_Gamma(this,
+                                E_star,
+                                S,
+                                A0,X,p_se,beta,gamma,(gammaFCArgs -> priorAlpha),
+                                (gammaFCArgs -> priorBeta));
+
         p_rs_fc = new FC_P_RS(this,S_star,R,A0,p_rs);
         p_ei_fc = new FC_P_EI(this,
                               I_star,
@@ -174,25 +203,6 @@ namespace SpatialSEIR
                              I,
                              A0,p_ir);
 
-        // Add initial data 
-
-        *rho = *rho_;
-        *p_ei = *p_ei_;
-        *p_ir = *p_ir_;
-
-        for (i = 0; i < (*(X -> ncol_x) + (*(X -> ncol_z))); i++)
-        {
-            beta[i] = beta_[i];
-        }
-        for (i = 0; i < *(S -> ncol); i++)
-        {
-            p_rs[i] = p_rs_[i];
-        }
-        for (i = 0; i< (*(S -> nrow))*(*(S->ncol)); i++)
-        {
-            N[i] = N_[i];
-        } 
-
         // Calculate Compartments
         this -> calculateS_CPU();
         this -> calculateE_CPU();
@@ -200,8 +210,7 @@ namespace SpatialSEIR
         this -> calculateR_CPU();
         this -> calculateP_SE_CPU();
 
-        // Initialize FC Values
-        
+        // Initialize FC Values        
         this -> beta_fc -> evalCPU();
         this -> p_rs_fc -> evalCPU();
         this -> p_ei_fc -> evalCPU();
@@ -284,6 +293,7 @@ namespace SpatialSEIR
         std::cout << "p_ei: " << p_ei_fc ->getValue() << "\n";
         std::cout << "p_ir: " << p_ir_fc ->getValue() << "\n";
         std::cout << "rho: " << rho_fc ->getValue() << "\n";
+        std::cout << "gamma: " << gamma_fc ->getValue() << "\n";
         std::cout << "S_star: " << S_star_fc ->getValue() << "\n";
         std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
         std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
@@ -326,6 +336,11 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling rho\n";}
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
         else {rho_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling gamma\n";}
+        if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
+        else {gamma_fc -> sampleOCL();}
+
     }
 
 
@@ -346,7 +361,7 @@ namespace SpatialSEIR
     void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false)
     {
         int i;
-        int useOCL[8] = {0};
+        int useOCL[9] = {0};
         for (i = 0; i < nIterations; i++)
         {
             this -> simulationIter(&*useOCL, verbose);
@@ -689,7 +704,7 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++) 
             {
                 index = i + j*nLoc;
-                p_se[index] = 1-exp(-p_se_components[index] - (*rho)*p_se[index]);
+                p_se[index] = 1-exp(-gamma[j] - p_se_components[index] - (*rho)*p_se[index]);
             }
         }        
     }
@@ -724,7 +739,7 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++) 
             {
                 index = i + j*nLoc;
-                p_se[index] = 1-exp(-p_se_components[index] - (*rho)*p_se[index]);
+                p_se[index] = 1-exp(-gamma[j] -p_se_components[index] - (*rho)*p_se[index]);
             }
         } 
     }
@@ -782,6 +797,15 @@ namespace SpatialSEIR
     {
         delete fileProvider;
         delete random;
+        delete S_star_fc;
+        delete E_star_fc;
+        delete R_star_fc;
+        delete beta_fc;
+        delete rho_fc;
+        delete gamma_fc;
+        delete p_rs_fc;
+        delete p_ei_fc;
+        delete p_ir_fc;
         delete S_star;
         delete E_star;
         delete I_star;
@@ -796,6 +820,7 @@ namespace SpatialSEIR
         delete rawDistMat;
         delete scaledDistMat;
         delete[] beta;
+        delete[] gamma;
         delete[] eta;
         delete[] p_se;
         delete[] p_se_components;

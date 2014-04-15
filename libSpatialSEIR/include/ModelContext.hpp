@@ -23,6 +23,7 @@ namespace SpatialSEIR
     class FC_P_IR;
     class FC_P_RS;
     class FC_Rho;
+    class FC_Gamma;
     class InitData;
 
     class CompartmentalModelMatrix;
@@ -35,6 +36,7 @@ namespace SpatialSEIR
     struct compartmentArgs;
     struct distanceArgs;
     struct scaledDistanceArgs;
+    struct gammaArgs;
 
     class ModelContext
     {
@@ -51,8 +53,10 @@ namespace SpatialSEIR
                           compartmentArgs* R_starArgs,
                           distanceArgs* rawDistArgs,
                           scaledDistanceArgs* scaledDistArgs,
-                          double* rho, double* beta, double* p_ei, 
-                          double* p_ir, double* p_rs, int* N);
+                          gammaArgs* gammaFCArgs,
+                          double* rho, double* beta, 
+                          double* p_ei, double* p_ir, double* p_rs, 
+                          int* N);
 
 
             // Method: calculateS
@@ -133,6 +137,7 @@ namespace SpatialSEIR
             FC_R_Star *R_star_fc;
             FC_Beta *beta_fc;
             FC_Rho *rho_fc;
+            FC_Gamma *gamma_fc;
             FC_P_RS *p_rs_fc;
             FC_P_EI *p_ei_fc;
             FC_P_IR *p_ir_fc;
@@ -154,6 +159,7 @@ namespace SpatialSEIR
 
             double* beta;
             double* rho;
+            double* gamma;
             double* eta;
             double* p_se;
             double* p_se_components;

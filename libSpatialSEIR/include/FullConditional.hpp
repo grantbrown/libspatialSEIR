@@ -20,6 +20,13 @@ namespace SpatialSEIR
     class CovariateMatrix;
     class OCLProvider;
 
+    struct gammaArgs
+    {
+        double* priorAlpha;
+        double* priorBeta;
+        double* gamma;
+    };
+
     int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB );
 
 

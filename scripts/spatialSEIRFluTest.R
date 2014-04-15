@@ -162,6 +162,10 @@ rho = 0.1
 p_ei = 0.99
 p_ir = 0.8
 p_rs = rep(0.1, ncol(S))
+gamma = rep(0.1, ncol(S))
+priorAlpha_gamma = 0.1
+priorBeta_gamma = 1
+
 
 #beta = c(-2,0.1,0.1)
 beta = c(0,0,0)
@@ -187,7 +191,11 @@ res = spatialSEIRInit(compMatDim,xDim,
                       E_star,I_star,
                       R_star,X,
                       Z,DM,
-                      rho,beta,
+                      rho,
+                      gamma,
+                      priorAlpha_gamma,
+                      priorBeta_gamma,
+                      beta,
                       p_ei,p_ir,
                       p_rs,N,outFileName, logFileList, iterationStride)
 

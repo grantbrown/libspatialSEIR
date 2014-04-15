@@ -11,7 +11,8 @@
 }
 \usage{
     spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
-                    Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,beta_,
+                    Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,gamma_,
+                    priorAlpha_gamma_, priorBeta_gamma_,beta_,
                     p_ei_,p_ir_,p_rs_,N_,outFile,logVarList,iterationStride)
 }
 \arguments{
@@ -71,6 +72,15 @@
     }
     \item{rho_}{
         Initial value for spatial dependence parameter.
+    }
+    \item{gamma_}{
+        Vector of baseline infection parameters. 
+    }
+    \item{priorAlpha_gamma_}{
+        Prior alpha value for gamma.
+    }
+    \item{priorBeta_gamma_}{
+        Prior beta value for gamma.
     }
     \item{beta_}{
         Initial vector for exposure probability

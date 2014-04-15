@@ -1382,6 +1382,7 @@ namespace SpatialSEIR
         *beta = _beta;
         *gamma = _gamma;
         *priorAlpha = *_priorAlpha;
+
         *priorBeta = *_priorBeta;
         *value = -1.0;
     }

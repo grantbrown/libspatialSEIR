@@ -28,6 +28,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP Z_,
                      SEXP DistMat_,
                      SEXP rho_,
+                     SEXP gamma_,
+                     SEXP priorAlpha_gamma_,
+                     SEXP priorBeta_gamma_,
                      SEXP beta_,
                      SEXP p_ei_,
                      SEXP p_ir_,
@@ -62,6 +65,11 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector DistMat(DistMat_);
 
     Rcpp::NumericVector rho(rho_);
+
+    Rcpp::NumericVector gamma(gamma_);
+    Rcpp::NumericVector priorAlpha_gamma(priorAlpha_gamma_);
+    Rcpp::NumericVector priorBeta_gamma(priorBeta_gamma_);
+
     Rcpp::NumericVector beta(beta_);
     Rcpp::NumericVector p_ei(p_ei_);
     Rcpp::NumericVector p_ir(p_ir_);
@@ -94,6 +102,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // Gather information for the creation of the compartment matrices 
     
     compartmentArgs S_starArgs, E_starArgs, I_starArgs, R_starArgs;
+    gammaArgs gammaFCArgs;
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];
     S_starArgs.inCol = &compartmentDimensions[1];
@@ -109,6 +118,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     R_starArgs.inData = R_star.begin();
     R_starArgs.inRow = &compartmentDimensions[0];
     R_starArgs.inCol = &compartmentDimensions[1];
+
+    gammaFCArgs.gamma = gamma.begin();
+    gammaFCArgs.priorAlpha = priorAlpha_gamma.begin();
+    gammaFCArgs.priorBeta = priorBeta_gamma.begin();
 
     // Gather information for the creation of the distance matrices
 
@@ -135,9 +148,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
     context -> populate(&A0, &xArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
-                        &R_starArgs, &rawDistArgs,&scaledDistArgs,rho.begin(),
-                        beta.begin(),p_ei.begin(), p_ir.begin(),p_rs.begin(),
-                        N.begin());
+                        &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
+                        rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
+                        p_rs.begin(),N.begin());
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
