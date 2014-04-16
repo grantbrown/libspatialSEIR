@@ -244,7 +244,7 @@ namespace SpatialSEIR
                 do 
                 {
                     itrs ++;
-                    if (itrs > 1000)
+                    if (itrs > 10000)
                     {
                         if (!std::isfinite(this -> getValue()))
                         {
@@ -556,7 +556,7 @@ namespace SpatialSEIR
     int FC_S_Star::sampleCPU()
     {
         this -> sampleCompartmentMemoized(*context,*A0,
-                                  *S_star,10,(*context) -> compartmentCache);
+                                  *S_star,5,(*context) -> compartmentCache);
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -792,7 +792,7 @@ namespace SpatialSEIR
     int FC_E_Star::sampleCPU()
     {
         this -> sampleCompartmentMemoized(*context,*A0,
-                                  *E_star,10,(*context) -> compartmentCache);
+                                  *E_star,5,(*context) -> compartmentCache);
         return 0;
     }
     int FC_E_Star::sampleOCL()
@@ -1025,7 +1025,7 @@ namespace SpatialSEIR
     int FC_R_Star::sampleCPU()
     {
         this -> sampleCompartmentMemoized(*context,*A0,
-                                  *R_star,10,(*context) -> compartmentCache);
+                                  *R_star,5,(*context) -> compartmentCache);
         return(0);
     }
     int FC_R_Star::sampleOCL()

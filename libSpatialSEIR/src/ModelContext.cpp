@@ -288,17 +288,20 @@ namespace SpatialSEIR
         }
     }
 
-    void ModelContext::simulationIter(int* useOCL, bool verbose = false)
+    void ModelContext::simulationIter(int* useOCL, bool verbose = false, bool debug = false)
     {
-        std::cout << "Beta: " << beta_fc ->getValue() << "\n";
-        std::cout << "p_rs: " << p_rs_fc ->getValue() << "\n";
-        std::cout << "p_ei: " << p_ei_fc ->getValue() << "\n";
-        std::cout << "p_ir: " << p_ir_fc ->getValue() << "\n";
-        std::cout << "rho: " << rho_fc ->getValue() << "\n";
-        std::cout << "gamma: " << gamma_fc ->getValue() << "\n";
-        std::cout << "S_star: " << S_star_fc ->getValue() << "\n";
-        std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
-        std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
+        if (debug)
+        {
+            std::cout << "Beta: " << beta_fc ->getValue() << "\n";
+            std::cout << "p_rs: " << p_rs_fc ->getValue() << "\n";
+            std::cout << "p_ei: " << p_ei_fc ->getValue() << "\n";
+            std::cout << "p_ir: " << p_ir_fc ->getValue() << "\n";
+            std::cout << "rho: " << rho_fc ->getValue() << "\n";
+            std::cout << "gamma: " << gamma_fc ->getValue() << "\n";
+            std::cout << "S_star: " << S_star_fc ->getValue() << "\n";
+            std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
+            std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
+        }
 
 
         if (verbose){std::cout << "Sampling E_star\n";}
@@ -349,24 +352,32 @@ namespace SpatialSEIR
     // Method: runSimulation
     // Accesses: Everything lol
     // Updates: Everything lol
-    void ModelContext::runSimulation(int nIterations, int* useOCL, bool verbose = false)
+    void ModelContext::runSimulation(int nIterations, int* useOCL, bool verbose = false, bool debug = false)
     {
         int i;
         for (i = 0; i < nIterations; i++)
         {
-            this -> simulationIter(&*useOCL, verbose);
+            if (verbose)
+            {
+                std::cout << "Iteration: " << i << "\n";
+            }
+            this -> simulationIter(&*useOCL, verbose, debug);
             this -> fileProvider -> catIter(i);
         }
 
     }
 
-    void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false)
+    void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false, bool debug = false)
     {
         int i;
         int useOCL[9] = {0};
         for (i = 0; i < nIterations; i++)
         {
-            this -> simulationIter(&*useOCL, verbose);
+            if (verbose)
+            {
+                std::cout << "Iteration: " << i << "\n";
+            }
+            this -> simulationIter(&*useOCL, verbose, debug);
             this -> fileProvider -> catIter(i);
         }
     }
