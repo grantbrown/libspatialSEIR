@@ -88,9 +88,8 @@ gen_covariates = function(dcm, nweek = 52, nyear =5)
 
 
     #true_fixed_beta = c(-1.2,-0.03,0,-0.025, -0.02, rnorm(ncol(dcm),0, 0.01))
-    true_fixed_beta = c(-12,-0.03,0,-0.025, -0.02)
-
-    true_time_varying_beta = c(0.004,0.0007, 0.004, -0.0004)
+    true_fixed_beta = c(-8,-0.04,0.0,-0.025, -0.02)
+    true_time_varying_beta = c(0.0004,0.002, 0.004, -0.0004)
     
     true_fixed_eta = X %*% true_fixed_beta
     true_time_varying_eta = array(0, dim = c(nrow(X), nweek, nyear))
@@ -134,7 +133,6 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
 
     # TODO: expand to make N change by year
     N = pop[,2]
-
     S = array(0, dim = c(length(N), nweek, nyear))
     E = array(0, dim = c(length(N), nweek, nyear))
     I = array(0, dim = c(length(N), nweek, nyear))
@@ -145,17 +143,33 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
     I_star_output = array(0, dim = c(length(N), nweek, nyear))
     R_star_output = array(0, dim = c(length(N), nweek, nyear))
 
-    S0 = floor(0.9*N)
-    E0 = floor(0.005*N)
-    I0 = rbinom(rep(1, length(N)), N, 0.05)
-    R0 = N - S0 - E0 - I0
-    R0 = ifelse(R0 >= 0, R0, 0)
+    E0 = rbinom(rep(1, length(N)), N, 0.005)
+    I0 = rbinom(rep(1, length(N)), N-E0, 0.04)
+    R0 = rbinom(rep(1, length(N)), N-E0-I0, 0.0005)
+    S0 = N - R0 - E0 - I0
+
+    if (any(is.na(S0) || is.na(E0) || is.na(I0) || is.na(R0)))
+    {
+        stop("Error: NA's in initial compartments.")
+    }
+
+    if (any(S0 < 0))
+    {
+        stop("Error: Invalid S0 Value")
+    }
+
+    if (any((S0 + E0 + I0 + R0) != N))
+    {
+        stop("WARNING: Initial compartments don't sum to N.")
+    }
+
 
     # Parameters:
 
     p_i = 0.8
     p_r = 0.3
     p_s = c(rep(0.005, 8), rep(0.05, 4), rep(0.1, 8), rep(0.4,4), rep(0.5,3),rep(0.925,3),rep(0.1,4),rep(0.005, 18))
+    gammaVal = 0.001*(1-p_s)
 
     for (year in 1:nyear)
     {
@@ -222,14 +236,14 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
                 delta = I[,mr_week,mr_year]/N
                 dmatrix =(1/sqrt(dcm))*true_rho
                 diag(dmatrix) = 0
-                p = 1-exp(-delta*mu - as.numeric(dmatrix %*% (delta*mu)))
+                p = 1-exp(-gammaVal[week] -delta*mu - as.numeric(dmatrix %*% (delta*mu)))
 
                 if (any(is.na(p)))
                 {
                     stop("Invalid P")
                 }
 
-                E_star = rbinom(rep(1, length(S0)),S[,mr_week, mr_year], p) + rbinom(rep(1,length(S0)), S[,mr_week,mr_year], 0.0002)
+                E_star = rbinom(rep(1, length(S0)),S[,mr_week, mr_year], p) 
                 I_star = rbinom(rep(1, length(E0)),E[,mr_week,mr_year], p_i)
                 R_star = rbinom(rep(1, length(I0)),I[,mr_week,mr_year], p_r)
                 S_star = rbinom(rep(1, length(R0)),R[,mr_week,mr_year], p_s[week])
@@ -258,7 +272,8 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
                 "S_star0"=S_star0,
                 "E_star0"=E_star0,
                 "I_star0"=I_star0,
-                "R_star0"=R_star0
+                "R_star0"=R_star0,
+                "gamma" = gammaVal
                 ))
 }
 

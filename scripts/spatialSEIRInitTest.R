@@ -59,22 +59,43 @@ flattenCompartment = function(compartment)
     output
 }
 
-compMatDim = c(dim(sim_results$S)[1], prod(dim(sim_results$S)[2:3]))
-xDim = dim(X)
-zDim = dim(Z)
+throwAwayTpts = 10
 
-S0 = sim_results$S0
-E0 = sim_results$E0
-I0 = sim_results$I0
-R0 = sim_results$R0
-Sstar0 = sim_results$S_star0
-Estar0 = sim_results$E_star0
-Istar0 = sim_results$I_star0
-Rstar0 = sim_results$R_star0
 Sstar = flattenCompartment(sim_results$S_star)
 Estar = flattenCompartment(sim_results$E_star)
 Istar = flattenCompartment(sim_results$I_star)
 Rstar = flattenCompartment(sim_results$R_star)
+
+S = flattenCompartment(sim_results$S)
+E = flattenCompartment(sim_results$E)
+I = flattenCompartment(sim_results$I)
+R = flattenCompartment(sim_results$R)
+
+S0 = S[,throwAwayTpts]
+E0 = E[,throwAwayTpts]
+I0 = I[,throwAwayTpts]
+R0 = R[,throwAwayTpts]
+Sstar0 = Sstar[,throwAwayTpts]
+Estar0 = Estar[,throwAwayTpts]
+Istar0 = Istar[,throwAwayTpts]
+Rstar0 = Rstar[,throwAwayTpts]
+
+Sstar = Sstar[,(throwAwayTpts+1):ncol(Sstar)]
+Estar = Estar[,(throwAwayTpts+1):ncol(Estar)]
+Istar = Istar[,(throwAwayTpts+1):ncol(Istar)]
+Rstar = Rstar[,(throwAwayTpts+1):ncol(Rstar)]
+S = S[,(throwAwayTpts+1):ncol(S)] 
+E = E[,(throwAwayTpts+1):ncol(E)] 
+I = I[,(throwAwayTpts+1):ncol(I)] 
+R = R[,(throwAwayTpts+1):ncol(R)] 
+
+compMatDim = c(nrow(S), ncol(S))
+
+Z = Z[(1+throwAwayTpts*nrow(S)):nrow(Z),]
+
+xDim = dim(X)
+zDim = dim(Z)
+
 DM = as.numeric(data_list$dcm)
 
 rho = 0.6
@@ -83,8 +104,11 @@ p_ei = 0.9
 p_ir = 0.6
 p_rs = rep(c(rep(0.1, 8), rep(0.1,4), rep(0.1,8), rep(0.4,4), rep(0.5, 3), 
          rep(0.9,3), rep(0.1, 4), rep(0.05, 18)), dim(sim_results$S)[3])
+p_rs = p_rs[(throwAwayTpts+1):length(p_rs)]
 
-gamma = rep(0.1, ncol(Sstar))
+gamma = rep(sim_results$gamma, dim(sim_results$S)[3])
+gamma = gamma[(throwAwayTpts+1):length(gamma)]
+
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
 
@@ -95,6 +119,23 @@ outFileName = "./chainOutput_sim.txt"
 logFileList = c(1,1,1,1,1,1,1,0,1,0,0)
 iterationStride = 5
 
+
+# Check validity of dimensions
+
+if (nrow(S) != nrow(E) || nrow(E) != nrow(I) || nrow(I) != nrow(R) || nrow(R) != nrow(S) || 
+    ncol(S) != ncol(E) || ncol(E) != ncol(I) || ncol(I) != ncol(R) || ncol(R) != ncol(S) ||
+    ncol(S) != length(p_rs) || ncol(S) != length(gamma) || length(p_ei) != 1 || length(p_ir) != 1
+    || nrow(Z) != nrow(S)*ncol(S))
+{
+    stop("Invalid Starting Dimensions")
+}
+
+if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
+    any(R<0) || any(Sstar<0) || any(Estar<0) || any(Rstar<0))
+{
+    stop("Invalid Compartment Values")
+}
+
 res = spatialSEIRInit(compMatDim,xDim,
                       zDim,S0,
                       E0,I0,
@@ -104,11 +145,13 @@ res = spatialSEIRInit(compMatDim,xDim,
                       Estar,Istar,
                       Rstar,X,
                       Z,DM,
+                      rho,
                       gamma,
                       priorAlpha_gamma,
                       priorBeta_gamma,
-                      rho,beta,
+                      beta,
                       p_ei,p_ir,
                       p_rs,N,outFileName, logFileList, iterationStride)
+
 
 
