@@ -13,7 +13,8 @@
     spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
                     Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,gamma_,
                     priorAlpha_gamma_, priorBeta_gamma_,beta_,
-                    p_ei_,p_ir_,p_rs_,N_,outFile,logVarList,iterationStride)
+                    p_ei_,p_ir_,p_rs_,N_,outFile,logVarList,iterationStride,verboseFlag,
+                    debugFlag)
 }
 \arguments{
     \item{compMatDim}{
@@ -106,6 +107,14 @@
     \item{iterationStride}{
         Thinning to be used when saving iterations to disk. A stride of 1 will save all samples. 
     }
+    \item{verboseFlag}{
+        Show verbose output?
+    }
+    \item{debugFlag}{
+        Show debug level output?
+    }
+
+
 
 
 

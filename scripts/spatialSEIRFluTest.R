@@ -181,21 +181,40 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     stop("Invalid Compartment Values")
 }
 
-res = spatialSEIRInit(compMatDim,xDim,
-                      zDim,S0,
-                      E0,I0,
-                      R0,S_star0,
-                      E_star0,I_star0,
-                      R_star0,S_star,
-                      E_star,I_star,
-                      R_star,X,
-                      Z,DM,
+# Output Options
+verbose = TRUE
+debug = FALSE
+res = spatialSEIRInit(compMatDim,
+                      xDim,
+                      zDim,
+                      S0,
+                      E0,
+                      I0,
+                      R0,
+                      S_star0,
+                      E_star0,
+                      I_star0,
+                      R_star0,
+                      S_star,
+                      E_star,
+                      I_star,
+                      R_star,
+                      X,
+                      Z,
+                      DM,
                       rho,
                       gamma,
                       priorAlpha_gamma,
                       priorBeta_gamma,
                       beta,
-                      p_ei,p_ir,
-                      p_rs,N,outFileName, logFileList, iterationStride)
+                      p_ei,
+                      p_ir,
+                      p_rs,
+                      N,
+                      outFileName, 
+                      logFileList, 
+                      iterationStride,
+                      verbose,
+                      debug)
 
 

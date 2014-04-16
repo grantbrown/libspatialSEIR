@@ -38,7 +38,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP N_,
                      SEXP outFile,
                      SEXP logVarList,
-                     SEXP iterationStride)
+                     SEXP iterationStride,
+                     SEXP verboseFlag,
+                     SEXP debugFlag)
 {
     Rcpp::Rcout << "Wrapping input data in Rcpp vectors.\n";
     //Deal with the data conversion from R to c++
@@ -82,7 +84,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // logVarList: (Beta, rho,gamma,p_se,p_ei,p_ir,p_rs,S*, E*, I*, R*)
     // Nonzero if respective variables are to be output
     Rcpp::IntegerVector chainStride(iterationStride);
-
+    
+    Rcpp::IntegerVector verbose(verboseFlag);
+    Rcpp::IntegerVector debug(debugFlag);
 
     Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[0] 
         << "\n";
@@ -155,7 +159,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
             (int*) chainOutputControl.begin(),(int*) chainStride.begin());
-    context -> runSimulation_CPU(100000,true,false);
+    context -> runSimulation_CPU(100000,*(verbose.begin()),*(debug.begin()));
     context -> fileProvider -> close();
     Rcpp::XPtr<ModelContext*> ptr(&context, true);
     // Clean up
