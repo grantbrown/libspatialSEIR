@@ -40,7 +40,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP logVarList,
                      SEXP iterationStride,
                      SEXP verboseFlag,
-                     SEXP debugFlag)
+                     SEXP debugFlag,
+                     SEXP sliceWidths)
 {
     Rcpp::Rcout << "Wrapping input data in Rcpp vectors.\n";
     //Deal with the data conversion from R to c++
@@ -78,6 +79,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector p_rs(p_rs_);
     Rcpp::IntegerVector N(N_);
 
+    Rcpp::NumericVector sliceParams(sliceWidths);
+
     std::string* chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
     Rcpp::IntegerVector chainOutputControl(logVarList); 
@@ -89,6 +92,25 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::IntegerVector debug(debugFlag);
 
     // Sanity check the input data. 
+    if (compartmentDimensions.size() != 2)
+    {
+        Rcpp::Rcout << "Compartments must be two dimensional.\n";
+        throw(-1);
+    }
+    if (covariateDimensions_x.size() != 2 || covariateDimensions_z.size() != 2)
+    {
+        Rcpp::Rcout << "Covariates must be two dimensional.\n";
+        throw(-1);
+    }
+    if (verbose.size() != 1 || debug.size() != 1)
+    {
+        Rcpp::Rcout << "Verbose and debug flags must be length 1\n";
+    }
+    if (chainStride.size() != 1)
+    {
+        Rcpp::Rcout << "Chain stride must be length 1\n";
+    }
+
     int compartmentSize = (compartmentDimensions[0]*compartmentDimensions[1]);
     if (S_star0.size() != compartmentDimensions[0])
     {
@@ -132,6 +154,12 @@ SEXP spatialSEIRInit(SEXP compMatDim,
         Rcpp::Rcout << "Invalid R_star Compartment Size!\n";
         throw(-1);
     }
+    if (N.size() != compartmentSize)
+    {
+        Rcpp::Rcout << "Invalid N Compartment Size!\n";
+        throw(-1);
+    }
+
     if (gamma.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid gamma size!\n";
@@ -142,6 +170,12 @@ SEXP spatialSEIRInit(SEXP compMatDim,
         Rcpp::Rcout << "Invalid gamma size!\n";
         throw(-1);
     }
+    if (sliceParams.size() != 6)
+    {
+        Rcpp::Rcout << "Slice sampling parameters must be of length 6: S*,E*,R*,beta,rho,gamma\n";
+        throw(-1);
+    }
+
 
 
 
@@ -164,6 +198,15 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     
     compartmentArgs S_starArgs, E_starArgs, I_starArgs, R_starArgs;
     gammaArgs gammaFCArgs;
+    sliceParameters sliceParamStruct;
+
+    sliceParamStruct.S_starWidth = &sliceParams[0];
+    sliceParamStruct.E_starWidth = &sliceParams[1];
+    sliceParamStruct.R_starWidth = &sliceParams[2];
+    sliceParamStruct.betaWidth = &sliceParams[3];
+    sliceParamStruct.rhoWidth = &sliceParams[4];
+    sliceParamStruct.gammaWidth = &sliceParams[5];
+
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];
     S_starArgs.inCol = &compartmentDimensions[1];
@@ -211,7 +254,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> populate(&A0, &xArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
                         rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
-                        p_rs.begin(),N.begin());
+                        p_rs.begin(),N.begin(),&sliceParamStruct);
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,

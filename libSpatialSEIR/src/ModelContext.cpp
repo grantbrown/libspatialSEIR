@@ -55,7 +55,7 @@ namespace SpatialSEIR
                                 gammaArgs* gammaFCArgs,
                                 double* rho_, double* beta_, 
                                 double* p_ei_, double* p_ir_, double* p_rs_, 
-                                int* N_)
+                                int* N_, sliceParameters* sliceWidths)
     {
         // Delete stuff that needs to be resized
         delete N; delete beta; delete eta; delete gamma;

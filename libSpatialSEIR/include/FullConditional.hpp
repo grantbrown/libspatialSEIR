@@ -27,6 +27,16 @@ namespace SpatialSEIR
         double* gamma;
     };
 
+    struct sliceParameters
+    {
+        double* S_starWidth;
+        double* E_starWidth;
+        double* R_starWidth;
+        double* betaWidth;
+        double* rhoWidth;
+        double* gammaWidth;
+    };
+
     int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB );
 
 

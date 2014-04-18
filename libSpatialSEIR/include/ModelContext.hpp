@@ -37,6 +37,7 @@ namespace SpatialSEIR
     struct distanceArgs;
     struct scaledDistanceArgs;
     struct gammaArgs;
+    struct sliceParameters;
 
     class ModelContext
     {
@@ -56,7 +57,7 @@ namespace SpatialSEIR
                           gammaArgs* gammaFCArgs,
                           double* rho, double* beta, 
                           double* p_ei, double* p_ir, double* p_rs, 
-                          int* N);
+                          int* N, sliceParameters* sliceWidths);
 
 
             // Method: calculateS

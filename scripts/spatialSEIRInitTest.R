@@ -118,6 +118,8 @@ outFileName = "./chainOutput_sim.txt"
 # beta, rho,gamma, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
 logFileList = c(1,1,1,1,1,1,1,0,1,0,0)
 iterationStride = 5
+# S,E,R,beta,rho,gamma
+sliceWidths = c(10,10,10,1,0.5,0.5)
 
 
 # Check validity of dimensions
@@ -170,7 +172,8 @@ res = spatialSEIRInit(compMatDim,
                       logFileList, 
                       iterationStride,
                       verbose,
-                      debug)
+                      debug, 
+                      sliceWidths)
 
 
 
