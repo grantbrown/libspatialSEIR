@@ -10,14 +10,14 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(200)
+    control_code(100)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
 
 X  = covariates$X # X is returned by the simulation as an NxP matrix, where N 
                   # is the number of locations and P the number of predictors.
-Z_ar = covariates$Z  # Z is returned by the simulation as an NxQxT1xT2 array, 
+Z_ar = covariates$Z  # Z is returned by the simulation as an NxQxT0xT2 array, 
                      # where N is the number of locations, Q the number of
                      # time varying predictors, T1 the week number, and T2
                      # the year number. libSpatialSEIR doesn't use divided
@@ -59,7 +59,7 @@ flattenCompartment = function(compartment)
     output
 }
 
-throwAwayTpts = 10
+throwAwayTpts = 150
 
 Sstar = flattenCompartment(sim_results$S_star)
 Estar = flattenCompartment(sim_results$E_star)

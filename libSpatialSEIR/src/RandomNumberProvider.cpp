@@ -75,6 +75,7 @@ namespace SpatialSEIR
         if (a < 0 || b < 0)
         {
             std::cerr << "Invalid (negative) Paramter Values to RandomNumberProvider::beta.\n";
+            std::cout << "(a,b): (" << a << ", " << b << ")\n";
             throw(-1);
         }
         double v1 = gamma(a); 
