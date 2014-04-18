@@ -355,7 +355,8 @@ namespace SpatialSEIR
                          double *_p_se,
                          double *_p_rs,
                          double *_beta,
-                         double *_rho)
+                         double *_rho,
+                         double _sliceWidth)
     {
        context = new ModelContext*;
        S_star = new CompartmentalModelMatrix*;
@@ -369,6 +370,7 @@ namespace SpatialSEIR
        beta = new double*;
        rho = new double*;
        value = new double;
+       sliceWidth = new double;
        *context = _context;
        *S_star = _S_star;
        *S = _S;
@@ -381,6 +383,7 @@ namespace SpatialSEIR
        *beta = _beta;
        *rho = _rho;
        *value = -1.0;
+       *sliceWidth = _sliceWidth;
     }    
     FC_S_Star::~FC_S_Star()
     {
@@ -395,6 +398,7 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete sliceWidth;
         delete context;
     }
 
@@ -556,7 +560,7 @@ namespace SpatialSEIR
     int FC_S_Star::sampleCPU()
     {
         this -> sampleCompartmentMemoized(*context,*A0,
-                                  *S_star,5,(*context) -> compartmentCache);
+                                  *S_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -594,7 +598,8 @@ namespace SpatialSEIR
                          double *_p_se,
                          double *_p_ei,
                          double *_rho,
-                         double *_beta) 
+                         double *_beta,
+                         double _sliceWidth) 
     {
 
         context = new ModelContext*;
@@ -608,9 +613,10 @@ namespace SpatialSEIR
         p_ei = new double*;
         rho = new double*;
         beta = new double*;
+        sliceWidth = new double;
         value = new double;
         
-       *context = _context;
+        *context = _context;
         *E_star = _E_star;
         *E = _E;
         *S = _S;
@@ -621,6 +627,7 @@ namespace SpatialSEIR
         *p_ei = _p_ei;
         *rho = _rho;
         *beta = _beta;
+        *sliceWidth = _sliceWidth;
         *value = -1.0;
     }
 
@@ -637,6 +644,7 @@ namespace SpatialSEIR
         delete rho;
         delete beta;
         delete value;
+        delete sliceWidth;
         delete context;
     }
 
@@ -792,7 +800,7 @@ namespace SpatialSEIR
     int FC_E_Star::sampleCPU()
     {
         this -> sampleCompartmentMemoized(*context,*A0,
-                                  *E_star,5,(*context) -> compartmentCache);
+                                  *E_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
     int FC_E_Star::sampleOCL()
@@ -824,7 +832,8 @@ namespace SpatialSEIR
                          CompartmentalModelMatrix *_S_star,
                          InitData *_A0,
                          double *_p_rs,
-                         double *_p_ir)
+                         double *_p_ir,
+                         double _sliceWidth)
     {
 
         context = new ModelContext*;
@@ -835,9 +844,10 @@ namespace SpatialSEIR
         A0 = new InitData*;
         p_rs = new double*;
         p_ir = new double*;
+        sliceWidth = new double;
         value = new double;
 
-       *context = _context;
+        *context = _context;
         *R_star = _R_star;
         *R = _R;
         *I = _I;
@@ -845,6 +855,7 @@ namespace SpatialSEIR
         *A0 = _A0;
         *p_rs = _p_rs;
         *p_ir = _p_ir;
+        *sliceWidth = _sliceWidth;
         *value = -1.0;
     }
     FC_R_Star::~FC_R_Star()
@@ -857,6 +868,7 @@ namespace SpatialSEIR
         delete p_rs;
         delete p_ir;
         delete value;
+        delete sliceWidth;
         delete context;
     }
 
@@ -1025,7 +1037,7 @@ namespace SpatialSEIR
     int FC_R_Star::sampleCPU()
     {
         this -> sampleCompartmentMemoized(*context,*A0,
-                                  *R_star,5,(*context) -> compartmentCache);
+                                  *R_star,*sliceWidth,(*context) -> compartmentCache);
         return(0);
     }
     int FC_R_Star::sampleOCL()
@@ -1059,7 +1071,8 @@ namespace SpatialSEIR
                      CovariateMatrix *_X,
                      double *_p_se, 
                      double *_beta, 
-                     double *_rho)
+                     double *_rho,
+                     double _sliceWidth)
     {
 
         context = new ModelContext*;
@@ -1070,6 +1083,7 @@ namespace SpatialSEIR
         p_se = new double*;
         beta = new double*;
         rho = new double*;
+        sliceWidth = new double;
         value = new double;
 
         *context = _context;
@@ -1080,6 +1094,7 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *beta = _beta;
         *rho = _rho;
+        *sliceWidth = _sliceWidth;
         *value = -1.0;
     }
 
@@ -1093,6 +1108,7 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete sliceWidth;
         delete context;
     }
 
@@ -1142,7 +1158,7 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDouble(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), 0.1); 
+        sampleDouble(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
         return(0);
     }
     int FC_Beta::sampleOCL()
@@ -1280,7 +1296,8 @@ namespace SpatialSEIR
                    CovariateMatrix *_X,
                    double *_p_se,
                    double *_beta,
-                   double *_rho)
+                   double *_rho,
+                   double _sliceWidth)
     {
         context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
@@ -1290,6 +1307,7 @@ namespace SpatialSEIR
         p_se = new double*;
         beta = new double*;
         rho = new double*;
+        sliceWidth = new double;
         value = new double;
 
         *context = _context;
@@ -1300,6 +1318,7 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *beta = _beta;
         *rho = _rho;
+        *sliceWidth = _sliceWidth;
         *value = -1.0;
     }
     FC_Rho::~FC_Rho()
@@ -1312,6 +1331,7 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete sliceWidth;
         delete context;
     }
 
@@ -1361,7 +1381,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDouble(*context, *rho, 1, 0.1); 
+        sampleDouble(*context, *rho, 1, *sliceWidth); 
         return(0);
     }
     int FC_Rho::sampleOCL()
@@ -1388,7 +1408,8 @@ namespace SpatialSEIR
                    double *_beta,
                    double *_gamma,
                    double *_priorAlpha,
-                   double *_priorBeta)
+                   double *_priorBeta,
+                   double _sliceWidth)
     {
         context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
@@ -1400,6 +1421,7 @@ namespace SpatialSEIR
         gamma = new double*;
         priorAlpha = new double;
         priorBeta = new double;
+        sliceWidth = new double;
         value = new double;
 
         *context = _context;
@@ -1411,8 +1433,8 @@ namespace SpatialSEIR
         *beta = _beta;
         *gamma = _gamma;
         *priorAlpha = *_priorAlpha;
-
         *priorBeta = *_priorBeta;
+        *sliceWidth = _sliceWidth;
         *value = -1.0;
     }
     FC_Gamma::~FC_Gamma()
@@ -1426,6 +1448,7 @@ namespace SpatialSEIR
         delete gamma;
         delete priorAlpha;
         delete priorBeta;
+        delete sliceWidth;
         delete value;
         delete context;
     }
@@ -1475,7 +1498,7 @@ namespace SpatialSEIR
 
     int FC_Gamma::sampleCPU()
     {
-        sampleDouble(*context, *gamma, *((*A0) -> numLocations), 0.5); 
+        sampleDouble(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
         return(0);
     }
     int FC_Gamma::sampleOCL()

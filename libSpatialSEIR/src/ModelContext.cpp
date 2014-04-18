@@ -162,7 +162,8 @@ namespace SpatialSEIR
                                   p_se,
                                   p_rs,
                                   beta,
-                                  rho);
+                                  rho,
+                                  *(sliceWidths -> S_starWidth));
 
         E_star_fc = new FC_E_Star(this,
                                   E_star,
@@ -170,30 +171,35 @@ namespace SpatialSEIR
                                   S,
                                   I_star,
                                   X,A0,p_se,p_ei,
-                                  rho,beta);
+                                  rho,beta,
+                                  *(sliceWidths -> E_starWidth));
 
         R_star_fc = new FC_R_Star(this,
                                   R_star,
                                   R,
                                   I,
                                   S_star,
-                                  A0,p_rs,p_ir);
+                                  A0,p_rs,p_ir,
+                                  *(sliceWidths -> R_starWidth));
 
         beta_fc = new FC_Beta(this,
                               E_star,
                               S_star,
-                              A0,X,p_se,beta,rho);
+                              A0,X,p_se,beta,rho,
+                              *(sliceWidths -> betaWidth));
 
         rho_fc = new FC_Rho(this,
                             E_star,
                             S,
-                            A0,X,p_se,beta,rho);
+                            A0,X,p_se,beta,rho,
+                            *(sliceWidths -> rhoWidth));
 
         gamma_fc = new FC_Gamma(this,
                                 E_star,
                                 S,
                                 A0,X,p_se,beta,gamma,(gammaFCArgs -> priorAlpha),
-                                (gammaFCArgs -> priorBeta));
+                                (gammaFCArgs -> priorBeta),
+                                *(sliceWidths -> gammaWidth));
 
         p_rs_fc = new FC_P_RS(this,S_star,R,A0,p_rs);
 

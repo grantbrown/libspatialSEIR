@@ -88,6 +88,7 @@ namespace SpatialSEIR
             virtual double getValue() = 0;
             virtual void setValue(double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
+            double* sliceWidth;
     };
 
     // Parent class for compartment full conditional distributions
@@ -117,6 +118,7 @@ namespace SpatialSEIR
                                             InitData* A0, 
                                             CompartmentalModelMatrix* destCompartment,
                                             int width, double* compartmentCache); 
+            double* sliceWidth;
     };
 
     // Parent class for double precision scalar/vector full conditionals
@@ -136,7 +138,7 @@ namespace SpatialSEIR
                              double* variable,
                              int varLen,
                              double width);
-
+            double* sliceWidth;
     };
 
     class FC_S_Star : public CompartmentFullConditional
@@ -152,7 +154,8 @@ namespace SpatialSEIR
                       double *_p_se,
                       double *_p_rs,
                       double *_beta,
-                      double *_rho);
+                      double *_rho,
+                      double sliceWidth);
             virtual int cacheEvalCalculation(double* cachedValues);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
@@ -178,6 +181,8 @@ namespace SpatialSEIR
             double **beta; 
             double **rho;
             double* value;
+            double* sliceWidth;
+
     };
 
     class FC_E_Star : public CompartmentFullConditional
@@ -193,7 +198,8 @@ namespace SpatialSEIR
                       double *_p_se,
                       double *_p_ei,
                       double *_rho,
-                      double *_beta);
+                      double *_beta,
+                      double sliceWidth);
             ~FC_E_Star();
 
             virtual int cacheEvalCalculation(double* cachedValues);
@@ -220,7 +226,7 @@ namespace SpatialSEIR
             double **rho;
             double **beta;
             double* value;
-
+            double* sliceWidth;
     };
 
     class FC_R_Star : public CompartmentFullConditional
@@ -233,7 +239,8 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_S_star,
                       InitData *_A0,
                       double *_p_rs,
-                      double *_p_ir);
+                      double *_p_ir,
+                      double sliceWidth);
             ~FC_R_Star();
 
             virtual int cacheEvalCalculation(double* cachedValues);
@@ -257,6 +264,7 @@ namespace SpatialSEIR
             double **p_rs;
             double **p_ir;
             double* value;
+            double* sliceWidth;
 
     };
 
@@ -270,7 +278,8 @@ namespace SpatialSEIR
                     CovariateMatrix *_X,
                     double *_p_se, 
                     double *_beta,
-                    double *_rho); 
+                    double *_rho,
+                    double sliceWidth); 
             ~FC_Beta();
 
             virtual int evalCPU();
@@ -290,6 +299,7 @@ namespace SpatialSEIR
             double **beta;
             double **rho;
             double* value;
+            double* sliceWidth;
 
     };
 
@@ -300,7 +310,7 @@ namespace SpatialSEIR
                     CompartmentalModelMatrix *_S_star,
                     CompartmentalModelMatrix *_R,
                     InitData *_A0,
-                    double *_p_rs 
+                    double *_p_rs
                     );
             ~FC_P_RS();
             virtual int evalCPU();
@@ -317,6 +327,7 @@ namespace SpatialSEIR
             InitData **A0;
             double **p_rs;
             double* value;
+            double* sliceWidth;
 
     };
 
@@ -330,7 +341,8 @@ namespace SpatialSEIR
                    CovariateMatrix *_X,
                    double *_p_se, 
                    double *_beta, 
-                   double *_rho
+                   double *_rho,
+                   double sliceWidth
                    );
             ~FC_Rho();
             virtual int evalCPU();
@@ -350,6 +362,7 @@ namespace SpatialSEIR
             double **beta;
             double **rho;
             double* value;
+            double* sliceWidth;
 
     };
 
@@ -365,7 +378,8 @@ namespace SpatialSEIR
                    double *_beta, 
                    double *_gamma,
                    double *_priorAlpha,
-                   double *_priorBeta
+                   double *_priorBeta,
+                   double sliceWidth
                    );
             ~FC_Gamma();
             virtual int evalCPU();
@@ -387,6 +401,7 @@ namespace SpatialSEIR
             double* priorAlpha;
             double* priorBeta;
             double* value;
+            double* sliceWidth;
 
     };    
 
@@ -413,6 +428,8 @@ namespace SpatialSEIR
             InitData **A0;
             double **p_ei;
             double* value;
+            double* sliceWidth;
+
     };
 
     class FC_P_IR : public ParameterFullConditional
@@ -439,6 +456,8 @@ namespace SpatialSEIR
             InitData **A0;
             double **p_ir;
             double* value;
+            double* sliceWidth;
+
     };
 }
 
