@@ -294,39 +294,48 @@ namespace SpatialSEIR
         }
     }
 
+    void ModelContext::printFCValues()
+    {
+        beta_fc -> evalCPU();
+        p_rs_fc -> evalCPU();
+        p_ei_fc -> evalCPU();
+        p_ir_fc -> evalCPU();
+        rho_fc -> evalCPU();
+        gamma_fc -> evalCPU();
+        S_star_fc -> evalCPU();
+        E_star_fc -> evalCPU();
+        R_star_fc -> evalCPU();
+        std::cout << "  FC Values:\n";
+        std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
+        std::cout << "    p_rs: " << p_rs_fc ->getValue() << "\n";
+        std::cout << "    p_ei: " << p_ei_fc ->getValue() << "\n";
+        std::cout << "    p_ir: " << p_ir_fc ->getValue() << "\n";
+        std::cout << "    rho: " << rho_fc ->getValue() << "\n";
+        std::cout << "    gamma: " << gamma_fc ->getValue() << "\n";
+        std::cout << "    S_star: " << S_star_fc ->getValue() << "\n";
+        std::cout << "    E_star: " << E_star_fc ->getValue() << "\n";
+        std::cout << "    R_star: " << R_star_fc ->getValue() << "\n"; 
+    }
+
     void ModelContext::simulationIter(int* useOCL, bool verbose = false, bool debug = false)
     {
         if (debug)
         {
-            std::cout << "Beta: " << beta_fc ->getValue() << "\n";
-            std::cout << "p_rs: " << p_rs_fc ->getValue() << "\n";
-            std::cout << "p_ei: " << p_ei_fc ->getValue() << "\n";
-            std::cout << "p_ir: " << p_ir_fc ->getValue() << "\n";
-            std::cout << "rho: " << rho_fc ->getValue() << "\n";
-            std::cout << "gamma: " << gamma_fc ->getValue() << "\n";
-            std::cout << "S_star: " << S_star_fc ->getValue() << "\n";
-            std::cout << "E_star: " << E_star_fc ->getValue() << "\n";
-            std::cout << "R_star: " << R_star_fc ->getValue() << "\n";
+            this -> printFCValues();
+            this -> checkCompartmentBounds();
         }
-
 
         if (verbose){std::cout << "Sampling E_star\n";}
         if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
         else {E_star_fc -> sampleOCL();}
 
-        //this -> checkCompartmentBounds();
-
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
 
-        //this -> checkCompartmentBounds();
-
         if (verbose){std::cout << "Sampling R_star\n";}
         if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
-
-        //this -> checkCompartmentBounds();
 
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
@@ -351,7 +360,6 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling gamma\n";}
         if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
-
     }
 
 

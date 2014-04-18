@@ -116,6 +116,7 @@ namespace SpatialSEIR
 
             // Run main simulation 
             void checkCompartmentBounds();
+            void printFCValues();
             void simulationIter(int* useOCL, bool verbose, bool debug);
             void runSimulation(int nIterations, int* useOCL, bool verbose, bool debug);
             void runSimulation_CPU(int nIterations, bool verbose, bool debug);

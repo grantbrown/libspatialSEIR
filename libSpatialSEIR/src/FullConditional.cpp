@@ -416,7 +416,9 @@ namespace SpatialSEIR
                 compIdx++;
                 tmp = ((*S_star) -> data)[compIdx];
                 if (tmp < 0 || tmp > ((*R)->data)[compIdx] || 
-                        ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+                        ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx] || 
+                        ((*R)->data)[compIdx] < 0)
+
                 {
                     cachedValues[compIdx] = -INFINITY;
                 }
@@ -442,7 +444,9 @@ namespace SpatialSEIR
         {
             tmp = ((*S_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*R) -> data)[compIdx] ||
-                    ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+                    ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx] ||
+                    ((*R)->data)[compIdx] < 0)
+
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -476,7 +480,9 @@ namespace SpatialSEIR
                 tmp = ((*S_star) -> data)[compIdx];
     
                 if (tmp < 0 || tmp > ((*R)->data)[compIdx] || 
-                        ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+                        ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx] ||
+                        ((*R)->data)[compIdx] < 0)
+
                 {
                     *value = -INFINITY;
                     return(-1);
@@ -508,7 +514,8 @@ namespace SpatialSEIR
         {
             tmp = ((*S_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*R) -> data)[compIdx] ||
-                    ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+                    ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx] || 
+                    ((*R)->data)[compIdx] < 0)
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -662,7 +669,8 @@ namespace SpatialSEIR
                 compIdx++;
                 tmp = ((*E_star) -> data)[compIdx];
                 if (tmp < 0 || tmp > ((*S) -> data)[compIdx] || 
-                        ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx])
+                        ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx] ||
+                        ((*S)->data)[compIdx] < 0)
                 {
                     cachedValues[compIdx] = (-INFINITY);
                 }
@@ -688,7 +696,9 @@ namespace SpatialSEIR
         {
             tmp = ((*E_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*S) -> data)[compIdx] || 
-                    ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx])
+                    ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx]||
+                    ((*S)->data)[compIdx] < 0)
+
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -719,7 +729,8 @@ namespace SpatialSEIR
                 compIdx = i + j*nLoc;
                 tmp = ((*E_star) -> data)[compIdx];
                 if (tmp < 0 || tmp > ((*S) -> data)[compIdx] || 
-                        ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx])
+                        ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx] ||
+                        ((*S)->data)[compIdx] < 0)
                 {
                     *value = -INFINITY;
                     return(-1);
@@ -750,7 +761,9 @@ namespace SpatialSEIR
         {
             tmp = ((*E_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*S) -> data)[compIdx] || 
-                    ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx])
+                    ((*I_star) -> data)[compIdx] > ((*E) -> data)[compIdx] ||
+                    ((*S)->data)[compIdx] < 0)
+
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -888,7 +901,9 @@ namespace SpatialSEIR
                 tmp = ((*R_star) -> data)[compIdx];
 
                 if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
-                        ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx])
+                        ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
+                        ((*I)->data)[compIdx] < 0)
+
                 {
                     cachedValues[compIdx] = -INFINITY;
                     std::cerr << "Error caching R_Star FC, index: " << compIdx << "\n";
@@ -920,7 +935,8 @@ namespace SpatialSEIR
         {
             tmp = ((*R_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
-                    ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx])
+                    ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
+                    ((*I)->data)[compIdx] < 0)
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -952,7 +968,8 @@ namespace SpatialSEIR
                 compIdx ++;
                 tmp = ((*R_star) -> data)[compIdx];
                 if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
-                        ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx])
+                        ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
+                        ((*I)->data)[compIdx] < 0)
                 {
                     *value = -INFINITY;
                     return(-1);
@@ -984,7 +1001,9 @@ namespace SpatialSEIR
         {
             tmp = ((*R_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
-                    ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx])
+                    ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
+                    ((*I)->data)[compIdx] < 0)
+
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -1133,7 +1152,7 @@ namespace SpatialSEIR
         } 
         for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
         {
-            term3 += pow((*beta)[i],2)/10; // Generalize to allow different prior precisions. 
+            term3 -= pow((*beta)[i],2)/10.0; // Generalize to allow different prior precisions. 
         }
         *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 
@@ -1473,7 +1492,7 @@ namespace SpatialSEIR
                 term1 += std::log(pse)*Es; 
                 term2 += std::log(1-pse)*(((*S) -> data)[compIdx] - Es);
             }
-            term3 += (*priorAlpha)*std::log((*gamma)[j]) - ((*gamma)[j])/(*priorBeta); 
+            term3 += ((*priorAlpha-1)*std::log((*gamma)[j]) - ((*gamma)[j])/(*priorBeta)); 
         } 
         *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 

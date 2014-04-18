@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(100)
+    control_code(50)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -119,7 +119,7 @@ outFileName = "./chainOutput_sim.txt"
 logFileList = c(1,1,1,1,1,1,1,0,1,0,0)
 iterationStride = 5
 # S,E,R,beta,rho,gamma
-sliceWidths = c(10,10,10,1,0.5,0.5)
+sliceWidths = c(10,10,10,10,0.5,0.5)
 
 
 # Check validity of dimensions
