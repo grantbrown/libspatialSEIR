@@ -88,6 +88,63 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::IntegerVector verbose(verboseFlag);
     Rcpp::IntegerVector debug(debugFlag);
 
+    // Sanity check the input data. 
+    int compartmentSize = (compartmentDimensions[0]*compartmentDimensions[1]);
+    if (S_star0.size() != compartmentDimensions[0])
+    {
+        Rcpp::Rcout << "Invalid S_star0 Compartment Size!\n";
+        throw(-1);
+    }
+    if (E_star0.size() != compartmentDimensions[0])
+    {
+        Rcpp::Rcout << "Invalid E_star0 Compartment Size!\n";
+        throw(-1);
+    }
+    if (I_star0.size() != compartmentDimensions[0])
+    {
+        Rcpp::Rcout << "Invalid I_star0 Compartment Size!\n";
+        throw(-1);
+    }
+    if (R_star0.size() != compartmentDimensions[0])
+    {
+        Rcpp::Rcout << "Invalid R_star0 Compartment Size!\n";
+        throw(-1);
+    }
+
+
+    if (S_star.size() != compartmentSize)
+    {
+        Rcpp::Rcout << "Invalid S_star Compartment Size!\n";
+        throw(-1);
+    }
+    if (E_star.size() != compartmentSize)
+    {
+        Rcpp::Rcout << "Invalid E_star Compartment Size!\n";
+        throw(-1);
+    }
+    if (I_star.size() != compartmentSize)
+    {
+        Rcpp::Rcout << "Invalid I_star Compartment Size!\n";
+        throw(-1);
+    }
+    if (R_star.size() != compartmentSize)
+    {
+        Rcpp::Rcout << "Invalid R_star Compartment Size!\n";
+        throw(-1);
+    }
+    if (gamma.size() != compartmentDimensions[1])
+    {
+        Rcpp::Rcout << "Invalid gamma size!\n";
+        throw(-1);
+    }
+    if (p_rs.size() != compartmentDimensions[1])
+    {
+        Rcpp::Rcout << "Invalid gamma size!\n";
+        throw(-1);
+    }
+
+
+
     Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[0] 
         << "\n";
     Rcpp::Rcout << "Rcpp Provided Num Times: " << compartmentDimensions[1] 
