@@ -15,6 +15,8 @@ else
     setwd(wd)
 }}
 
+set.seed(123132);
+
 X  = covariates$X # X is returned by the simulation as an NxP matrix, where N 
                   # is the number of locations and P the number of predictors.
 Z_ar = covariates$Z  # Z is returned by the simulation as an NxQxT0xT2 array, 

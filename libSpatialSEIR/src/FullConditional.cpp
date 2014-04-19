@@ -506,6 +506,7 @@ namespace SpatialSEIR
     {
         *value = 0.0;
         int i, j, tmp, compIdx;
+        int err = 0;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
 
@@ -518,6 +519,7 @@ namespace SpatialSEIR
                     ((*R)->data)[compIdx] < 0)
             {
                 cachedValues[compIdx] = -INFINITY;
+                err = 1;
             }
             else
             {
@@ -526,6 +528,12 @@ namespace SpatialSEIR
                                std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
             }
             compIdx += nLoc;
+        }
+        // Bad value encountered while filling up cache, return early.  
+        if (err)
+        {
+            *value = -INFINITY;
+            return(-1);
         }
         for (j = 0; j < nTpts; j++)     
         {
@@ -536,7 +544,8 @@ namespace SpatialSEIR
                 *value += cachedValues[compIdx]; 
             }
         } 
-        // Catch invalid values, nans etc. 
+        // Catch invalid values, nans etc which we missed with the 
+        // standard flags. 
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -753,6 +762,7 @@ namespace SpatialSEIR
     {
         *value = 0.0;
         int i, j, tmp, compIdx;
+        int err = 0;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
      
@@ -766,6 +776,7 @@ namespace SpatialSEIR
 
             {
                 cachedValues[compIdx] = -INFINITY;
+                err = 1;
             }
             else
             {
@@ -774,6 +785,13 @@ namespace SpatialSEIR
                                          std::log(1-(**p_ei))*(((*E) -> data)[compIdx]));
             }
             compIdx += nLoc;
+        }
+        // Bad values encountered while filling cache,
+        // return early.
+        if (err)
+        {
+            *value = -INFINITY;
+            return(-1);
         }
         for (j = 0; j < nTpts; j++)     
         {
@@ -784,7 +802,7 @@ namespace SpatialSEIR
                 *value += cachedValues[compIdx]; 
             }
         } 
-        // Catch invalid values, nans etc. 
+        // Catch invalid values, nans etc which we may have missed.  
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -902,7 +920,7 @@ namespace SpatialSEIR
 
                 if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                         ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
-                        ((*I)->data)[compIdx] < 0)
+                        ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
 
                 {
                     cachedValues[compIdx] = -INFINITY;
@@ -936,7 +954,7 @@ namespace SpatialSEIR
             tmp = ((*R_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                     ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
-                    ((*I)->data)[compIdx] < 0)
+                    ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -969,7 +987,7 @@ namespace SpatialSEIR
                 tmp = ((*R_star) -> data)[compIdx];
                 if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                         ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
-                        ((*I)->data)[compIdx] < 0)
+                        ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
                 {
                     *value = -INFINITY;
                     return(-1);
@@ -993,6 +1011,7 @@ namespace SpatialSEIR
     {
         *value = 0.0;
         int i, j, tmp, compIdx;
+        int err = 0;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
      
@@ -1002,10 +1021,11 @@ namespace SpatialSEIR
             tmp = ((*R_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                     ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
-                    ((*I)->data)[compIdx] < 0)
+                    ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
 
             {
                 cachedValues[compIdx] = -INFINITY;
+                err = 1;
             }
             else
             {
@@ -1014,6 +1034,12 @@ namespace SpatialSEIR
                                 std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]));
             }
             compIdx += nLoc;
+        }
+        // bad values encountered while caching, return early. 
+        if (err)
+        {
+            *value = -INFINITY;
+            return(-1);
         }
         for (j = 0; j < nTpts; j++)     
         {
@@ -1024,7 +1050,7 @@ namespace SpatialSEIR
                 *value += cachedValues[compIdx]; 
             }
         } 
-        // Catch invalid values, nans etc. 
+        // Catch invalid values, nans etc which we may have missed.  
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -1152,7 +1178,7 @@ namespace SpatialSEIR
         } 
         for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
         {
-            term3 -= pow((*beta)[i],2)/10.0; // Generalize to allow different prior precisions. 
+            term3 -= pow((*beta)[i],2)/0.0000001; // Generalize to allow different prior precisions. 
         }
         *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 

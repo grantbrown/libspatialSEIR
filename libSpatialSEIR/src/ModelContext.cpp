@@ -23,7 +23,8 @@ namespace SpatialSEIR
 
     ModelContext::ModelContext()
     {
-        random = new RandomNumberProvider(static_cast<unsigned int>(std::time(0)));
+        //random = new RandomNumberProvider(static_cast<unsigned int>(std::time(0)));
+        random = new RandomNumberProvider(12312415);
         S_star = new CompartmentalModelMatrix();
         E_star = new CompartmentalModelMatrix();
         I_star = new CompartmentalModelMatrix();
@@ -231,9 +232,10 @@ namespace SpatialSEIR
         this -> R_star_fc -> evalCPU();
     }
 
-    void ModelContext::checkCompartmentBounds()
+    int ModelContext::checkCompartmentBounds()
     {
         int i;
+        int err = 0;
         int rowCol = (*(R->ncol))*(*(R->nrow));
         for (i = 0; i < rowCol;i++)
         {
@@ -242,39 +244,67 @@ namespace SpatialSEIR
                 std::cout << "S_star too big: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
                 S_star_fc -> evalCPU();
                 std::cout << "Value 2: " << S_star_fc -> getValue() << "\n"; 
+                err = 1;
                 break;
             }
             if ((S_star -> data)[i] < 0)
             {
                 std::cout << "S_star <0: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
+                err = 1;
                 break;
             }
+            if ((S -> data)[i] < 0)
+            {
+                std::cout << "S <0: " << i << " \n";
+                err = 1;
+                break;
+            }
+
         }
         for (i = 0; i < rowCol;i++)
         {
             if ((E_star -> data)[i] > (S -> data)[i])
             {
                 std::cout << "E_star too big: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
+                err = 1;
                 break;
             }
             if ((E_star -> data)[i] < 0)
             {
                 std::cout << "E_star <0: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
+                err = 1;
                 break;
             }
+            if ((E -> data)[i] < 0)
+            {
+                std::cout << "E <0: " << i << " \n";
+                err = 1;
+                break;
+            }
+
         }
         for (i = 0; i < rowCol;i++)
         {
             if ((I_star -> data)[i] > (E -> data)[i])
             {
                 std::cout << "I_star too big: " << i << "\n";
+                err = 1;
                 break;
             }
             if ((I_star -> data)[i] < 0)
             {
                 std::cout << "I_star <0: " << i << ", val: \n";
+                err = 1;
                 break;
             }
+
+            if ((I -> data)[i] < 0)
+            {
+                std::cout << "I_star <0: " << i << " \n";
+                err = 1;
+                break;
+            }
+
         }
         for (i = 0; i < rowCol;i++)
         {
@@ -284,14 +314,23 @@ namespace SpatialSEIR
                 std::cout << "R_star too big: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
                 R_star_fc -> evalCPU();
                 std::cout << "Value 2: " << R_star_fc -> getValue() << "\n"; 
+                err = 1;
                 break;
             }
             if ((R_star -> data)[i] < 0)
             {
                 std::cout << "R_star <0: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
+                err = 1;
+                break;
+            }
+            if ((R -> data)[i] < 0)
+            {
+                std::cout << "R <0: " << i << " \n";
+                err = 1;
                 break;
             }
         }
+        return(err);
     }
 
     void ModelContext::printFCValues()
@@ -707,16 +746,6 @@ namespace SpatialSEIR
         // Calculate dmu: I/N * exp(eta)
         int nLoc = *(S -> nrow);
         int nCol = *(S -> ncol);
-        for (j = 0; j < nCol; j++)
-        {
-            for (i = 0; i < nLoc; i++) 
-            {
-                index = i + j*nLoc;
-                p_se[index] = 0.0;
-                p_se_components[index] = 
-                   ((I -> data)[index] * (eta[index]))/N[index];
-            }
-        }
 
         // Calculate rho*sqrt(idmat)
         SpatialSEIR::matMult(this -> p_se, 
@@ -750,7 +779,7 @@ namespace SpatialSEIR
         {
             index = i + j*nLoc;
             p_se_components[index] = 
-               ((I -> data)[index] * (eta[index]))/N[i];
+               ((I -> data)[index] * (eta[index]))/N[index];
         }
 
         SpatialSEIR::matMult(&((this -> p_se)[startTime*nLoc]), 
