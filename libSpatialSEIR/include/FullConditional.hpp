@@ -27,6 +27,13 @@ namespace SpatialSEIR
         double* gamma;
     };
 
+    // Roll gamma prior stuff into
+    // this struct?
+    struct priorControl
+    {
+        double* betaPriorPrecision;
+    };
+
     struct sliceParameters
     {
         double* S_starWidth;
@@ -281,7 +288,8 @@ namespace SpatialSEIR
                     double *_p_se, 
                     double *_beta,
                     double *_rho,
-                    double sliceWidth); 
+                    double sliceWidth,
+                    double _priorPrecision); 
             ~FC_Beta();
 
             virtual int evalCPU();
@@ -302,7 +310,7 @@ namespace SpatialSEIR
             double **rho;
             double* value;
             double* sliceWidth;
-
+            double* priorPrecision;
     };
 
     class FC_P_RS : public ParameterFullConditional

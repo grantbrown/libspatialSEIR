@@ -62,7 +62,8 @@ namespace SpatialSEIR
                                 gammaArgs* gammaFCArgs,
                                 double* rho_, double* beta_, 
                                 double* p_ei_, double* p_ir_, double* p_rs_, 
-                                int* N_, sliceParameters* sliceWidths)
+                                int* N_, sliceParameters* sliceWidths,
+                                priorControl* priorValues)
     {
         // Delete stuff that needs to be resized
         delete N; delete beta; delete eta; delete gamma;
@@ -193,7 +194,8 @@ namespace SpatialSEIR
                               E_star,
                               S_star,
                               A0,X,p_se,beta,rho,
-                              *(sliceWidths -> betaWidth));
+                              *(sliceWidths -> betaWidth),
+                              *(priorValues -> betaPriorPrecision));
 
         rho_fc = new FC_Rho(this,
                             E_star,

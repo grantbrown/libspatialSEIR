@@ -1129,7 +1129,8 @@ namespace SpatialSEIR
                      double *_p_se, 
                      double *_beta, 
                      double *_rho,
-                     double _sliceWidth)
+                     double _sliceWidth,
+                     double _priorPrecision)
     {
 
         context = new ModelContext*;
@@ -1141,6 +1142,7 @@ namespace SpatialSEIR
         beta = new double*;
         rho = new double*;
         sliceWidth = new double;
+        priorPrecision = new double;
         value = new double;
 
         *context = _context;
@@ -1152,6 +1154,7 @@ namespace SpatialSEIR
         *beta = _beta;
         *rho = _rho;
         *sliceWidth = _sliceWidth;
+        *priorPrecision = _priorPrecision;
         *value = -1.0;
     }
 
@@ -1166,6 +1169,7 @@ namespace SpatialSEIR
         delete rho;
         delete value;
         delete sliceWidth;
+        delete priorPrecision;
         delete context;
     }
 
@@ -1190,7 +1194,7 @@ namespace SpatialSEIR
         } 
         for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
         {
-            term3 -= pow((*beta)[i],2)/0.0000001; // Generalize to allow different prior precisions. 
+            term3 -= pow((*beta)[i],2)*(*priorPrecision); // Generalize to allow different prior precisions. 
         }
         *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 

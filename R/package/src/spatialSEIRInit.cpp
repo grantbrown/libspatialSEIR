@@ -227,6 +227,11 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     gammaFCArgs.priorAlpha = priorAlpha_gamma.begin();
     gammaFCArgs.priorBeta = priorBeta_gamma.begin();
 
+
+    double betaPrecision = 0.00001;
+    priorControl priorValues;
+    priorValues.betaPriorPrecision = &betaPrecision;
+
     // Gather information for the creation of the distance matrices
 
     double phi = 60*60*2.0;
@@ -254,7 +259,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> populate(&A0, &xArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
                         rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
-                        p_rs.begin(),N.begin(),&sliceParamStruct);
+                        p_rs.begin(),N.begin(),&sliceParamStruct, &priorValues);
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
