@@ -864,6 +864,7 @@ namespace SpatialSEIR
                          InitData *_A0,
                          double *_p_rs,
                          double *_p_ir,
+                         double *_p_se,
                          double _sliceWidth)
     {
 
@@ -875,6 +876,7 @@ namespace SpatialSEIR
         A0 = new InitData*;
         p_rs = new double*;
         p_ir = new double*;
+        p_se = new double*;
         sliceWidth = new double;
         value = new double;
 
@@ -886,6 +888,7 @@ namespace SpatialSEIR
         *A0 = _A0;
         *p_rs = _p_rs;
         *p_ir = _p_ir;
+        *p_se = _p_se;
         *sliceWidth = _sliceWidth;
         *value = -1.0;
     }
@@ -898,6 +901,7 @@ namespace SpatialSEIR
         delete A0;
         delete p_rs;
         delete p_ir;
+        delete p_se;
         delete value;
         delete sliceWidth;
         delete context;
@@ -908,6 +912,7 @@ namespace SpatialSEIR
         int i, j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
+        double pseVal;
     
         for (j = 0; j < nTpts; j++)     
         {
@@ -917,10 +922,11 @@ namespace SpatialSEIR
             {
                 compIdx++;
                 tmp = ((*R_star) -> data)[compIdx];
+                pseVal = (*p_se)[compIdx];
 
                 if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                         ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
-                        ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
+                        ((*I)->data)[compIdx] < 0 || pseVal >= 1 || pseVal <= 0)
 
                 {
                     cachedValues[compIdx] = -INFINITY;
@@ -947,14 +953,16 @@ namespace SpatialSEIR
         int j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
+        double pseVal; 
      
         compIdx = startLoc + startTime*nLoc;
         for (j = startTime; j < nTpts; j++)
         {
             tmp = ((*R_star) -> data)[compIdx];
+            pseVal = (*p_se)[compIdx];
             if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                     ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
-                    ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
+                    ((*I)->data)[compIdx] < 0 || pseVal >= 1 || pseVal <= 0)
             {
                 cachedValues[compIdx] = -INFINITY;
             }
@@ -977,6 +985,7 @@ namespace SpatialSEIR
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*I) -> ncol);
         double term1, term2, term3;
+        double pseVal;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         for (j = 0; j < nTpts; j++)     
         {
@@ -985,9 +994,10 @@ namespace SpatialSEIR
             { 
                 compIdx ++;
                 tmp = ((*R_star) -> data)[compIdx];
+                pseVal = (*p_se)[compIdx];
                 if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                         ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
-                        ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
+                        ((*I)->data)[compIdx] < 0 || pseVal >= 1 || pseVal <= 0)
                 {
                     *value = -INFINITY;
                     return(-1);
@@ -1014,14 +1024,16 @@ namespace SpatialSEIR
         int err = 0;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
+        double pseVal;
      
         compIdx = startLoc + startTime*nLoc;
         for (j = startTime; j < nTpts; j++)
         {
             tmp = ((*R_star) -> data)[compIdx];
+            pseVal = (*p_se)[compIdx];
             if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
                     ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
-                    ((*I)->data)[compIdx] < 0 || ((*context) -> p_se)[compIdx] >= 1 || ((*context)->p_se)[compIdx] <= 0)
+                    ((*I)->data)[compIdx] < 0 || pseVal >= 1 || pseVal <= 0)
 
             {
                 cachedValues[compIdx] = -INFINITY;

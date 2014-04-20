@@ -240,6 +240,7 @@ namespace SpatialSEIR
                       InitData *_A0,
                       double *_p_rs,
                       double *_p_ir,
+                      double *_p_se,
                       double sliceWidth);
             ~FC_R_Star();
 
@@ -263,6 +264,7 @@ namespace SpatialSEIR
             InitData **A0;
             double **p_rs;
             double **p_ir;
+            double **p_se;
             double* value;
             double* sliceWidth;
 

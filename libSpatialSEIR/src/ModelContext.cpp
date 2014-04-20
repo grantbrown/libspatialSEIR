@@ -180,7 +180,7 @@ namespace SpatialSEIR
                                   R,
                                   I,
                                   S_star,
-                                  A0,p_rs,p_ir,
+                                  A0,p_rs,p_ir,p_se,
                                   *(sliceWidths -> R_starWidth));
 
         beta_fc = new FC_Beta(this,
