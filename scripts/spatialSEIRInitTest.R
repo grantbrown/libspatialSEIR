@@ -141,7 +141,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 }
 
 verbose = TRUE
-debug = TRUE
+debug = FALSE
 
 res = spatialSEIRInit(compMatDim,
                       xDim,

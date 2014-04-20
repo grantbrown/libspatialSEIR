@@ -219,7 +219,6 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
-        int itrs;
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
@@ -240,24 +239,14 @@ namespace SpatialSEIR
                 memoIdx = (x-memoStart);
                 memo[memoIdx] = (this->getValue());
                 memoStored[memoIdx] = 1;
-                itrs = 0;
+                if (! std::isfinite(y))
+                {
+                    std::cerr << "Beginning Sampling from location with 0 probability.\n"; 
+                    throw(-1);
+                }
+
                 do 
                 {
-                    itrs ++;
-                    if (itrs > 10000)
-                    {
-                        if (!std::isfinite(this -> getValue()))
-                        {
-                            std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
-                            std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
-                            std::cout << "l,r: " << l << ", " << r << "\n";
-                            throw(-1);
-                        }
-                        else
-                        {
-                            y = -INFINITY;
-                        }
-                    }
                     x0 = ((context -> random -> uniform())*(r-l) + l);
                     x0_floor = std::floor(x0);
                     memoIdx = (x0_floor - memoStart);
@@ -299,7 +288,7 @@ namespace SpatialSEIR
         // Declare required variables
         int i;
         double l,r,y,x,x0;
-        int itrs; 
+
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments();
 
@@ -315,18 +304,15 @@ namespace SpatialSEIR
             y = (this->getValue()) - (context -> random -> gamma());
             l = x - ((context -> random -> uniform())*width);
             r = l + width;
-            itrs = 0;
+
+            if (! std::isfinite(y))
+            {
+                std::cerr << "Beginning Sampling from location with 0 probability.\n"; 
+                throw(-1);
+            }
+
             do
             {
-                itrs ++;
-                if (itrs > 1000)
-                {
-                    std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
-                    std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
-                    std::cout << "l,r: " << l << ", " << r << "\n";
-                    if (itrs >= 1002){throw(-1);} 
-                }
-
                 x0 = ((context -> random -> uniform())*(r-l) + l);
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
