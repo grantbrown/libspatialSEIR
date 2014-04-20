@@ -45,6 +45,12 @@ namespace SpatialSEIR
         fileProvider = new IOProvider();
     }
 
+    void ModelContext::setRandomSeed(unsigned int seedValue)
+    {
+        delete random;
+        random = new RandomNumberProvider(seedValue);
+    }
+
     void ModelContext::populate(InitData* _A0,
                                 covariateArgs* xArgs, 
                                 compartmentArgs* S_starArgs,

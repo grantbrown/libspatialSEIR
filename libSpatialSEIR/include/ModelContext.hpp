@@ -117,6 +117,7 @@ namespace SpatialSEIR
             // Run main simulation 
             int checkCompartmentBounds();
             void printFCValues();
+            void setRandomSeed(unsigned int seedValue);
             void simulationIter(int* useOCL, bool verbose, bool debug);
             void runSimulation(int nIterations, int* useOCL, bool verbose, bool debug);
             void runSimulation_CPU(int nIterations, bool verbose, bool debug);

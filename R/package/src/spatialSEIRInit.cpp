@@ -259,6 +259,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
             (int*) chainOutputControl.begin(),(int*) chainStride.begin());
+    context -> setRandomSeed(123123);
     context -> runSimulation_CPU(100000,*(verbose.begin()),*(debug.begin()));
     context -> fileProvider -> close();
     Rcpp::XPtr<ModelContext*> ptr(&context, true);

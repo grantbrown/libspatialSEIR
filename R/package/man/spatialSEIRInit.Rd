@@ -14,7 +14,7 @@
                     Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,gamma_,
                     priorAlpha_gamma_, priorBeta_gamma_,beta_,
                     p_ei_,p_ir_,p_rs_,N_,outFile,logVarList,iterationStride,verboseFlag,
-                    debugFlag)
+                    debugFlag,sliceWidths)
 }
 \arguments{
     \item{compMatDim}{
@@ -113,6 +113,11 @@
     \item{debugFlag}{
         Show debug level output?
     }
+    \item{sliceWidths}{
+        Slice sampling tuning parameters for the slice sampling variables.
+    }
+
+
 
 
 
