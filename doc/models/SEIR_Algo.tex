@@ -189,8 +189,8 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[
             + (log(\pi(\sigma^2_{\theta})))
             + (log(\pi(\rho)))\\
             +  \sum_{j=1}^{T} \bigg\{\frac{1}{2}log(\pi^{(RS)}_j) + \frac{1}{2}log(1-\pi^{(RS)}_j)   \bigg\} \\
-            + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
-            + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)})))    \\
+            + (\frac{1}{2}log(\pi^{(EI)}) + \frac{1}{2}log(1-\pi^{(EI)})) \\
+            + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)}))    \\
             + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\} \Bigg]\\
 \end{multline}
 \end{center}
@@ -379,8 +379,8 @@ introduced for all categories.
         log(p(\{\pi_{j}^{(RS)}\}|.))\propto\sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{S^*_{ij}\}\Big] \\
             \ \ \ \ + 
             log(1-\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big]\Big\}\\ 
-            \Rightarrow \pi_j^{(RS)} \sim\ (indep)\ beta(\frac{3}{2} + \sum_{i=1}^n\{S^*_{ij}\},
-            \frac{3}{2} + \sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij}\} - \sum_{i=1}^n\{S^*_{ij}\})
+            \Rightarrow \pi_j^{(RS)} \sim\ (indep)\ beta(\frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{S^*_{ij}\},
+            \frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij}\} - \sum_{j=1}^T\sum_{i=1}^n\{S^*_{ij}\})
     \end{multline}
 \end{center}
 
@@ -390,8 +390,8 @@ introduced for all categories.
             \displaystyle
             log(p(\pi^{(EI)})) \propto log(\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\}\Big] 
             \\+ log(1-\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\Big]\\
-            \Rightarrow \pi^{(EI)} \sim beta(\frac{3}{2} + \sum_{i=1}^n\{I^*_{ij}\}, 
-            \frac{3}{2} + \sum_{i=1}^n\{f_E(E^*, I^*, A_0)_{ij}\} - \sum_{i=1}^n\{I^*_{ij}\}) 
+            \Rightarrow \pi^{(EI)} \sim beta(\frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{I^*_{ij}\}, 
+            \frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{f_E(E^*, I^*, A_0)_{ij}\} - \sum_{j=1}^T\sum_{i=1}^n\{I^*_{ij}\}) 
         \end{multline}
     \end{center}
 \item{Full Conditional for $\pi^{(IR)}$} 
@@ -400,8 +400,8 @@ introduced for all categories.
             \displaystyle
             log(p(\pi^{(IR)})) \propto log(\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\}\Big] + 
             log(1-\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\Big]\\
-            \Rightarrow \pi^{(IR)} \sim beta(\frac{3}{2} + \sum_{i=1}^n\{R^*_{ij}\}, 
-            \frac{3}{2} + \sum_{i=1}^n\{f_I(I^*, R^*, A_0)_{ij}\} - \sum_{i=1}^n\{R^*_{ij}\})
+            \Rightarrow \pi^{(IR)} \sim beta(\frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{R^*_{ij}\}, 
+            \frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{f_I(I^*, R^*, A_0)_{ij}\} - \sum_{j=1}^T\sum_{i=1}^n\{R^*_{ij}\})
         \end{multline}
     \end{center}
 
