@@ -6,6 +6,7 @@
 #include <CompartmentalModelMatrix.hpp>
 #include <DistanceMatrix.hpp>
 #include <IOProvider.hpp>
+
 using namespace Rcpp;
 using namespace SpatialSEIR;
 // [[Rcpp::export]]
@@ -31,6 +32,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP gamma_,
                      SEXP priorAlpha_gamma_,
                      SEXP priorBeta_gamma_,
+                     SEXP priorAlpha_pEI_,
+                     SEXP priorBeta_pEI_,
+                     SEXP priorAlpha_pIR_,
+                     SEXP priorBeta_pIR_,
                      SEXP beta_,
                      SEXP p_ei_,
                      SEXP p_ir_,
@@ -72,6 +77,12 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::NumericVector gamma(gamma_);
     Rcpp::NumericVector priorAlpha_gamma(priorAlpha_gamma_);
     Rcpp::NumericVector priorBeta_gamma(priorBeta_gamma_);
+
+    Rcpp::NumericVector priorAlpha_pEI(priorAlpha_pEI_);
+    Rcpp::NumericVector priorBeta_pEI(priorBeta_pEI_);
+    Rcpp::NumericVector priorAlpha_pIR(priorAlpha_pIR_);
+    Rcpp::NumericVector priorBeta_pIR(priorBeta_pIR_);
+
 
     Rcpp::NumericVector beta(beta_);
     Rcpp::NumericVector p_ei(p_ei_);
@@ -228,9 +239,14 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     gammaFCArgs.priorBeta = priorBeta_gamma.begin();
 
 
-    double betaPrecision = 0.00001;
+    double betaPrecision = 5;
     priorControl priorValues;
     priorValues.betaPriorPrecision = &betaPrecision;
+    priorValues.P_EI_priorAlpha = priorAlpha_pEI.begin();
+    priorValues.P_EI_priorBeta = priorBeta_pEI.begin();
+    priorValues.P_IR_priorAlpha = priorAlpha_pIR.begin();
+    priorValues.P_IR_priorBeta = priorBeta_pIR.begin();
+
 
     // Gather information for the creation of the distance matrices
 
@@ -265,6 +281,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> fileProvider -> populate(context, chainOutputFile,
             (int*) chainOutputControl.begin(),(int*) chainStride.begin());
     context -> setRandomSeed(123123);
+
     context -> runSimulation_CPU(100000,*(verbose.begin()),*(debug.begin()));
     context -> fileProvider -> close();
     Rcpp::XPtr<ModelContext*> ptr(&context, true);

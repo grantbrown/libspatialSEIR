@@ -20,8 +20,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // spatialSEIRInit
-SEXP spatialSEIRInit(SEXP compMatDim, SEXP xDim, SEXP zDim, SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_, SEXP Sstar0, SEXP Estar0, SEXP Istar0, SEXP Rstar0, SEXP Sstar, SEXP Estar, SEXP Istar, SEXP Rstar, SEXP X_, SEXP Z_, SEXP DistMat_, SEXP rho_, SEXP gamma_, SEXP priorAlpha_gamma_, SEXP priorBeta_gamma_, SEXP beta_, SEXP p_ei_, SEXP p_ir_, SEXP p_rs_, SEXP N_, SEXP outFile, SEXP logVarList, SEXP iterationStride, SEXP verboseFlag, SEXP debugFlag, SEXP sliceWidths);
-RcppExport SEXP spatialSEIR_spatialSEIRInit(SEXP compMatDimSEXP, SEXP xDimSEXP, SEXP zDimSEXP, SEXP S0_SEXP, SEXP E0_SEXP, SEXP I0_SEXP, SEXP R0_SEXP, SEXP Sstar0SEXP, SEXP Estar0SEXP, SEXP Istar0SEXP, SEXP Rstar0SEXP, SEXP SstarSEXP, SEXP EstarSEXP, SEXP IstarSEXP, SEXP RstarSEXP, SEXP X_SEXP, SEXP Z_SEXP, SEXP DistMat_SEXP, SEXP rho_SEXP, SEXP gamma_SEXP, SEXP priorAlpha_gamma_SEXP, SEXP priorBeta_gamma_SEXP, SEXP beta_SEXP, SEXP p_ei_SEXP, SEXP p_ir_SEXP, SEXP p_rs_SEXP, SEXP N_SEXP, SEXP outFileSEXP, SEXP logVarListSEXP, SEXP iterationStrideSEXP, SEXP verboseFlagSEXP, SEXP debugFlagSEXP, SEXP sliceWidthsSEXP) {
+SEXP spatialSEIRInit(SEXP compMatDim, SEXP xDim, SEXP zDim, SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_, SEXP Sstar0, SEXP Estar0, SEXP Istar0, SEXP Rstar0, SEXP Sstar, SEXP Estar, SEXP Istar, SEXP Rstar, SEXP X_, SEXP Z_, SEXP DistMat_, SEXP rho_, SEXP gamma_, SEXP priorAlpha_gamma_, SEXP priorBeta_gamma_, SEXP priorAlpha_pEI_, SEXP priorBeta_pEI_, SEXP priorAlpha_pIR_, SEXP priorBeta_pIR_, SEXP beta_, SEXP p_ei_, SEXP p_ir_, SEXP p_rs_, SEXP N_, SEXP outFile, SEXP logVarList, SEXP iterationStride, SEXP verboseFlag, SEXP debugFlag, SEXP sliceWidths);
+RcppExport SEXP spatialSEIR_spatialSEIRInit(SEXP compMatDimSEXP, SEXP xDimSEXP, SEXP zDimSEXP, SEXP S0_SEXP, SEXP E0_SEXP, SEXP I0_SEXP, SEXP R0_SEXP, SEXP Sstar0SEXP, SEXP Estar0SEXP, SEXP Istar0SEXP, SEXP Rstar0SEXP, SEXP SstarSEXP, SEXP EstarSEXP, SEXP IstarSEXP, SEXP RstarSEXP, SEXP X_SEXP, SEXP Z_SEXP, SEXP DistMat_SEXP, SEXP rho_SEXP, SEXP gamma_SEXP, SEXP priorAlpha_gamma_SEXP, SEXP priorBeta_gamma_SEXP, SEXP priorAlpha_pEI_SEXP, SEXP priorBeta_pEI_SEXP, SEXP priorAlpha_pIR_SEXP, SEXP priorBeta_pIR_SEXP, SEXP beta_SEXP, SEXP p_ei_SEXP, SEXP p_ir_SEXP, SEXP p_rs_SEXP, SEXP N_SEXP, SEXP outFileSEXP, SEXP logVarListSEXP, SEXP iterationStrideSEXP, SEXP verboseFlagSEXP, SEXP debugFlagSEXP, SEXP sliceWidthsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -48,6 +48,10 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< SEXP >::type gamma_(gamma_SEXP );
         Rcpp::traits::input_parameter< SEXP >::type priorAlpha_gamma_(priorAlpha_gamma_SEXP );
         Rcpp::traits::input_parameter< SEXP >::type priorBeta_gamma_(priorBeta_gamma_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type priorAlpha_pEI_(priorAlpha_pEI_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type priorBeta_pEI_(priorBeta_pEI_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type priorAlpha_pIR_(priorAlpha_pIR_SEXP );
+        Rcpp::traits::input_parameter< SEXP >::type priorBeta_pIR_(priorBeta_pIR_SEXP );
         Rcpp::traits::input_parameter< SEXP >::type beta_(beta_SEXP );
         Rcpp::traits::input_parameter< SEXP >::type p_ei_(p_ei_SEXP );
         Rcpp::traits::input_parameter< SEXP >::type p_ir_(p_ir_SEXP );
@@ -59,7 +63,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< SEXP >::type verboseFlag(verboseFlagSEXP );
         Rcpp::traits::input_parameter< SEXP >::type debugFlag(debugFlagSEXP );
         Rcpp::traits::input_parameter< SEXP >::type sliceWidths(sliceWidthsSEXP );
-        SEXP __result = spatialSEIRInit(compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, DistMat_, rho_, gamma_, priorAlpha_gamma_, priorBeta_gamma_, beta_, p_ei_, p_ir_, p_rs_, N_, outFile, logVarList, iterationStride, verboseFlag, debugFlag, sliceWidths);
+        SEXP __result = spatialSEIRInit(compMatDim, xDim, zDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, DistMat_, rho_, gamma_, priorAlpha_gamma_, priorBeta_gamma_, priorAlpha_pEI_, priorBeta_pEI_, priorAlpha_pIR_, priorBeta_pIR_, beta_, p_ei_, p_ir_, p_rs_, N_, outFile, logVarList, iterationStride, verboseFlag, debugFlag, sliceWidths);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

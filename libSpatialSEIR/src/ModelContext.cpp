@@ -215,12 +215,16 @@ namespace SpatialSEIR
         p_ei_fc = new FC_P_EI(this,
                               I_star,
                               E,
-                              A0,p_ei);
+                              A0,p_ei,
+                              (priorValues -> P_EI_priorAlpha),
+                              (priorValues -> P_EI_priorBeta));
 
         p_ir_fc =  new FC_P_IR(this,
                              R_star,
                              I,
-                             A0,p_ir);
+                             A0,p_ir,
+                             (priorValues -> P_EI_priorAlpha),
+                             (priorValues -> P_EI_priorBeta));
 
         // Calculate Compartments
         this -> calculateS_CPU();
@@ -372,6 +376,19 @@ namespace SpatialSEIR
             this -> checkCompartmentBounds();
         }
 
+        std::cout << "S: " << S -> marginSum(3,-1) << "\n";
+        std::cout << "E: " << E -> marginSum(3,-1) << "\n";
+        std::cout << "I: " << I -> marginSum(3,-1) << "\n";
+        std::cout << "R: " << R -> marginSum(3,-1) << "\n";
+
+        std::cout << "S_star: " << S_star -> marginSum(3,-1) << "\n";
+        std::cout << "E_star: " << E_star -> marginSum(3,-1) << "\n";
+        std::cout << "I_star: " << I_star -> marginSum(3,-1) << "\n";
+        std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
+
+
+
+
         if (verbose){std::cout << "Sampling E_star\n";}
         if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
         else {E_star_fc -> sampleOCL();}
@@ -491,6 +508,7 @@ namespace SpatialSEIR
     // Method: calculateE
     // Accesses: A0, I_star, E_star, 
     // Updates: E
+
     void ModelContext::calculateE_CPU()
     {
         calculateGenericCompartment_CPU(&*(this -> E), &*(this -> A0 -> E0),
