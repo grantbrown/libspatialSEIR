@@ -375,17 +375,18 @@ namespace SpatialSEIR
         {
             this -> printFCValues();
             this -> checkCompartmentBounds();
+
+            std::cout << "S: " << S -> marginSum(3,-1) << "\n";
+            std::cout << "E: " << E -> marginSum(3,-1) << "\n";
+            std::cout << "I: " << I -> marginSum(3,-1) << "\n";
+            std::cout << "R: " << R -> marginSum(3,-1) << "\n";
+
+            std::cout << "S_star: " << S_star -> marginSum(3,-1) << "\n";
+            std::cout << "E_star: " << E_star -> marginSum(3,-1) << "\n";
+            std::cout << "I_star: " << I_star -> marginSum(3,-1) << "\n";
+            std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
-        std::cout << "S: " << S -> marginSum(3,-1) << "\n";
-        std::cout << "E: " << E -> marginSum(3,-1) << "\n";
-        std::cout << "I: " << I -> marginSum(3,-1) << "\n";
-        std::cout << "R: " << R -> marginSum(3,-1) << "\n";
-
-        std::cout << "S_star: " << S_star -> marginSum(3,-1) << "\n";
-        std::cout << "E_star: " << E_star -> marginSum(3,-1) << "\n";
-        std::cout << "I_star: " << I_star -> marginSum(3,-1) << "\n";
-        std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
 
 
 
