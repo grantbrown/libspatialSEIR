@@ -31,11 +31,11 @@ namespace SpatialSEIR
     // this struct?
     struct priorControl
     {
-        double* betaPriorPrecision;
-        double* P_EI_priorAlpha;
-        double* P_EI_priorBeta;
-        double* P_IR_priorAlpha;
-        double* P_IR_priorBeta;
+        double betaPriorPrecision;
+        double P_EI_priorAlpha;
+        double P_EI_priorBeta;
+        double P_IR_priorAlpha;
+        double P_IR_priorBeta;
     };
 
     struct sliceParameters
@@ -427,8 +427,8 @@ namespace SpatialSEIR
                     CompartmentalModelMatrix *_E,
                     InitData *_A0,
                     double *_p_ei,
-                    double *_priorAlpha,
-                    double *_priorBeta);
+                    double _priorAlpha,
+                    double _priorBeta);
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
@@ -459,8 +459,8 @@ namespace SpatialSEIR
                     CompartmentalModelMatrix *_I, 
                     InitData *_A0,
                     double *_p_ir,
-                    double *_priorAlpha,
-                    double *_priorBeta);
+                    double _priorAlpha,
+                    double _priorBeta);
             ~FC_P_IR();
             virtual int evalCPU();
             virtual int evalOCL();

@@ -12,9 +12,9 @@
 \usage{
     spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
                     Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,gamma_,
-                    priorAlpha_gamma_, priorBeta_gamma_,beta_,
-                    p_ei_,p_ir_,p_rs_,N_,outFile,logVarList,iterationStride,verboseFlag,
-                    debugFlag,sliceWidths)
+                    priorAlpha_gamma_, priorBeta_gamma_,priorAlpha_pEI_,priorBeta_pEI_,
+                    priorAlpha_pIR_,priorBeta_pIR_,beta_,p_ei_,p_ir_,p_rs_,N_,outFile,
+                    logVarList,iterationStride,verboseFlag,debugFlag,sliceWidths)
 }
 \arguments{
     \item{compMatDim}{
@@ -82,6 +82,19 @@
     }
     \item{priorBeta_gamma_}{
         Prior beta value for gamma.
+    }
+    \item{priorAlpha_pEI_}{
+        Prior alpha value for pEI.
+    }
+    \item{priorBeta_pEI_}{
+        Prior beta value for pEI.
+    }
+
+    \item{priorAlpha_pIR_}{
+        Prior alpha value for pIR.
+    }
+    \item{priorBeta_pIR_}{
+        Prior beta value for pIR.
     }
     \item{beta_}{
         Initial vector for exposure probability

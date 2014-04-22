@@ -238,14 +238,21 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     gammaFCArgs.priorAlpha = priorAlpha_gamma.begin();
     gammaFCArgs.priorBeta = priorBeta_gamma.begin();
 
-
-    double betaPrecision = 5;
     priorControl priorValues;
-    priorValues.betaPriorPrecision = &betaPrecision;
-    priorValues.P_EI_priorAlpha = priorAlpha_pEI.begin();
-    priorValues.P_EI_priorBeta = priorBeta_pEI.begin();
-    priorValues.P_IR_priorAlpha = priorAlpha_pIR.begin();
-    priorValues.P_IR_priorBeta = priorBeta_pIR.begin();
+    priorValues.betaPriorPrecision = 5;
+    priorValues.P_EI_priorAlpha = priorAlpha_pEI[0];
+    priorValues.P_EI_priorBeta = priorBeta_pEI[0];
+    priorValues.P_IR_priorAlpha = priorAlpha_pIR[0];
+    priorValues.P_IR_priorBeta = priorBeta_pIR[0];
+
+    Rcpp::Rcout << (priorValues.betaPriorPrecision) << ", " 
+                << (priorValues.P_EI_priorAlpha) << ", " 
+                << (priorValues.P_EI_priorBeta) << ", " 
+                << (priorValues.P_IR_priorAlpha) << ", " 
+                << (priorValues.P_IR_priorBeta) << "\n"; 
+
+
+
 
 
     // Gather information for the creation of the distance matrices

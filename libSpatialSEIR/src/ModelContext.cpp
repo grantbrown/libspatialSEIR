@@ -195,7 +195,7 @@ namespace SpatialSEIR
                               S_star,
                               A0,X,p_se,beta,rho,
                               *(sliceWidths -> betaWidth),
-                              *(priorValues -> betaPriorPrecision));
+                              (priorValues -> betaPriorPrecision));
 
         rho_fc = new FC_Rho(this,
                             E_star,
@@ -223,8 +223,8 @@ namespace SpatialSEIR
                              R_star,
                              I,
                              A0,p_ir,
-                             (priorValues -> P_EI_priorAlpha),
-                             (priorValues -> P_EI_priorBeta));
+                             (priorValues -> P_IR_priorAlpha),
+                             (priorValues -> P_IR_priorBeta));
 
         // Calculate Compartments
         this -> calculateS_CPU();
@@ -242,6 +242,7 @@ namespace SpatialSEIR
         this -> S_star_fc -> evalCPU();
         this -> E_star_fc -> evalCPU();
         this -> R_star_fc -> evalCPU();
+
     }
 
     int ModelContext::checkCompartmentBounds()

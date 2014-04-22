@@ -1569,8 +1569,8 @@ namespace SpatialSEIR
                      CompartmentalModelMatrix *_E,
                      InitData *_A0,
                      double *_p_ei,
-                     double *_priorAlpha,
-                     double *_priorBeta)
+                     double _priorAlpha,
+                     double _priorBeta)
     {
 
         context = new ModelContext*;
@@ -1587,8 +1587,8 @@ namespace SpatialSEIR
         *E = _E;
         *A0 = _A0;
         *p_ei = _p_ei;
-        *priorAlpha = *_priorAlpha + 1;
-        *priorBeta = *_priorBeta + 1;
+        *priorAlpha = _priorAlpha + 1;
+        *priorBeta = _priorBeta + 1;
         *value = -1.0;
 
     }
@@ -1638,7 +1638,6 @@ namespace SpatialSEIR
         double a, b;
         a = ((*I_star) -> marginSum(3, -1));
         b = ((*E) -> marginSum(3, -1)) - a;
-        std::cout << "(a,b)=("<<a<<","<<b<<")\n";
         (**p_ei) = ((*context) -> random -> beta(a+*priorAlpha, b+*priorBeta));
         return(0);
     }
@@ -1663,8 +1662,8 @@ namespace SpatialSEIR
                      CompartmentalModelMatrix *_I,
                      InitData *_A0,
                      double *_p_ir,
-                     double *_priorAlpha,
-                     double *_priorBeta)
+                     double _priorAlpha,
+                     double _priorBeta)
     {
 
         context = new ModelContext*;
@@ -1673,7 +1672,7 @@ namespace SpatialSEIR
         A0 = new InitData*;
         p_ir = new double*;
         priorAlpha = new double;
-        priorAlpha = new double;
+        priorBeta = new double;
         value = new double;
 
         *context = _context;
@@ -1681,8 +1680,8 @@ namespace SpatialSEIR
         *I = _I;
         *A0 = _A0;
         *p_ir = _p_ir;
-        *priorAlpha = *_priorAlpha + 1;
-        *priorBeta = *_priorBeta + 1;
+        *priorAlpha = _priorAlpha + 1;
+        *priorBeta = _priorBeta + 1;
         *value = -1.0;
 
     }
