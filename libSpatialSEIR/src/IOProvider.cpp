@@ -40,7 +40,7 @@ namespace SpatialSEIR
         isOpen = new bool;
         *isOpen = false;
         int i;
-        for (i = 0; i < 10; i++)
+        for (i = 0; i < 11; i++)
         {
             variableList[i] = _variableList[i];
         } 

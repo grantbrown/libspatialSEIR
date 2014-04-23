@@ -118,7 +118,17 @@ beta = c(covariates$true_fixed_beta, covariates$true_time_varying_beta)
 N = matrix(data_list[["pop"]][,2], nrow = compMatDim[1], ncol = compMatDim[2])
 outFileName = "./chainOutput_sim.txt"
 # beta, rho,gamma, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
-logFileList = c(1,1,1,1,1,1,1,1,1,0,1)
+logFileList = c(1, # beta
+                1, # rho
+                1, # gamma
+                0, # p_se
+                1, # p_ei
+                1, # p_ir
+                1, # p_rs 
+                0, # S*
+                0, # E*
+                0, # I*
+                0) # R*
 iterationStride = 50
 # S,E,R,beta,rho,gamma
 sliceWidths = c(10,10,10,10,0.5,0.5)
@@ -141,7 +151,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 }
 
 verbose = TRUE
-debug = FALSE
+debug = TRUE
 
 priorAlpha_pEI = 1;
 priorBeta_pEI = 1;
