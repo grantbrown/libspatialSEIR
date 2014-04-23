@@ -1,6 +1,7 @@
 /*Copyright 2014, Grant Brown*/
 #include <iostream>
 #include <fstream>
+#include <stdint.h>
 #include <CompartmentalModelMatrix.hpp>
 
 namespace SpatialSEIR
@@ -57,7 +58,7 @@ namespace SpatialSEIR
     }
     long unsigned int CompartmentalModelMatrix::marginSum(int margin, int slice)
     {
-        long unsigned int output = 0; 
+        int64_t output = 0; 
         int startIdx, i;
         // Rowsum
         if (margin == 1)

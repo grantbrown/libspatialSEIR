@@ -103,12 +103,12 @@ N = matrix(fluPopulation$Pop, nrow = nrow(Y), ncol = ncol(Y))
 I_star = floor(sqrt(Y))
 
 S0 = floor(0.95*N[,1]) 
-E0 = rbinom(rep(1, length(S0)), 10, 0.2)
+E0 = I_star[,1]
 I0 = floor(sqrt(Y[,1])/2)
 R0 = N[,1] - floor(S0 + E0 + I0)
 
 S_star0 = rbinom(rep(1,length(S0)), R0, 0.05)
-E_star0 = rbinom(rep(1,length(S0)), S0, 0.05)
+E_star0 = I_star[,1]
 I_star0 = rbinom(rep(1,length(S0)), E0, 0.8)
 R_star0 = rbinom(rep(1,length(S0)), I0, 0.75)
 
@@ -123,7 +123,7 @@ for (tpt in 1:ncol(R))
         I[,1] = I0 + I_star0 - R_star0
         R[,1] = R0 + R_star0 - S_star0
         S_star[,1] = rbinom(rep(1, length(S0)), R[,1], 0.05)
-        E_star[,1] = rbinom(rep(1, length(S0)), I_star[,2], 0.95)
+        E_star[,1] = rbinom(rep(1, length(S0)), I_star[,2], 1)
         # I_star fixed
         R_star[,1] = rbinom(rep(1, length(S0)), I[,1], 0.8)
     }
@@ -137,7 +137,7 @@ for (tpt in 1:ncol(R))
         S_star[,tpt] = rbinom(rep(1,length(S0)), R[,tpt], 0.05)
         if (tpt != ncol(R))
         {
-            E_star[,tpt] = rbinom(rep(1,length(S0)), I_star[,tpt+1], 0.9)
+            E_star[,tpt] = rbinom(rep(1,length(S0)), I_star[,tpt+1], 1)
             #E_star[,tpt] = I_star[,tpt+1]
         }
         else
@@ -170,6 +170,11 @@ priorBeta_gamma = 1
 #beta = c(-2,0.1,0.1)
 beta = c(0,0,0)
 
+priorAlpha_pEI = 1
+priorBeta_p_EI = 1 
+priorAlpha_pIR = 1
+priorAlpha_pIR = 1
+
 outFileName = "./chainOutput.txt"
 # beta, rho,gamma, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
 logFileList = c(1,1,1,0,1,1,1,0,0,0,0)
@@ -183,10 +188,10 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 {
     stop("Invalid Compartment Values")
 }
-
 # Output Options
 verbose = TRUE
-debug = FALSE
+debug = TRUE
+
 res = spatialSEIRInit(compMatDim,
                       xDim,
                       zDim,
@@ -209,6 +214,10 @@ res = spatialSEIRInit(compMatDim,
                       gamma,
                       priorAlpha_gamma,
                       priorBeta_gamma,
+                      priorAlpha_pEI,
+                      priorBeta_p_EI,
+                      priorAlpha_pIR,
+                      priorAlpha_pIR,
                       beta,
                       p_ei,
                       p_ir,
