@@ -32,6 +32,7 @@ namespace SpatialSEIR
     struct priorControl
     {
         double betaPriorPrecision;
+        double betaPrsPriorPrecision;
         double P_EI_priorAlpha;
         double P_EI_priorBeta;
         double P_IR_priorAlpha;
@@ -44,6 +45,7 @@ namespace SpatialSEIR
         double* E_starWidth;
         double* R_starWidth;
         double* betaWidth;
+        double* betaPrsWidth;
         double* rhoWidth;
         double* gammaWidth;
     };
@@ -317,16 +319,20 @@ namespace SpatialSEIR
             double* priorPrecision;
     };
 
-    class FC_P_RS : public ParameterFullConditional
+    class FC_Beta_P_RS : public ParameterFullConditional
     {
         public:
-            FC_P_RS(ModelContext *_context,
+            FC_Beta_P_RS(ModelContext *_context,
                     CompartmentalModelMatrix *_S_star,
                     CompartmentalModelMatrix *_R,
+                    CovariateMatrix* _X,
                     InitData *_A0,
-                    double *_p_rs
+                    double *_p_rs,
+                    double *_beta_p_rs,
+                    double _tausq,
+                    double _sliceWidth
                     );
-            ~FC_P_RS();
+            ~FC_Beta_P_RS();
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
@@ -338,8 +344,11 @@ namespace SpatialSEIR
             ModelContext **context;
             CompartmentalModelMatrix **S_star;
             CompartmentalModelMatrix **R;
+            CovariateMatrix **X;
             InitData **A0;
+            double **beta_p_rs;
             double **p_rs;
+            double* tausq;
             double* value;
             double* sliceWidth;
 

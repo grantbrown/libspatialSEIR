@@ -35,10 +35,12 @@ namespace SpatialSEIR
         R = new CompartmentalModelMatrix();
         A0 = new InitData();
         X = new CovariateMatrix();
+        X_pRS = new CovariateMatrix();
         rawDistMat = new DistanceMatrix();
         scaledDistMat = new DistanceMatrix();
         N = new int; *N = -1;
         beta = new double; *beta = -1.0;
+        betaPrs = new double; *betaPrs = -1;
         eta = new double; *eta = -1.0;
         rho = new double; *rho = 0.25;
         gamma = new double; *gamma = 1.0;
@@ -53,6 +55,7 @@ namespace SpatialSEIR
 
     void ModelContext::populate(InitData* _A0,
                                 covariateArgs* xArgs, 
+                                covariateArgs* xPrsArgs,
                                 compartmentArgs* S_starArgs,
                                 compartmentArgs* E_starArgs,
                                 compartmentArgs* I_starArgs,
@@ -61,12 +64,12 @@ namespace SpatialSEIR
                                 scaledDistanceArgs* scaledDistArgs,
                                 gammaArgs* gammaFCArgs,
                                 double* rho_, double* beta_, 
-                                double* p_ei_, double* p_ir_, double* p_rs_, 
+                                double* p_ei_, double* p_ir_, double* betaPrs_, 
                                 int* N_, sliceParameters* sliceWidths,
                                 priorControl* priorValues)
     {
         // Delete stuff that needs to be resized
-        delete N; delete beta; delete eta; delete gamma;
+        delete N; delete beta; delete eta; delete gamma; delete betaPrs;
 
         // Allocate space for the transition probabilities
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
@@ -78,7 +81,9 @@ namespace SpatialSEIR
         N = new int[(*(S_starArgs -> inRow))*(*(S_starArgs -> inCol))];                                          
         int nbeta = (*(xArgs -> inCol_x) + (*(xArgs -> inCol_z)));
         int neta = (*(xArgs -> inRow_z));
+        int nBetaPrs = *(xPrsArgs -> inCol_x);
         beta = new double[nbeta];
+        betaPrs = new double[nBetaPrs];
         eta = new double[neta];
         gamma = new double[*(S_starArgs -> inCol)];
         // Create empty compartment for calculation.
@@ -93,6 +98,13 @@ namespace SpatialSEIR
                                xArgs -> inCol_x,
                                xArgs -> inRow_z,
                                xArgs -> inCol_z); 
+
+        X_pRS -> genFromDataStream(xPrsArgs -> inData_x, 
+                                   xPrsArgs -> inData_z,
+                                   xPrsArgs -> inRow_x,
+                                   xPrsArgs -> inCol_x,
+                                   xPrsArgs -> inRow_z,
+                                   xPrsArgs -> inCol_z); 
 
         S_star -> genFromDataStream(S_starArgs -> inData,
                                     S_starArgs -> inRow,
@@ -130,7 +142,6 @@ namespace SpatialSEIR
 
         scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
 
-
         // Initialize Data
         int i;
         for (i = 0; i < nbeta; i++)
@@ -146,10 +157,13 @@ namespace SpatialSEIR
         {
             gamma[i] = (gammaFCArgs -> gamma)[i];
         }
-        for (i = 0; i < *(S -> ncol); i++)
+        std::cout << "Allocating BetaPRS:\n";
+        for (i = 0; i < nBetaPrs; i++)
         {
-            p_rs[i] = p_rs_[i];
+            betaPrs[i] = betaPrs_[i];
+            std::cout << betaPrs[i] << ",";
         }
+        std::cout << "\n";
         for (i = 0; i< (*(S -> nrow))*(*(S->ncol)); i++)
         {
             N[i] = N_[i];
@@ -210,7 +224,9 @@ namespace SpatialSEIR
                                 (gammaFCArgs -> priorBeta),
                                 *(sliceWidths -> gammaWidth));
 
-        p_rs_fc = new FC_P_RS(this,S_star,R,A0,p_rs);
+        betaPrs_fc = new FC_Beta_P_RS(this,S_star,R,X_pRS,A0,p_rs,betaPrs, 
+                                      (priorValues->betaPrsPriorPrecision), 
+                                      *(sliceWidths -> betaPrsWidth));
 
         p_ei_fc = new FC_P_EI(this,
                               I_star,
@@ -226,16 +242,18 @@ namespace SpatialSEIR
                              (priorValues -> P_IR_priorAlpha),
                              (priorValues -> P_IR_priorBeta));
 
+
+
         // Calculate Compartments
         this -> calculateS_CPU();
         this -> calculateE_CPU();
         this -> calculateI_CPU();
         this -> calculateR_CPU();
+        this -> calculateP_RS_CPU();
         this -> calculateP_SE_CPU();
-
         // Initialize FC Values        
         this -> beta_fc -> evalCPU();
-        this -> p_rs_fc -> evalCPU();
+        this -> betaPrs_fc -> evalCPU();
         this -> p_ei_fc -> evalCPU();
         this -> p_ir_fc -> evalCPU();
         this -> rho_fc -> evalCPU();
@@ -349,7 +367,7 @@ namespace SpatialSEIR
     void ModelContext::printFCValues()
     {
         beta_fc -> evalCPU();
-        p_rs_fc -> evalCPU();
+        betaPrs_fc -> evalCPU();
         p_ei_fc -> evalCPU();
         p_ir_fc -> evalCPU();
         rho_fc -> evalCPU();
@@ -359,7 +377,7 @@ namespace SpatialSEIR
         R_star_fc -> evalCPU();
         std::cout << "  FC Values:\n";
         std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
-        std::cout << "    p_rs: " << p_rs_fc ->getValue() << "\n";
+        std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
         std::cout << "    p_ei: " << p_ei_fc ->getValue() << "\n";
         std::cout << "    p_ir: " << p_ir_fc ->getValue() << "\n";
         std::cout << "    rho: " << rho_fc ->getValue() << "\n";
@@ -404,9 +422,9 @@ namespace SpatialSEIR
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
 
-        if (verbose){std::cout << "Sampling p_rs\n";}
-        if (useOCL[4] == 0){p_rs_fc -> sampleCPU();}
-        else {p_rs_fc -> sampleOCL();}
+        if (verbose){std::cout << "Sampling betaPrs\n";}
+        if (useOCL[4] == 0){betaPrs_fc -> sampleCPU();}
+        else {betaPrs_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling p_ei\n";}
         if (useOCL[5] == 0){p_ei_fc -> sampleCPU();}
@@ -420,9 +438,11 @@ namespace SpatialSEIR
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
         else {rho_fc -> sampleOCL();}
 
+        /*
         if (verbose){std::cout << "Sampling gamma\n";}
         if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
+        */
     }
 
 
@@ -751,13 +771,26 @@ namespace SpatialSEIR
                       (compStarSub -> data)[idx - numLoc];
         } 
     }
- 
-    
+  
     void ModelContext::calculateGenericCompartment_OCL(int *comp,int *comp0, 
                                                    int *compStarAdd, int *compStarSub, 
                                                    int *compStar0Add,int *compStar0Sub)
     {
         throw(-1);
+    }
+
+    // Method: calculateP_RS
+    // Accesses: betaPrs, X_pRS
+    // Updates: p_rs
+    void ModelContext::calculateP_RS_CPU()
+    {
+        int i;
+        int neta = *(X_pRS -> nrow_x);
+        X_pRS -> calculate_fixed_eta_CPU(p_rs, betaPrs);
+        for (i = 0; i < neta; i++)
+        {
+            p_rs[i] = exp(-p_rs[i]);
+        }
     }
 
     // Method: calculatePi
@@ -884,7 +917,7 @@ namespace SpatialSEIR
         delete beta_fc;
         delete rho_fc;
         delete gamma_fc;
-        delete p_rs_fc;
+        delete betaPrs_fc;
         delete p_ei_fc;
         delete p_ir_fc;
         delete S_star;
@@ -897,6 +930,8 @@ namespace SpatialSEIR
         delete R;
         delete A0;
         delete X;
+        delete X_pRS;
+        delete betaPrs;
         delete tmpContainer;
         delete rawDistMat;
         delete scaledDistMat;

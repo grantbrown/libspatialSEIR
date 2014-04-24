@@ -13,6 +13,7 @@ using namespace SpatialSEIR;
 SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP xDim,
                      SEXP zDim,
+                     SEXP xPrsDim,
                      SEXP S0_,
                      SEXP E0_,
                      SEXP I0_,
@@ -27,6 +28,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP Rstar, 
                      SEXP X_,
                      SEXP Z_,
+                     SEXP X_pRS_,
                      SEXP DistMat_,
                      SEXP rho_,
                      SEXP gamma_,
@@ -37,9 +39,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP priorAlpha_pIR_,
                      SEXP priorBeta_pIR_,
                      SEXP beta_,
+                     SEXP betaPrs_,
                      SEXP p_ei_,
                      SEXP p_ir_,
-                     SEXP p_rs_,
                      SEXP N_,
                      SEXP outFile,
                      SEXP logVarList,
@@ -53,6 +55,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::IntegerVector compartmentDimensions(compMatDim);
     Rcpp::IntegerVector covariateDimensions_x(xDim);
     Rcpp::IntegerVector covariateDimensions_z(zDim);
+    Rcpp::IntegerVector covariateDimension_pRS_x(xPrsDim);
     Rcpp::IntegerVector S0(S0_);
     Rcpp::IntegerVector E0(E0_);
     Rcpp::IntegerVector I0(I0_);
@@ -70,6 +73,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
+    Rcpp::NumericVector X_pRS(X_pRS_);
     Rcpp::NumericVector DistMat(DistMat_);
 
     Rcpp::NumericVector rho(rho_);
@@ -85,9 +89,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
 
     Rcpp::NumericVector beta(beta_);
+    Rcpp::NumericVector betaPrs(betaPrs_);
     Rcpp::NumericVector p_ei(p_ei_);
     Rcpp::NumericVector p_ir(p_ir_);
-    Rcpp::NumericVector p_rs(p_rs_);
     Rcpp::IntegerVector N(N_);
 
     Rcpp::NumericVector sliceParams(sliceWidths);
@@ -95,7 +99,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     std::string* chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
     Rcpp::IntegerVector chainOutputControl(logVarList); 
-    // logVarList: (Beta, rho,gamma,p_se,p_ei,p_ir,p_rs,S*, E*, I*, R*)
+    // logVarList: (Beta, rho,gamma,p_se,p_ei,p_ir,betaPrs,S*, E*, I*, R*)
     // Nonzero if respective variables are to be output
     Rcpp::IntegerVector chainStride(iterationStride);
     
@@ -176,14 +180,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
         Rcpp::Rcout << "Invalid gamma size!\n";
         throw(-1);
     }
-    if (p_rs.size() != compartmentDimensions[1])
+    if (sliceParams.size() != 7)
     {
-        Rcpp::Rcout << "Invalid gamma size!\n";
-        throw(-1);
-    }
-    if (sliceParams.size() != 6)
-    {
-        Rcpp::Rcout << "Slice sampling parameters must be of length 6: S*,E*,R*,beta,rho,gamma\n";
+        Rcpp::Rcout << "Slice sampling parameters must be of length 6: S*,E*,R*,beta,betaPrs,rho,gamma\n";
         throw(-1);
     }
 
@@ -205,6 +204,17 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     xArgs.inRow_z = &covariateDimensions_z[0];
     xArgs.inCol_z = &covariateDimensions_z[1];
 
+    covariateArgs xPrsArgs; 
+    xPrsArgs.inData_x = X_pRS.begin();
+    xPrsArgs.inData_z = NULL;
+    xPrsArgs.inRow_x = &covariateDimension_pRS_x[0];
+    xPrsArgs.inCol_x = &covariateDimension_pRS_x[1];
+    // Clean this up, pass values instead. 
+    int zeroVal = 0;
+    xPrsArgs.inRow_z = &zeroVal;
+    xPrsArgs.inCol_z = &zeroVal;
+
+
     // Gather information for the creation of the compartment matrices 
     
     compartmentArgs S_starArgs, E_starArgs, I_starArgs, R_starArgs;
@@ -215,8 +225,9 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     sliceParamStruct.E_starWidth = &sliceParams[1];
     sliceParamStruct.R_starWidth = &sliceParams[2];
     sliceParamStruct.betaWidth = &sliceParams[3];
-    sliceParamStruct.rhoWidth = &sliceParams[4];
-    sliceParamStruct.gammaWidth = &sliceParams[5];
+    sliceParamStruct.betaPrsWidth = &sliceParams[4];
+    sliceParamStruct.rhoWidth = &sliceParams[5];
+    sliceParamStruct.gammaWidth = &sliceParams[6];
 
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];
@@ -279,10 +290,10 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     Rcpp::Rcout << "Populating Model Context\n";
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
-    context -> populate(&A0, &xArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
+    context -> populate(&A0, &xArgs, &xPrsArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
                         rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
-                        p_rs.begin(),N.begin(),&sliceParamStruct, &priorValues);
+                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues);
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,

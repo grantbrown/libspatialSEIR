@@ -21,7 +21,7 @@ namespace SpatialSEIR
     class FC_Beta;
     class FC_P_EI;
     class FC_P_IR;
-    class FC_P_RS;
+    class FC_Beta_P_RS;
     class FC_Rho;
     class FC_Gamma;
     class InitData;
@@ -49,6 +49,7 @@ namespace SpatialSEIR
 
             void populate(InitData* _A0,
                           covariateArgs* xArgs,
+                          covariateArgs* xPrsArgs,
                           compartmentArgs* S_starArgs, 
                           compartmentArgs* E_starArgs,
                           compartmentArgs* I_starArgs,
@@ -57,7 +58,7 @@ namespace SpatialSEIR
                           scaledDistanceArgs* scaledDistArgs,
                           gammaArgs* gammaFCArgs,
                           double* rho, double* beta, 
-                          double* p_ei, double* p_ir, double* p_rs, 
+                          double* p_ei, double* p_ir, double* betaPrs, 
                           int* N, sliceParameters* sliceWidths,
                           priorControl* priorInformation);
 
@@ -132,6 +133,11 @@ namespace SpatialSEIR
             void calculateP_SE_CPU();
             void calculateP_SE_CPU(int startLoc, int startTime);
             void calculateP_SE_OCL();
+
+            // Method: calculateP_RS
+            // Accesses: betaPrs, R,S,S_star,R_star
+            // Updates: p_rs
+            void calculateP_RS_CPU();
         
             //Logic provider and utility classes
             IOProvider *fileProvider;
@@ -143,9 +149,10 @@ namespace SpatialSEIR
             FC_Beta *beta_fc;
             FC_Rho *rho_fc;
             FC_Gamma *gamma_fc;
-            FC_P_RS *p_rs_fc;
+            FC_Beta_P_RS *betaPrs_fc;
             FC_P_EI *p_ei_fc;
             FC_P_IR *p_ir_fc;
+
 
             //Data
             CompartmentalModelMatrix* S;
@@ -158,11 +165,13 @@ namespace SpatialSEIR
             CompartmentalModelMatrix* R_star;
             InitData* A0;
             CovariateMatrix* X;
+            CovariateMatrix* X_pRS;
             DistanceMatrix* rawDistMat;
             DistanceMatrix* scaledDistMat;
             CompartmentalModelMatrix* tmpContainer;
 
             double* beta;
+            double* betaPrs;
             double* rho;
             double* gamma;
             double* eta;

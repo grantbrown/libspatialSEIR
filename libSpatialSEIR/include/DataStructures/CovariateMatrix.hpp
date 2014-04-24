@@ -37,6 +37,8 @@ namespace SpatialSEIR
                                   int *inrow_x, int *incol_x,
                                   int *inrow_z, int *incol_z);
 
+            // Eta function for X only covariate structures. 
+            int calculate_fixed_eta_CPU(double *eta, double *beta);
             // Eta functions for combined (beta, gamma) vectors.
             int calculate_eta_CPU(double *eta, double *beta);
             int calculate_eta_OCL(double *eta, double *beta); 

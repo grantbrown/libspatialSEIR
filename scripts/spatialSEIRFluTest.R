@@ -30,7 +30,6 @@ fluMonthDate = lapply(fluDateParts, function(x){as.Date(paste(x[1], x[2], "01",
 fluMonthDate = as.Date(as.numeric(fluMonthDate), origin = "1970-01-01")
 
 
-
 Y = as.matrix(fluData[,-1])
 Y = Y[,order(colnames(Y))]
 Y = t(Y)
@@ -150,9 +149,15 @@ for (tpt in 1:ncol(R))
 }
 
 
+# Create covariates for predicting P_RS
+# Start with simple intercept
+
+X_betaPrs = matrix(1, nrow = ncol(S))
+betaPrs = c(2.5)
+
 xDim = dim(X)
 zDim = dim(Z)
-
+X_betaPrsDim = dim(X_betaPrs)
 compMatDim = c(nrow(S), ncol(S))
 
 DM = neighborhood
@@ -180,8 +185,8 @@ outFileName = "./chainOutput.txt"
 logFileList = c(1,1,1,0,1,1,1,0,0,0,0)
 iterationStride = 10
 
-# S,E,R,beta,rho,gamma
-sliceWidths = c(20,20,20,1,0.5,0.5)
+# S,E,R,beta,betaPrs,rho,gamma
+sliceWidths = c(20,20,20,1,1,0.5,0.5)
 
 if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     any(R<0) || any(S_star<0) || any(E_star<0) || any(R_star<0))
@@ -195,6 +200,7 @@ debug = FALSE
 res = spatialSEIRInit(compMatDim,
                       xDim,
                       zDim,
+                      X_betaPrsDim,
                       S0,
                       E0,
                       I0,
@@ -209,6 +215,7 @@ res = spatialSEIRInit(compMatDim,
                       R_star,
                       X,
                       Z,
+                      X_betaPrs,
                       DM,
                       rho,
                       gamma,
@@ -219,9 +226,9 @@ res = spatialSEIRInit(compMatDim,
                       priorAlpha_pIR,
                       priorAlpha_pIR,
                       beta,
+                      betaPrs,
                       p_ei,
                       p_ir,
-                      p_rs,
                       N,
                       outFileName, 
                       logFileList, 

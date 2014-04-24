@@ -1233,109 +1233,111 @@ namespace SpatialSEIR
      * probabilities. 
      *
      */
-    FC_P_RS::FC_P_RS(ModelContext *_context,
+    FC_Beta_P_RS::FC_Beta_P_RS(ModelContext *_context,
                      CompartmentalModelMatrix *_S_star, 
                      CompartmentalModelMatrix *_R,
+                     CovariateMatrix* _X,
                      InitData *_A0,
-                     double *_p_rs)
+                     double *_p_rs,
+                     double *_beta_p_rs,
+                     double _tausq,
+                     double _sliceWidth)
     {
 
         context = new ModelContext*;
         S_star = new CompartmentalModelMatrix*;
         R = new CompartmentalModelMatrix*;
+        X = new CovariateMatrix*;
         A0 = new InitData*;
         p_rs = new double*;
+        beta_p_rs = new double*;
+        tausq = new double;
+        sliceWidth = new double;
         value = new double;
 
         *context = _context;
         *S_star = _S_star;
+        *X = _X;
         *R = _R;
         *A0 = _A0;
         *p_rs = _p_rs;
+        *beta_p_rs = _beta_p_rs;
+        *tausq = _tausq;
+        *sliceWidth = _sliceWidth;
         *value = -1.0;
     }
-    FC_P_RS::~FC_P_RS()
+    FC_Beta_P_RS::~FC_Beta_P_RS()
     {
         delete S_star;
         delete R;
+        delete X;
+        delete beta_p_rs;
+        delete tausq;
         delete A0;
         delete p_rs;
         delete value;
+        delete sliceWidth;
         delete context;
     }
 
-    int FC_P_RS::evalCPU()
+    int FC_Beta_P_RS::evalCPU()
     {
-        *value = 0.0;
-        int i, j, tmp, compIdx;
-        int nLoc = *((*A0) -> numLocations);
+        int j;
+        double a,b;
+        int nbeta = *((*X) -> ncol_x);
         int nTpts = *((*R) -> ncol);
-        int* s_star_i_sum = new int[nTpts];
-        int* r_star_i_diff = new int[nTpts];
-        for (j =0; j<nTpts; j++)
-        {
-            s_star_i_sum[j]=0.0;
-            r_star_i_diff[j]=0.0;
-        }
+        double term1 = 0.0;
+        double term2 = 0.0;
 
-
-        for (j = 0; j < nTpts; j++)     
-        {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
-            {
-               compIdx++;
-                tmp = ((*S_star) -> data)[compIdx];
-                s_star_i_sum[j] += tmp; 
-                r_star_i_diff[j] += (((*R) -> data)[compIdx] - tmp);
-            }
-        } 
-        *value = 0;
         for (j = 0; j < nTpts; j++)
-        {
-            *value += dbeta((*p_rs)[j],1.5 + s_star_i_sum[j], 1.5 + r_star_i_diff[j]);
-        }
-       
-        delete[] s_star_i_sum;
-        delete[] r_star_i_diff;
-        return 0;
-    }
-
-    int FC_P_RS::evalOCL()
-    {
-        //NOT IMPLEMENTED
-        return -1;
-    }
-    int FC_P_RS::calculateRelevantCompartments()
-    {
-        // Not used.
-        throw(-1);
-    }
-
-    int FC_P_RS::sampleCPU()
-    {
-        int j; double a,b;
-        for (j = 0; j < *((*R) -> ncol); j++)
         {
             a = ((*S_star)-> marginSum(2,j));
             b = ((*R) -> marginSum(2,j)); 
-            //std::cout << "(a,b): (" << a << "," << b <<")\n";
-            (*p_rs)[j] = ((*context) -> random -> beta(a+1.5, b-a+1.5));
+            term1 += std::log((*p_rs)[j])*a; 
+            term1 += std::log(1 - (*p_rs)[j])*(b - a);
+        }
+        for (j = 0; j < nbeta; j++)
+        {
+            term2 -= ((*tausq)/2)*pow((*beta_p_rs)[j],2);
+        }
+        *value = term1 + term2;
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
         }
         return(0);
     }
 
-    int FC_P_RS::sampleOCL()
+    int FC_Beta_P_RS::evalOCL()
+    {
+        //NOT IMPLEMENTED
+        return -1;
+    }
+    int FC_Beta_P_RS::calculateRelevantCompartments()
+    {
+         ((*context) -> calculateP_RS_CPU());      
+         return(0);
+    }
+
+    int FC_Beta_P_RS::sampleCPU()
+    {
+        int nbeta = *((*X) -> ncol_x);
+        sampleDouble(*context, *beta_p_rs, nbeta, *sliceWidth); 
+
+        return(0);
+    }
+
+    int FC_Beta_P_RS::sampleOCL()
     {
         //NOT IMPLEMENTED
         return -1;
     }
 
-    double FC_P_RS::getValue()
+    double FC_Beta_P_RS::getValue()
     {
         return(*(this -> value));
     }
-    void FC_P_RS::setValue(double val)
+    void FC_Beta_P_RS::setValue(double val)
     {
         *(this -> value) = val;
     }
