@@ -65,10 +65,10 @@
 
 
 
-$\pi^{RS}$, $\pi^{EI}$, and $\pi^{IR}$ are easily modeled with standard prior distributions. 
-More care must be given to the development of a model for the $\left\{\pi^{SE}_{ij} \right\}$, which 
-describe the actual infection process, and must account for predictor variables as well as the 
-spatial structure of $\left\{ s_i \right\}$
+$\pi^{EI}$, and $\pi^{IR}$ are easily modeled with standard prior distributions. 
+More care must be given to the development of a model for the $\left\{\pi^{SE}_{ij} \right\}$ and $\left\{\pi^{RS}_j \right\}$, the first of
+which describes the actual infection process and must account for predictor variables as well as the 
+spatial structure of $\left\{ s_i \right\}$, and the second of which captures the diminishing immunity to particular strains of illness. 
 
 \subsection{Infection Process - CAR Model Motivation}
 
@@ -143,7 +143,23 @@ Notes:
         and correspondingly $\theta_{v_1,v_2}$
 
 \end{enumerate}
+To model the $\pi_j^{RS}$, some structure of lower than $T$ dimensions is desireable to reduce potential 
+identifiability issues. A covariate structure constructed to capture natural variation in this quantity 
+(seasonal polynomial components for example) will do nicely. Let $X(\pi_j^{RS})$ and $\beta_{\pi^{RS}}$ 
+denote the covariate vector and corresponding regression parameter estimates 
+for the j'th R to S transition probability respectively. Any number of link functions would be appropriate here.
+ 
+\begin{enumerate}
+    \item (Complimentary) Log Link \\
+    $log(\pi_j^{RS}) = -X(\pi_j^{RS}) \beta_{\pi^{RS}}$
+    \item Complimentary Log-Log Link \\
+    $log(-log(\pi_j^{RS})) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
+    \item Logit Link \\
+    $log(\frac{\pi_j^{RS}}{1-\pi_j^{RS}}) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
+\end{enumerate}
 
+For simplicity, and to parallel the covariate scale used for $\left\{\pi_{ij}^{SE} \right\}$, lets 
+use the log link (or rather, complimentary log link to keep the parameter sign easily interpretable).
 
 \section{Posterior Distribution and Full Conditionals}
 
@@ -156,9 +172,10 @@ $\{R_{ij}^*\} \sim\  binom(I_{ij}, \pi^{(IR)})$\mbreak
 \noi
 $\left\{\pi_j^{RS}  \right\} \sim (iid)\ beta(0.5, 0.5)$\mbreak 
 $\left\{\pi^{EI}  \right\} \sim beta(0.5, 0.5)$\mbreak 
-$\left\{\pi_j^{IR}  \right\} \sim beta(0.5, 0.5)$\mbreak 
+%%$\left\{\pi_j^{IR}  \right\} \sim beta(0.5, 0.5)$\mbreak 
 $\left\{ \theta_{ij}\right\} \sim \mathcal{N}(\eta_{ij}, \sigma^2_{\theta})$ \mbreak
-$\left\{ \beta \right\} \sim \mathcal{N}(0, 10) $\mbreak 
+$\left\{ \beta \right\} \sim \mathcal{N}(0, \tau^2_\beta) $\mbreak 
+$\left\{ \beta_{\pi^{RS}} \right\} \sim \mathcal{N}(0, \tau^2_{RS}) $\mbreak 
 $\sigma^2_{\theta} \sim \Gamma(\alpha_\theta, \beta_\theta)$\mbreak
 $\gamma_j \sim \Gamma(\alpha_\gamma, \beta_\gamma)$\mbreak
 $\rho \sim U(0,1)$
@@ -169,6 +186,7 @@ $E = f_E(E_0, I^*_0, E^*_0, E^*, I^*)$ \mbreak
 $I = f_I(I_0, R^*_0, I^*_0, I^*, R^*)$ \mbreak
 $R = f_R(R_0, S^*_0, R^*_0, R^*, S^*)$ \mbreak
 $\displaystyle log(\pi^{(SE)}_{ij}) = -\gamma_j-\delta_{ij}e^{\theta_{ij}} - \sum_{\left\{ l \ne i \right\}}d_{il}\delta_{il}e^{\theta_{il}}$\mbreak
+$log(\pi_j^{RS}) = -X(\pi_j^{RS}) \beta_{\pi^{RS}}$\mbreak
 $d_{il} = f(\rho, s_i, s_l)$\mbreak
 $\delta_{ij} = \frac{I_{ij}}{N_{ij}}$ \mbreak
 $\eta_{ij} = X_{ij}\beta$
@@ -188,7 +206,7 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[
     + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
             + (log(\pi(\sigma^2_{\theta})))
             + (log(\pi(\rho)))\\
-            +  \sum_{j=1}^{T} \bigg\{\frac{1}{2}log(\pi^{(RS)}_j) + \frac{1}{2}log(1-\pi^{(RS)}_j)   \bigg\} \\
+            + \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
             + (\frac{1}{2}log(\pi^{(EI)}) + \frac{1}{2}log(1-\pi^{(EI)})) \\
             + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)}))    \\
             + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\} \Bigg]\\
@@ -210,7 +228,7 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[
             + (R^*_{ij}log(\pi^{(IR)})) + (I_{ij} - R^*_{ij})log(1-\pi^{(IR)}) \Big\}\bigg\} \\
     + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
             + (log(\pi(\rho)))\\
-            +  \sum_{j=1}^{T} \bigg\{\frac{1}{2}log(\pi^{(RS)}_j) + \frac{1}{2}log(1-\pi^{(RS)}_j)   \bigg\} \\
+            +  \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
             + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
             + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)}))) \\
             + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\}\Bigg]\\
@@ -241,8 +259,8 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
             + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
             %% Rho prior
             + (log(\pi(\rho)))\\
-            %% \pi_j^{RS}
-            +  \sum_{j=1}^{T} \bigg\{\frac{1}{2}log(\pi^{(RS)}_j) + \frac{1}{2}log(1-\pi^{(RS)}_j)   \bigg\} \\
+            %% \beta_{\pi_j^{RS}}
+            + \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
             %% \pi^{EI}
             + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
             %% \pi^{IR}
@@ -254,8 +272,8 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
 \displaystyle
 = \Bigg[ 
             %% S Piece
-    \sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{S^*_{ij}\}\Big] + 
-            log(1-\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big]\Big\}\\ 
+    \sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\Big[\sum_{i=1}^n\{S^*_{ij}\}\Big] + 
+            log(1-\pi_j^{(RS)})\Big[\sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big]\Big\}\\ 
             %% E Piece
             +\sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
             (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
@@ -269,6 +287,8 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
             + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
             %% Rho prior
             + (log(\pi(\rho)))\\
+            %% \beta_{\pi_j^{RS}}
+            + \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
             %% Gamma prior
             + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\}\\
 \end{multline}
@@ -372,15 +392,14 @@ introduced for all categories.
     \end{center}
 
 
-\item{Full Conditional for $\{\pi_{j}^{(RS)}\}$}
+\item{Full Conditional for $\{\beta_{\pi_{j}^{(RS)}}\}$}
     \begin{center}
     \begin{multline}
         \displaystyle
-        log(p(\{\pi_{j}^{(RS)}\}|.))\propto\sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{S^*_{ij}\}\Big] \\
+        log(p(\{\pi_{j}^{(RS)}\}|.))\propto\sum_{j=1}^T\Big\{log(\pi_j^{(RS)})\Big[\sum_{i=1}^n\{S^*_{ij}\}\Big] \\
             \ \ \ \ + 
-            log(1-\pi_j^{(RS)})\Big[\frac{1}{2} + \sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big]\Big\}\\ 
-            \Rightarrow \pi_j^{(RS)} \sim\ (indep)\ beta(\frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{S^*_{ij}\},
-            \frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij}\} - \sum_{j=1}^T\sum_{i=1}^n\{S^*_{ij}\})
+            log(1-\pi_j^{(RS)})\Big[\sum_{i=1}^n\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big]\Big\}\\ 
+            + \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
     \end{multline}
 \end{center}
 
