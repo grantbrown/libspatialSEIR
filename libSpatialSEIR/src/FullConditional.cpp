@@ -1319,6 +1319,7 @@ namespace SpatialSEIR
         {
             a = ((*S_star)-> marginSum(2,j));
             b = ((*R) -> marginSum(2,j)); 
+            //std::cout << "(a,b): (" << a << "," << b <<")\n";
             (*p_rs)[j] = ((*context) -> random -> beta(a+1.5, b-a+1.5));
         }
         return(0);
@@ -1640,8 +1641,8 @@ namespace SpatialSEIR
         double a, b;
         a = ((*I_star) -> marginSum(3, -1));
         b = ((*E) -> marginSum(3, -1)) - a;
-        std::cout << "(a,b): (" << a << "," << b <<")\n";
-        std::cout << "(a,b): (" << a + *priorAlpha << "," << b+*priorBeta <<")\n";
+        //std::cout << "(a,b): (" << a << "," << b <<")\n";
+        //std::cout << "(a,b): (" << a + *priorAlpha << "," << b+*priorBeta <<")\n";
         (**p_ei) = ((*context) -> random -> beta(a+*priorAlpha, b+*priorBeta));
         return(0);
     }
