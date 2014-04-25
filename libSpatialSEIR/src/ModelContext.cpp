@@ -157,13 +157,10 @@ namespace SpatialSEIR
         {
             gamma[i] = (gammaFCArgs -> gamma)[i];
         }
-        std::cout << "Allocating BetaPRS:\n";
         for (i = 0; i < nBetaPrs; i++)
         {
             betaPrs[i] = betaPrs_[i];
-            std::cout << betaPrs[i] << ",";
         }
-        std::cout << "\n";
         for (i = 0; i< (*(S -> nrow))*(*(S->ncol)); i++)
         {
             N[i] = N_[i];
@@ -256,6 +253,7 @@ namespace SpatialSEIR
         this -> betaPrs_fc -> evalCPU();
         this -> p_ei_fc -> evalCPU();
         this -> p_ir_fc -> evalCPU();
+        this -> gamma_fc -> evalCPU();
         this -> rho_fc -> evalCPU();
         this -> S_star_fc -> evalCPU();
         this -> E_star_fc -> evalCPU();
@@ -361,6 +359,16 @@ namespace SpatialSEIR
                 break;
             }
         }
+        int nPrs = *(I_star -> ncol);
+        for (i = 0; i < nPrs;i++)
+        {
+            if (p_rs[i] <= 0 || p_rs[i] >= 1)
+            {
+                std::cout << "Invalid P_RS Value at Index" << i << "\n";
+                err = 1;
+            }
+        }
+
         return(err);
     }
 

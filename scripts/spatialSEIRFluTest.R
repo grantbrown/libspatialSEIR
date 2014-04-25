@@ -28,6 +28,11 @@ fluDateParts = strsplit(as.character(fluDates), "-")
 fluMonthDate = lapply(fluDateParts, function(x){as.Date(paste(x[1], x[2], "01",
                                             sep = "-"), format = "%Y-%m-%d")})
 fluMonthDate = as.Date(as.numeric(fluMonthDate), origin = "1970-01-01")
+monthVal = c()
+for (mth in strsplit(as.character(fluMonthDate), "-"))
+{
+    monthVal = c(monthVal, as.numeric(mth[2]))
+}
 
 
 Y = as.matrix(fluData[,-1])
@@ -152,9 +157,10 @@ for (tpt in 1:ncol(R))
 # Create covariates for predicting P_RS
 # Start with simple intercept
 
-X_betaPrs = matrix(1, nrow = ncol(S))
-betaPrs = c(2.5)
-
+X_betaPrs = model.matrix(~as.factor(monthVal))[,1:11]
+betaPrs = rep(0,ncol(X_betaPrs)) 
+betaPrs[1] = 2.5
+betaPrsPriorPrecision = 1
 xDim = dim(X)
 zDim = dim(Z)
 X_betaPrsDim = dim(X_betaPrs)
@@ -176,9 +182,9 @@ priorBeta_gamma = 1
 beta = c(0,0,0)
 
 priorAlpha_pEI = 1
-priorBeta_p_EI = 1 
+priorBeta_pEI = 1 
 priorAlpha_pIR = 1
-priorAlpha_pIR = 1
+priorBeta_pIR = 1
 
 outFileName = "./chainOutput.txt"
 # beta, rho,gamma, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
@@ -186,7 +192,7 @@ logFileList = c(1,1,1,0,1,1,1,0,0,0,0)
 iterationStride = 10
 
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(20,20,20,1,1,0.5,0.5)
+sliceWidths = c(50,50,50,1,1,0.5,0.5)
 
 if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     any(R<0) || any(S_star<0) || any(E_star<0) || any(R_star<0))
@@ -195,7 +201,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 }
 # Output Options
 verbose = TRUE
-debug = FALSE
+debug = TRUE
 
 res = spatialSEIRInit(compMatDim,
                       xDim,
@@ -222,11 +228,12 @@ res = spatialSEIRInit(compMatDim,
                       priorAlpha_gamma,
                       priorBeta_gamma,
                       priorAlpha_pEI,
-                      priorBeta_p_EI,
+                      priorBeta_pEI,
                       priorAlpha_pIR,
-                      priorAlpha_pIR,
+                      priorBeta_pIR,
                       beta,
                       betaPrs,
+                      betaPrsPriorPrecision,
                       p_ei,
                       p_ir,
                       N,

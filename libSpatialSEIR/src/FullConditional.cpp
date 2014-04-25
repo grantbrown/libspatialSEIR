@@ -151,7 +151,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
-            std::cout << j << "\n";
+            //std::cout << j << "\n";
             compIdx = j*nLoc - 1;
             for (i = 0; i < nLoc; i++)
             {
@@ -205,7 +205,8 @@ namespace SpatialSEIR
         int memoIdxBytes = sizeof(int)*(width+1);
         int nLoc = *(A0 -> numLocations);
         int nTpts = *(starCompartment -> ncol);
-        double l,r,y,x,x0,x0_floor;
+        double l,r,y,x0;
+        int x, x0_floor;
         
         memset(memo, 0, memoIdxBytes);
         memset(memoStored, 0, memoIdxBytes);
@@ -219,6 +220,7 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
+        int itrs;
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
@@ -244,9 +246,24 @@ namespace SpatialSEIR
                     std::cerr << "Beginning Sampling from location with 0 probability.\n"; 
                     throw(-1);
                 }
-
+                itrs = 0;
                 do 
                 {
+                    itrs ++;
+                    if (itrs > 1000000)
+                    {
+                        std::cout << "Sampling Error:\n";
+                        std::cout << "Current Value: " << (this -> getValue()) << "\n";
+                        std::cout << "Starting Value: " << y << "\n";
+                        std::cout << "(x, x0, l, r): (" << x << ", " << x0 << ", " << l  << ", " << r << ")\n";
+                        if (std::isfinite(y))
+                        {
+                            (starCompartment -> data)[compIdx] = x;
+                            (this -> setValue(memo[x-memoStart]));
+                            return(0);
+                        }
+                        throw(-1);
+                    }
                     x0 = ((context -> random -> uniform())*(r-l) + l);
                     x0_floor = std::floor(x0);
                     memoIdx = (x0_floor - memoStart);
@@ -557,7 +574,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartmentMemoized(*context,*A0,
+        this -> sampleCompartment(*context,*A0,
                                   *S_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
@@ -810,7 +827,7 @@ namespace SpatialSEIR
     }
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartmentMemoized(*context,*A0,
+        this -> sampleCompartment(*context,*A0,
                                   *E_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
@@ -1082,7 +1099,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartmentMemoized(*context,*A0,
+        this -> sampleCompartment(*context,*A0,
                                   *R_star,*sliceWidth,(*context) -> compartmentCache);
         return(0);
     }
@@ -1286,15 +1303,22 @@ namespace SpatialSEIR
         double a,b;
         int nbeta = *((*X) -> ncol_x);
         int nTpts = *((*R) -> ncol);
+        double tmp;
         double term1 = 0.0;
         double term2 = 0.0;
 
         for (j = 0; j < nTpts; j++)
         {
+            tmp = (*p_rs)[j];
+            if (tmp <= 0 || tmp >= 1)
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
             a = ((*S_star)-> marginSum(2,j));
             b = ((*R) -> marginSum(2,j)); 
-            term1 += std::log((*p_rs)[j])*a; 
-            term1 += std::log(1 - (*p_rs)[j])*(b - a);
+            term1 += std::log(tmp)*a; 
+            term1 += std::log(1 - tmp)*(b - a);
         }
         for (j = 0; j < nbeta; j++)
         {
@@ -1323,6 +1347,13 @@ namespace SpatialSEIR
     {
         int nbeta = *((*X) -> ncol_x);
         sampleDouble(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        int i;
+        std::cout << "beta p_rs:";
+        for (i = 0; i< nbeta; i++)
+        {
+            std::cout << (*beta_p_rs)[i] << ", ";
+        }
+        std::cout << "\n";
 
         return(0);
     }
