@@ -446,11 +446,10 @@ namespace SpatialSEIR
         if (useOCL[7] == 0){rho_fc -> sampleCPU();}
         else {rho_fc -> sampleOCL();}
 
-        /*
         if (verbose){std::cout << "Sampling gamma\n";}
         if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
-        */
+
     }
 
 

@@ -131,6 +131,11 @@ namespace SpatialSEIR
                                             InitData* A0, 
                                             CompartmentalModelMatrix* destCompartment,
                                             int width, double* compartmentCache); 
+            int sampleCompartmentMetropolis(ModelContext* context,
+                                  InitData* A0, 
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width, double* compartmentCache); 
+
             double* sliceWidth;
     };
 

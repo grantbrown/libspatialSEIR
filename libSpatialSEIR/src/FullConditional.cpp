@@ -296,6 +296,76 @@ namespace SpatialSEIR
 
     }
 
+    int CompartmentFullConditional::sampleCompartmentMetropolis(ModelContext* context,
+                                                                InitData* A0,
+                                                                CompartmentalModelMatrix* starCompartment,
+                                                                double width,double* cachedValues)
+    {
+        // Declare required variables
+        int i, j, compIdx;
+        int nLoc = *(A0 -> numLocations);
+        int nTpts = *(starCompartment -> ncol);
+        int x0, x1;
+        int zeroBound;
+        double initVal, newVal;
+        double initProposal, newProposal;
+        double criterion;
+        
+        // Update the relevant CompartmentalModelMatrix instances
+        this -> calculateRelevantCompartments();
+        
+        // Cache Eval Calculation
+        this -> cacheEvalCalculation(cachedValues);
+
+        // Set the "value" attribute appropriately
+        this -> evalCPU();
+   
+        int itrs;
+        // Main loop: 
+        for (j = 0; j < nTpts; j ++)
+        { 
+            //std::cout << j << "\n";
+            compIdx = j*nLoc - 1;
+            for (i = 0; i < nLoc; i++)
+            {
+                compIdx++;
+                this -> calculateRelevantCompartments(i,j); 
+                this -> evalCPU(i,j,cachedValues);
+                x0 = (starCompartment -> data)[compIdx];
+                initVal = (this -> getValue());
+                zeroBound = (x0 == 0);
+                initProposal = ((context -> random -> dpois(x0, x0+zeroBound)));
+
+                itrs = 0;
+                do 
+                {
+                    itrs ++;
+                    // Propose new value, bounded away from zero. 
+                    x1 = (context -> random -> poisson(x0 + zeroBound));
+                    (starCompartment -> data)[compIdx] = x0;
+                    this -> calculateRelevantCompartments(i,j);
+                    this -> evalCPU(i,j,cachedValues);
+                    newVal = (this->getValue());
+                    newProposal = (context -> random -> dpois(x1, x0 + zeroBound));
+                    initProposal = (context -> random -> dpois(x0, x1));
+                    criterion = (newVal - initVal) + (newProposal - initProposal) ;
+                    if (criterion >= 0)
+                    {
+                        // Accept
+                        return 0;
+                    }
+                    if (std::log((context -> random -> uniform())) < criterion)
+                    {
+                        return 0;
+                    }
+                } while (itrs < 10000);
+                std::cout << "Reached iteration limit\n";
+                throw(-1);
+            }
+        }
+        return 0;
+    }
+
 
     int ParameterFullConditional::sampleDouble(ModelContext* context,
                                        double* variable, 
@@ -574,7 +644,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentMetropolis(*context,*A0,
                                   *S_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
@@ -827,7 +897,7 @@ namespace SpatialSEIR
     }
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentMetropolis(*context,*A0,
                                   *E_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
@@ -1099,7 +1169,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartment(*context,*A0,
+        this -> sampleCompartmentMetropolis(*context,*A0,
                                   *R_star,*sliceWidth,(*context) -> compartmentCache);
         return(0);
     }

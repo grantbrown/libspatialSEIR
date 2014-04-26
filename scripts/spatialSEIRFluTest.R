@@ -181,10 +181,10 @@ priorBeta_gamma = 1
 #beta = c(-2,0.1,0.1)
 beta = c(0,0,0)
 
-priorAlpha_pEI = 1
-priorBeta_pEI = 1 
-priorAlpha_pIR = 1
-priorBeta_pIR = 1
+priorAlpha_pEI = 1000
+priorBeta_pEI = 100
+priorAlpha_pIR = 1000
+priorBeta_pIR = 100
 
 outFileName = "./chainOutput.txt"
 # beta, rho,gamma, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*

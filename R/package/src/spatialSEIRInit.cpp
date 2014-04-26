@@ -252,7 +252,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     gammaFCArgs.priorBeta = priorBeta_gamma.begin();
 
     priorControl priorValues;
-    priorValues.betaPriorPrecision = 5;
+    priorValues.betaPriorPrecision = 10;
     priorValues.P_EI_priorAlpha = priorAlpha_pEI[0];
     priorValues.P_EI_priorBeta = priorBeta_pEI[0];
     priorValues.P_IR_priorAlpha = priorAlpha_pIR[0];

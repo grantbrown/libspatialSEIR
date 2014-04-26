@@ -23,6 +23,21 @@ namespace SpatialSEIR
         boost::random::uniform_int_distribution<> udist(a,b);
         return(udist(generator));
     }
+    int RandomNumberProvider::poisson(int mu)
+    {
+        boost::random::poisson_distribution<> pdist(mu);
+        return(pdist(generator));
+    }
+    double RandomNumberProvider::dpois(int x, double mu)
+    {
+        double out = x*std::log(mu) - mu;
+        int i;
+        for (i = 1; i <= x; i++)
+        {
+            out -= std::log(i);
+        }
+        return(out);
+    }
     double* RandomNumberProvider::uniform(int n)
     {
         double* output = new double[n];
