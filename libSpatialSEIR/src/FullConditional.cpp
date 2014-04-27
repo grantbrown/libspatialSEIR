@@ -319,9 +319,6 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
-        // Metropolis proposal density: Possion with mu = width, shifted to mean
-        int itrs;
-        int accepting = 0;
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
@@ -334,36 +331,27 @@ namespace SpatialSEIR
                 this -> evalCPU(i,j,cachedValues);
                 x0 = (starCompartment -> data)[compIdx];
                 initVal = (this -> getValue());
-                accepting = 0;
-                itrs = 0;
-                do 
+  
+                // Propose new value, bounded away from zero. 
+                x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
+                (starCompartment -> data)[compIdx] = x1;
+                this -> calculateRelevantCompartments(i,j);
+                this -> evalCPU(i,j,cachedValues);
+                newVal = (this->getValue());
+                newProposal = (context -> random -> dnorm(x1, x0,width));
+                initProposal = (context -> random -> dnorm(x0, x1,width));
+                criterion = (newVal - initVal) + (initProposal - newProposal);
+                if (std::log((context -> random -> uniform())) < criterion)
                 {
-                    itrs ++;
-                    // Propose new value, bounded away from zero. 
-                    x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
-                    (starCompartment -> data)[compIdx] = x1;
-                    this -> calculateRelevantCompartments(i,j);
-                    this -> evalCPU(i,j,cachedValues);
-                    newVal = (this->getValue());
-                    newProposal = (context -> random -> dnorm(x1, x0,width));
-                    initProposal = (context -> random -> dnorm(x0, x1,width));
-                    criterion = (newVal - initVal) + (initProposal - newProposal);
-                    if (criterion >= 0)
-                    {
-                        accepting = 1;
-                    }
-                    if (std::log((context -> random -> uniform())) < criterion)
-                    {
-                        accepting = 1;
-                    }
-                } while (!accepting && itrs < 1000);
-                if (!accepting)
-                {
-                    std::cout << "Sampling Error: Acceptance Rate Too Low\n";
-                    throw(-1);
+                    // Accept new value
                 }
-                
-                
+                else
+                {
+                    // Keep Original Value
+                    (starCompartment -> data)[compIdx] = x0;
+                    this -> calculateRelevantCompartments(i,j);
+                    this -> setValue(initVal); 
+                }                
             }
         }
         return 0;
@@ -410,6 +398,53 @@ namespace SpatialSEIR
                 l = (x0 >= x ? l : x0);
                 r = (x0 < x ? r : x0);  
             } while (y >= (this -> getValue()));
+        }
+        return 0;
+    }
+
+    int ParameterFullConditional::sampleDoubleMetropolis(ModelContext* context,
+                                                         double* variable, 
+                                                         int varLen, 
+                                                         double width)
+    {
+        // Declare required variables
+        int i;
+        double x0,x1;
+        double initVal, newVal, initProposal, newProposal;
+
+        // Update the relevant CompartmentalModelMatrix instances
+        this -> calculateRelevantCompartments();
+
+        // Set the "value" attribute appropriately
+        this -> evalCPU();
+   
+        // Main loop: 
+        for (i = 0; i < varLen; i++)
+        { 
+            x0 = variable[i];
+            this -> calculateRelevantCompartments(); 
+            this -> evalCPU();
+            initVal = (this->getValue());
+
+            x1 = (context -> random -> normal(x0, width));
+            variable[i] = x1;
+            this -> calculateRelevantCompartments();
+            this -> evalCPU();
+            newVal = (this->getValue());
+            initProposal = (context->random->dnorm(x0, x1, width));
+            newProposal = (context->random->dnorm(x1, x0, width)); 
+
+            if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
+            {
+                // Accept the new value.
+            }
+            else
+            {
+                // Keep original value
+                variable[i] = x0;
+                this -> calculateRelevantCompartments();
+                this -> setValue(initVal);
+            }
         }
         return 0;
     }
@@ -1304,7 +1339,7 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDouble(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
         return(0);
     }
     int FC_Beta::sampleOCL()
@@ -1425,7 +1460,7 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::sampleCPU()
     {
         int nbeta = *((*X) -> ncol_x);
-        sampleDouble(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
         int i;
         std::cout << "beta p_rs:";
         for (i = 0; i< nbeta; i++)
@@ -1544,7 +1579,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDouble(*context, *rho, 1, *sliceWidth); 
+        sampleDoubleMetropolis(*context, *rho, 1, *sliceWidth); 
         return(0);
     }
     int FC_Rho::sampleOCL()
@@ -1661,7 +1696,7 @@ namespace SpatialSEIR
 
     int FC_Gamma::sampleCPU()
     {
-        sampleDouble(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
+        sampleDoubleMetropolis(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
         return(0);
     }
     int FC_Gamma::sampleOCL()

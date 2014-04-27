@@ -156,6 +156,11 @@ namespace SpatialSEIR
                              double* variable,
                              int varLen,
                              double width);
+            int sampleDoubleMetropolis(ModelContext* context, 
+                                       double* variable,
+                                       int varLen,
+                                       double width);
+
             double* sliceWidth;
     };
 
