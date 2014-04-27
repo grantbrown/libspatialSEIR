@@ -321,6 +321,7 @@ namespace SpatialSEIR
         this -> evalCPU();
    
         int itrs;
+        int accepting = 0;
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
         { 
@@ -335,14 +336,14 @@ namespace SpatialSEIR
                 initVal = (this -> getValue());
                 zeroBound = (x0 == 0);
                 initProposal = ((context -> random -> dpois(x0, x0+zeroBound)));
-
+                accepting = 0;
                 itrs = 0;
                 do 
                 {
                     itrs ++;
                     // Propose new value, bounded away from zero. 
                     x1 = (context -> random -> poisson(x0 + zeroBound));
-                    (starCompartment -> data)[compIdx] = x0;
+                    (starCompartment -> data)[compIdx] = x1;
                     this -> calculateRelevantCompartments(i,j);
                     this -> evalCPU(i,j,cachedValues);
                     newVal = (this->getValue());
@@ -351,16 +352,14 @@ namespace SpatialSEIR
                     criterion = (newVal - initVal) + (newProposal - initProposal) ;
                     if (criterion >= 0)
                     {
-                        // Accept
-                        return 0;
+                        accepting = 1;
                     }
                     if (std::log((context -> random -> uniform())) < criterion)
                     {
-                        return 0;
+                        accepting = 1;
                     }
-                } while (itrs < 10000);
-                std::cout << "Reached iteration limit\n";
-                throw(-1);
+                } while (!accepting);
+                
             }
         }
         return 0;
