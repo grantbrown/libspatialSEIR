@@ -73,6 +73,18 @@ E = flattenCompartment(sim_results$E)
 I = flattenCompartment(sim_results$I)
 R = flattenCompartment(sim_results$R)
 
+
+# Create basis for p_rs
+Tvals = 1:ncol(S)
+X_betaPrs = cbind(1,Tvals,sin(2*pi*(Tvals/52)), cos(2*pi*(Tvals/52)))
+X_betaPrs = X_betaPrs[(throwAwayTpts+1):ncol(Sstar),]
+X_betaPrsDim = dim(X_betaPrs)
+betaPrs = c(3, rep(0, (ncol(X_betaPrs)-1)))
+betaPrsPriorPrecision = 1
+
+
+
+
 S0 = S[,throwAwayTpts]
 E0 = E[,throwAwayTpts]
 I0 = I[,throwAwayTpts]
@@ -130,8 +142,8 @@ logFileList = c(1, # beta
                 0, # I*
                 0) # R*
 iterationStride = 50
-# S,E,R,beta,rho,gamma
-sliceWidths = c(10,10,10,10,0.5,0.5)
+# S,E,R,beta,betaPrs,rho,gamma
+sliceWidths = c(10,10,10,.1,0.1,0.01,0.01)
 
 
 # Check validity of dimensions
@@ -161,6 +173,7 @@ priorBeta_pIR = 1;
 res = spatialSEIRInit(compMatDim,
                       xDim,
                       zDim,
+                      X_betaPrsDim,
                       S0,
                       E0,
                       I0,
@@ -175,6 +188,7 @@ res = spatialSEIRInit(compMatDim,
                       Rstar,
                       X,
                       Z,
+                      X_betaPrs,
                       DM,
                       rho,
                       gamma,
@@ -185,9 +199,10 @@ res = spatialSEIRInit(compMatDim,
                       priorAlpha_pIR,
                       priorBeta_pIR,
                       beta,
+                      betaPrs,
+                      betaPrsPriorPrecision,
                       p_ei,
                       p_ir,
-                      p_rs,
                       N,
                       outFileName, 
                       logFileList, 
