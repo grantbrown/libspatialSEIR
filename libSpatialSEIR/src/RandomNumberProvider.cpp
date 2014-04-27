@@ -28,6 +28,20 @@ namespace SpatialSEIR
         boost::random::poisson_distribution<> pdist(mu);
         return(pdist(generator));
     }
+    double RandomNumberProvider::normal(double mu, double sd)
+    {
+        boost::random::normal_distribution<> ndist(mu, sd);
+        return(ndist(generator));
+    }
+    double RandomNumberProvider::dnorm(double x, double mu, double sd)
+    {
+        boost::math::normal_distribution<> ndist(mu, sd);
+        return(std::log(pdf(ndist, x))); 
+        // No way to get the log density directly with boost?
+        // I feel like this should be either an optional flag given to 
+        // the pdf non-member pdf getter or perhaps an additional non-member
+        // getter, as this is a really common need in statistical computing.  
+    }
     double RandomNumberProvider::dpois(int x, double mu)
     {
         double out = x*std::log(mu) - mu;

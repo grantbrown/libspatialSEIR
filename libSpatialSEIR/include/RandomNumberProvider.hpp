@@ -24,6 +24,9 @@
 #include<boost/random/uniform_int_distribution.hpp>
 #include<boost/random/gamma_distribution.hpp>
 #include<boost/random/poisson_distribution.hpp>
+#include<boost/random/normal_distribution.hpp>
+#include <boost/math/distributions/normal.hpp>
+
 
 
 namespace SpatialSEIR
@@ -41,6 +44,7 @@ namespace SpatialSEIR
             int uniform_int();
             int uniform_int(int a, int b);
             int poisson(int mu);
+            double normal(double mu, double sd);
             double* uniform(int n);
             double* uniform(int n, double* output);
             double gamma();
@@ -51,6 +55,7 @@ namespace SpatialSEIR
 
             //Density Functions
             double dpois(int x, double mu);
+            double dnorm(double x, double mu, double sd);
 
             ~RandomNumberProvider();
     };

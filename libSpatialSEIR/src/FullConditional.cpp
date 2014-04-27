@@ -306,7 +306,6 @@ namespace SpatialSEIR
         int nLoc = *(A0 -> numLocations);
         int nTpts = *(starCompartment -> ncol);
         int x0, x1;
-        int zeroBound;
         double initVal, newVal;
         double initProposal, newProposal;
         double criterion;
@@ -320,6 +319,7 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         this -> evalCPU();
    
+        // Metropolis proposal density: Possion with mu = width, shifted to mean
         int itrs;
         int accepting = 0;
         // Main loop: 
@@ -334,22 +334,20 @@ namespace SpatialSEIR
                 this -> evalCPU(i,j,cachedValues);
                 x0 = (starCompartment -> data)[compIdx];
                 initVal = (this -> getValue());
-                zeroBound = (x0 == 0);
-                initProposal = ((context -> random -> dpois(x0, x0+zeroBound)));
                 accepting = 0;
                 itrs = 0;
                 do 
                 {
                     itrs ++;
                     // Propose new value, bounded away from zero. 
-                    x1 = (context -> random -> poisson(x0 + zeroBound));
+                    x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
                     (starCompartment -> data)[compIdx] = x1;
                     this -> calculateRelevantCompartments(i,j);
                     this -> evalCPU(i,j,cachedValues);
                     newVal = (this->getValue());
-                    newProposal = (context -> random -> dpois(x1, x0 + zeroBound));
-                    initProposal = (context -> random -> dpois(x0, x1));
-                    criterion = (newVal - initVal) + (newProposal - initProposal) ;
+                    newProposal = (context -> random -> dnorm(x1, x0,width));
+                    initProposal = (context -> random -> dnorm(x0, x1,width));
+                    criterion = (newVal - initVal) + (initProposal - newProposal);
                     if (criterion >= 0)
                     {
                         accepting = 1;
@@ -358,7 +356,13 @@ namespace SpatialSEIR
                     {
                         accepting = 1;
                     }
-                } while (!accepting);
+                } while (!accepting && itrs < 1000);
+                if (!accepting)
+                {
+                    std::cout << "Sampling Error: Acceptance Rate Too Low\n";
+                    throw(-1);
+                }
+                
                 
             }
         }
@@ -509,10 +513,12 @@ namespace SpatialSEIR
         int j, tmp, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
+        double prs_j;
 
         compIdx = startLoc + startTime*nLoc;
         for (j = startTime; j < nTpts; j++)
         {
+            prs_j = (*p_rs)[j];
             tmp = ((*S_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*R) -> data)[compIdx] ||
                     ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
@@ -522,8 +528,8 @@ namespace SpatialSEIR
             }
             else
             {
-                cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp +
-                               std::log(1-(*p_rs)[j])*(((*R)->data)[compIdx] - tmp) +
+                cachedValues[compIdx] = (std::log(prs_j)*tmp +
+                               std::log(1-prs_j)*(((*R)->data)[compIdx] - tmp) +
                                std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
             }
             compIdx += nLoc;
@@ -539,11 +545,13 @@ namespace SpatialSEIR
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
         double term1, term2, term3;
+        double prs_j;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
         compIdx = 0;
         for (j = 0; j < nTpts; j++)     
         {
             compIdx = j*nLoc - 1;
+            prs_j = (*p_rs)[j];
             for (i = 0; i < nLoc; i++)    
             {
                 compIdx++;
@@ -557,8 +565,8 @@ namespace SpatialSEIR
                     return(-1);
                 }
 
-                term1 += std::log((*p_rs)[j])*tmp; 
-                term2 += std::log(1-(*p_rs)[j])*(((*R) -> data)[compIdx] - tmp);
+                term1 += std::log(prs_j)*tmp; 
+                term2 += std::log(1-prs_j)*(((*R) -> data)[compIdx] - tmp);
                 term3 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]) ;
             }
         } 
@@ -578,10 +586,12 @@ namespace SpatialSEIR
         int err = 0;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
+        double prs_j;
 
         compIdx = startLoc + startTime*nLoc;
         for (j = startTime; j < nTpts; j++)
         {
+            prs_j = (*p_rs)[j];
             tmp = ((*S_star) -> data)[compIdx];
             if (tmp < 0 || tmp > ((*R) -> data)[compIdx] ||
                     ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
@@ -591,8 +601,8 @@ namespace SpatialSEIR
             }
             else
             {
-                cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp + 
-                               std::log(1-(*p_rs)[j])*(((*R)->data)[compIdx] - tmp) +
+                cachedValues[compIdx] = (std::log(prs_j)*tmp + 
+                               std::log(1-prs_j)*(((*R)->data)[compIdx] - tmp) +
                                std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
             }
             compIdx += nLoc;
