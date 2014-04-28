@@ -54,6 +54,43 @@ namespace SpatialSEIR
         return(this->R->marginSum(2,tpt));
     }
 
+    double ModelContext::avgP_SE()
+    {
+        double out = 0.0;
+        int numVals = (*(S->nrow))*(*(S->ncol));
+        int i;
+        for (i = 0; i < numVals; i ++)
+        {
+            out += p_se[i];
+        }
+        return(out/numVals);
+    }
+
+    double ModelContext::avgP_SE(int tpt)
+    {
+        double out = 0.0;
+        int numLoc = *(S->nrow);
+        int startVal = numLoc*tpt; 
+        int i;
+        for (i = 0; i < numLoc; i ++)
+        {
+            out += p_se[startVal + i];
+        }
+        return(out/numLoc);
+    }
+
+    double ModelContext::avgP_RS()
+    {
+        int numTpt = *(S->nrow);
+        int i;
+        double out = 0.0;
+        for (i = 0; i< numTpt; i++)
+        {
+            out += p_rs[i];
+        }
+        return(out/numTpt);
+    }
+
 
 
 

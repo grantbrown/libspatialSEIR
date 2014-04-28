@@ -151,14 +151,12 @@ namespace SpatialSEIR
             int totalR(int tpt);
 
             double avgP_SE();
-            double avgP_EI();
-            double avgP_IR();
             double avgP_RS();
 
             double avgP_SE(int tpt);
-            double avgP_EI(int tpt);
-            double avgP_IR(int tpt);
-            double avgP_RS(int tpt);
+
+
+
 
 
 
