@@ -138,7 +138,30 @@ namespace SpatialSEIR
             // Accesses: betaPrs, R,S,S_star,R_star
             // Updates: p_rs
             void calculateP_RS_CPU();
-        
+
+            // Summary Functions:
+            int totalS();
+            int totalE();
+            int totalI();
+            int totalR();
+
+            int totalS(int tpt);
+            int totalE(int tpt);
+            int totalI(int tpt);
+            int totalR(int tpt);
+
+            double avgP_SE();
+            double avgP_EI();
+            double avgP_IR();
+            double avgP_RS();
+
+            double avgP_SE(int tpt);
+            double avgP_EI(int tpt);
+            double avgP_IR(int tpt);
+            double avgP_RS(int tpt);
+
+
+
             //Logic provider and utility classes
             IOProvider *fileProvider;
             RandomNumberProvider *random;
