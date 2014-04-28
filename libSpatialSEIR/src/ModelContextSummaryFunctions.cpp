@@ -54,6 +54,42 @@ namespace SpatialSEIR
         return(this->R->marginSum(2,tpt));
     }
 
+    int ModelContext::totalS_star()
+    {
+        return(this->S_star->marginSum(3,-1));
+    }
+    int ModelContext::totalE_star()
+    {
+        return(this->E_star->marginSum(3,-1));
+    }
+    int ModelContext::totalI_star()
+    {
+        return(this->I_star->marginSum(3,-1));
+    }
+    int ModelContext::totalR_star()
+    {
+        return(this->R_star->marginSum(3,-1));
+    }
+
+    int ModelContext::totalS_star(int tpt)
+    {
+        return(this->S_star->marginSum(2,tpt));
+    }
+    int ModelContext::totalE_star(int tpt)
+    {
+        return(this->E_star->marginSum(2,tpt));
+    }
+    int ModelContext::totalI_star(int tpt)
+    {
+        return(this->I_star->marginSum(2,tpt));
+    }
+    int ModelContext::totalR_star(int tpt)
+    {
+        return(this->R_star->marginSum(2,tpt));
+    }
+
+
+
     double ModelContext::avgP_SE()
     {
         double out = 0.0;

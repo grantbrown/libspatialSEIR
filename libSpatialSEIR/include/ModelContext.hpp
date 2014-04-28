@@ -150,6 +150,16 @@ namespace SpatialSEIR
             int totalI(int tpt);
             int totalR(int tpt);
 
+            int totalS_star();
+            int totalE_star();
+            int totalI_star();
+            int totalR_star();
+
+            int totalS_star(int tpt);
+            int totalE_star(int tpt);
+            int totalI_star(int tpt);
+            int totalR_star(int tpt);
+
             double avgP_SE();
             double avgP_RS();
 

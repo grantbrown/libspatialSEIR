@@ -163,6 +163,135 @@ namespace SpatialSEIR
                 }
             }
         }
+        if (variableList[11] != 0)
+        {
+            // Write S total Header
+            (*outFileStream) << "S_Total,";
+        }
+        if (variableList[12] != 0)
+        {
+            // Write E total Header
+            (*outFileStream) << "E_Total,";
+        }
+        if (variableList[13] != 0)
+        {
+            // Write I total Header
+            (*outFileStream) << "I_Total,";
+        }
+        if (variableList[14] != 0)
+        {
+            // Write R total Header
+            (*outFileStream) << "R_Total,";
+        }
+        if (variableList[15] != 0)
+        {
+            // Write S_star total Header
+            (*outFileStream) << "S_star_Total,";
+        }
+        if (variableList[16] != 0)
+        {
+            // Write E_star total Header
+            (*outFileStream) << "E_star_Total,";
+        }
+        if (variableList[17] != 0)
+        {
+            // Write I_star total Header
+            (*outFileStream) << "I_star_Total,";
+        }
+        if (variableList[18] != 0)
+        {
+            // Write R_star total Header
+            (*outFileStream) << "R_star_Total,";
+        }
+        if (variableList[19] != 0)
+        {
+            // Write average p_se header
+            (*outFileStream) << "avgP_se,";
+        }
+        if (variableList[20] != 0)
+        {
+            // Write average p_se header
+            (*outFileStream) << "avgP_rs,";
+        }
+
+
+    
+        // Time specific
+
+        if (variableList[21] != 0)
+        {
+            // Write S total Header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "S_Total_" << j << ",";
+            }
+        }
+        if (variableList[22] != 0)
+        {
+            // Write E total Header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "E_Total_" << j << ",";
+            }
+        }
+        if (variableList[23] != 0)
+        {
+            // Write I total Header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "I_Total_" << j << ",";
+            }
+        }
+        if (variableList[24] != 0)
+        {
+            // Write R total Header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "R_Total_" << j << ",";
+            }
+        }
+        if (variableList[25] != 0)
+        {
+            // Write S_star total Header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "S_star_Total_" << j << ",";
+            }
+        }
+        if (variableList[26] != 0)
+        {
+            // Write E_star total Header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "E_star_Total_" << j << ",";
+            }
+        }
+        if (variableList[27] != 0)
+        {
+            // Write I_star total Header            
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "I_star_Total_" << j << ",";
+            }
+        }
+        if (variableList[28] != 0)
+        {
+            // Write R_star total Header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "R_star_Total_" << j << ",";
+            }
+        }
+        if (variableList[29] != 0)
+        {
+            // Write average p_se header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "avgP_se_" << j << ",";
+            }
+        }
+
+
         (*outFileStream) << "Iteration,Time\n";
         // Write iteration number
         //Newline
@@ -218,19 +347,19 @@ namespace SpatialSEIR
 
         if (variableList[4] != 0)
         {
-            // Write p_ei header
+            // Write p_ei 
             (*outFileStream) << *((*context) -> p_ei) << ",";
         }
 
         if (variableList[5] != 0)
         {
-            // Write p_ir header
+            // Write p_ir 
             (*outFileStream) << *((*context) -> p_ir) << ",";
 
         }
         if (variableList[6] != 0)
         {
-            // Write p_rs header
+            // Write p_rs 
             for (j = 0; j < nTpt; j++)
             {
                 (*outFileStream) << ((*context)->p_rs)[j] << ",";
@@ -240,7 +369,7 @@ namespace SpatialSEIR
 
         if (variableList[7] != 0)
         {
-            // Write S* header
+            // Write S* 
             for (i = 0; i < nTpt*nLoc; i++)
             {
                 (*outFileStream) << ((*context) -> S_star -> data)[i] << ",";
@@ -249,7 +378,7 @@ namespace SpatialSEIR
 
         if (variableList[8] != 0)
         {
-            // Write E* header
+            // Write E* 
             for (i = 0; i < nTpt*nLoc; i++)
             {
                 (*outFileStream) << ((*context) -> E_star -> data)[i] << ",";
@@ -257,7 +386,7 @@ namespace SpatialSEIR
         }
         if (variableList[9] != 0)
         {
-            // Write I* header
+            // Write I* 
             for (i = 0; i < nTpt*nLoc; i++)
             {
                 (*outFileStream) << ((*context) -> I_star -> data)[i] << ",";
@@ -265,12 +394,141 @@ namespace SpatialSEIR
         }
         if (variableList[10] != 0)
         {
-            // Write R* header
+            // Write R* 
             for (i = 0; i < nTpt*nLoc; i++)
             {
                 (*outFileStream) << ((*context) -> R_star -> data)[i] << ",";
             }
         }
+
+        if (variableList[11] != 0)
+        {
+            // Write S total 
+            (*outFileStream) << (*context) -> totalS() << ",";
+        }
+        if (variableList[12] != 0)
+        {
+            // Write E total 
+            (*outFileStream) << (*context) -> totalE() <<",";
+        }
+        if (variableList[13] != 0)
+        {
+            // Write I total 
+            (*outFileStream) << (*context) -> totalI() << ",";
+        }
+        if (variableList[14] != 0)
+        {
+            // Write R total 
+            (*outFileStream) << (*context) -> totalR() << ",";
+        }
+        if (variableList[15] != 0)
+        {
+            // Write S_star total 
+            (*outFileStream) << (*context) -> totalS_star() << ",";
+        }
+        if (variableList[16] != 0)
+        {
+            // Write E_star total 
+            (*outFileStream) << (*context) -> totalE_star() << ",";
+        }
+        if (variableList[17] != 0)
+        {
+            // Write I_star total 
+            (*outFileStream) << (*context) -> totalI_star() << ",";
+        }
+        if (variableList[18] != 0)
+        {
+            // Write R_star total 
+            (*outFileStream) << (*context) -> totalR_star() << ",";
+        }
+        if (variableList[19] != 0)
+        {
+            // Write average p_se 
+            (*outFileStream) << (*context) -> avgP_SE() << ",";
+        }
+        if (variableList[20] != 0)
+        {
+            // Write average p_se 
+            (*outFileStream) << (*context) -> avgP_RS() << ",";
+        }
+
+
+    
+        // Time specific
+
+        if (variableList[21] != 0)
+        {
+            // Write S total 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalS(j) << ",";
+            }
+        }
+        if (variableList[22] != 0)
+        {
+            // Write E total 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalE(j) << ",";
+            }
+        }
+        if (variableList[23] != 0)
+        {
+            // Write I total 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalI(j) << ",";
+            }
+        }
+        if (variableList[24] != 0)
+        {
+            // Write R total 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalR(j) << ",";
+            }
+        }
+        if (variableList[25] != 0)
+        {
+            // Write S_star total 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalS_star(j) << ",";
+            }
+        }
+        if (variableList[26] != 0)
+        {
+            // Write E_star total 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalE_star(j) << ",";
+            }
+        }
+        if (variableList[27] != 0)
+        {
+            // Write I_star total             
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalI_star(j) << ",";
+            }
+        }
+        if (variableList[28] != 0)
+        {
+            // Write R_star total 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> totalR_star(j) << ",";
+            }
+        }
+        if (variableList[29] != 0)
+        {
+            // Write average p_se 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> avgP_SE(j) << ",";
+            }
+        }
+
         (*outFileStream) << iteration << "," << difftime(time(&*timer), *startTime)  <<"\n";
         outFileStream -> flush();
         return(0);
