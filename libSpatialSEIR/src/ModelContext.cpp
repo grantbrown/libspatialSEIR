@@ -45,6 +45,7 @@ namespace SpatialSEIR
         rho = new double; *rho = 0.25;
         gamma = new double; *gamma = 1.0;
         fileProvider = new IOProvider();
+        isPopulated = new int; *isPopulated = 0;
     }
 
     void ModelContext::setRandomSeed(unsigned int seedValue)
@@ -260,6 +261,7 @@ namespace SpatialSEIR
         this -> E_star_fc -> evalCPU();
         this -> R_star_fc -> evalCPU();
 
+        *isPopulated = 1;
     }
 
     int ModelContext::checkCompartmentBounds()
@@ -918,6 +920,7 @@ namespace SpatialSEIR
 
     ModelContext::~ModelContext()
     {
+        delete isPopulated;
         delete fileProvider;
         delete random;
         delete S_star_fc;

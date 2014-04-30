@@ -212,7 +212,8 @@ namespace SpatialSEIR
             double* p_ei;
             double* p_ir;
             double* p_rs;
-            int* N;// Matrix?
+            int* N;
+            int* isPopulated;
     };
 }
 #endif

@@ -63,9 +63,43 @@ class spatialSEIRInterface
                      SEXP verboseFlag,
                      SEXP debugFlag,
                      SEXP sliceWidths);
+        // Simulation Functions
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);
+
+        // Calculation Functions
         virtual int printDebugInfo();
+        virtual int calculateS();
+        virtual int calculateE();
+        virtual int calculateI();
+        virtual int calculateR();
+        virtual int calculateP_SE(); 
+        virtual int calculateP_RS();
+        
+        // Property Getter Functions
+        // (All of this stuff is read only, should 
+        // be changed only by calls to libspatialSEIR)
+        
+        virtual Rcpp::IntegerMatrix getS();
+        virtual Rcpp::IntegerMatrix getE();
+        virtual Rcpp::IntegerMatrix getI();
+        virtual Rcpp::IntegerMatrix getR();
+
+        virtual Rcpp::IntegerMatrix getS_star();
+        virtual Rcpp::IntegerMatrix getE_star();
+        virtual Rcpp::IntegerMatrix getI_star();
+        virtual Rcpp::IntegerMatrix getR_star();
+
+        virtual Rcpp::NumericMatrix getP_SE();
+        virtual Rcpp::NumericVector getP_EI();
+        virtual Rcpp::NumericVector getP_IR();
+        virtual Rcpp::NumericVector getP_RS();
+        virtual Rcpp::NumericVector getGamma();
+        virtual Rcpp::NumericVector getBeta();
+        virtual Rcpp::NumericVector getBetaP_RS();
+        virtual Rcpp::NumericVector getRho();
+ 
+        //Destructor
         ~spatialSEIRInterface();
 };
 
@@ -85,6 +119,245 @@ int spatialSEIRInterface::printDebugInfo()
     Rcpp::Rcout << *(context -> S -> nrow) << ", " << *(context -> S -> ncol) << "\n";
     return(0);
 }
+
+int spatialSEIRInterface::calculateS()
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateS_CPU());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate S on non-populated ModelContext.\n";
+    return(-1);
+}
+int spatialSEIRInterface::calculateE()
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateE_CPU());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate E on non-populated ModelContext.\n";
+    return(-1);
+}
+int spatialSEIRInterface::calculateI()
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateI_CPU());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate I on non-populated ModelContext.\n";
+    return(-1);
+}
+int spatialSEIRInterface::calculateR()
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateR_CPU());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate R on non-populated ModelContext.\n";
+    return(-1);
+}
+int spatialSEIRInterface::calculateP_SE() 
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateP_SE_CPU());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
+    return(-1);
+}
+int spatialSEIRInterface::calculateP_RS()
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateP_RS_CPU());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate P_RS on non-populated ModelContext.\n";
+    return(-1);
+}
+
+Rcpp::IntegerMatrix spatialSEIRInterface::getS()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->S->data)[i];
+    }
+    return(output);
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getE()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->E->data)[i];
+    }
+    return(output);
+
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getI()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->I->data)[i];
+    }
+    return(output);
+
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getR()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->R->data)[i];
+    }
+    return(output);
+
+}
+
+Rcpp::IntegerMatrix spatialSEIRInterface::getS_star()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->S_star->data)[i];
+    }
+    return(output);
+
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getE_star()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->E_star->data)[i];
+    }
+    return(output);
+
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getI_star()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->I_star->data)[i];
+    }
+    return(output);
+
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getR_star()
+{
+    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->R_star->data)[i];
+    }
+    return(output);
+
+}
+
+Rcpp::NumericMatrix spatialSEIRInterface::getP_SE()
+{
+    Rcpp::NumericMatrix output(*(context->S->nrow), *(context->S->ncol));
+    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->p_se)[i];
+    }
+    return(output);
+
+}
+Rcpp::NumericVector spatialSEIRInterface::getP_RS()
+{
+    Rcpp::NumericVector output(*(context->S->ncol));
+    int i;
+    int numVals = (*(context->S->ncol));
+    for (i = 0; i < numVals; i++) 
+    {
+        output[i] = (context->p_rs)[i]; 
+    }
+    return(output);
+}
+Rcpp::NumericVector spatialSEIRInterface::getGamma()
+{
+    Rcpp::NumericVector output(*(context->S->ncol));
+    int i;
+    int numVals = (*(context->S->ncol));
+    for (i = 0; i < numVals; i++) 
+    {
+        output[i] = (context->gamma)[i]; 
+    }
+    return(output);
+}
+Rcpp::NumericVector spatialSEIRInterface::getBeta()
+{
+    Rcpp::NumericVector output(*(context->S->ncol));
+    int i;
+    int numVals = (((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
+    for (i = 0; i < numVals; i++) 
+    {
+        output[i] = (context->beta)[i]; 
+    }
+    return(output);
+
+}
+Rcpp::NumericVector spatialSEIRInterface::getBetaP_RS()
+{
+    Rcpp::NumericVector output(*(context->S->ncol));
+    int i;
+    int numVals = (*(context->X_pRS->ncol_x));
+    for (i = 0; i < numVals; i++) 
+    {
+        output[i] = (context->betaPrs)[i]; 
+    }
+    return(output);
+}
+Rcpp::NumericVector spatialSEIRInterface::getP_EI()
+{
+    Rcpp::NumericVector output(1);
+    output[0] = *(context->p_ei); 
+    return(output);
+}
+
+
+Rcpp::NumericVector spatialSEIRInterface::getP_IR()
+{
+    Rcpp::NumericVector output(1);
+    output[0] = *(context->p_ir); 
+    return(output);
+}
+
+
+Rcpp::NumericVector spatialSEIRInterface::getRho()
+{
+    Rcpp::NumericVector output(1);
+    output[0] = *(context->rho); 
+    return(output);
+}
+
 
 spatialSEIRInterface::spatialSEIRInterface()
 {
@@ -406,6 +679,7 @@ spatialSEIRInterface::~spatialSEIRInterface()
     delete debug;
 }
 
+
 RCPP_MODULE(mod_spatialSEIRInterface)
 {
     using namespace Rcpp;
@@ -417,6 +691,23 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("printDebugInfo", &spatialSEIRInterface::printDebugInfo)
     .method("setRandomSeed", &spatialSEIRInterface::setRandomSeed)
     .method("simulate", &spatialSEIRInterface::simulate)
+    .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
+    .property("E", &spatialSEIRInterface::getS, "Exposed Compartment Matrix")
+    .property("I", &spatialSEIRInterface::getS, "Infectious Compartment Matrix")
+    .property("R", &spatialSEIRInterface::getS, "Removed Compartment Matrix")
+    .property("S_star", &spatialSEIRInterface::getS_star, "Removed to Susceptible Transition Matrix")
+    .property("E_star", &spatialSEIRInterface::getS_star, "Susceptible to Exposed Transition Matrix")
+    .property("I_star", &spatialSEIRInterface::getS_star, "Exposed to Infectious Transition Matrix")
+    .property("R_star", &spatialSEIRInterface::getS_star, "Infectious to Removed Transition Matrix")
+    .property("p_se", &spatialSEIRInterface::getP_SE, "Exposure Probability Matrix")
+    .property("p_ei", &spatialSEIRInterface::getP_EI, "E to I Transition Probability")
+    .property("p_ir", &spatialSEIRInterface::getP_IR, "I to R Transition Probability")
+    .property("p_rs", &spatialSEIRInterface::getP_RS, "R-S Transition Probability Vector")
+    .property("gamma", &spatialSEIRInterface::getGamma, "External Infection Component Vector")
+    .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
+    .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
+    .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
+
     ;
 }
 
