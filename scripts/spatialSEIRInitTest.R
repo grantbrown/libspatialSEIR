@@ -164,7 +164,7 @@ logFileList = c(1, # beta
 
 
 
-iterationStride = 50
+iterationStride = 10
 # S,E,R,beta,betaPrs,rho,gamma
 sliceWidths = c(3,3,3,.01,0.01,0.01,0.01)
 
@@ -186,7 +186,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 }
 
 verbose = TRUE
-debug = TRUE
+debug = FALSE
 
 priorAlpha_pEI = 1;
 priorBeta_pEI = 1;
@@ -238,7 +238,7 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
-for (i in 1:10000)
+for (i in 1:100000)
 {
     res$simulate(1)
 }

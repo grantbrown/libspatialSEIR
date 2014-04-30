@@ -474,16 +474,18 @@ namespace SpatialSEIR
             }
             this -> simulationIter(&*useOCL, verbose, debug);
             this -> fileProvider -> catIter(i);
-            (*numIterations)++;
+            (*numIterations) = (*numIterations + 1);
         }
-
     }
 
     void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false, bool debug = false)
     {
-        int i;
         int useOCL[9] = {0};
-        for (i = 0; i < nIterations; i++)
+        std::cout << "Running Simulation\n";
+        int i;
+        int itrStart = *numIterations;
+        int itrMax = nIterations + (*numIterations);
+        for (i = itrStart; i < itrMax; i++)
         {
             if (verbose)
             {
@@ -491,7 +493,9 @@ namespace SpatialSEIR
             }
             this -> simulationIter(&*useOCL, verbose, debug);
             this -> fileProvider -> catIter(i);
+            (*numIterations) = (*numIterations + 1);
         }
+
     }
 
     // Method: calculateS
