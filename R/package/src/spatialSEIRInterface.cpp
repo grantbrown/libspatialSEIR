@@ -401,6 +401,7 @@ spatialSEIRInterface::~spatialSEIRInterface()
 
 RCPP_MODULE(mod_spatialSEIRInterface)
 {
+    using namespace Rcpp;
     class_<spatialSEIRInterface>( "spatialSEIRInterface" )
 
     .constructor()

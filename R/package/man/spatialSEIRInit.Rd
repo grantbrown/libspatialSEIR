@@ -10,11 +10,12 @@
     final library wrapper will be provided when the C++ library actually works. 
 }
 \usage{
-    spatialSEIRInit(compMatDim,xDim,zDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
-                    Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,DistMat_,rho_,gamma_,
+    spatialSEIRInit(compMatDim,xDim,zDim,xPrsDim,S0_,E0_,I0_,R0_,Sstar0,Estar0,Istar0,
+                    Rstar0,Sstar, Estar,Istar,Rstar,X_,Z_,X_pRS_,DistMat_,rho_,gamma_,
                     priorAlpha_gamma_, priorBeta_gamma_,priorAlpha_pEI_,priorBeta_pEI_,
-                    priorAlpha_pIR_,priorBeta_pIR_,beta_,p_ei_,p_ir_,p_rs_,N_,outFile,
-                    logVarList,iterationStride,verboseFlag,debugFlag,sliceWidths)
+                    priorAlpha_pIR_,priorBeta_pIR_,beta_,betaPrs_,betaPrsPriorPrecision_,
+                    p_ei_,p_ir_,N_,outFile,logVarList,iterationStride,verboseFlag,
+                    debugFlag,sliceWidths)
 }
 \arguments{
     \item{compMatDim}{
@@ -25,6 +26,9 @@
     }
     \item{zDim}{
         Dimension (row column) of the time varying covariate matrix Z
+    }
+    \item{xPrsDim}{
+        Dimension (row column) of the covariate matrix for the R to S transitions. Must have T rows. 
     }
     \item{S0_}{
         Initial vector for S
@@ -68,6 +72,9 @@
     \item{Z_}{
         Time varying covariate data
     }
+    \item{X_pRS_}{
+         The covariate matrix for the R to S transitions. Must have T rows.  
+    }
     \item{DistMat_}{
         Raw distance matrix. 
     }
@@ -89,7 +96,6 @@
     \item{priorBeta_pEI_}{
         Prior beta value for pEI.
     }
-
     \item{priorAlpha_pIR_}{
         Prior alpha value for pIR.
     }
@@ -99,14 +105,17 @@
     \item{beta_}{
         Initial vector for exposure probability
     }
+    \item{betaPrs_}{
+        Initial values for regression parameters on R-S transition. (length = ncol(X_pRS_))
+    }
+    \item{betaPrsPriorPrecision_}{
+        Prior precision for the betaPrs_ terms.
+    }
     \item{p_ei_}{
         Initial value for exposed to infectious probability.
     }
     \item{p_ir_}{
         Initial value for infectious to recovered probability.
-    }
-    \item{p_rs_}{
-        Initial vector for recovered to susceptible probability.
     }
     \item{N_}{
         Population sizes at each spatial location (currently fixed)
@@ -129,14 +138,6 @@
     \item{sliceWidths}{
         Slice sampling tuning parameters for the slice sampling variables.
     }
-
-
-
-
-
-
-
-
 }
 \author{
     Grant Brown
