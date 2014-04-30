@@ -166,7 +166,7 @@ logFileList = c(1, # beta
 
 iterationStride = 10
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(3,3,3,.01,0.01,0.01,0.01)
+sliceWidths = c(3,3,3,1e-4,1e-4,1e-4,1e-4)
 
 
 # Check validity of dimensions
@@ -238,8 +238,15 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
-for (i in 1:100000)
-{
-    res$simulate(1)
-}
+tryCatch({
+    for (i in 1:100000)
+    {
+        res$simulate(1)
+        Sys.sleep(0.001)
+    }}, 
+    interrupt = function(interrupt)
+    {
+        cat("Exiting...\n")
+})
+
 
