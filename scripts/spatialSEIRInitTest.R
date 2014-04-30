@@ -238,6 +238,8 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
-res$simulate(10)
-
+for (i in 1:10000)
+{
+    res$simulate(1)
+}
 

@@ -46,6 +46,7 @@ namespace SpatialSEIR
         gamma = new double; *gamma = 1.0;
         fileProvider = new IOProvider();
         isPopulated = new int; *isPopulated = 0;
+        numIterations = new int; *numIterations = 0;
     }
 
     void ModelContext::setRandomSeed(unsigned int seedValue)
@@ -463,7 +464,9 @@ namespace SpatialSEIR
     {
         std::cout << "Running Simulation\n";
         int i;
-        for (i = 0; i < nIterations; i++)
+        int itrStart = *numIterations;
+        int itrMax = nIterations + (*numIterations);
+        for (i = itrStart; i < itrMax; i++)
         {
             if (verbose)
             {
@@ -471,6 +474,7 @@ namespace SpatialSEIR
             }
             this -> simulationIter(&*useOCL, verbose, debug);
             this -> fileProvider -> catIter(i);
+            (*numIterations)++;
         }
 
     }
@@ -921,6 +925,7 @@ namespace SpatialSEIR
     ModelContext::~ModelContext()
     {
         delete isPopulated;
+        delete numIterations;
         delete fileProvider;
         delete random;
         delete S_star_fc;
