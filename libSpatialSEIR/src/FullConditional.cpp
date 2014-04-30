@@ -1312,10 +1312,12 @@ namespace SpatialSEIR
                 term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
             }
         } 
+
         for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
         {
             term3 -= pow((*beta)[i],2)*(*priorPrecision); // Generalize to allow different prior precisions. 
         }
+
         *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 
         if (!std::isfinite(*value))

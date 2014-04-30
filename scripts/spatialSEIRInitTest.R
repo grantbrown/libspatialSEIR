@@ -193,7 +193,9 @@ priorBeta_pEI = 1;
 priorAlpha_pIR = 1;
 priorBeta_pIR = 1;
 
-res = spatialSEIRInit(compMatDim,
+
+
+res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       X_betaPrsDim,
@@ -234,5 +236,8 @@ res = spatialSEIRInit(compMatDim,
                       debug, 
                       sliceWidths)
 
+
+res$setRandomSeed(123123)
+res$simulate(10)
 
 

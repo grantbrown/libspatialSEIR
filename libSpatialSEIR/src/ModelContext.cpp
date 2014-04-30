@@ -91,7 +91,8 @@ namespace SpatialSEIR
         tmpContainer -> createEmptyCompartment((S_starArgs -> inRow), (S_starArgs -> inCol));
 
         // Initialize Stuff
-        *A0 = *_A0;
+        A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> S_star0,
+                       _A0 -> E_star0,_A0 -> I_star0,_A0 -> R_star0,_A0 -> numLocations);
         X -> genFromDataStream(xArgs -> inData_x, 
                                xArgs -> inData_z,
                                xArgs -> inRow_x,
@@ -458,6 +459,7 @@ namespace SpatialSEIR
     // Updates: Everything lol
     void ModelContext::runSimulation(int nIterations, int* useOCL, bool verbose = false, bool debug = false)
     {
+        std::cout << "Running Simulation\n";
         int i;
         for (i = 0; i < nIterations; i++)
         {

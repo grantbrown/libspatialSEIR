@@ -65,6 +65,7 @@ class spatialSEIRInterface
                      SEXP sliceWidths);
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);
+        virtual int printDebugInfo();
         ~spatialSEIRInterface();
 };
 
@@ -76,6 +77,12 @@ int spatialSEIRInterface::setRandomSeed(int seedVal)
 int spatialSEIRInterface::simulate(int iters)
 {
     context -> runSimulation_CPU(iters,*(verbose),*(debug));
+    return(0);
+}
+int spatialSEIRInterface::printDebugInfo()
+{
+    Rcpp::Rcout << "S Dimensions: ";
+    Rcpp::Rcout << *(context -> S -> nrow) << ", " << *(context -> S -> ncol) << "\n";
     return(0);
 }
 
@@ -407,6 +414,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .constructor()
 
     .method("buildSpatialSEIRInterface", &spatialSEIRInterface::buildSpatialSEIRInterface)
+    .method("printDebugInfo", &spatialSEIRInterface::printDebugInfo)
     .method("setRandomSeed", &spatialSEIRInterface::setRandomSeed)
     .method("simulate", &spatialSEIRInterface::simulate)
     ;
