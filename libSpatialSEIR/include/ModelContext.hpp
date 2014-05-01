@@ -214,6 +214,7 @@ namespace SpatialSEIR
             double* p_rs;
             int* N;
             int* isPopulated;
+            int* singleLocation;
             int* numIterations;
     };
 }

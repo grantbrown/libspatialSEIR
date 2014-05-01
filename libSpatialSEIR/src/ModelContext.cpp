@@ -46,6 +46,7 @@ namespace SpatialSEIR
         gamma = new double; *gamma = 1.0;
         fileProvider = new IOProvider();
         isPopulated = new int; *isPopulated = 0;
+        singleLocation = new int; *singleLocation = -1;
         numIterations = new int; *numIterations = 0;
     }
 
@@ -91,6 +92,8 @@ namespace SpatialSEIR
         // Create empty compartment for calculation.
         tmpContainer = new CompartmentalModelMatrix();
         tmpContainer -> createEmptyCompartment((S_starArgs -> inRow), (S_starArgs -> inCol));
+
+        *singleLocation = ((*(S_starArgs -> inRow)) > 1 ? 0 : 1);
 
         // Initialize Stuff
         A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> S_star0,
@@ -446,10 +449,13 @@ namespace SpatialSEIR
         if (useOCL[6] == 0){p_ir_fc -> sampleCPU();}
         else {p_ir_fc -> sampleOCL();}
 
-        if (verbose){std::cout << "Sampling rho\n";}
-        if (useOCL[7] == 0){rho_fc -> sampleCPU();}
-        else {rho_fc -> sampleOCL();}
-
+        if (!(*singleLocation))
+        {
+            // Spatial dependence doesn't apply to single spatial unit. 
+            if (verbose){std::cout << "Sampling rho\n";}
+            if (useOCL[7] == 0){rho_fc -> sampleCPU();}
+            else {rho_fc -> sampleOCL();}
+        }
         if (verbose){std::cout << "Sampling gamma\n";}
         if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
@@ -462,7 +468,6 @@ namespace SpatialSEIR
     // Updates: Everything lol
     void ModelContext::runSimulation(int nIterations, int* useOCL, bool verbose = false, bool debug = false)
     {
-        std::cout << "Running Simulation\n";
         int i;
         int itrStart = *numIterations;
         int itrMax = nIterations + (*numIterations);
@@ -481,7 +486,6 @@ namespace SpatialSEIR
     void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false, bool debug = false)
     {
         int useOCL[9] = {0};
-        std::cout << "Running Simulation\n";
         int i;
         int itrStart = *numIterations;
         int itrMax = nIterations + (*numIterations);
@@ -929,6 +933,7 @@ namespace SpatialSEIR
     ModelContext::~ModelContext()
     {
         delete isPopulated;
+        delete singleLocation;
         delete numIterations;
         delete fileProvider;
         delete random;

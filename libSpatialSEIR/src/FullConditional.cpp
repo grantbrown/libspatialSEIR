@@ -1463,14 +1463,6 @@ namespace SpatialSEIR
     {
         int nbeta = *((*X) -> ncol_x);
         sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
-        int i;
-        std::cout << "beta p_rs:";
-        for (i = 0; i< nbeta; i++)
-        {
-            std::cout << (*beta_p_rs)[i] << ", ";
-        }
-        std::cout << "\n";
-
         return(0);
     }
 

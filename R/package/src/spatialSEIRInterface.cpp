@@ -110,6 +110,7 @@ int spatialSEIRInterface::setRandomSeed(int seedVal)
 }
 int spatialSEIRInterface::simulate(int iters)
 {
+    Rcpp::Rcout << "Simulate Called\n";
     context -> runSimulation_CPU(iters,*(verbose),*(debug));
     return(0);
 }
@@ -314,7 +315,7 @@ Rcpp::NumericVector spatialSEIRInterface::getGamma()
 }
 Rcpp::NumericVector spatialSEIRInterface::getBeta()
 {
-    Rcpp::NumericVector output(*(context->S->ncol));
+    Rcpp::NumericVector output(((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
     int i;
     int numVals = (((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
     for (i = 0; i < numVals; i++) 
@@ -326,7 +327,7 @@ Rcpp::NumericVector spatialSEIRInterface::getBeta()
 }
 Rcpp::NumericVector spatialSEIRInterface::getBetaP_RS()
 {
-    Rcpp::NumericVector output(*(context->S->ncol));
+    Rcpp::NumericVector output(*(context->X_pRS->ncol_x));
     int i;
     int numVals = (*(context->X_pRS->ncol_x));
     for (i = 0; i < numVals; i++) 
@@ -538,10 +539,16 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "Invalid N Compartment Size!\n";
         throw(-1);
     }
+    if (X_pRS.size() != compartmentDimensions[1])
+    {
+        Rcpp::Rcout << "Invalid X_pRS size.\n";
+        Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[1] << "\n";
+    }
 
     if (gamma.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid gamma size!\n";
+        Rcpp::Rcout << "Size: " << gamma.size() << ", Number of Time Points: " << compartmentDimensions[1] << "\n";
         throw(-1);
     }
     if (sliceParams.size() != 7)
@@ -661,11 +668,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
             (int*) chainOutputControl.begin(),(int*) chainStride.begin());
-    //context -> fileProvider -> close();
-    //Rcpp::XPtr<ModelContext*> ptr(&context, true);
-    // Clean up
+
     Rcpp::Rcout << "Context setup complete.\n";
-    //delete chainOutputFile;
     return(err);
 }
 
@@ -691,14 +695,20 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("printDebugInfo", &spatialSEIRInterface::printDebugInfo)
     .method("setRandomSeed", &spatialSEIRInterface::setRandomSeed)
     .method("simulate", &spatialSEIRInterface::simulate)
+    .method("calculateS", &spatialSEIRInterface::calculateS)
+    .method("calculateE", &spatialSEIRInterface::calculateE)
+    .method("calculateI", &spatialSEIRInterface::calculateI)
+    .method("calculateR", &spatialSEIRInterface::calculateR)
+    .method("calculateP_RS", &spatialSEIRInterface::calculateP_RS)
+    .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
-    .property("E", &spatialSEIRInterface::getS, "Exposed Compartment Matrix")
-    .property("I", &spatialSEIRInterface::getS, "Infectious Compartment Matrix")
-    .property("R", &spatialSEIRInterface::getS, "Removed Compartment Matrix")
+    .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
+    .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")
+    .property("R", &spatialSEIRInterface::getR, "Removed Compartment Matrix")
     .property("S_star", &spatialSEIRInterface::getS_star, "Removed to Susceptible Transition Matrix")
-    .property("E_star", &spatialSEIRInterface::getS_star, "Susceptible to Exposed Transition Matrix")
-    .property("I_star", &spatialSEIRInterface::getS_star, "Exposed to Infectious Transition Matrix")
-    .property("R_star", &spatialSEIRInterface::getS_star, "Infectious to Removed Transition Matrix")
+    .property("E_star", &spatialSEIRInterface::getE_star, "Susceptible to Exposed Transition Matrix")
+    .property("I_star", &spatialSEIRInterface::getI_star, "Exposed to Infectious Transition Matrix")
+    .property("R_star", &spatialSEIRInterface::getR_star, "Infectious to Removed Transition Matrix")
     .property("p_se", &spatialSEIRInterface::getP_SE, "Exposure Probability Matrix")
     .property("p_ei", &spatialSEIRInterface::getP_EI, "E to I Transition Probability")
     .property("p_ir", &spatialSEIRInterface::getP_IR, "I to R Transition Probability")
