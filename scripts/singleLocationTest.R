@@ -58,7 +58,7 @@ for (i in 1:MaxTpt)
         I[i] = I0 + I_star0 - R_star0
         R[i] = R0 + R_star0 - S_star0
 
-        etaVal = -(I0/N)*exp(eta_se[i]) - trueGamma[i]
+        etaVal = -(I[i]/N)*exp(eta_se[i]) - trueGamma[i]
         p_se[i] = 1-exp(etaVal)
 
         S_star[i] = rbinom(1, R[i], p_rs[i])
@@ -73,7 +73,7 @@ for (i in 1:MaxTpt)
         I[i] = I[i-1] + I_star[i-1] - R_star[i-1]
         R[i] = R[i-1] + R_star[i-1] - S_star[i-1]
 
-        etaVal = -(I[i-1]/N)*exp(eta_se[i]) - trueGamma[i]
+        etaVal = -(I[i]/N)*exp(eta_se[i]) - trueGamma[i]
         p_se[i] = 1-exp(etaVal)
 
         S_star[i] = rbinom(1, R[i], p_rs[i])
