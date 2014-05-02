@@ -682,6 +682,8 @@ namespace SpatialSEIR
     int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
+        // R given S is a function of S here!
+        // Add to the full conditional!
         (*context) -> calculateR_givenS_CPU(startLoc, startTime);
         return(0);
     }

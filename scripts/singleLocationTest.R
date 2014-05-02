@@ -1,5 +1,6 @@
 library(spatialSEIR)
 
+set.seed(123123)
 NYears = 10
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
@@ -93,6 +94,27 @@ plotEpidemic = function()
     plot(I[1,]/N, type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
     plot(p_se, type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(p_se)))
 }
+plotEpidemic2 = function()
+{
+    par(mfrow = c(3,2))
+    plot(S[1,], type = "l", main = "S,E,I,R", ylim = c(0, max(max(S), max(res$S))))
+    lines(E[1,], col = "red")
+    lines(I[1,], col = "orange")
+    lines(R[1,], col = "blue")
+
+    plot(I[1,]/N[1], type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
+    plot(p_se, type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(max(res$p_se), max(p_se))))
+
+    plot(res$S[1,], type = "l", main = "S,E,I,R", ylim = c(0, max(max(res$S), max(S))))
+    lines(res$E[1,], col = "red")
+    lines(res$I[1,], col = "orange")
+    lines(res$R[1,], col = "blue")
+
+    plot(res$I[1,]/N[1], type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
+    plot(res$p_se[1,], type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(max(res$p_se), max(p_se))))
+
+}
+
 #plotEpidemic()
 
 # Format for libspatialSEIR
@@ -132,19 +154,21 @@ rho = 0
 
 p_ei = p_ei
 p_ir = p_ir
-p_rs = p_rs
+p_rs = p_rs[(ThrowAwayTpt +1):length(p_rs)]
+p_se = p_se[(ThrowAwayTpt +1):length(p_se)]
+eta_se = eta_se[(ThrowAwayTpt +1):length(eta_se)]
 gamma = trueGamma[(1+ThrowAwayTpt):length(trueGamma)]
 beta = c(trueBetaSEFixed, trueBetaSEVarying) 
 betaPrs = trueBetaRS
 N = matrix(N, nrow = nrow(S), ncol = ncol(S))
 outFileName = "./chainOutput_single.txt"
 logFileList = c(1, # beta
-                1, # rho
-                1, # gamma
+                0, # rho
+                0, # gamma
                 0, # p_se
                 1, # p_ei
                 1, # p_ir
-                1, # p_rs 
+                0, # p_rs 
                 0, # S*
                 0, # E*
                 0, # I*
@@ -169,20 +193,20 @@ logFileList = c(1, # beta
                 0, # Total R_star_j, j = 1...T
                 0) # Total pSE_j, j = 1...T
 
-iterationStride = 10
+iterationStride = 100
 # S,E,R,beta,betaPrs,rho,gamma
 sliceWidths = c(3,3,3,1e-4,1e-4,1e-4,1e-4)
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
-priorAlpha_pEI = 1;
-priorBeta_pEI = 1;
-priorAlpha_pIR = 1;
-priorBeta_pIR = 1;
+priorAlpha_pEI = 1000000;
+priorBeta_pEI = 100000;
+priorAlpha_pIR = 1000;
+priorBeta_pIR = 100;
 betaPrsPriorPrecision = 1
 
 
-verbose = TRUE 
+verbose = FALSE 
 debug = FALSE
 
 res = spatialSEIRModel(compMatDim,
@@ -227,7 +251,7 @@ res = spatialSEIRModel(compMatDim,
                       sliceWidths)
 
 
-#res$setRandomSeed(123123)
+res$setRandomSeed(123123)
 #tryCatch({
 #    for (i in 1:100000)
 #    {
