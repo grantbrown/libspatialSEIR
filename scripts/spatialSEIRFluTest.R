@@ -234,6 +234,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 # Output Options
 verbose = TRUE
 debug = TRUE
+wrapTimeSeries = TRUE
 
 res = spatialSEIRInit(compMatDim,
                       xDim,
@@ -274,6 +275,7 @@ res = spatialSEIRInit(compMatDim,
                       iterationStride,
                       verbose,
                       debug,
-                      sliceWidths)
+                      sliceWidths,
+                      wrapTimeSeries)
 
 

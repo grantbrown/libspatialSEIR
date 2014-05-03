@@ -59,6 +59,7 @@ class spatialSEIRInterface
                      SEXP N_,
                      SEXP outFile,
                      SEXP logVarList,
+                     SEXP wrapTimeSeriesFlag,
                      SEXP iterationStride,
                      SEXP verboseFlag,
                      SEXP debugFlag,
@@ -403,6 +404,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP N_,
                      SEXP outFile,
                      SEXP logVarList,
+                     SEXP wrapTimeSeriesFlag,
                      SEXP iterationStride,
                      SEXP verboseFlag,
                      SEXP debugFlag,
@@ -459,8 +461,10 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
     Rcpp::IntegerVector chainOutputControl(logVarList); 
+    Rcpp::IntegerVector wrapTimeSeries(wrapTimeSeriesFlag);
+    int wrapFlag = wrapTimeSeries[0];
     verbose = new int();
-    debug = new int();
+    debug = new int(); 
 
     Rcpp::IntegerVector vFlag(verboseFlag);
     Rcpp::IntegerVector dFlag(debugFlag);
@@ -663,7 +667,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     context -> populate(&A0, &xArgs, &xPrsArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
                         rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
-                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues);
+                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues, wrapFlag);
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,

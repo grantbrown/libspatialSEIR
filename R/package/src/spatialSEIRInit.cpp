@@ -49,7 +49,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP iterationStride,
                      SEXP verboseFlag,
                      SEXP debugFlag,
-                     SEXP sliceWidths)
+                     SEXP sliceWidths,
+                     SEXP wrapTimeSeries)
 {
     Rcpp::Rcout << "Wrapping input data in Rcpp vectors.\n";
     //Deal with the data conversion from R to c++
@@ -107,6 +108,8 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     
     Rcpp::IntegerVector verbose(verboseFlag);
     Rcpp::IntegerVector debug(debugFlag);
+    Rcpp::IntegerVector wrap(wrapTimeSeries);
+    int wrapFlag = wrap[0];
 
     // Sanity check the input data. 
     if (compartmentDimensions.size() != 2)
@@ -302,7 +305,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     context -> populate(&A0, &xArgs, &xPrsArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
                         rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
-                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues);
+                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues, wrapFlag);
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,

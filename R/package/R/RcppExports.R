@@ -5,7 +5,7 @@ rcppTestEntry <- function() {
     .Call('spatialSEIR_rcppTestEntry', PACKAGE = 'spatialSEIR')
 }
 
-spatialSEIRInit <- function(compMatDim, xDim, zDim, xPrsDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, X_pRS_, DistMat_, rho_, gamma_, priorAlpha_gamma_, priorBeta_gamma_, priorAlpha_pEI_, priorBeta_pEI_, priorAlpha_pIR_, priorBeta_pIR_, beta_, betaPrs_, betaPrsPriorPrecision_, p_ei_, p_ir_, N_, outFile, logVarList, iterationStride, verboseFlag, debugFlag, sliceWidths) {
-    .Call('spatialSEIR_spatialSEIRInit', PACKAGE = 'spatialSEIR', compMatDim, xDim, zDim, xPrsDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, X_pRS_, DistMat_, rho_, gamma_, priorAlpha_gamma_, priorBeta_gamma_, priorAlpha_pEI_, priorBeta_pEI_, priorAlpha_pIR_, priorBeta_pIR_, beta_, betaPrs_, betaPrsPriorPrecision_, p_ei_, p_ir_, N_, outFile, logVarList, iterationStride, verboseFlag, debugFlag, sliceWidths)
+spatialSEIRInit <- function(compMatDim, xDim, zDim, xPrsDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, X_pRS_, DistMat_, rho_, gamma_, priorAlpha_gamma_, priorBeta_gamma_, priorAlpha_pEI_, priorBeta_pEI_, priorAlpha_pIR_, priorBeta_pIR_, beta_, betaPrs_, betaPrsPriorPrecision_, p_ei_, p_ir_, N_, outFile, logVarList, iterationStride, verboseFlag, debugFlag, sliceWidths, wrapTimeSeries) {
+    .Call('spatialSEIR_spatialSEIRInit', PACKAGE = 'spatialSEIR', compMatDim, xDim, zDim, xPrsDim, S0_, E0_, I0_, R0_, Sstar0, Estar0, Istar0, Rstar0, Sstar, Estar, Istar, Rstar, X_, Z_, X_pRS_, DistMat_, rho_, gamma_, priorAlpha_gamma_, priorBeta_gamma_, priorAlpha_pEI_, priorBeta_pEI_, priorAlpha_pIR_, priorBeta_pIR_, beta_, betaPrs_, betaPrsPriorPrecision_, p_ei_, p_ir_, N_, outFile, logVarList, iterationStride, verboseFlag, debugFlag, sliceWidths, wrapTimeSeries)
 }
 

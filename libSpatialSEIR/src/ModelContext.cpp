@@ -69,7 +69,7 @@ namespace SpatialSEIR
                                 double* rho_, double* beta_, 
                                 double* p_ei_, double* p_ir_, double* betaPrs_, 
                                 int* N_, sliceParameters* sliceWidths,
-                                priorControl* priorValues)
+                                priorControl* priorValues,int wrap)
     {
         // Delete stuff that needs to be resized
         delete N; delete beta; delete eta; delete gamma; delete betaPrs;
@@ -94,6 +94,8 @@ namespace SpatialSEIR
         tmpContainer -> createEmptyCompartment((S_starArgs -> inRow), (S_starArgs -> inCol));
 
         *singleLocation = ((*(S_starArgs -> inRow)) > 1 ? 0 : 1);
+        wrapFlag = new int;
+        *wrapFlag = 0;
 
         // Initialize Stuff
         A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> S_star0,
@@ -204,6 +206,8 @@ namespace SpatialSEIR
                                   R,
                                   I,
                                   S_star,
+                                  E_star,
+                                  S,
                                   A0,p_rs,p_ir,p_se,
                                   *(sliceWidths -> R_starWidth));
 
@@ -254,6 +258,14 @@ namespace SpatialSEIR
         this -> calculateR_CPU();
         this -> calculateP_RS_CPU();
         this -> calculateP_SE_CPU();
+        *wrapFlag = wrap;
+        this -> calculateS_CPU();
+        this -> calculateE_CPU();
+        this -> calculateI_CPU();
+        this -> calculateR_CPU();
+        this -> calculateP_RS_CPU();
+        this -> calculateP_SE_CPU();
+
         // Initialize FC Values        
         this -> beta_fc -> evalCPU();
         this -> betaPrs_fc -> evalCPU();
@@ -433,6 +445,7 @@ namespace SpatialSEIR
         if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
 
+        /*
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
@@ -459,7 +472,7 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling gamma\n";}
         if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
-
+        */
     }
 
 
@@ -746,23 +759,44 @@ namespace SpatialSEIR
                                                    CompartmentalModelMatrix *compStarSub, 
                                                    int *compStar0Add,int *compStar0Sub)
     {
-        int i;
+        int i,idx2;
         int numLoc = *(A0 -> numLocations);
-        int max2 = (*(comp -> nrow))*(*(comp -> ncol));
-        for (i = 0; i < numLoc; i++)
+        int numTpts = *(comp -> ncol);
+        int max2 = numLoc*numTpts;
+
+        if (*wrapFlag)
         {
-            (comp -> data)[i] = ((comp0)[i] + 
-                    (compStar0Add)[i] - 
-                    (compStar0Sub)[i]);
+            for (i = 0; i < numLoc; i++)
+            {
+                idx2 = (numTpts-1)*numLoc + i;
+                (comp -> data)[i] = ((comp -> data)[idx2] + 
+                                    (compStarAdd -> data)[idx2] - 
+                                    (compStarSub -> data)[idx2]);
+            }
+            for (i = numLoc; i < max2; i++)
+            {
+                (comp -> data)[i] = (comp -> data)[i - numLoc] + 
+                          (compStarAdd -> data)[i - numLoc] - 
+                          (compStarSub -> data)[i - numLoc];
+            }
         }
 
-        for (i = numLoc; i < max2; i++)
+        else
         {
-            (comp -> data)[i] = (comp -> data)[i - numLoc] + 
-                      (compStarAdd -> data)[i - numLoc] - 
-                      (compStarSub -> data)[i - numLoc];
-        }
-       
+            for (i = 0; i < numLoc; i++)
+            {
+                (comp -> data)[i] = ((comp0)[i] + 
+                        (compStar0Add)[i] - 
+                        (compStar0Sub)[i]);
+            }
+
+            for (i = numLoc; i < max2; i++)
+            {
+                (comp -> data)[i] = (comp -> data)[i - numLoc] + 
+                          (compStarAdd -> data)[i - numLoc] - 
+                          (compStarSub -> data)[i - numLoc];
+            }
+        } 
     }
 
     void ModelContext::calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp,int *comp0, 
@@ -774,25 +808,74 @@ namespace SpatialSEIR
         int i;
         int numLoc = *(A0 -> numLocations);
         int numTpts = *(comp -> ncol);
-        int idx;
+        int idx, idx2;
 
-        if (startTime == 0)
+        if (*wrapFlag)
         {
-            idx = startLoc;
-            (comp -> data)[idx] = ((comp0)[idx] + 
-                    (compStar0Add)[idx] - 
-                    (compStar0Sub)[idx]);
+            if (startTime == 0)
+            {
+                // Beginning to End
+                idx = startLoc;
+                idx2 = (numTpts-1)*(numLoc) + startLoc;
+                (comp -> data)[idx] = ((comp -> data)[idx2] + 
+                        (compStarAdd -> data)[idx2] - 
+                        (compStarSub -> data)[idx2]);
+
+                for (i = 1; i < numTpts; i++)
+                {
+                    idx = startLoc + i*numLoc;
+                    (comp -> data)[idx] = (comp -> data)[idx - numLoc] + 
+                                   (compStarAdd -> data)[idx - numLoc] - 
+                                   (compStarSub -> data)[idx - numLoc];
+                } 
+            }
+            else
+            {
+                // Time point to end
+                for (i = startTime; i < numTpts; i++)
+                {
+                    idx = startLoc + i*numLoc;
+                    (comp -> data)[idx] = (comp -> data)[idx - numLoc] + 
+                                   (compStarAdd -> data)[idx - numLoc] - 
+                                   (compStarSub -> data)[idx - numLoc];
+                } 
+
+                // Beginning to time point
+                idx = startLoc;
+                idx2 = (numTpts-1)*(numLoc) + startLoc;
+                (comp -> data)[idx] = ((comp -> data)[idx2] + 
+                        (compStarAdd -> data)[idx2] - 
+                        (compStarSub -> data)[idx2]);
+
+                for (i = 1; i < startTime; i++)
+                {
+                    idx = startLoc + i*numLoc;
+                    (comp -> data)[idx] = (comp -> data)[idx - numLoc] + 
+                                   (compStarAdd -> data)[idx - numLoc] - 
+                                   (compStarSub -> data)[idx - numLoc];
+                } 
+            }
         }
-
-        startTime = (startTime == 0 ? 1 : startTime);
-
-        for (i = startTime; i < numTpts; i++)
+        else
         {
-            idx = startLoc + i*numLoc;
-            (comp -> data)[idx] = (comp -> data)[idx - numLoc] + 
-                      (compStarAdd -> data)[idx - numLoc] - 
-                      (compStarSub -> data)[idx - numLoc];
-        } 
+            if (startTime == 0)
+            {
+                idx = startLoc;
+                (comp -> data)[idx] = ((comp0)[idx] + 
+                        (compStar0Add)[idx] - 
+                        (compStar0Sub)[idx]);
+            }
+
+            startTime = (startTime == 0 ? 1 : startTime);
+
+            for (i = startTime; i < numTpts; i++)
+            {
+                idx = startLoc + i*numLoc;
+                (comp -> data)[idx] = (comp -> data)[idx - numLoc] + 
+                          (compStarAdd -> data)[idx - numLoc] - 
+                          (compStarSub -> data)[idx - numLoc];
+            } 
+        }
     }
   
     void ModelContext::calculateGenericCompartment_OCL(int *comp,int *comp0, 
@@ -971,6 +1054,7 @@ namespace SpatialSEIR
         delete p_ir;
         delete[] p_rs;
         delete rho;
+        delete wrapFlag;
     }
 }
 

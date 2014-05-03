@@ -1,7 +1,7 @@
 library(spatialSEIR)
 
 set.seed(123123)
-NYears = 10
+NYears = 20
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
 
@@ -208,6 +208,7 @@ betaPrsPriorPrecision = 1
 
 verbose = FALSE 
 debug = FALSE
+wrapTimeSeries = TRUE
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
@@ -248,16 +249,16 @@ res = spatialSEIRModel(compMatDim,
                       iterationStride,
                       verbose,
                       debug, 
-                      sliceWidths)
+                      sliceWidths, wrapTimeSeries)
 
 
 res$setRandomSeed(123123)
 #tryCatch({
-#    for (i in 1:100000)
+#    for (i in 1:1000)
 #    {
-#        res$simulate(1)
+#        res$simulate(100)
 #        Sys.sleep(0.001)
-#        cat(".")
+#        cat(i,"\n")
 #    }}, 
 #    interrupt = function(interrupt)
 #    {

@@ -60,7 +60,8 @@ namespace SpatialSEIR
                           double* rho, double* beta, 
                           double* p_ei, double* p_ir, double* betaPrs, 
                           int* N, sliceParameters* sliceWidths,
-                          priorControl* priorInformation);
+                          priorControl* priorInformation,
+                          int wrap);
 
 
             // Method: calculateS
@@ -216,6 +217,7 @@ namespace SpatialSEIR
             int* isPopulated;
             int* singleLocation;
             int* numIterations;
+            int* wrapFlag;
     };
 }
 #endif

@@ -317,7 +317,8 @@ namespace SpatialSEIR
         this -> cacheEvalCalculation(cachedValues);
 
         // Set the "value" attribute appropriately
-        this -> evalCPU();
+        //this -> evalCPU();
+        this -> evalCPU(0,0,cachedValues);
    
         // Main loop: 
         for (j = 0; j < nTpts; j ++)
@@ -516,7 +517,7 @@ namespace SpatialSEIR
     // Cache the components of the FC_S_Star calculation in cachedValues
     int FC_S_Star::cacheEvalCalculation(double* cachedValues)
     {
-        int i, j, tmp, compIdx;
+        int i, j, Ss, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*S) -> ncol);
         for (j = 0; j < nTpts; j++)     
@@ -525,17 +526,17 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++)    
             {
                 compIdx++;
-                tmp = ((*S_star) -> data)[compIdx];
-                if (tmp < 0 || tmp > ((*R)->data)[compIdx] || 
-                        ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+                Ss = ((*S_star) -> data)[compIdx];
+                if ((Ss < 0) || (Ss > ((*R)->data)[compIdx]) || 
+                        (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
 
                 {
                     cachedValues[compIdx] = -INFINITY;
                 }
                 else
                 {
-                    cachedValues[compIdx] = (std::log((*p_rs)[j])*tmp + 
-                                   std::log(1-(*p_rs)[j])*(((*R)->data)[compIdx] - tmp) +
+                    cachedValues[compIdx] = (std::log((*p_rs)[j])*Ss + 
+                                   std::log(1-(*p_rs)[j])*(((*R)->data)[compIdx] - Ss) +
                                    std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
                 }
             }
@@ -555,8 +556,8 @@ namespace SpatialSEIR
         {
             prs_j = (*p_rs)[j];
             tmp = ((*S_star) -> data)[compIdx];
-            if (tmp < 0 || tmp > ((*R) -> data)[compIdx] ||
-                    ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+            if ((tmp < 0) || (tmp > ((*R) -> data)[compIdx]) ||
+                    (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
 
             {
                 cachedValues[compIdx] = -INFINITY;
@@ -592,8 +593,8 @@ namespace SpatialSEIR
                 compIdx++;
                 tmp = ((*S_star) -> data)[compIdx];
     
-                if (tmp < 0 || tmp > ((*R)->data)[compIdx] || 
-                        ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+                if ((tmp < 0) || (tmp > ((*R)->data)[compIdx]) || 
+                        (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
 
                 {
                     *value = -INFINITY;
@@ -628,8 +629,8 @@ namespace SpatialSEIR
         {
             prs_j = (*p_rs)[j];
             tmp = ((*S_star) -> data)[compIdx];
-            if (tmp < 0 || tmp > ((*R) -> data)[compIdx] ||
-                    ((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx])
+            if ((tmp < 0) || (tmp > ((*R) -> data)[compIdx]) ||
+                   (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
             {
                 cachedValues[compIdx] = -INFINITY;
                 err = 1;
@@ -663,7 +664,6 @@ namespace SpatialSEIR
         {
             *value = -INFINITY;
         }
-
         return(0);
     }
 
@@ -682,8 +682,6 @@ namespace SpatialSEIR
     int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
-        // R given S is a function of S here!
-        // Add to the full conditional!
         (*context) -> calculateR_givenS_CPU(startLoc, startTime);
         return(0);
     }
@@ -974,6 +972,8 @@ namespace SpatialSEIR
                          CompartmentalModelMatrix *_R,
                          CompartmentalModelMatrix *_I,
                          CompartmentalModelMatrix *_S_star,
+                         CompartmentalModelMatrix *_E_star,
+                         CompartmentalModelMatrix *_S,
                          InitData *_A0,
                          double *_p_rs,
                          double *_p_ir,
@@ -986,6 +986,8 @@ namespace SpatialSEIR
         R = new CompartmentalModelMatrix*;
         I = new CompartmentalModelMatrix*;
         S_star = new CompartmentalModelMatrix*;
+        E_star = new CompartmentalModelMatrix*;
+        S = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_rs = new double*;
         p_ir = new double*;
@@ -998,6 +1000,8 @@ namespace SpatialSEIR
         *R = _R;
         *I = _I;
         *S_star = _S_star;
+        *E_star = _E_star;
+        *S = _S;
         *A0 = _A0;
         *p_rs = _p_rs;
         *p_ir = _p_ir;
@@ -1011,6 +1015,8 @@ namespace SpatialSEIR
         delete R;
         delete I;
         delete S_star;
+        delete E_star;
+        delete S;
         delete A0;
         delete p_rs;
         delete p_ir;
@@ -1022,7 +1028,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::cacheEvalCalculation(double* cachedValues)
     {
-        int i, j, tmp, compIdx;
+        int i, j, Rs, Es, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
         double pseVal;
@@ -1036,27 +1042,32 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++)    
             {
                 compIdx++;
-                tmp = ((*R_star) -> data)[compIdx];
+                Rs = ((*R_star) -> data)[compIdx];
+                Es = ((*E_star) -> data)[compIdx];
                 pseVal = (*p_se)[compIdx];
 
-                if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
+                if (Rs < 0 || Rs > ((*I)-> data)[compIdx] || 
                         ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
                          pseVal >= 1 || pseVal <= 0)
 
                 {
                     cachedValues[compIdx] = -INFINITY;
                     std::cerr << "Error caching R_Star FC, index: " << compIdx << "\n";
-                    if (tmp < 0){std::cout << "R_star Value " << tmp << " < 0\n";}
-                    if (tmp > ((*I)->data)[compIdx]){std::cout << "R_star Value " << tmp << " > I: " << ((*I)->data)[compIdx]<<"\n";}
+                    if (Rs < 0){std::cout << "R_star Value " << Rs << " < 0\n";}
+                    if (Rs > ((*I)->data)[compIdx]){std::cout << "R_star Value " << Rs << " > I: " << ((*I)->data)[compIdx]<<"\n";}
                     if (((*S_star)->data)[compIdx] > ((*R)->data)[compIdx]){std::cout 
                         << "S_star Value " <<  ((*S_star)->data)[compIdx]<< " > R: " << ((*R)->data)[compIdx]<<"\n";}
                     throw(-1);
                 }
                 else
                 {
-                    cachedValues[compIdx] = (ln_p_ir*tmp + 
-                                    ln_1m_p_ir*(((*I)->data)[compIdx] -tmp) +
-                                    std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx])) ;
+                    cachedValues[compIdx] = (ln_p_ir*Rs + 
+                                    ln_1m_p_ir*(((*I)->data)[compIdx] -Rs) +
+                                    std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]) +
+                                    // p_se components
+                                    std::log((*p_se)[compIdx])*Es +
+                                    std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - Es));
+
                 }
             }
         } 
@@ -1065,7 +1076,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
-        int j, tmp, compIdx;
+        int j, Rs, Es, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
         double pseVal; 
@@ -1075,9 +1086,10 @@ namespace SpatialSEIR
         compIdx = startLoc + startTime*nLoc;
         for (j = startTime; j < nTpts; j++)
         {
-            tmp = ((*R_star) -> data)[compIdx];
+            Rs = ((*R_star) -> data)[compIdx];
+            Es = ((*E_star) -> data)[compIdx];
             pseVal = (*p_se)[compIdx];
-            if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
+            if (Rs < 0 || Rs > ((*I)-> data)[compIdx] || 
                     ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
                     pseVal >= 1 || pseVal <= 0)
             {
@@ -1085,9 +1097,13 @@ namespace SpatialSEIR
             }
             else
             {
-                cachedValues[compIdx] = (ln_p_ir*tmp +
-                                ln_1m_p_ir*(((*I)->data)[compIdx] - tmp) +
-                                std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]));
+                cachedValues[compIdx] = (ln_p_ir*Rs +
+                                ln_1m_p_ir*(((*I)->data)[compIdx] - Rs) +
+                                std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]) +
+                                // p_se components
+                                std::log((*p_se)[compIdx])*Es +
+                                std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - Es));
+
             }
             compIdx += nLoc;
         } 
@@ -1098,12 +1114,12 @@ namespace SpatialSEIR
     int FC_R_Star::evalCPU()
     {
         *value = 0.0;
-        int i, j, tmp, compIdx;
+        int i, j, Rs, Es, compIdx;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*I) -> ncol);
-        double term1, term2, term3;
+        double term1, term2, term3, term4, term5;
         double pseVal;
-        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        term1 = 0.0; term2 = 0.0; term3 = 0.0; term4 = 0.0; term5 = 0.0;
         double ln_p_ir = std::log(**p_ir);
         double ln_1m_p_ir = std::log(1-(**p_ir));
         for (j = 0; j < nTpts; j++)     
@@ -1112,21 +1128,27 @@ namespace SpatialSEIR
             for (i = 0; i < nLoc; i++)    
             { 
                 compIdx ++;
-                tmp = ((*R_star) -> data)[compIdx];
+                Rs = ((*R_star) -> data)[compIdx];
+                Es = ((*E_star) -> data)[compIdx];
+
                 pseVal = (*p_se)[compIdx];
-                if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
+                if (Rs < 0 || Rs > ((*I)-> data)[compIdx] || 
                         ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] || 
                         pseVal >= 1 || pseVal <= 0)
                 {
                     *value = -INFINITY;
                     return(-1);
                 }
-                term1 += ln_p_ir*tmp; 
-                term2 += ln_1m_p_ir*(((*I)->data)[compIdx] - tmp);
+                term1 += ln_p_ir*Rs; 
+                term2 += ln_1m_p_ir*(((*I)->data)[compIdx] - Rs);
                 term3 += std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]) ;
+                // p_se components
+                term4 += std::log((*p_se)[compIdx])*Es;
+                term5 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - Es);
+
             }
         } 
-        *value = term1 + term2 + term3;
+        *value = term1 + term2 + term3 + term4 + term5;
         // Catch invalid values, nans etc. 
         if (!std::isfinite(*value))
         {
@@ -1139,7 +1161,7 @@ namespace SpatialSEIR
     int FC_R_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
         *value = 0.0;
-        int i, j, tmp, compIdx;
+        int i, j, Rs, Es, compIdx;
         int err = 0;
         int nLoc = *((*A0) -> numLocations);
         int nTpts = *((*R) -> ncol);
@@ -1150,9 +1172,11 @@ namespace SpatialSEIR
         compIdx = startLoc + startTime*nLoc;
         for (j = startTime; j < nTpts; j++)
         {
-            tmp = ((*R_star) -> data)[compIdx];
+            Rs = ((*R_star) -> data)[compIdx];
+            Es = ((*R_star) -> data)[compIdx];
+
             pseVal = (*p_se)[compIdx];
-            if (tmp < 0 || tmp > ((*I)-> data)[compIdx] || 
+            if (Rs < 0 || Rs > ((*I)-> data)[compIdx] || 
                     ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
                     pseVal >= 1 || pseVal <= 0)
 
@@ -1162,9 +1186,12 @@ namespace SpatialSEIR
             }
             else
             {
-                cachedValues[compIdx] = (ln_p_ir*tmp + 
-                                ln_1m_p_ir*(((*I)->data)[compIdx] - tmp) +
-                                std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]));
+                cachedValues[compIdx] = (ln_p_ir*Rs +
+                                ln_1m_p_ir*(((*I)->data)[compIdx] - Rs) +
+                                std::log(1-((*p_rs)[j]))*(((*R) -> data)[compIdx]) +
+                                // p_se components
+                                std::log((*p_se)[compIdx])*Es +
+                                std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - Es));
             }
             compIdx += nLoc;
         }
@@ -1188,7 +1215,6 @@ namespace SpatialSEIR
         {
             *value = -INFINITY;
         }
-
         return(0);
     }
 

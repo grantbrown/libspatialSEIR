@@ -187,6 +187,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 
 verbose = TRUE
 debug = FALSE
+wrapTimeSeries = TRUE
 
 priorAlpha_pEI = 1;
 priorBeta_pEI = 1;
@@ -234,7 +235,8 @@ res = spatialSEIRModel(compMatDim,
                       iterationStride,
                       verbose,
                       debug, 
-                      sliceWidths)
+                      sliceWidths,
+                      wrapTimeSeries)
 
 
 res$setRandomSeed(123123)

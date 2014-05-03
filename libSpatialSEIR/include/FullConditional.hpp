@@ -260,6 +260,8 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_R,
                       CompartmentalModelMatrix *_I,
                       CompartmentalModelMatrix *_S_star,
+                      CompartmentalModelMatrix *_E_star,
+                      CompartmentalModelMatrix *_S,
                       InitData *_A0,
                       double *_p_rs,
                       double *_p_ir,
@@ -284,6 +286,8 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **R;
             CompartmentalModelMatrix **I;
             CompartmentalModelMatrix **S_star;
+            CompartmentalModelMatrix **E_star;
+            CompartmentalModelMatrix **S;
             InitData **A0;
             double **p_rs;
             double **p_ir;
