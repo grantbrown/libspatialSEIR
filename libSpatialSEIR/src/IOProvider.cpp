@@ -23,6 +23,21 @@ namespace SpatialSEIR
                 &*_iterationStride);
     }
 
+    IOProvider::~IOProvider()
+    {
+        if (*isOpen)
+        {
+            this -> close();
+            delete isOpen;
+        }
+        delete startTime;
+        delete timer;
+        delete iterationStride;
+        delete[] variableList;
+        delete outFilePath;
+        delete outFileStream;
+        delete context;
+    }
 
     int IOProvider::populate(ModelContext* _context,
                            std::string* _outFilePath,
@@ -31,7 +46,7 @@ namespace SpatialSEIR
     {
         context = new ModelContext*;
         iterationStride = new int;
-        variableList = new int[10]; // This will need to be generalized at some point.
+        variableList = new int[30]; // This will need to be generalized at some point.
         outFilePath = new std::string; 
         *context = _context; 
         *outFilePath = *_outFilePath;
@@ -40,13 +55,13 @@ namespace SpatialSEIR
         isOpen = new bool;
         *isOpen = false;
         int i;
-        for (i = 0; i < 11; i++)
+        for (i = 0; i < 30; i++)
         {
             variableList[i] = _variableList[i];
         } 
         timer = new time_t;
         startTime = new time_t;
-        time(&*startTime); // Set start time
+        time(startTime); // Set start time
         return(this -> fileInit());
     }
 
@@ -214,7 +229,6 @@ namespace SpatialSEIR
             (*outFileStream) << "avgP_rs,";
         }
 
-
     
         // Time specific
 
@@ -290,8 +304,6 @@ namespace SpatialSEIR
                 (*outFileStream) << "avgP_se_" << j << ",";
             }
         }
-
-
         (*outFileStream) << "Iteration,Time\n";
         // Write iteration number
         //Newline
@@ -538,20 +550,4 @@ namespace SpatialSEIR
         outFileStream -> close();
         return(0);
     }
-
-    IOProvider::~IOProvider()
-    {
-        if (*isOpen)
-        {
-            this -> close();
-            delete isOpen;
-        }
-        delete context;
-        delete iterationStride;
-        delete[] variableList;
-        delete outFilePath;
-        delete outFileStream;
-        delete timer;
-    }
-
 }

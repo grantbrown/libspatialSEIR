@@ -150,6 +150,7 @@ namespace SpatialSEIR
 
         scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
 
+
         // Initialize Data
         int i;
         for (i = 0; i < nbeta; i++)
@@ -250,7 +251,6 @@ namespace SpatialSEIR
                              (priorValues -> P_IR_priorBeta));
 
 
-
         // Calculate Compartments
         this -> calculateS_CPU();
         this -> calculateE_CPU();
@@ -278,6 +278,7 @@ namespace SpatialSEIR
         this -> R_star_fc -> evalCPU();
 
         *isPopulated = 1;
+
     }
 
     int ModelContext::checkCompartmentBounds()
@@ -433,10 +434,11 @@ namespace SpatialSEIR
         }
 
 
+        /*
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
-
+        */
         if (verbose){std::cout << "Sampling E_star\n";}
         if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
         else {E_star_fc -> sampleOCL();}
@@ -445,11 +447,11 @@ namespace SpatialSEIR
         if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
 
-        /*
+
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[3] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
-
+        /*
         if (verbose){std::cout << "Sampling betaPrs\n";}
         if (useOCL[4] == 0){betaPrs_fc -> sampleCPU();}
         else {betaPrs_fc -> sampleOCL();}

@@ -638,12 +638,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     priorValues.P_IR_priorBeta = priorBeta_pIR[0];
     priorValues.betaPrsPriorPrecision = betaPrsPriorPrecision[0];
 
-    Rcpp::Rcout << (priorValues.betaPriorPrecision) << ", " 
-                << (priorValues.P_EI_priorAlpha) << ", " 
-                << (priorValues.P_EI_priorBeta) << ", " 
-                << (priorValues.P_IR_priorAlpha) << ", " 
-                << (priorValues.P_IR_priorBeta) << "\n"; 
-
     // Gather information for the creation of the distance matrices
 
     double phi = 60*60*2.0;

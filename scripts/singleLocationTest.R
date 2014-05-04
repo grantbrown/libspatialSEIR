@@ -1,11 +1,11 @@
 library(spatialSEIR)
 
 set.seed(123123)
-NYears = 20
+NYears = 12
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
 
-ThrowAwayTpt = 45
+ThrowAwayTpt = 60
 
 X = matrix(1, ncol = 1)
 Z = cbind(seq(1,NYears*TptPerYear), model.matrix(~as.factor(rep(1:12,NYears)))[,2:TptPerYear])
@@ -27,7 +27,7 @@ trueBetaRS = c(2.5, -1, 0.5)
 eta_rs = X_prs %*% trueBetaRS
 p_rs = exp(-eta_rs)
 
-N = 1000000
+N = 100000
 E0 = 0
 I0 = floor(0.001*N)
 R0 = floor(0.001*N)
@@ -208,7 +208,7 @@ betaPrsPriorPrecision = 1
 
 verbose = FALSE 
 debug = FALSE
-wrapTimeSeries = TRUE
+wrapTimeSeries = FALSE
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
@@ -253,17 +253,21 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
-#tryCatch({
-#    for (i in 1:1000)
-#    {
-#        res$simulate(100)
-#        Sys.sleep(0.001)
-#        cat(i,"\n")
-#    }}, 
-#    interrupt = function(interrupt)
-#    {
-#        cat("Exiting...\n")
-#})
+N = 250000
+
+batchSize = 100
+tryCatch({
+    for (i in 1:(N/batchSize))
+    {
+        res$simulate(batchSize)
+        # sleep to allow R to catch up and handle interrupts 
+        Sys.sleep(0.001)
+        cat(i*batchSize,"\n")
+    }}, 
+    interrupt = function(interrupt)
+    {
+        cat("Exiting...\n")
+})
 
 
 
