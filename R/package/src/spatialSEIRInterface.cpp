@@ -111,7 +111,6 @@ int spatialSEIRInterface::setRandomSeed(int seedVal)
 }
 int spatialSEIRInterface::simulate(int iters)
 {
-    Rcpp::Rcout << "Simulate Called\n";
     context -> runSimulation_CPU(iters,*(verbose),*(debug));
     return(0);
 }
@@ -543,7 +542,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "Invalid N Compartment Size!\n";
         throw(-1);
     }
-    if (X_pRS.size() != compartmentDimensions[1])
+    if ((X_pRS.size() % compartmentDimensions[1]) != 0)
     {
         Rcpp::Rcout << "Invalid X_pRS size.\n";
         Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[1] << "\n";
