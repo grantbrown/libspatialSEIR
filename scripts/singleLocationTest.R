@@ -96,24 +96,36 @@ plotEpidemic = function()
 }
 plotEpidemic2 = function()
 {
-    par(mfrow = c(3,2))
-    plot(S[1,], type = "l", main = "S,E,I,R", ylim = c(0, max(max(S), max(res$S))))
-    lines(E[1,], col = "red")
-    lines(I[1,], col = "orange")
-    lines(R[1,], col = "blue")
+    par(mfrow = c(4,2))
 
-    plot(I[1,]/N[1], type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
-    plot(p_se, type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(max(res$p_se), max(p_se))))
+    plot(S_star[1,], type = "l", main = "S_star", ylim = c(0, max(max(S_star), max(res$S_star))))
+    lines(res$S_star[1,], col = "red")
 
-    plot(res$S[1,], type = "l", main = "S,E,I,R", ylim = c(0, max(max(res$S), max(S))))
+    plot(S[1,], type = "l", main = "S", ylim = c(0, max(max(S), max(res$S))))
+    lines(res$S[1,], col = "red")
+
+    plot(E_star[1,], type = "l", main = "E_star", ylim = c(0, max(max(E_star), max(res$E_star))))
+    lines(res$E_star[1,], col = "red")
+
+    plot(E[1,], type = "l", main = "E", ylim = c(0, max(max(E), max(res$E))))
     lines(res$E[1,], col = "red")
-    lines(res$I[1,], col = "orange")
-    lines(res$R[1,], col = "blue")
 
-    plot(res$I[1,]/N[1], type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
-    plot(res$p_se[1,], type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(max(res$p_se), max(p_se))))
+    plot(I_star[1,], type = "l", main = "I_star", ylim = c(0, max(max(I_star), max(res$I_star))))
+    lines(res$I_star[1,], col = "red")
+
+    plot(I[1,], type = "l", main = "I", ylim = c(0, max(max(I), max(res$I))))
+    lines(res$I[1,], col = "red")
+
+    plot(R_star[1,], type = "l", main = "R_star", ylim = c(0, max(max(R_star), max(res$R_star))))
+    lines(res$R_star[1,], col = "red")
+
+    plot(R[1,], type = "l", main = "R", ylim = c(0, max(max(R), max(res$R))))
+    lines(res$R[1,], col = "red")
 
 }
+
+
+
 
 #plotEpidemic()
 
@@ -253,7 +265,7 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
-N = 250000
+N = 1000000
 
 batchSize = 100
 tryCatch({

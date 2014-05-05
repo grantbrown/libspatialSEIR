@@ -99,6 +99,13 @@ class spatialSEIRInterface
         virtual Rcpp::NumericVector getBeta();
         virtual Rcpp::NumericVector getBetaP_RS();
         virtual Rcpp::NumericVector getRho();
+
+        virtual int getDebug();
+        virtual void setDebug(int debug_);
+
+        virtual int getVerbose();
+        virtual void setVerbose(int verbose_);
+
  
         //Destructor
         ~spatialSEIRInterface();
@@ -351,7 +358,6 @@ Rcpp::NumericVector spatialSEIRInterface::getP_IR()
     return(output);
 }
 
-
 Rcpp::NumericVector spatialSEIRInterface::getRho()
 {
     Rcpp::NumericVector output(1);
@@ -359,12 +365,36 @@ Rcpp::NumericVector spatialSEIRInterface::getRho()
     return(output);
 }
 
+int spatialSEIRInterface::getDebug()
+{
+    int out;
+    out = *debug;
+    return(out);    
+}
+void spatialSEIRInterface::setDebug(int debug_)
+{
+   *debug = debug_;  
+}
+int spatialSEIRInterface::getVerbose()
+{
+    int output;
+    output= *verbose;
+    return(output);
+}
+void spatialSEIRInterface::setVerbose(int verbose_)
+{
+   *verbose = verbose_; 
+}
 
 spatialSEIRInterface::spatialSEIRInterface()
 {
     Rcpp::Rcout << "Creating Model Context\n";
     // Create the empty ModelContext object  
     context = new ModelContext();
+    verbose = new int();
+    debug = new int(); 
+    *verbose = 0;
+    *debug = 0;
 }
 
 int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
@@ -462,8 +492,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::IntegerVector chainOutputControl(logVarList); 
     Rcpp::IntegerVector wrapTimeSeries(wrapTimeSeriesFlag);
     int wrapFlag = wrapTimeSeries[0];
-    verbose = new int();
-    debug = new int(); 
 
     Rcpp::IntegerVector vFlag(verboseFlag);
     Rcpp::IntegerVector dFlag(debugFlag);
@@ -714,7 +742,8 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
-
+    .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
+    .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Sho verbose level output?")
     ;
 }
 
