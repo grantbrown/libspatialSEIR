@@ -214,7 +214,7 @@ namespace SpatialSEIR
 
         beta_fc = new FC_Beta(this,
                               E_star,
-                              S_star,
+                              S,
                               A0,X,p_se,beta,rho,
                               *(sliceWidths -> betaWidth),
                               (priorValues -> betaPriorPrecision));
@@ -435,9 +435,11 @@ namespace SpatialSEIR
 
 
 
+        /*
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
+        */
 
         if (verbose){std::cout << "Sampling E_star\n";}
         if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
