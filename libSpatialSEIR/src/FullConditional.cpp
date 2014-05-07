@@ -52,6 +52,42 @@ namespace SpatialSEIR
     }
 
     /*
+    double logFact(int input)
+    {
+        double output =0.0;
+        int i;
+        //Log 1 is zero
+        for (i = 2; i <= input; i++)
+        {
+            output += std::log(i);
+        }
+        return(output);
+    }
+
+    double logChoose(int n, int k)
+    {
+        if (k == 0 || k == n)
+        {
+            return(0);
+        }
+        double output = 0.0;
+        int n_m_k = n-k;
+        int term1 = std::max(k,n_m_k);
+        int term2 = std::min(k,n_m_k);
+        int i;
+        for (i = n; i > term1; i--)
+        {
+            output += std::log(i);
+        }
+        for (i = 2; i <= term2; i++)
+        {
+            output -= std::log(i); 
+        }
+        return(output);
+    }
+    */
+
+    /*
      *
      * Implement the data container class InitData
      *
@@ -517,154 +553,70 @@ namespace SpatialSEIR
     // Cache the components of the FC_S_Star calculation in cachedValues
     int FC_S_Star::cacheEvalCalculation(double* cachedValues)
     {
-        int i, j, Ss, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
-        for (j = 0; j < nTpts; j++)     
-        {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
-            {
-                compIdx++;
-                Ss = ((*S_star) -> data)[compIdx];
-                if ((Ss < 0) || (Ss > ((*R)->data)[compIdx]) || 
-                        (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
-
-                {
-                    cachedValues[compIdx] = -INFINITY;
-                }
-                else
-                {
-                    cachedValues[compIdx] = (std::log((*p_rs)[j])*Ss + 
-                                   std::log(1-(*p_rs)[j])*(((*R)->data)[compIdx] - Ss) +
-                                   std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
-                }
-            }
-        } 
         return(0);
     }
 
     int FC_S_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
-        int j, tmp, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
-        double prs_j;
-
-        compIdx = startLoc + startTime*nLoc;
-        for (j = startTime; j < nTpts; j++)
-        {
-            prs_j = (*p_rs)[j];
-            tmp = ((*S_star) -> data)[compIdx];
-            if ((tmp < 0) || (tmp > ((*R) -> data)[compIdx]) ||
-                    (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
-
-            {
-                cachedValues[compIdx] = -INFINITY;
-            }
-            else
-            {
-                cachedValues[compIdx] = (std::log(prs_j)*tmp +
-                               std::log(1-prs_j)*(((*R)->data)[compIdx] - tmp) +
-                               std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
-            }
-            compIdx += nLoc;
-        }
-        return 0;
+        return(0);
     }
 
     // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
+        int nLoc = *((*S)->nrow);
+        int nTpts = *((*S)->ncol);
+
+        int i,j,compIdx;
+        long double output = 0.0;
+        int Sstar_val,Estar_val,S_val,R_val;
+        double p_se_val, p_rs_val;
+        double component;
         *value = 0.0;
-        int i, j, tmp, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
-        double term1, term2, term3;
-        double prs_j;
-        term1 = 0.0; term2 = 0.0; term3 = 0.0;
-        compIdx = 0;
-        for (j = 0; j < nTpts; j++)     
+
+        for (j = 0; j < nTpts; j++)
         {
             compIdx = j*nLoc - 1;
-            prs_j = (*p_rs)[j];
-            for (i = 0; i < nLoc; i++)    
+            p_rs_val = (*p_rs)[j];
+            for (i = 0;i<nLoc;i++);
             {
-                compIdx++;
-                tmp = ((*S_star) -> data)[compIdx];
-    
-                if ((tmp < 0) || (tmp > ((*R)->data)[compIdx]) || 
-                        (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
+                compIdx ++; 
+                Sstar_val = ((*S_star)->data)[compIdx]; 
+                Estar_val = ((*E_star)->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                R_val = ((*R)->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
 
+
+                // Check Constraints
+                if (Sstar_val < 0 || 
+                    Sstar_val > R_val ||
+                    Estar_val > S_val)
                 {
                     *value = -INFINITY;
                     return(-1);
                 }
-
-                term1 += std::log(prs_j)*tmp; 
-                term2 += std::log(1-prs_j)*(((*R) -> data)[compIdx] - tmp);
-                term3 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]) ;
+                
+                output += (std::log(p_rs_val)*Sstar_val + 
+                           std::log(1-p_rs_val)*(R_val - Sstar_val) +
+                           std::log(1-p_se_val)*(S_val - Estar_val) + 
+                           ((*context) -> random -> choose(R_val, Sstar_val)) + 
+                           ((*context)->random->choose(S_val, Estar_val)));
             }
-        } 
-        *value = term1 + term2 + term3;
-        // Catch invalid values, nans etc. 
+
+        }
+        *value = output;
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
+            return(-1); 
         }
-
         return(0);
+
     }
     int FC_S_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
-        *value = 0.0;
-        int i, j, tmp, compIdx;
-        int err = 0;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
-        double prs_j;
-
-        compIdx = startLoc + startTime*nLoc;
-        for (j = startTime; j < nTpts; j++)
-        {
-            prs_j = (*p_rs)[j];
-            tmp = ((*S_star) -> data)[compIdx];
-            if ((tmp < 0) || (tmp > ((*R) -> data)[compIdx]) ||
-                   (((*E_star) -> data)[compIdx] > ((*S)->data)[compIdx]))
-            {
-                cachedValues[compIdx] = -INFINITY;
-                err = 1;
-            }
-            else
-            {
-                cachedValues[compIdx] = (std::log(prs_j)*tmp + 
-                               std::log(1-prs_j)*(((*R)->data)[compIdx] - tmp) +
-                               std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx]));
-            }
-            compIdx += nLoc;
-        }
-        // Bad value encountered while filling up cache, return early.  
-        if (err)
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        for (j = 0; j < nTpts; j++)     
-        {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
-            {
-                compIdx++;
-                *value += cachedValues[compIdx]; 
-            }
-        } 
-        // Catch invalid values, nans etc which we missed with the 
-        // standard flags. 
-        if (!std::isfinite(*value))
-        {
-            *value = -INFINITY;
-        }
-        return(0);
+        return(evalCPU());
     }
 
     int FC_S_Star::evalOCL()

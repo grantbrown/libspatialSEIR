@@ -1,7 +1,7 @@
 library(spatialSEIR)
 
 set.seed(123123)
-NYears = 12
+NYears = 10
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
 
@@ -266,6 +266,7 @@ res = spatialSEIRModel(compMatDim,
 
 res$setRandomSeed(123123)
 N = 1000000
+
 
 batchSize = 100
 tryCatch({

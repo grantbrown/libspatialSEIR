@@ -9,7 +9,36 @@ namespace SpatialSEIR
     RandomNumberProvider::RandomNumberProvider(unsigned int seed)
     {
         generator.seed(seed);
+        int memosize = 1000000;
+        logFactorialMemo = new double[memosize];
+        maxFactorial = new int;
+        *maxFactorial = memosize;
+        int i;
+        logFactorialMemo[0] = 0;
+
+        for (i = 1; i < memosize; i++)
+        {
+            logFactorialMemo[i] = std::log(i) + logFactorialMemo[i-1];
+        }
     }
+    double RandomNumberProvider::factorial(int k)
+    {
+        return(logFactorialMemo[k]);
+    }
+
+    double RandomNumberProvider::choose(int n, int k)
+    {
+        if (k > *maxFactorial)
+        {
+            std::cout << "Error: resizing not implemented\n";
+            throw(-1);
+        }
+        
+        return(logFactorialMemo[n] - 
+                logFactorialMemo[k] - 
+                logFactorialMemo[n-k]);
+    }
+
     double RandomNumberProvider::uniform()
     {
         return(unidist(generator));
@@ -113,6 +142,7 @@ namespace SpatialSEIR
     }
     RandomNumberProvider::~RandomNumberProvider()
     {
-        //Nothing special
+        delete maxFactorial;
+        delete[] logFactorialMemo;
     }
 }

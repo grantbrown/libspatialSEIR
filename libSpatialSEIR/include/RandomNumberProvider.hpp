@@ -53,9 +53,18 @@ namespace SpatialSEIR
             double* gamma(int n, double* output);
             double beta(double a, double b);
 
+
             //Density Functions
             double dpois(int x, double mu);
             double dnorm(double x, double mu, double sd);
+
+            // Utility Functions
+            double choose(int n,int k);
+            double factorial(int k);
+
+            //Data
+            double* logFactorialMemo;
+            int* maxFactorial;
 
             ~RandomNumberProvider();
     };
