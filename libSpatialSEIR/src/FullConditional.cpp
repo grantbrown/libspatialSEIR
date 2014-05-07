@@ -553,11 +553,101 @@ namespace SpatialSEIR
     // Cache the components of the FC_S_Star calculation in cachedValues
     int FC_S_Star::cacheEvalCalculation(double* cachedValues)
     {
-        return(0);
+        // Cache eval calulation could probably get away with 
+        // returning upon encountering bad data, but the performance
+        // benefit would be small given the relaitive infrequency of 
+        // calls.
+        int nLoc = *((*S)->nrow);
+        int nTpts = *((*S)->ncol);
+
+        int i,j,compIdx;
+        int Sstar_val,Estar_val,S_val,R_val;
+        double p_se_val, p_rs_val;
+        int err = 0;
+
+        for (j = 0; j < nTpts; j++)
+        {
+            compIdx = j*nLoc - 1;
+            p_rs_val = (*p_rs)[j];
+            for (i = 0;i<nLoc;i++);
+            {
+                compIdx ++; 
+                Sstar_val = ((*S_star)->data)[compIdx]; 
+                Estar_val = ((*E_star)->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                R_val = ((*R)->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+
+
+                // Check Constraints
+                if (Sstar_val < 0 || 
+                    Sstar_val > R_val ||
+                    Estar_val > S_val)
+                {
+                    cachedValues[compIdx] = -INFINITY;
+                    err += 1;
+                }
+                else
+                { 
+                    cachedValues[compIdx] = (std::log(p_rs_val)*Sstar_val + 
+                                   std::log(1-p_rs_val)*(R_val - Sstar_val) +
+                                   std::log(1-p_se_val)*(S_val - Estar_val) + 
+                                   ((*context) -> random -> choose(R_val, Sstar_val)) + 
+                                   ((*context)->random->choose(S_val, Estar_val)));
+                    if (!std::isfinite(cachedValues[compIdx]))
+                    {
+                        cachedValues[compIdx] = -INFINITY;
+                        err += 1;
+                    }
+                }
+            }
+        }
+        return(err);
     }
 
     int FC_S_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
+        // If update evalCache encounters invalid data, we're ALWAYS
+        // going to end up back here at the same startLoc startTime with a new 
+        // proposal. Therefore, return immediately upon encountering bad 
+        // values. 
+        int i,compIdx,Sstar_val,Estar_val,S_val,R_val;
+        double p_se_val, p_rs_val;
+        int nLoc = *((*S)->nrow);  
+        int nTpts = *((*S)->ncol);
+        
+        compIdx = startLoc + startTime*nLoc;
+        for (i = startTime; i < nTpts; i++)
+        {
+                Sstar_val = ((*S_star)->data)[compIdx]; 
+                Estar_val = ((*E_star)->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                R_val = ((*R)->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+                p_rs_val = (*p_rs)[i];
+
+                if (Sstar_val < 0 || 
+                    Sstar_val > R_val ||
+                    Estar_val > S_val)
+                {
+                    cachedValues[compIdx] = -INFINITY;
+                    return(-1);
+                }
+                else
+                { 
+                    cachedValues[compIdx] = (std::log(p_rs_val)*Sstar_val + 
+                                   std::log(1-p_rs_val)*(R_val - Sstar_val) +
+                                   std::log(1-p_se_val)*(S_val - Estar_val) + 
+                                   ((*context) -> random -> choose(R_val, Sstar_val)) + 
+                                   ((*context)->random->choose(S_val, Estar_val)));
+                    if (!std::isfinite(cachedValues[compIdx]))
+                    {
+                        cachedValues[compIdx] = -INFINITY;
+                        return(-1);
+                    }
+                }
+                compIdx += nLoc; 
+        }
         return(0);
     }
 
@@ -571,7 +661,6 @@ namespace SpatialSEIR
         long double output = 0.0;
         int Sstar_val,Estar_val,S_val,R_val;
         double p_se_val, p_rs_val;
-        double component;
         *value = 0.0;
 
         for (j = 0; j < nTpts; j++)
@@ -616,7 +705,24 @@ namespace SpatialSEIR
     }
     int FC_S_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
-        return(evalCPU());
+        int valid = 1;
+        int nvals = (*((*S)->nrow))*(*((*S)->ncol));
+        int i;
+        long double output = 0.0;
+
+        valid = updateEvalCache(startLoc, startTime, cachedValues);
+        if (valid < 0)
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+
+        for (i = 0; i < nvals; i++)
+        {
+            output += cachedValues[i];
+        }
+        *value = output;
+        return(0);
     }
 
     int FC_S_Star::evalOCL()
