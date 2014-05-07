@@ -23,17 +23,27 @@ namespace SpatialSEIR
     }
     double RandomNumberProvider::factorial(int k)
     {
-        return(logFactorialMemo[k]);
+        if (k <= *maxFactorial)
+        {
+            return(logFactorialMemo[k]);
+        }
+        // If not memoized, default to Stirling's approximation
+        return(k * std::log(k) - k);
     }
 
     double RandomNumberProvider::choose(int n, int k)
     {
-        if (k > *maxFactorial)
+        // Can we get rid of these bounds checking
+        // parts if conditions are satisfied on N?
+        // It's only an issue because this stuff ends
+        // up in the innermost loop.
+        if (n > *maxFactorial)
         {
-            std::cout << "Error: resizing not implemented\n";
-            throw(-1);
-        }
-        
+            // Out of memo
+            return(factorial(n) - 
+                    factorial(k) - 
+                    factorial(n-k));
+        } 
         return(logFactorialMemo[n] - 
                 logFactorialMemo[k] - 
                 logFactorialMemo[n-k]);
