@@ -130,6 +130,7 @@ namespace SpatialSEIR
                                     R_starArgs -> inRow,
                                     R_starArgs -> inCol);
 
+
         S -> createEmptyCompartment(S_starArgs -> inRow,
                                     S_starArgs -> inCol);
 
@@ -141,6 +142,7 @@ namespace SpatialSEIR
 
         R -> createEmptyCompartment(S_starArgs -> inRow,
                                     S_starArgs -> inCol);
+
 
         rawDistMat -> genFromDataStream(rawDistArgs -> inData,
                                         rawDistArgs -> dim);
@@ -434,13 +436,11 @@ namespace SpatialSEIR
         }
 
 
-
-        /*
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
-        */
 
+        /*
         if (verbose){std::cout << "Sampling E_star\n";}
         if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
         else {E_star_fc -> sampleOCL();}
@@ -475,6 +475,7 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling gamma\n";}
         if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
+        */
     }
 
 
@@ -522,15 +523,15 @@ namespace SpatialSEIR
     // Updates: S
     void ModelContext::calculateS_CPU()
     {
-        calculateGenericCompartment_CPU(&*(this -> S), &*(this -> A0 -> S0),
-                                    &*(this -> S_star), &*(this -> E_star),
-                                    &*(this -> A0 -> S_star0), &*(this -> A0 -> E_star0));
+        calculateGenericCompartment_CPU(S, A0 -> S0,
+                                    S_star, E_star,
+                                    A0 -> S_star0, A0 -> E_star0);
     }
     void ModelContext::calculateS_CPU(int startLoc, int startTime)
     {
-        calculateGenericCompartment_CPU(&*(this -> S), &*(this -> A0 -> S0),
-                                    &*(this -> S_star), &*(this -> E_star),
-                                    &*(this -> A0 -> S_star0), &*(this -> A0 -> E_star0),
+        calculateGenericCompartment_CPU(S, A0 -> S0,
+                                    S_star, E_star,
+                                    A0 -> S_star0, A0 -> E_star0,
                                     startLoc, startTime);
     }
 
@@ -568,17 +569,17 @@ namespace SpatialSEIR
 
     void ModelContext::calculateE_CPU()
     {
-        calculateGenericCompartment_CPU(&*(this -> E), &*(this -> A0 -> E0),
-                                    &*(this -> E_star), &*(this -> I_star),
-                                    &*(this -> A0 -> E_star0), &*(this -> A0 -> I_star0));
+        calculateGenericCompartment_CPU(E, A0 -> E0,
+                                        E_star, I_star,
+                                        A0 -> E_star0, A0 -> I_star0);
     }
 
     void ModelContext::calculateE_CPU(int startLoc, int startTime)
     {
-        calculateGenericCompartment_CPU(&*(this -> E), &*(this -> A0 -> E0),
-                                    &*(this -> E_star), &*(this -> I_star),
-                                    &*(this -> A0 -> E_star0), &*(this -> A0 -> I_star0),
-                                    startLoc, startTime);
+        calculateGenericCompartment_CPU(E, A0 -> E0,
+                                        E_star, I_star,
+                                        A0 -> E_star0, A0 -> I_star0,
+                                        startLoc, startTime);
     }
 
     void ModelContext::calculateE_givenI_CPU()
@@ -616,39 +617,17 @@ namespace SpatialSEIR
     // Updates: I
     void ModelContext::calculateI_CPU()
     {
-
-        /*
-        int i;
-        int maxItr = (*(I -> nrow))*(*(I -> ncol));
-        for (i = 0; i < maxItr; i++)
-        {
-            (I->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (R->data)[i]; 
-        }
-        */
-
-        calculateGenericCompartment_CPU(&*(this -> I), &*(this -> A0 -> I0),
-                                    &*(this -> I_star), &*(this -> R_star),
-                                    &*(this -> A0 -> I_star0), &*(this -> A0 -> R_star0));
+        calculateGenericCompartment_CPU(I, A0 -> I0,
+                                        I_star, R_star,
+                                        A0 -> I_star0, A0 -> R_star0);
     }
 
     void ModelContext::calculateI_CPU(int startLoc, int startTime)
     { 
-        /*
-        int i,j,startIdx,idx;
-        startIdx = startTime*(*(R->nrow)) + startLoc;
-
-        j = 0;
-        for (i = startTime; i < *(R->ncol); i++)
-        {
-            idx = startIdx + j*(*(R->nrow));
-            (I -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (R->data)[idx];  
-            j += 1;
-        }
-        */
-        calculateGenericCompartment_CPU(&*(this -> I), &*(this -> A0 -> I0),
-                                    &*(this -> I_star), &*(this -> R_star),
-                                    &*(this -> A0 -> I_star0), &*(this -> A0 -> R_star0),
-                                    startLoc, startTime);
+        calculateGenericCompartment_CPU(I, A0 -> I0,
+                                        I_star, R_star,
+                                        A0 -> I_star0, A0 -> R_star0,
+                                        startLoc, startTime);
     }
 
     void ModelContext::calculateI_givenR_CPU()
@@ -686,41 +665,19 @@ namespace SpatialSEIR
     void ModelContext::calculateR_CPU()
     {
 
-
-        /*
-        int i;
-        int maxItr = (*(R -> nrow))*(*(R -> ncol));
-        for (i = 0; i < maxItr; i++)
-        {
-            (R->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (I->data)[i]; 
-        }
-        */
-
-        calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
-                                    &*(this -> R_star), &*(this -> S_star),
-                                    &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0));
+        calculateGenericCompartment_CPU(R, A0 -> R0,
+                                        R_star, S_star,
+                                        A0 -> R_star0, A0 -> S_star0);
 
     }
 
     void ModelContext::calculateR_CPU(int startLoc, int startTime)
     {
-        /*
-        int i,j,startIdx,idx;
-        startIdx = startTime*(*(R->nrow)) + startLoc;
 
-        j = 0;
-        for (i = startTime; i < *(R->ncol); i++)
-        {
-            idx = startIdx + j*(*(R->nrow));
-            (R -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (I->data)[idx];  
-            j += 1;
-        }
-        */
-
-        calculateGenericCompartment_CPU(&*(this -> R), &*(this -> A0 -> R0),
-                                    &*(this -> R_star), &*(this -> S_star),
-                                    &*(this -> A0 -> R_star0), &*(this -> A0 -> S_star0),
-                                    startLoc, startTime);
+        calculateGenericCompartment_CPU(R, A0 -> R0,
+                                        R_star, S_star,
+                                        A0 -> R_star0, A0 -> S_star0,
+                                        startLoc, startTime);
 
     }
 
