@@ -205,9 +205,9 @@ logFileList = c(1, # beta
                 0, # Total R_star_j, j = 1...T
                 0) # Total pSE_j, j = 1...T
 
-iterationStride = 100
+iterationStride = 10000
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(3,3,3,1e-4,1e-4,1e-4,1e-4)
+sliceWidths = c(5,5,5,1e-1,1e-1,1e-1,1e-1)
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
@@ -215,7 +215,7 @@ priorAlpha_pEI = 1000000;
 priorBeta_pEI = 100000;
 priorAlpha_pIR = 1000;
 priorBeta_pIR = 100;
-betaPrsPriorPrecision = 1
+betaPrsPriorPrecision = 100
 
 
 verbose = FALSE 
@@ -265,23 +265,25 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
-N = 1000000
 
+runSimulation = function(N, batchSize = 100)
+{
+    batchSize = 1000
+    tryCatch({
+        for (i in 1:(N/batchSize))
+        {
+            res$simulate(batchSize)
+            # sleep to allow R to catch up and handle interrupts 
+            Sys.sleep(0.001)
+            cat(i*batchSize,"\n")
+        }}, 
+        interrupt = function(interrupt)
+        {
+            cat("Exiting...\n")
+    })
+}
 
-batchSize = 100
-tryCatch({
-    for (i in 1:(N/batchSize))
-    {
-        res$simulate(batchSize)
-        # sleep to allow R to catch up and handle interrupts 
-        Sys.sleep(0.001)
-        cat(i*batchSize,"\n")
-    }}, 
-    interrupt = function(interrupt)
-    {
-        cat("Exiting...\n")
-})
-
+runSimulation(1000000)
 
 
 

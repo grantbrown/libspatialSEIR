@@ -1126,8 +1126,8 @@ namespace SpatialSEIR
                 p_se_val = (*p_se)[compIdx];
 
 
-                if (Rstar_val < 0 || Rstar_val > ((*I)-> data)[compIdx] || 
-                        ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
+                if (Rstar_val < 0 || Rstar_val > I_val || 
+                        Sstar_val > R_val ||
                          p_se_val >= 1 || p_se_val <= 0)
 
                 {
@@ -1233,8 +1233,8 @@ namespace SpatialSEIR
                 S_val = ((*S)->data)[compIdx];
                 p_se_val = (*p_se)[compIdx];
 
-                if (Rstar_val < 0 || Rstar_val > ((*I)-> data)[compIdx] || 
-                        ((*S_star) -> data)[compIdx] > ((*R) -> data)[compIdx] ||
+                if (Rstar_val < 0 || Rstar_val > I_val || 
+                        Sstar_val > R_val ||
                          p_se_val >= 1 || p_se_val <= 0)
 
                 {
@@ -1515,11 +1515,11 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::evalCPU()
     {
         int j;
-        double a,b;
+        long double a,b;
         int nbeta = *((*X) -> ncol_x);
         int nTpts = *((*R) -> ncol);
         double tmp;
-        double term1 = 0.0;
+        long double term1 = 0.0;
         double term2 = 0.0;
 
         for (j = 0; j < nTpts; j++)

@@ -61,7 +61,7 @@ namespace SpatialSEIR
             {
                for (i = 0; i < (*ncol_x); i++) 
                {
-                   eta[j] += X[j%(*nrow_x) + i*(*nrow_x)]*beta[i];
+                   eta[j] += X[j + i*(*nrow_x)]*beta[i];
                }
             }
         }
