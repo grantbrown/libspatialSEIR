@@ -84,7 +84,6 @@ betaPrsPriorPrecision = 1
 
 
 
-
 S0 = S[,throwAwayTpts]
 E0 = E[,throwAwayTpts]
 I0 = I[,throwAwayTpts]
@@ -127,6 +126,7 @@ priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
 
 beta = c(covariates$true_fixed_beta, covariates$true_time_varying_beta)
+betaPriorPrecision = 1
 N = matrix(data_list[["pop"]][,2], nrow = compMatDim[1], ncol = compMatDim[2])
 outFileName = "./chainOutput_sim.txt"
 # beta, rho,gamma, p_se, p_ei, p_ir,p_rs,S*,E*,I*,R*
@@ -225,6 +225,7 @@ res = spatialSEIRModel(compMatDim,
                       priorAlpha_pIR,
                       priorBeta_pIR,
                       beta,
+                      betaPriorPrecision,
                       betaPrs,
                       betaPrsPriorPrecision,
                       p_ei,

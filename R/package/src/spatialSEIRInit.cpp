@@ -39,6 +39,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
                      SEXP priorAlpha_pIR_,
                      SEXP priorBeta_pIR_,
                      SEXP beta_,
+                     SEXP betaPriorPrecision_,
                      SEXP betaPrs_,
                      SEXP betaPrsPriorPrecision_,
                      SEXP p_ei_,
@@ -91,6 +92,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
 
 
     Rcpp::NumericVector beta(beta_);
+    Rcpp::NumericVector betaPriorPrecision(betaPriorPrecision_);
     Rcpp::NumericVector betaPrs(betaPrs_);
     Rcpp::NumericVector betaPrsPriorPrecision(betaPrsPriorPrecision_);
     Rcpp::NumericVector p_ei(p_ei_);
@@ -261,7 +263,7 @@ SEXP spatialSEIRInit(SEXP compMatDim,
     gammaFCArgs.priorBeta = priorBeta_gamma.begin();
 
     priorControl priorValues;
-    priorValues.betaPriorPrecision = 10;
+    priorValues.betaPriorPrecision = betaPriorPrecision[0];
     priorValues.P_EI_priorAlpha = priorAlpha_pEI[0];
     priorValues.P_EI_priorBeta = priorBeta_pEI[0];
     priorValues.P_IR_priorAlpha = priorAlpha_pIR[0];

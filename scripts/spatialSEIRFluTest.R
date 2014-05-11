@@ -180,6 +180,7 @@ priorBeta_gamma = 1
 
 #beta = c(-2,0.1,0.1)
 beta = c(0,0,0)
+betaPriorPrecision = 1
 
 priorAlpha_pEI = 1000
 priorBeta_pEI = 100
@@ -265,6 +266,7 @@ res = spatialSEIRInit(compMatDim,
                       priorAlpha_pIR,
                       priorBeta_pIR,
                       beta,
+                      betaPriorPrecision,
                       betaPrs,
                       betaPrsPriorPrecision,
                       p_ei,

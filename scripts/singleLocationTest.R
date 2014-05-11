@@ -14,6 +14,7 @@ X_prs = cbind(1,
               sin((1:MaxTpt)/TptPerYear*2*pi), 
               cos((1:MaxTpt)/TptPerYear*2*pi))
 
+
 trueBetaSEFixed = c(-0.3)
 trueBetaSEVarying = c(0.0001, 0.2, 0.3, 0.5, 0.6, 0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1)*3
 trueGamma = rep(0.0, MaxTpt)  
@@ -211,11 +212,12 @@ sliceWidths = c(5,5,5,1e-1,1e-1,1e-1,1e-1)
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
-priorAlpha_pEI = 1000000;
-priorBeta_pEI = 100000;
-priorAlpha_pIR = 1000;
-priorBeta_pIR = 100;
-betaPrsPriorPrecision = 100
+priorAlpha_pEI = 100;
+priorBeta_pEI = 10;
+priorAlpha_pIR = 100;
+priorBeta_pIR = 10;
+betaPrsPriorPrecision = 0.1
+betaPriorPrecision = 0.1
 
 
 verbose = FALSE 
@@ -251,6 +253,7 @@ res = spatialSEIRModel(compMatDim,
                       priorAlpha_pIR,
                       priorBeta_pIR,
                       beta,
+                      betaPriorPrecision,
                       betaPrs,
                       betaPrsPriorPrecision,
                       p_ei,
