@@ -593,7 +593,7 @@ namespace SpatialSEIR
                                    std::log(1-p_rs_val)*(R_val - Sstar_val) +
                                    std::log(1-p_se_val)*(S_val) + 
                                    ((*context) -> random -> choose(R_val, Sstar_val)) + 
-                                   ((*context)->random->choose(S_val, Estar_val)));
+                                   ((*context)->random->choosePartial(S_val, Estar_val)));
                     if (!std::isfinite(cachedValues[compIdx]))
                     {
                         cachedValues[compIdx] = -INFINITY;
@@ -639,7 +639,7 @@ namespace SpatialSEIR
                                    std::log(1-p_rs_val)*(R_val - Sstar_val) +
                                    std::log(1-p_se_val)*(S_val) + 
                                    ((*context) -> random -> choose(R_val, Sstar_val)) + 
-                                   ((*context)->random->choose(S_val, Estar_val)));
+                                   ((*context)->random->choosePartial(S_val, Estar_val)));
                     if (!std::isfinite(cachedValues[compIdx]))
                     {
                         cachedValues[compIdx] = -INFINITY;
@@ -690,7 +690,7 @@ namespace SpatialSEIR
                            std::log(1-p_rs_val)*(R_val - Sstar_val) +
                            std::log(1-p_se_val)*(S_val) + 
                            ((*context) -> random -> choose(R_val, Sstar_val)) + 
-                           ((*context)->random->choose(S_val, Estar_val)));
+                           ((*context)->random->choosePartial(S_val, Estar_val)));
             }
 
         }
@@ -866,7 +866,7 @@ namespace SpatialSEIR
                     cachedValues[compIdx] = (std::log(p_se_val)*Estar_val +
                                              std::log(1-p_se_val)*(S_val - Estar_val) +
                                              ln_1m_p_ei*E_val + 
-                                             ((*context) -> random -> choose(E_val, Istar_val)) + 
+                                             ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
                                              ((*context)->random->choose(S_val, Estar_val)));
                 }
             }
@@ -904,7 +904,7 @@ namespace SpatialSEIR
                 cachedValues[compIdx] = (std::log(p_se_val)*Estar_val +
                                          std::log(1-p_se_val)*(S_val - Estar_val) +
                                          ln_1m_p_ei*E_val + 
-                                         ((*context) -> random -> choose(E_val, Istar_val)) + 
+                                         ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
                                          ((*context)->random->choose(S_val, Estar_val)));
                 if (!std::isfinite(cachedValues[compIdx]))
                 {
@@ -952,7 +952,7 @@ namespace SpatialSEIR
                     output += (std::log(p_se_val)*Estar_val +
                               std::log(1-p_se_val)*(S_val - Estar_val) +
                               ln_1m_p_ei*E_val + 
-                              ((*context) -> random -> choose(E_val, Istar_val)) + 
+                              ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
                               ((*context)->random->choose(S_val, Estar_val)));
                 }
             }
@@ -1138,9 +1138,8 @@ namespace SpatialSEIR
                     cachedValues[compIdx] = (ln_p_ir*Rstar_val + 
                                     ln_1m_p_ir*(I_val -Rstar_val) +
                                     std::log(1-p_rs_val)*(R_val) +
-                                    ((*context) -> random -> choose(R_val, Sstar_val)) +
+                                    ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
                                     ((*context) -> random -> choose(I_val, Rstar_val)) +
-                                    ((*context) -> random -> choose(S_val, Estar_val)) +                                    
                                     // p_se components
                                     std::log(p_se_val)*Estar_val +
                                     std::log(1-p_se_val)*(S_val - Estar_val));
@@ -1189,9 +1188,8 @@ namespace SpatialSEIR
                 cachedValues[compIdx] = (ln_p_ir*Rstar_val +
                                 ln_1m_p_ir*(I_val - Rstar_val) +
                                 std::log(1-p_rs_val)*(R_val) +
-                                ((*context) -> random -> choose(R_val, Sstar_val)) +
+                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
                                 ((*context) -> random -> choose(I_val, Rstar_val)) +
-                                ((*context) -> random -> choose(S_val, Estar_val)) +                                    
                                 std::log(p_se_val)*Estar_val +
                                 std::log(1-p_se_val)*(S_val - Estar_val));
                 if (!std::isfinite(cachedValues[compIdx]))
@@ -1246,9 +1244,9 @@ namespace SpatialSEIR
                     output += (ln_p_ir*Rstar_val + 
                                 ln_1m_p_ir*(I_val -Rstar_val) +
                                 std::log(1-p_rs_val)*(R_val) +
-                                ((*context) -> random -> choose(R_val, Sstar_val)) +
+                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
                                 ((*context) -> random -> choose(I_val, Rstar_val)) +
-                                ((*context) -> random -> choose(S_val, Estar_val)) +                                    
+
                                 // p_se components
                                 std::log(p_se_val)*Estar_val +
                                 std::log(1-p_se_val)*(S_val - Estar_val));

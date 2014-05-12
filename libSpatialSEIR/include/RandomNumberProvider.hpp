@@ -60,6 +60,8 @@ namespace SpatialSEIR
 
             // Utility Functions
             double choose(int n,int k);
+            double choosePartial(int n,int k);
+
             double factorial(int k);
 
             //Data

@@ -233,11 +233,11 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     stop("Invalid Compartment Values")
 }
 # Output Options
-verbose = TRUE
-debug = TRUE
-wrapTimeSeries = TRUE
+verbose = FALSE
+debug = FALSE
+wrapTimeSeries = FALSE
 
-res = spatialSEIRInit(compMatDim,
+res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       X_betaPrsDim,
@@ -276,8 +276,30 @@ res = spatialSEIRInit(compMatDim,
                       logFileList, 
                       iterationStride,
                       verbose,
-                      debug,
-                      sliceWidths,
-                      wrapTimeSeries)
+                      debug, 
+                      sliceWidths, wrapTimeSeries)
+
+
+res$setRandomSeed(123123)
+
+runSimulation = function(N, batchSize = 100)
+{
+    tryCatch({
+        for (i in 1:(N/batchSize))
+        {
+            res$simulate(batchSize)
+            # sleep to allow R to catch up and handle interrupts 
+            Sys.sleep(0.001)
+            cat(i*batchSize,"\n")
+        }}, 
+        interrupt = function(interrupt)
+        {
+            cat("Exiting...\n")
+    })
+}
+
+runSimulation(1000000,1)
+
+
 
 

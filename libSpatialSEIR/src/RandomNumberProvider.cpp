@@ -49,6 +49,24 @@ namespace SpatialSEIR
                 logFactorialMemo[n-k]);
     }
 
+    double RandomNumberProvider::choosePartial(int n, int k)
+    {
+        // Can we get rid of these bounds checking
+        // parts if conditions are satisfied on N?
+        // It's only an issue because this stuff ends
+        // up in the innermost loop.
+        if (n > *maxFactorial)
+        {
+            // Out of memo
+            return(factorial(n) - 
+                    factorial(n-k));
+        } 
+        return(logFactorialMemo[n] - 
+                logFactorialMemo[n-k]);
+    }
+
+
+
     double RandomNumberProvider::uniform()
     {
         return(unidist(generator));

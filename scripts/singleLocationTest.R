@@ -97,7 +97,7 @@ plotEpidemic = function()
 }
 plotEpidemic2 = function()
 {
-    par(mfrow = c(4,2))
+    par(mfrow = c(5,2))
 
     plot(S_star[1,], type = "l", main = "S_star", ylim = c(0, max(max(S_star), max(res$S_star))))
     lines(res$S_star[1,], col = "red")
@@ -122,6 +122,12 @@ plotEpidemic2 = function()
 
     plot(R[1,], type = "l", main = "R", ylim = c(0, max(max(R), max(res$R))))
     lines(res$R[1,], col = "red")
+
+    plot(p_se, type = "l", main = "p_se")
+    lines(res$p_se[1,], col = "red")
+
+    plot(p_rs, type = "l", main = "p_rs") 
+    lines(res$p_rs, col = "red")
 
 }
 
@@ -212,10 +218,10 @@ sliceWidths = c(5,5,5,1e-1,1e-1,1e-1,1e-1)
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
-priorAlpha_pEI = 100;
-priorBeta_pEI = 10;
-priorAlpha_pIR = 100;
-priorBeta_pIR = 10;
+priorAlpha_pEI = 1;
+priorBeta_pEI = 1;
+priorAlpha_pIR = 1;
+priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
