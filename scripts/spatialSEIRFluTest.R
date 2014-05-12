@@ -235,7 +235,6 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 # Output Options
 verbose = FALSE
 debug = FALSE
-wrapTimeSeries = FALSE
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
@@ -277,7 +276,7 @@ res = spatialSEIRModel(compMatDim,
                       iterationStride,
                       verbose,
                       debug, 
-                      sliceWidths, wrapTimeSeries)
+                      sliceWidths)
 
 
 res$setRandomSeed(123123)

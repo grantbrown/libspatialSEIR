@@ -228,7 +228,6 @@ betaPriorPrecision = 0.1
 
 verbose = FALSE 
 debug = FALSE
-wrapTimeSeries = FALSE
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
@@ -270,7 +269,7 @@ res = spatialSEIRModel(compMatDim,
                       iterationStride,
                       verbose,
                       debug, 
-                      sliceWidths, wrapTimeSeries)
+                      sliceWidths)
 
 
 res$setRandomSeed(123123)
