@@ -23,6 +23,7 @@ namespace SpatialSEIR
         int *inData;
         int *inRow;
         int *inCol;
+        double steadyStateConstraintPrecision;
     };
 
     class CompartmentalModelMatrix

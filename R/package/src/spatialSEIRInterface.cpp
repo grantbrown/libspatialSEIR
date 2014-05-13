@@ -61,6 +61,7 @@ class spatialSEIRInterface
                      SEXP outFile,
                      SEXP logVarList,
                      SEXP iterationStride,
+                     SEXP steadyStateConstraintPrecision_,
                      SEXP verboseFlag,
                      SEXP debugFlag,
                      SEXP sliceWidths);
@@ -435,6 +436,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP outFile,
                      SEXP logVarList,
                      SEXP iterationStride,
+                     SEXP steadyStateConstraintPrecision_,
                      SEXP verboseFlag,
                      SEXP debugFlag,
                      SEXP sliceWidths)
@@ -486,6 +488,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::NumericVector p_ir(p_ir_);
     Rcpp::IntegerVector N(N_);
 
+    Rcpp::NumericVector steadyStateConstraintPrecision(steadyStateConstraintPrecision_);
     Rcpp::NumericVector sliceParams(sliceWidths);
 
     chainOutputFile = new std::string(); 
@@ -639,6 +642,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];
     S_starArgs.inCol = &compartmentDimensions[1];
+    S_starArgs.steadyStateConstraintPrecision = steadyStateConstraintPrecision[0];
 
     E_starArgs.inData = E_star.begin();
     E_starArgs.inRow = &compartmentDimensions[0];
@@ -651,6 +655,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     R_starArgs.inData = R_star.begin();
     R_starArgs.inRow = &compartmentDimensions[0];
     R_starArgs.inCol = &compartmentDimensions[1];
+    R_starArgs.steadyStateConstraintPrecision = steadyStateConstraintPrecision[0];
+
 
     gammaFCArgs.gamma = gamma.begin();
     gammaFCArgs.priorAlpha = priorAlpha_gamma.begin();

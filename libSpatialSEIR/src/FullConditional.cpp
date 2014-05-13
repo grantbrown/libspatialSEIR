@@ -468,6 +468,7 @@ namespace SpatialSEIR
                          double *_p_rs,
                          double *_beta,
                          double *_rho,
+                         double _steadyStateConstraintPrecision,
                          double _sliceWidth)
     {
        context = new ModelContext*;
@@ -482,6 +483,7 @@ namespace SpatialSEIR
        beta = new double*;
        rho = new double*;
        value = new double;
+       steadyStateConstraintPrecision = new double;
        sliceWidth = new double;
        *context = _context;
        *S_star = _S_star;
@@ -494,6 +496,7 @@ namespace SpatialSEIR
        *p_rs = _p_rs;
        *beta = _beta;
        *rho = _rho;
+       *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
        *value = -1.0;
        *sliceWidth = _sliceWidth;
     }    
@@ -510,6 +513,7 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete steadyStateConstraintPrecision;
         delete sliceWidth;
         delete context;
     }
@@ -663,7 +667,7 @@ namespace SpatialSEIR
 
         }
         *value = output;
-        *value -= (aDiff*aDiff)/100.0;
+        *value -= (aDiff*aDiff)/(*steadyStateConstraintPrecision);
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -694,7 +698,7 @@ namespace SpatialSEIR
             output += cachedValues[i];
         }
         *value = output;
-        *value -= (aDiff*aDiff)/100.0;
+        *value -= (aDiff*aDiff)/(*steadyStateConstraintPrecision);
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -1028,6 +1032,7 @@ namespace SpatialSEIR
                          double *_p_rs,
                          double *_p_ir,
                          double *_p_se,
+                         double _steadyStateConstraintPrecision,
                          double _sliceWidth)
     {
 
@@ -1043,6 +1048,7 @@ namespace SpatialSEIR
         p_ir = new double*;
         p_se = new double*;
         sliceWidth = new double;
+        steadyStateConstraintPrecision = new double;
         value = new double;
 
         *context = _context;
@@ -1057,6 +1063,7 @@ namespace SpatialSEIR
         *p_ir = _p_ir;
         *p_se = _p_se;
         *sliceWidth = _sliceWidth;
+        *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
     }
     FC_R_Star::~FC_R_Star()
@@ -1073,6 +1080,7 @@ namespace SpatialSEIR
         delete p_se;
         delete value;
         delete sliceWidth;
+        delete steadyStateConstraintPrecision;
         delete context;
     }
 
