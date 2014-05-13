@@ -228,6 +228,7 @@ priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
+steadyStateConstraintPrecision = 0.01
 
 verbose = FALSE 
 debug = FALSE
@@ -270,6 +271,7 @@ res = spatialSEIRModel(compMatDim,
                       outFileName, 
                       logFileList, 
                       iterationStride,
+                      steadyStateConstraintPrecision,
                       verbose,
                       debug, 
                       sliceWidths)
