@@ -1,11 +1,11 @@
 library(spatialSEIR)
 
 set.seed(123123)
-NYears = 10
+NYears = 20
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
 
-ThrowAwayTpt = 60
+ThrowAwayTpt = 180
 
 X = matrix(1, ncol = 1)
 Z = cbind(seq(1,NYears*TptPerYear), model.matrix(~as.factor(rep(1:12,NYears)))[,2:TptPerYear])
@@ -138,15 +138,18 @@ plotEpidemic2 = function()
 
 # Format for libspatialSEIR
 
-S0 = S[,ThrowAwayTpt]
-E0 = E[,ThrowAwayTpt]
-I0 = I[,ThrowAwayTpt]
-R0 = R[,ThrowAwayTpt]
+if (ThrowAwayTpt != 0)
+{
+    S0 = S[,ThrowAwayTpt]
+    E0 = E[,ThrowAwayTpt]
+    I0 = I[,ThrowAwayTpt]
+    R0 = R[,ThrowAwayTpt]
 
-S_star0 = S_star[,ThrowAwayTpt]
-E_star0 = E_star[,ThrowAwayTpt]
-I_star0 = I_star[,ThrowAwayTpt]
-R_star0 = R_star[,ThrowAwayTpt]
+    S_star0 = S_star[,ThrowAwayTpt]
+    E_star0 = E_star[,ThrowAwayTpt]
+    I_star0 = I_star[,ThrowAwayTpt]
+    R_star0 = R_star[,ThrowAwayTpt]
+}
 
 S_star = S_star[,(ThrowAwayTpt + 1):ncol(S_star), drop = FALSE]
 E_star = E_star[,(ThrowAwayTpt + 1):ncol(E_star), drop = FALSE]

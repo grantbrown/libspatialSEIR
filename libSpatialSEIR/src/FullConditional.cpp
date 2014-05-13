@@ -52,42 +52,6 @@ namespace SpatialSEIR
     }
 
     /*
-    double logFact(int input)
-    {
-        double output =0.0;
-        int i;
-        //Log 1 is zero
-        for (i = 2; i <= input; i++)
-        {
-            output += std::log(i);
-        }
-        return(output);
-    }
-
-    double logChoose(int n, int k)
-    {
-        if (k == 0 || k == n)
-        {
-            return(0);
-        }
-        double output = 0.0;
-        int n_m_k = n-k;
-        int term1 = std::max(k,n_m_k);
-        int term2 = std::min(k,n_m_k);
-        int i;
-        for (i = n; i > term1; i--)
-        {
-            output += std::log(i);
-        }
-        for (i = 2; i <= term2; i++)
-        {
-            output -= std::log(i); 
-        }
-        return(output);
-    }
-    */
-
-    /*
      *
      * Implement the data container class InitData
      *
@@ -578,7 +542,6 @@ namespace SpatialSEIR
                 R_val = ((*R)->data)[compIdx];
                 p_se_val = (*p_se)[compIdx];
 
-
                 // Check Constraints
                 if (Sstar_val < 0 || 
                     Sstar_val > R_val ||
@@ -663,6 +626,11 @@ namespace SpatialSEIR
         double p_se_val, p_rs_val;
         *value = 0.0;
 
+        long unsigned int S_star_sum = (*S_star)->marginSum(3,-1);
+        long unsigned int R_star_sum = (*context)->R_star->marginSum(3,-1);
+        int64_t aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
+
+
         for (j = 0; j < nTpts; j++)
         {
             compIdx = j*nLoc - 1;
@@ -695,6 +663,7 @@ namespace SpatialSEIR
 
         }
         *value = output;
+        *value -= (aDiff*aDiff)/100.0;
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -709,6 +678,9 @@ namespace SpatialSEIR
         int nvals = (*((*S)->nrow))*(*((*S)->ncol));
         int i;
         long double output = 0.0;
+        long unsigned int S_star_sum = (*S_star)->marginSum(3,-1);
+        long unsigned int R_star_sum = (*context)->R_star->marginSum(3,-1);
+        int64_t aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
 
         valid = updateEvalCache(startLoc, startTime, cachedValues);
         if (valid < 0)
@@ -722,6 +694,12 @@ namespace SpatialSEIR
             output += cachedValues[i];
         }
         *value = output;
+        *value -= (aDiff*aDiff)/100.0;
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
         return(0);
     }
 
