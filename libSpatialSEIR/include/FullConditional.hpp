@@ -172,6 +172,7 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_S, 
                       CompartmentalModelMatrix *_R,
                       CompartmentalModelMatrix *_E_star,
+                      CompartmentalModelMatrix *_R_star,
                       InitData *_A0,
                       CovariateMatrix *_X,
                       double *_p_se,
@@ -198,6 +199,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **S; 
             CompartmentalModelMatrix **R;
             CompartmentalModelMatrix **E_star;
+            CompartmentalModelMatrix **R_star;
             InitData **A0;
             CovariateMatrix **X;
             double **p_se;
@@ -223,6 +225,7 @@ namespace SpatialSEIR
                       double *_p_ei,
                       double *_rho,
                       double *_beta,
+                      double _steadyStateConstraintPrecision,
                       double sliceWidth);
             ~FC_E_Star();
 
@@ -250,6 +253,7 @@ namespace SpatialSEIR
             double **rho;
             double **beta;
             double* value;
+            double* steadyStateConstraintPrecision;
             double* sliceWidth;
     };
 
@@ -262,6 +266,7 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_I,
                       CompartmentalModelMatrix *_S_star,
                       CompartmentalModelMatrix *_E_star,
+                      CompartmentalModelMatrix *_I_star,
                       CompartmentalModelMatrix *_S,
                       InitData *_A0,
                       double *_p_rs,
@@ -289,6 +294,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **I;
             CompartmentalModelMatrix **S_star;
             CompartmentalModelMatrix **E_star;
+            CompartmentalModelMatrix **I_star;
             CompartmentalModelMatrix **S;
             InitData **A0;
             double **p_rs;

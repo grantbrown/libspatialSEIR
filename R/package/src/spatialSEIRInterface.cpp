@@ -647,6 +647,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     E_starArgs.inData = E_star.begin();
     E_starArgs.inRow = &compartmentDimensions[0];
     E_starArgs.inCol = &compartmentDimensions[1];
+    E_starArgs.steadyStateConstraintPrecision = steadyStateConstraintPrecision[0];
+
 
     I_starArgs.inData = I_star.begin();
     I_starArgs.inRow = &compartmentDimensions[0];

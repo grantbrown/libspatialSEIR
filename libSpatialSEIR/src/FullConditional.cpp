@@ -462,6 +462,7 @@ namespace SpatialSEIR
                          CompartmentalModelMatrix *_S, 
                          CompartmentalModelMatrix *_R, 
                          CompartmentalModelMatrix *_E_star,
+                         CompartmentalModelMatrix *_R_star,
                          InitData *_A0,
                          CovariateMatrix *_X, 
                          double *_p_se,
@@ -476,6 +477,7 @@ namespace SpatialSEIR
        S = new CompartmentalModelMatrix*;
        R = new CompartmentalModelMatrix*;
        E_star = new CompartmentalModelMatrix*;
+       R_star = new CompartmentalModelMatrix*;
        A0 = new InitData*;
        X = new CovariateMatrix*;
        p_se = new double*;
@@ -490,6 +492,7 @@ namespace SpatialSEIR
        *S = _S;
        *R = _R;
        *E_star = _E_star;
+       *R_star = _R_star;
        *A0 = _A0;
        *X = _X;
        *p_se = _p_se;
@@ -506,6 +509,7 @@ namespace SpatialSEIR
         delete S;
         delete R;
         delete E_star;
+        delete R_star;
         delete A0;
         delete X;
         delete p_se;
@@ -629,11 +633,9 @@ namespace SpatialSEIR
         int Sstar_val,Estar_val,S_val,R_val;
         double p_se_val, p_rs_val;
         *value = 0.0;
-
-        long unsigned int S_star_sum = (*S_star)->marginSum(3,-1);
-        long unsigned int R_star_sum = (*context)->R_star->marginSum(3,-1);
-        int64_t aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
-
+        long unsigned int R_star_sum;
+        long unsigned int S_star_sum;
+        int64_t aDiff; 
 
         for (j = 0; j < nTpts; j++)
         {
@@ -667,7 +669,15 @@ namespace SpatialSEIR
 
         }
         *value = output;
-        *value -= (aDiff*aDiff)/(*steadyStateConstraintPrecision);
+
+        for (i=0; i< nLoc; i++)
+        {
+            S_star_sum = (*S_star)->marginSum(1,i);
+            R_star_sum = (*R_star)->marginSum(1,i);
+            aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
+            *value -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -682,9 +692,9 @@ namespace SpatialSEIR
         int nvals = (*((*S)->nrow))*(*((*S)->ncol));
         int i;
         long double output = 0.0;
-        long unsigned int S_star_sum = (*S_star)->marginSum(3,-1);
-        long unsigned int R_star_sum = (*context)->R_star->marginSum(3,-1);
-        int64_t aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
+        long unsigned int S_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff;
 
         valid = updateEvalCache(startLoc, startTime, cachedValues);
         if (valid < 0)
@@ -698,7 +708,12 @@ namespace SpatialSEIR
             output += cachedValues[i];
         }
         *value = output;
-        *value -= (aDiff*aDiff)/(*steadyStateConstraintPrecision);
+
+        S_star_sum = (*S_star)->marginSum(1,startLoc);
+        R_star_sum = (*R_star)->marginSum(1,startLoc);
+        aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
+        *value -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
@@ -768,6 +783,7 @@ namespace SpatialSEIR
                          double *_p_ei,
                          double *_rho,
                          double *_beta,
+                         double _steadyStateConstraintPrecision,
                          double _sliceWidth) 
     {
 
@@ -783,6 +799,7 @@ namespace SpatialSEIR
         rho = new double*;
         beta = new double*;
         sliceWidth = new double;
+        steadyStateConstraintPrecision = new double;
         value = new double;
         
         *context = _context;
@@ -797,6 +814,7 @@ namespace SpatialSEIR
         *rho = _rho;
         *beta = _beta;
         *sliceWidth = _sliceWidth;
+        *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
     }
 
@@ -814,6 +832,7 @@ namespace SpatialSEIR
         delete beta;
         delete value;
         delete sliceWidth;
+        delete steadyStateConstraintPrecision; 
         delete context;
     }
 
@@ -910,6 +929,10 @@ namespace SpatialSEIR
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;
         long double output = 0.0;
+        long unsigned int E_star_sum;
+        long unsigned int I_star_sum;
+        int64_t aDiff; 
+
         for (j = 0; j < nTpts; j++)     
         {
             compIdx = j*nLoc - 1;
@@ -940,6 +963,14 @@ namespace SpatialSEIR
             }
         } 
         
+
+        for (i=0; i< nLoc; i++)
+        {
+            E_star_sum = (*E_star)->marginSum(1,i);
+            I_star_sum = (*I_star)->marginSum(1,i);
+            aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum);
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
         if (!std::isfinite(output))
         {
             *value = -INFINITY;
@@ -954,6 +985,10 @@ namespace SpatialSEIR
     int FC_E_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
         int err;
+        long unsigned int E_star_sum;
+        long unsigned int I_star_sum;
+        int64_t aDiff; 
+
         err = updateEvalCache(startLoc, startTime, cachedValues);
         if (err < 0)
         {
@@ -972,6 +1007,10 @@ namespace SpatialSEIR
             *value = -INFINITY;
             return(-1);
         }
+        E_star_sum = (*E_star)->marginSum(1,startLoc);
+        I_star_sum = (*I_star)->marginSum(1,startLoc);
+        aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum);
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
         *value = output;
         return(0);
     }
@@ -1027,6 +1066,7 @@ namespace SpatialSEIR
                          CompartmentalModelMatrix *_I,
                          CompartmentalModelMatrix *_S_star,
                          CompartmentalModelMatrix *_E_star,
+                         CompartmentalModelMatrix *_I_star,
                          CompartmentalModelMatrix *_S,
                          InitData *_A0,
                          double *_p_rs,
@@ -1042,6 +1082,7 @@ namespace SpatialSEIR
         I = new CompartmentalModelMatrix*;
         S_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
+        I_star = new CompartmentalModelMatrix*;
         S = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_rs = new double*;
@@ -1057,6 +1098,7 @@ namespace SpatialSEIR
         *I = _I;
         *S_star = _S_star;
         *E_star = _E_star;
+        *I_star = _I_star;
         *S = _S;
         *A0 = _A0;
         *p_rs = _p_rs;
@@ -1073,6 +1115,7 @@ namespace SpatialSEIR
         delete I;
         delete S_star;
         delete E_star;
+        delete I_star;
         delete S;
         delete A0;
         delete p_rs;
@@ -1201,6 +1244,10 @@ namespace SpatialSEIR
         double ln_1m_p_ir = std::log(1-(**p_ir));
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val,S_val;
         long double output = 0.0;
+        long unsigned int I_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff; 
+
     
         for (j = 0; j < nTpts; j++)     
         {
@@ -1239,7 +1286,16 @@ namespace SpatialSEIR
                 }
             }
         } 
-        if (!std::isfinite(output))
+
+        for (i=0; i< nLoc; i++)
+        {
+            I_star_sum = (*I_star)->marginSum(1,i);
+            R_star_sum = (*R_star)->marginSum(1,i);
+            aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum);
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
+        if (!std::isfinite(*value))
         {
             *value = -INFINITY;
             return(-1);
@@ -1254,6 +1310,10 @@ namespace SpatialSEIR
         int maxVal = (*((*R) -> ncol))*(*((*R)->nrow));
         int i;
         long double output = 0.0;
+        long unsigned int I_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff; 
+
         err = updateEvalCache(startLoc, startTime, cachedValues);
         if (err < 0)
         {
@@ -1264,6 +1324,13 @@ namespace SpatialSEIR
         {
             output += cachedValues[i];
         }
+
+
+        I_star_sum = (*I_star)->marginSum(1,startLoc);
+        R_star_sum = (*R_star)->marginSum(1,startLoc);
+        aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum);
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
         if (!std::isfinite(output))
         {
             *value = -INFINITY;
