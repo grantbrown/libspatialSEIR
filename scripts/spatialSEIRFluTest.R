@@ -236,6 +236,8 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 verbose = FALSE
 debug = FALSE
 
+steadyStateConstraintPrecision = 0.01
+
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
@@ -274,6 +276,7 @@ res = spatialSEIRModel(compMatDim,
                       outFileName, 
                       logFileList, 
                       iterationStride,
+                      steadyStateConstraintPrecision,
                       verbose,
                       debug, 
                       sliceWidths)

@@ -193,6 +193,7 @@ priorBeta_pEI = 1;
 priorAlpha_pIR = 1;
 priorBeta_pIR = 1;
 
+steadyStateConstraintPrecision = 0.01
 
 
 res = spatialSEIRModel(compMatDim,
@@ -233,21 +234,29 @@ res = spatialSEIRModel(compMatDim,
                       outFileName, 
                       logFileList, 
                       iterationStride,
+                      steadyStateConstraintPrecision,
                       verbose,
                       debug, 
                       sliceWidths)
 
-
 res$setRandomSeed(123123)
-tryCatch({
-    for (i in 1:100000)
-    {
-        res$simulate(1)
-        Sys.sleep(0.001)
-    }}, 
-    interrupt = function(interrupt)
-    {
-        cat("Exiting...\n")
-})
 
+runSimulation = function(N, batchSize = 100)
+{
+    batchSize = 1000
+    tryCatch({
+        for (i in 1:(N/batchSize))
+        {
+            res$simulate(batchSize)
+            # sleep to allow R to catch up and handle interrupts 
+            Sys.sleep(0.001)
+            cat(i*batchSize,"\n")
+        }}, 
+        interrupt = function(interrupt)
+        {
+            cat("Exiting...\n")
+    })
+}
+
+runSimulation(1000000)
 
