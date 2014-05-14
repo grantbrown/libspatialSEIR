@@ -296,6 +296,80 @@ namespace SpatialSEIR
 
     }
 
+    void CompartmentFullConditional::sampleCompartment2(ModelContext* context,
+                                                       InitData* A0,
+                                                       CompartmentalModelMatrix* inStarCompartment,
+                                                       CompartmentalModelMatrix* outStarCompartment, 
+                                                       CompartmentalModelMatrix* toCompartment,
+                                                       CompartmentalModelMatrix* fromCompartment,
+                                                       double width,
+                                                       double* likelihoodCache,
+                                                       double* steadyStateCache,  
+                                                       int* inStarCompartmentCache,
+                                                       int* outStarCompartmentCache,
+                                                       int* toCompartmentCache,
+                                                       int* fromCompartmentCache)
+    {
+        int nLoc = *(inStarCompartment -> nrow);
+        int nTpts = *(inStarCompartment -> ncol);
+        int i,j;
+        int x0, x1;
+        int oldVal;
+        double initVal, newVal;
+        double initProposal, newProposal;
+        double criterion;
+
+        // Here we do lots of operations along the rows, but the data is usually stored column major.
+        // Transpose the data into compartment caches
+        for (j = 0; j < nTpts; j++)
+        {
+            for (i = 0; i < nLoc; i++)
+            {
+                inStarCompartmentCache[j + i*nTpts] = (inStarCompartment -> data)[i + j*nLoc]; 
+                outStarCompartmentCache[j + i*nTpts] = (outStarCompartment -> data)[i + j*nLoc]; 
+                toCompartmentCache[j + i*nTpts] = (toCompartment -> data)[i + j*nLoc]; 
+                fromCompartmentCache[j + i*nTpts] = (fromCompartment -> data)[i + j*nLoc]; 
+            }
+        }
+
+        // When we update a star matrix, the only part of it affected directly is within location. 
+        // Use full conditional functions which take this into account. 
+
+        this -> cacheEvalCalculation(inStarCompartmentCache, 
+                                  outStarCompartmentCache, 
+                                  toCompartmentCache,
+                                  fromCompartmentCache,
+                                  likelihoodCache,
+                                  steadyStateCache);
+        for (i = 0; i < nLoc; i++)
+        {
+            this -> sampleCompartmentLocation(&inStarCompartmentCache[i*nTpts], 
+                                              &outStarCompartmentCache[i*nTpts], 
+                                              &toCompartmentCache[i*nTpts],
+                                              &fromCompartmentCache[i*nTpts],
+                                              &likelihoodCache[i*nTpts],
+                                              &steadyStateCache[i*nTpts],
+                                              i,
+                                              A0,
+                                              width,
+                                              context); 
+        }
+    }
+
+    void CompartmentFullConditional::sampleCompartmentLocation(int* inStarVector,
+                                                               int* outStarVector,
+                                                               int* toCompartmentVector,
+                                                               int* fromCompartmentVector,
+                                                               double* likelihoodCacheVector,
+                                                               double* steadyStateCacheVector,
+                                                               int i,
+                                                               InitData* A0,
+                                                               double width,
+                                                               ModelContext* context)
+    {
+        // Not yet implemented
+    }
+
     int CompartmentFullConditional::sampleCompartmentMetropolis(ModelContext* context,
                                                                 InitData* A0,
                                                                 CompartmentalModelMatrix* starCompartment,

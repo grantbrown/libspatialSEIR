@@ -111,6 +111,12 @@ namespace SpatialSEIR
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
             virtual int cacheEvalCalculation(double* cachedValues) = 0;
+            virtual int cacheEvalCalculation(int* inStarCompartmentCache,
+                                             int* outStarCompartmentCache,
+                                             int* toCompartmentCache,
+                                             int* fromCompartmentCache,
+                                             double* likelihoodCache,
+                                             double* steadyStateCache);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues) = 0;
             virtual int evalCPU() = 0;
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues) = 0;
@@ -127,14 +133,45 @@ namespace SpatialSEIR
                                   InitData* A0, 
                                   CompartmentalModelMatrix* destCompartment,
                                   double width, double* compartmentCache); 
+
+
+
+            void sampleCompartment2(ModelContext* context,
+                                    InitData* A0,
+                                    CompartmentalModelMatrix* inStarCompartment,
+                                    CompartmentalModelMatrix* outStarCompartment,
+                                    CompartmentalModelMatrix* toCompartment,
+                                    CompartmentalModelMatrix* fromCompartment,
+                                    double width,
+                                    double* likelihoodCache,
+                                    double* steadyStateCache,
+                                    int* inStarCompartmentCache,
+                                    int* outStarCompartmentCache,
+                                    int* toCompartmentCache,
+                                    int* fromCompartmentCache);
+
+            void sampleCompartmentLocation(int* inStarVector,
+                                           int* outStarVector,
+                                           int* toCompartmentVector,
+                                           int* fromCompartmentVector,
+                                           double* likelihoodCacheVector,
+                                           double* steadyStateCacheVector,
+                                           int i,
+                                           InitData* A0,
+                                           double width,
+                                           ModelContext* context);
+            
+
             int sampleCompartmentMemoized(ModelContext* context,
                                             InitData* A0, 
                                             CompartmentalModelMatrix* destCompartment,
                                             int width, double* compartmentCache); 
+
             int sampleCompartmentMetropolis(ModelContext* context,
                                   InitData* A0, 
                                   CompartmentalModelMatrix* destCompartment,
                                   double width, double* compartmentCache); 
+
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
     };
