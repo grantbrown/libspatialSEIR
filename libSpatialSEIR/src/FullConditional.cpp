@@ -297,7 +297,6 @@ namespace SpatialSEIR
     }
 
     void CompartmentFullConditional::sampleCompartment2(ModelContext* context,
-                                                       InitData* A0,
                                                        CompartmentalModelMatrix* inStarCompartment,
                                                        CompartmentalModelMatrix* outStarCompartment, 
                                                        CompartmentalModelMatrix* toCompartment,
@@ -313,11 +312,8 @@ namespace SpatialSEIR
         int nLoc = *(inStarCompartment -> nrow);
         int nTpts = *(inStarCompartment -> ncol);
         int i,j;
-        int x0, x1;
-        int oldVal;
-        double initVal, newVal;
-        double initProposal, newProposal;
-        double criterion;
+
+        this -> calculateRelevantCompartments();
 
         // Here we do lots of operations along the rows, but the data is usually stored column major.
         // Transpose the data into compartment caches
@@ -350,10 +346,19 @@ namespace SpatialSEIR
                                               &likelihoodCache[i*nTpts],
                                               &steadyStateCache[i*nTpts],
                                               i,
-                                              A0,
                                               width,
                                               context); 
         }
+
+        // Copy the data back to the appropriate place. 
+        
+        for (i = 0; i < nLoc; i++)
+        {
+            for (j = 0; j < nTpts; j++)
+            {
+                (inStarCompartment -> data)[i + j*nLoc] = inStarCompartmentCache[j + i*nTpts]; 
+            }
+        } 
     }
 
     void CompartmentFullConditional::sampleCompartmentLocation(int* inStarVector,
@@ -363,11 +368,67 @@ namespace SpatialSEIR
                                                                double* likelihoodCacheVector,
                                                                double* steadyStateCacheVector,
                                                                int i,
-                                                               InitData* A0,
                                                                double width,
                                                                ModelContext* context)
     {
-        // Not yet implemented
+        int j;
+        int nTpts = *(context -> S_star -> ncol); 
+        int x0, x1;
+        double initVal, newVal;
+        double initProposal, newProposal;
+        double criterion; 
+
+        for (j = 0; j < nTpts; j++)
+        {
+            this -> calculateRelevantCompartments(i, 
+                                                  j,
+                                                  inStarVector, 
+                                                  outStarVector, 
+                                                  toCompartmentVector,
+                                                  fromCompartmentVector);              
+            this -> evalCPU(i,j, inStarVector, outStarVector, 
+                    toCompartmentVector, fromCompartmentVector,
+                    likelihoodCacheVector);
+            x0 = inStarVector[j]; 
+            initVal = (this -> getValue());
+            
+            // Propose new value, bounded away from zero;
+            x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
+
+            inStarVector[j] = x1;
+
+            this -> calculateRelevantCompartments(i, 
+                                                  j,
+                                                  inStarVector, 
+                                                  outStarVector, 
+                                                  toCompartmentVector,
+                                                  fromCompartmentVector); 
+            this -> evalCPU(i,j, inStarVector, outStarVector, 
+                    toCompartmentVector, fromCompartmentVector,
+                    likelihoodCacheVector);
+
+            newVal = (this->getValue());
+            newProposal = (context -> random -> dnorm(x1, x0,width));
+            initProposal = (context -> random -> dnorm(x0, x1,width));
+            criterion = (newVal - initVal) + (initProposal - newProposal);
+            if (std::log((context -> random -> uniform())) < criterion)
+            {
+                // Accept new value
+            }
+            else
+            {
+                // Keep Original Value
+                inStarVector[j] = x0;
+                // Could be optimized by considering x1 and x0
+                this -> calculateRelevantCompartments(i, 
+                                                      j,
+                                                      inStarVector, 
+                                                      outStarVector, 
+                                                      toCompartmentVector,
+                                                      fromCompartmentVector); 
+                this -> setValue(initVal); 
+            }               
+        }
     }
 
     int CompartmentFullConditional::sampleCompartmentMetropolis(ModelContext* context,
@@ -696,6 +757,17 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_S_Star::cacheEvalCalculation(int* inStarCompartmentCache,
+                                    int* outStarCompartmentCache,
+                                    int* toCompartmentCache,
+                                    int* fromCompartmentCache,
+                                    double* likelihoodCache,
+                                    double* steadyStateCache)
+    {
+        //Not implemented
+        return(-1);
+    }
+
     // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
@@ -796,6 +868,14 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_S_Star::evalCPU(int startLoc, int startTime, int* inStarVector,
+                           int* outStarVector, int* toCompartmentVector,
+                           int* fromCompartmentVector, double* likelihoodCache)
+    {
+        //Not implemented
+        return(-1);
+    }
+
     int FC_S_Star::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -813,6 +893,14 @@ namespace SpatialSEIR
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateR_givenS_CPU(startLoc, startTime);
         return(0);
+    }
+
+    int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime, 
+                                                 int* inStarVector, int* outStarVector,
+                                                 int* toCompartmentVector, int* fromCompartmentVector)
+    {
+        //Not implemented
+        return(-1);
     }
 
     int FC_S_Star::sampleCPU()
@@ -992,6 +1080,17 @@ namespace SpatialSEIR
        return 0;
     }
 
+    int FC_E_Star::cacheEvalCalculation(int* inStarCompartmentCache,
+                                    int* outStarCompartmentCache,
+                                    int* toCompartmentCache,
+                                    int* fromCompartmentCache,
+                                    double* likelihoodCache,
+                                    double* steadyStateCache)
+    {
+        //Not implemented
+        return(-1);
+    }
+
 
     int FC_E_Star::evalCPU()
     {
@@ -1089,6 +1188,14 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_E_Star::evalCPU(int startLoc, int startTime, int* inStarVector,
+                           int* outStarVector, int* toCompartmentVector,
+                           int* fromCompartmentVector, double* likelihoodCache)
+    {
+        //Not implemented
+        return(-1);
+    }
+
     int FC_E_Star::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -1106,6 +1213,14 @@ namespace SpatialSEIR
         (*context) -> calculateS_givenE_CPU(startLoc, startTime);
         return(0);
     }
+    int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime, 
+                                                 int* inStarVector, int* outStarVector,
+                                                 int* toCompartmentVector, int* fromCompartmentVector)
+    {
+        //Not implemented
+        return(-1);
+    }
+
     int FC_E_Star::sampleCPU()
     {
         this -> sampleCompartmentMetropolis(*context,*A0,
@@ -1306,6 +1421,17 @@ namespace SpatialSEIR
         return 0;
     }
 
+    int FC_R_Star::cacheEvalCalculation(int* inStarCompartmentCache,
+                                    int* outStarCompartmentCache,
+                                    int* toCompartmentCache,
+                                    int* fromCompartmentCache,
+                                    double* likelihoodCache,
+                                    double* steadyStateCache)
+    {
+        //Not implemented
+        return(-1);
+    }
+
 
     int FC_R_Star::evalCPU()
     {
@@ -1414,6 +1540,15 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_R_Star::evalCPU(int startLoc, int startTime, int* inStarVector,
+                           int* outStarVector, int* toCompartmentVector,
+                           int* fromCompartmentVector, double* likelihoodCache)
+    {
+        //Not implemented
+        return(-1);
+    }
+
+
     int FC_R_Star::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -1433,6 +1568,14 @@ namespace SpatialSEIR
         (*context) -> calculateI_givenR_CPU(startLoc, startTime);
         ((*context) -> calculateP_SE_CPU(startLoc, startTime));
         return(0);
+    }
+
+    int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime, 
+                                                 int* inStarVector, int* outStarVector,
+                                                 int* toCompartmentVector, int* fromCompartmentVector)
+    {
+        //Not implemented
+        return(-1);
     }
 
     int FC_R_Star::sampleCPU()
