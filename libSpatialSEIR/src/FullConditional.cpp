@@ -297,20 +297,22 @@ namespace SpatialSEIR
     }
 
     void CompartmentFullConditional::sampleCompartment2(ModelContext* context,
-                                                       CompartmentalModelMatrix* inStarCompartment,
-                                                       CompartmentalModelMatrix* outStarCompartment, 
-                                                       CompartmentalModelMatrix* toCompartment,
-                                                       CompartmentalModelMatrix* fromCompartment,
+                                                       CompartmentalModelMatrix* starCompartment1,
+                                                       CompartmentalModelMatrix* starCompartment2, 
+                                                       CompartmentalModelMatrix* starCompartment3,
+                                                       CompartmentalModelMatrix* compartment1,
+                                                       CompartmentalModelMatrix* compartment2,
                                                        double width,
                                                        double* likelihoodCache,
                                                        double* steadyStateCache,  
-                                                       int* inStarCompartmentCache,
-                                                       int* outStarCompartmentCache,
-                                                       int* toCompartmentCache,
-                                                       int* fromCompartmentCache)
+                                                       int* starCompartmentCache1,
+                                                       int* starCompartmentCache2,
+                                                       int* starCompartmentCache3,
+                                                       int* compartmentCache1,
+                                                       int* compartmentCache2)
     {
-        int nLoc = *(inStarCompartment -> nrow);
-        int nTpts = *(inStarCompartment -> ncol);
+        int nLoc = *(starCompartment1 -> nrow);
+        int nTpts = *(starCompartment1 -> ncol);
         int i,j;
 
         this -> calculateRelevantCompartments();
@@ -321,28 +323,31 @@ namespace SpatialSEIR
         {
             for (i = 0; i < nLoc; i++)
             {
-                inStarCompartmentCache[j + i*nTpts] = (inStarCompartment -> data)[i + j*nLoc]; 
-                outStarCompartmentCache[j + i*nTpts] = (outStarCompartment -> data)[i + j*nLoc]; 
-                toCompartmentCache[j + i*nTpts] = (toCompartment -> data)[i + j*nLoc]; 
-                fromCompartmentCache[j + i*nTpts] = (fromCompartment -> data)[i + j*nLoc]; 
+                starCompartmentCache1[j + i*nTpts] = (starCompartment1 -> data)[i + j*nLoc]; 
+                starCompartmentCache2[j + i*nTpts] = (starCompartment2 -> data)[i + j*nLoc]; 
+                starCompartmentCache3[j + i*nTpts] = (starCompartment3 -> data)[i + j*nLoc];     
+                compartmentCache1[j + i*nTpts] = (compartment1 -> data)[i + j*nLoc]; 
+                compartmentCache2[j + i*nTpts] = (compartment2 -> data)[i + j*nLoc]; 
             }
         }
 
         // When we update a star matrix, the only part of it affected directly is within location. 
         // Use full conditional functions which take this into account. 
 
-        this -> cacheEvalCalculation(inStarCompartmentCache, 
-                                  outStarCompartmentCache, 
-                                  toCompartmentCache,
-                                  fromCompartmentCache,
+        this -> cacheEvalCalculation(starCompartmentCache1, 
+                                  starCompartmentCache2, 
+                                  starCompartmentCache3,
+                                  compartmentCache1,
+                                  compartmentCache2,
                                   likelihoodCache,
                                   steadyStateCache);
         for (i = 0; i < nLoc; i++)
         {
-            this -> sampleCompartmentLocation(&inStarCompartmentCache[i*nTpts], 
-                                              &outStarCompartmentCache[i*nTpts], 
-                                              &toCompartmentCache[i*nTpts],
-                                              &fromCompartmentCache[i*nTpts],
+            this -> sampleCompartmentLocation(&starCompartmentCache1[i*nTpts], 
+                                              &starCompartmentCache2[i*nTpts], 
+                                              &starCompartmentCache3[i*nTpts],
+                                              &compartmentCache1[i*nTpts],
+                                              &compartmentCache2[i*nTpts],
                                               &likelihoodCache[i*nTpts],
                                               &steadyStateCache[i*nTpts],
                                               i,
@@ -356,15 +361,16 @@ namespace SpatialSEIR
         {
             for (j = 0; j < nTpts; j++)
             {
-                (inStarCompartment -> data)[i + j*nLoc] = inStarCompartmentCache[j + i*nTpts]; 
+                (starCompartment2 -> data)[i + j*nLoc] = starCompartmentCache2[j + i*nTpts]; 
             }
         } 
     }
 
-    void CompartmentFullConditional::sampleCompartmentLocation(int* inStarVector,
-                                                               int* outStarVector,
-                                                               int* toCompartmentVector,
-                                                               int* fromCompartmentVector,
+    void CompartmentFullConditional::sampleCompartmentLocation(int* starVector1,
+                                                               int* starVector2,
+                                                               int* starVector3,
+                                                               int* compartmentVector1,
+                                                               int* compartmentVector2,
                                                                double* likelihoodCacheVector,
                                                                double* steadyStateCacheVector,
                                                                int i,
@@ -382,29 +388,31 @@ namespace SpatialSEIR
         {
             this -> calculateRelevantCompartments(i, 
                                                   j,
-                                                  inStarVector, 
-                                                  outStarVector, 
-                                                  toCompartmentVector,
-                                                  fromCompartmentVector);              
-            this -> evalCPU(i,j, inStarVector, outStarVector, 
-                    toCompartmentVector, fromCompartmentVector,
+                                                  starVector1, 
+                                                  starVector2, 
+                                                  starVector3,
+                                                  compartmentVector1,
+                                                  compartmentVector2);              
+            this -> evalCPU(i,j, starVector1, starVector2, starVector3, 
+                    compartmentVector1, compartmentVector2,
                     likelihoodCacheVector);
-            x0 = inStarVector[j]; 
+            x0 = starVector2[j]; 
             initVal = (this -> getValue());
             
             // Propose new value, bounded away from zero;
             x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
 
-            inStarVector[j] = x1;
+            starVector2[j] = x1;
 
             this -> calculateRelevantCompartments(i, 
                                                   j,
-                                                  inStarVector, 
-                                                  outStarVector, 
-                                                  toCompartmentVector,
-                                                  fromCompartmentVector); 
-            this -> evalCPU(i,j, inStarVector, outStarVector, 
-                    toCompartmentVector, fromCompartmentVector,
+                                                  starVector1, 
+                                                  starVector2, 
+                                                  starVector3,
+                                                  compartmentVector1,
+                                                  compartmentVector2); 
+            this -> evalCPU(i,j, starVector1, starVector2, starVector3, 
+                    compartmentVector1, compartmentVector2,
                     likelihoodCacheVector);
 
             newVal = (this->getValue());
@@ -418,14 +426,15 @@ namespace SpatialSEIR
             else
             {
                 // Keep Original Value
-                inStarVector[j] = x0;
+                starVector2[j] = x0;
                 // Could be optimized by considering x1 and x0
                 this -> calculateRelevantCompartments(i, 
                                                       j,
-                                                      inStarVector, 
-                                                      outStarVector, 
-                                                      toCompartmentVector,
-                                                      fromCompartmentVector); 
+                                                      starVector1, 
+                                                      starVector2, 
+                                                      starVector3,
+                                                      compartmentVector1,
+                                                      compartmentVector2); 
                 this -> setValue(initVal); 
             }               
         }
@@ -757,12 +766,13 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_S_Star::cacheEvalCalculation(int* inStarCompartmentCache,
-                                    int* outStarCompartmentCache,
-                                    int* toCompartmentCache,
-                                    int* fromCompartmentCache,
-                                    double* likelihoodCache,
-                                    double* steadyStateCache)
+    int FC_S_Star::cacheEvalCalculation(int* starCompartmentCache1,
+                                        int* starCompartmentCache2,
+                                        int* starCompartmentCache3,
+                                        int* compartmentCache1,
+                                        int* compartmentCache2,
+                                        double* likelihoodCache,
+                                        double* steadyStateCache)
     {
         //Not implemented
         return(-1);
@@ -868,9 +878,9 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_S_Star::evalCPU(int startLoc, int startTime, int* inStarVector,
-                           int* outStarVector, int* toCompartmentVector,
-                           int* fromCompartmentVector, double* likelihoodCache)
+    int FC_S_Star::evalCPU(int startLoc, int startTime, int* starVector1,
+                           int* starVector2, int* starVector3, int* compartmentVector1,
+                           int* compartmentVector2, double* likelihoodCache)
     {
         //Not implemented
         return(-1);
@@ -896,11 +906,20 @@ namespace SpatialSEIR
     }
 
     int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime, 
-                                                 int* inStarVector, int* outStarVector,
-                                                 int* toCompartmentVector, int* fromCompartmentVector)
+                                                 int* starVector1, int* starVector2,
+                                                 int* starVector3,
+                                                 int* compartmentVector1, int* compartmentVector2)
     {
-        //Not implemented
-        return(-1);
+        (*context) -> calculateGenericCompartmentVectors(startTime,
+                                                         starVector1, starVector2,
+                                                         starVector3,
+                                                         compartmentVector1,compartmentVector2,
+                                                         *((*A0) -> S_star0),
+                                                         *((*A0) -> E_star0),
+                                                         *((*A0) -> I_star0),
+                                                         *((*A0) -> S0),
+                                                         *((*A0) -> E0));
+        return(0);
     }
 
     int FC_S_Star::sampleCPU()
@@ -1080,10 +1099,11 @@ namespace SpatialSEIR
        return 0;
     }
 
-    int FC_E_Star::cacheEvalCalculation(int* inStarCompartmentCache,
-                                    int* outStarCompartmentCache,
-                                    int* toCompartmentCache,
-                                    int* fromCompartmentCache,
+    int FC_E_Star::cacheEvalCalculation(int* starVector1,
+                                    int* starVector2,
+                                    int* starVector3,
+                                    int* compartmentVector1,
+                                    int* compartmentVector2,
                                     double* likelihoodCache,
                                     double* steadyStateCache)
     {
@@ -1188,8 +1208,8 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_E_Star::evalCPU(int startLoc, int startTime, int* inStarVector,
-                           int* outStarVector, int* toCompartmentVector,
+    int FC_E_Star::evalCPU(int startLoc, int startTime, int* starVector1,
+                           int* starVector2, int* starVector3, int* comprtmentVector1,
                            int* fromCompartmentVector, double* likelihoodCache)
     {
         //Not implemented
@@ -1214,8 +1234,9 @@ namespace SpatialSEIR
         return(0);
     }
     int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime, 
-                                                 int* inStarVector, int* outStarVector,
-                                                 int* toCompartmentVector, int* fromCompartmentVector)
+                                                 int* starVector1, int* starVector2,
+                                                 int* starVector3,
+                                                 int* compartmentVector1, int* compartmentVector2)
     {
         //Not implemented
         return(-1);
@@ -1227,6 +1248,7 @@ namespace SpatialSEIR
                                   *E_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
+
     int FC_E_Star::sampleOCL()
     {
         //NOT IMPLEMENTED
@@ -1421,10 +1443,11 @@ namespace SpatialSEIR
         return 0;
     }
 
-    int FC_R_Star::cacheEvalCalculation(int* inStarCompartmentCache,
-                                    int* outStarCompartmentCache,
-                                    int* toCompartmentCache,
-                                    int* fromCompartmentCache,
+    int FC_R_Star::cacheEvalCalculation(int* starCompartmentCache1,
+                                    int* starCompartmentCache2,
+                                    int* starCompartmentCache3,
+                                    int* compartmentCache1,
+                                    int* compartmentCache2,
                                     double* likelihoodCache,
                                     double* steadyStateCache)
     {
@@ -1540,9 +1563,9 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_R_Star::evalCPU(int startLoc, int startTime, int* inStarVector,
-                           int* outStarVector, int* toCompartmentVector,
-                           int* fromCompartmentVector, double* likelihoodCache)
+    int FC_R_Star::evalCPU(int startLoc, int startTime, int* starVector1,
+                           int* starVector2, int* starVector3, int* compartmentVector1,
+                           int* compartmentVector2, double* likelihoodCache)
     {
         //Not implemented
         return(-1);
@@ -1571,8 +1594,9 @@ namespace SpatialSEIR
     }
 
     int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime, 
-                                                 int* inStarVector, int* outStarVector,
-                                                 int* toCompartmentVector, int* fromCompartmentVector)
+                                                 int* starVector1, int* starVector2,
+                                                 int* starVector3,
+                                                 int* compartmentVector1, int* compartmentVector2)
     {
         //Not implemented
         return(-1);

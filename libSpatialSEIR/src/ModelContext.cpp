@@ -771,6 +771,29 @@ namespace SpatialSEIR
         } 
   
     }
+
+    void ModelContext::calculateGenericCompartmentVectors(int startTime, 
+                                                         int* starVector1, int* starVector2, 
+                                                         int* starVector3,
+                                                         int* compVector1, int* compVector2, 
+                                                         int star0_1, int star0_2,int star0_3, 
+                                                         int comp0_1, int comp0_2)
+    {
+        int i;
+        int nTpts = *(S -> ncol);
+        if (startTime == 0)
+        {
+            compVector1[0] = comp0_1 + star0_1 - star0_2;
+            compVector2[0] = comp0_2 + star0_2 - star0_3; 
+            startTime ++;
+        }
+        for (i = startTime; i < nTpts; i++)
+        {
+            compVector1[i] = compVector1[i-1] + starVector1[i-1] - starVector2[i-1];
+            compVector2[i] = compVector2[i-1] + starVector2[i-1] - starVector3[i-1];
+        }
+    }
+
   
     void ModelContext::calculateGenericCompartment_OCL(int *comp,int *comp0, 
                                                    int *compStarAdd, int *compStarSub, 

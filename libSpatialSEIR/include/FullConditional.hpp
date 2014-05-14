@@ -111,18 +111,19 @@ namespace SpatialSEIR
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
             virtual int cacheEvalCalculation(double* cachedValues) = 0;
-            virtual int cacheEvalCalculation(int* inStarCompartmentCache,
-                                             int* outStarCompartmentCache,
-                                             int* toCompartmentCache,
-                                             int* fromCompartmentCache,
+            virtual int cacheEvalCalculation(int* starCompartmentCache1,
+                                             int* starCompartmentCache2,
+                                             int* starCompartmentCache3,
+                                             int* compartmentCache1,
+                                             int* compartmentCache2,
                                              double* likelihoodCache,
                                              double* steadyStateCache) = 0;
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues) = 0;
             virtual int evalCPU() = 0;
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues) = 0;
-            virtual int evalCPU(int startLoc, int startTime, int* inStarVector,
-                                int* outStarVector, int* toCompartmentVector, 
-                                int* fromCompartmentVector, double* likelihoodCache) = 0;
+            virtual int evalCPU(int startLoc, int startTime, int* starVector1,
+                                int* starVector2, int* starVector3, int* compartmentVector1, 
+                                int* compartmentVector2, double* likelihoodCache) = 0;
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
@@ -131,10 +132,11 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
             virtual int calculateRelevantCompartments(int startLoc, int startTime, 
-                                                      int* inStarVector, 
-                                                      int* outStarVector,
-                                                      int* toCompartmentVector,
-                                                      int* fromCompartmentVector) =0;
+                                                      int* starVector1, 
+                                                      int* starVector2,
+                                                      int* starVector3,
+                                                      int* compartmentVector1,
+                                                      int* compartmentVector2) =0;
 
             //Declaration for inherited methods
             int sampleCompartment(ModelContext* context,
@@ -145,22 +147,25 @@ namespace SpatialSEIR
 
 
             void sampleCompartment2(ModelContext* context,
-                                    CompartmentalModelMatrix* inStarCompartment,
-                                    CompartmentalModelMatrix* outStarCompartment,
-                                    CompartmentalModelMatrix* toCompartment,
-                                    CompartmentalModelMatrix* fromCompartment,
+                                    CompartmentalModelMatrix* starCompartment1,
+                                    CompartmentalModelMatrix* starCompartment2,
+                                    CompartmentalModelMatrix* starCompartmetn3,
+                                    CompartmentalModelMatrix* compartment1,
+                                    CompartmentalModelMatrix* compartment2,
                                     double width,
                                     double* likelihoodCache,
                                     double* steadyStateCache,
-                                    int* inStarCompartmentCache,
-                                    int* outStarCompartmentCache,
-                                    int* toCompartmentCache,
-                                    int* fromCompartmentCache);
+                                    int* starCompartmentCache1,
+                                    int* starCompartmentCache2,
+                                    int* starCompartmentCache3,
+                                    int* compartmentCache1,
+                                    int* compartmentCache2);
 
-            void sampleCompartmentLocation(int* inStarVector,
-                                           int* outStarVector,
-                                           int* toCompartmentVector,
-                                           int* fromCompartmentVector,
+            void sampleCompartmentLocation(int* starVector1,
+                                           int* starVector2,
+                                           int* starVector3,
+                                           int* compartmentVector1,
+                                           int* compartmentVector2,
                                            double* likelihoodCacheVector,
                                            double* steadyStateCacheVector,
                                            int i,
@@ -225,18 +230,19 @@ namespace SpatialSEIR
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
             virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int cacheEvalCalculation(int* inStarCompartmentCache,
-                                             int* outStarCompartmentCache,
-                                             int* toCompartmentCache,
-                                             int* fromCompartmentCache,
+            virtual int cacheEvalCalculation(int* starCompartment1,
+                                             int* starCompartment2,
+                                             int* starCompartment3,
+                                             int* compartmentCache1,
+                                             int* compartmentCache2,
                                              double* likelihoodCache,
                                              double* steadyStateCache);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
-            virtual int evalCPU(int startLoc, int startTime, int* inStarVector,
-                                int* outStarVector, int* toCompartmentVector, 
-                                int* fromCompartmentVector, double* likelihoodCache);
+            virtual int evalCPU(int startLoc, int startTime, int* starVector1,
+                                int* starVector2,int* starVector3, int* compartmentVector1, 
+                                int* compartmentVector2, double* likelihoodCache);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
@@ -245,10 +251,11 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
             virtual int calculateRelevantCompartments(int startLoc, int startTime, 
-                                                      int* inStarVector, 
-                                                      int* outStarVector,
-                                                      int* toCompartmentVector,
-                                                      int* fromCompartmentVector);
+                                                      int* starVector1, 
+                                                      int* starVector2,
+                                                      int* starVector3,
+                                                      int* compartmentVector1,
+                                                      int* compartmentVector2);
             virtual ~FC_S_Star();
 
             ModelContext **context;
@@ -287,18 +294,19 @@ namespace SpatialSEIR
             ~FC_E_Star();
 
             virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int cacheEvalCalculation(int* inStarCompartmentCache,
-                                             int* outStarCompartmentCache,
-                                             int* toCompartmentCache,
-                                             int* fromCompartmentCache,
+            virtual int cacheEvalCalculation(int* starCompartmentCache1,
+                                             int* starCompartmentCache2,
+                                             int* starCompartmentCache3,
+                                             int* compartmentCache1,
+                                             int* compartmentCache2,
                                              double* likelihoodCache,
                                              double* steadyStateCache);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
-            virtual int evalCPU(int startLoc, int startTime, int* inStarVector,
-                                int* outStarVector, int* toCompartmentVector, 
-                                int* fromCompartmentVector, double* likelihoodCache);
+            virtual int evalCPU(int startLoc, int startTime, int* starVector1,
+                                int* starVector2, int* starVector3, int* compartmentVector1, 
+                                int* compartmentVector2, double* likelihoodCache);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
@@ -307,10 +315,11 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
             virtual int calculateRelevantCompartments(int startLoc, int startTime, 
-                                                      int* inStarVector, 
-                                                      int* outStarVector,
-                                                      int* toCompartmentVector,
-                                                      int* fromCompartmentVector);
+                                                      int* starVector1, 
+                                                      int* starVector2,
+                                                      int* starVector3,
+                                                      int* compartmentVector1,
+                                                      int* compartmentVector2);
 
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
@@ -348,18 +357,19 @@ namespace SpatialSEIR
             ~FC_R_Star();
 
             virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int cacheEvalCalculation(int* inStarCompartmentCache,
-                                             int* outStarCompartmentCache,
-                                             int* toCompartmentCache,
-                                             int* fromCompartmentCache,
+            virtual int cacheEvalCalculation(int* starCompartmentCache1,
+                                             int* starCompartmentCache2,
+                                             int* starCompartmentCache3,
+                                             int* compartmentCache1,
+                                             int* compartmentCache2,
                                              double* likelihoodCache,
                                              double* steadyStateCache);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
-            virtual int evalCPU(int startLoc, int startTime, int* inStarVector,
-                                int* outStarVector, int* toCompartmentVector,
-                                int* fromCompartmentVector, double* likelihoodCache);
+            virtual int evalCPU(int startLoc, int startTime, int* starVector1,
+                                int* starVector2, int* starVector3, int* compartmentVector1,
+                                int* compartmentVector2, double* likelihoodCache);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
@@ -368,10 +378,11 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
             virtual int calculateRelevantCompartments(int startLoc, int startTime, 
-                                                      int* inStarVector, 
-                                                      int* outStarVector,
-                                                      int* toCompartmentVector,
-                                                      int* fromCompartmentVector);
+                                                      int* starVector1, 
+                                                      int* starVector2,
+                                                      int* starVector3,
+                                                      int* compartmentVector1,
+                                                      int* compartmentVector2);
 
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
