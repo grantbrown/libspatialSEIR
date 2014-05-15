@@ -744,9 +744,8 @@ namespace SpatialSEIR
                                                    int *compStar0Add,int *compStar0Sub,
                                                    int startLoc, int startTime)
     {
-        int i,j,idx1,idxL1;
+        int j,idx1,idxL1;
         int startIdx;
-        int numLoc = *(comp -> ncol);
         int numTpts = *(comp -> nrow);
 
         startIdx = startLoc*numTpts + startTime; 

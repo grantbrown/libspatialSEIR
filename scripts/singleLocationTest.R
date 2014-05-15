@@ -302,7 +302,7 @@ res = spatialSEIRModel(compMatDim,
 
 res$setRandomSeed(123123)
 
-runSimulation = function(N, batchSize = 100)
+runSimulation = function(N, batchSize = 1000)
 {
     tryCatch({
         for (i in 1:(N/batchSize))

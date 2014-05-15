@@ -113,6 +113,7 @@ namespace SpatialSEIR
             virtual int cacheEvalCalculation(double* cachedValues) = 0;
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues) = 0;
             virtual int evalCPU() = 0;
+            virtual int evalCPU(int startLoc, int startTime) = 0;
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues) = 0;
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
@@ -134,6 +135,16 @@ namespace SpatialSEIR
             int sampleCompartmentMetropolis(ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
                                   double width, double* compartmentCache); 
+
+            int sampleCompartment2(ModelContext* context,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width); 
+
+            int sampleCompartmentLocation(int loc, ModelContext* context,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width); 
+
+
 
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
@@ -184,6 +195,7 @@ namespace SpatialSEIR
             virtual int cacheEvalCalculation(double* cachedValues);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime);
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
@@ -232,6 +244,7 @@ namespace SpatialSEIR
             virtual int cacheEvalCalculation(double* cachedValues);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime);
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
@@ -278,6 +291,7 @@ namespace SpatialSEIR
             virtual int cacheEvalCalculation(double* cachedValues);
             virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
             virtual int evalCPU();
+            virtual int evalCPU(int startLoc, int startTime);
             virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();

@@ -360,6 +360,69 @@ namespace SpatialSEIR
         return 0;
     }
 
+    int CompartmentFullConditional::sampleCompartment2(ModelContext* context,
+                                                       CompartmentalModelMatrix* starCompartment,
+                                                       double width)
+    {
+
+        int i;
+        int nLoc = *(starCompartment -> ncol);        
+        // Main loop: 
+        for (i = 0; i < nLoc; i++)
+        {
+            sampleCompartmentLocation(i, context, starCompartment, width);
+        }
+        return(0);
+    }
+
+    int CompartmentFullConditional::sampleCompartmentLocation(int i, ModelContext* context,
+                                                       CompartmentalModelMatrix* starCompartment,
+                                                       double width)
+    {
+        int j, compIdx;
+        int nTpts = *(starCompartment -> nrow);
+        int x0, x1;
+        double initVal, newVal;
+        double initProposal, newProposal;
+        double criterion;
+ 
+        compIdx = i*nTpts;
+        for (j = 0; j < nTpts; j ++)
+        { 
+            //std::cout << j << "\n";
+            this -> calculateRelevantCompartments(i,j); 
+            this -> evalCPU(i,j);
+            x0 = (starCompartment -> data)[compIdx];
+            initVal = (this -> getValue());
+
+            // Propose new value, bounded away from zero. 
+            x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
+            (starCompartment -> data)[compIdx] = x1;
+            this -> calculateRelevantCompartments(i,j);
+            this -> evalCPU(i,j);
+            newVal = (this->getValue());
+            newProposal = (context -> random -> dnorm(x1, x0,width));
+            initProposal = (context -> random -> dnorm(x0, x1,width));
+            criterion = (newVal - initVal) + (initProposal - newProposal);
+            if (std::log((context -> random -> uniform())) < criterion)
+            {
+                // Accept new value
+            }
+            else
+            {
+                // Keep Original Value
+                (starCompartment -> data)[compIdx] = x0;
+                this -> calculateRelevantCompartments(i,j);
+                this -> setValue(initVal); 
+            }                
+            compIdx ++;
+        }
+
+        return(0);
+    }
+
+
+
 
     int ParameterFullConditional::sampleDouble(ModelContext* context,
                                        double* variable, 
@@ -699,6 +762,65 @@ namespace SpatialSEIR
         return(0);
 
     }
+
+    int FC_S_Star::evalCPU(int startLoc, int startTime)
+    {
+        int i,compIdx,Sstar_val,Estar_val,S_val,R_val;
+        double p_se_val, p_rs_val;
+        int nTpts = *((*S)->nrow);
+        long double output = 0.0;
+        long unsigned int S_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff;
+
+
+        compIdx = startLoc*nTpts + startTime;
+        for (i = startTime; i < nTpts; i++)
+        {
+                Sstar_val = ((*S_star)->data)[compIdx]; 
+                Estar_val = ((*E_star)->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                R_val = ((*R)->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+                p_rs_val = (*p_rs)[i];
+
+                if (Sstar_val < 0 || 
+                    Sstar_val > R_val ||
+                    Estar_val > S_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                { 
+                    output += (std::log(p_rs_val)*Sstar_val + 
+                               std::log(1-p_rs_val)*(R_val - Sstar_val) +
+                               std::log(1-p_se_val)*(S_val) + 
+                               ((*context) -> random -> choose(R_val, Sstar_val)) + 
+                               ((*context)->random->choosePartial(S_val, Estar_val)));
+                }
+                compIdx ++; 
+        }
+
+        S_star_sum = (*S_star)->marginSum(2,startLoc);
+        R_star_sum = (*R_star)->marginSum(2,startLoc);
+        aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+        return(0);
+    }
+
+
+
     int FC_S_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
         int valid = 1;
@@ -756,8 +878,8 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartmentMetropolis(*context,
-                                  *S_star,*sliceWidth,(*context) -> compartmentCache);
+        this -> sampleCompartment2(*context,
+                                  *S_star,*sliceWidth);
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -994,6 +1116,66 @@ namespace SpatialSEIR
 
 
     }
+
+    int FC_E_Star::evalCPU(int startLoc, int startTime)
+    {
+        int j, compIdx;
+        int nTpts = *((*S) -> nrow); 
+        double ln_1m_p_ei = std::log(1-(**p_ei));    
+        double p_se_val;
+        int S_val, E_val, Estar_val, Istar_val;
+        long double output = 0.0;
+        long unsigned int E_star_sum;
+        long unsigned int I_star_sum;
+        int64_t aDiff; 
+
+
+        compIdx = startLoc*nTpts + startTime;
+        for (j = startTime; j < nTpts; j++)
+        {
+            Estar_val = ((*E_star) -> data)[compIdx];
+            S_val = ((*S) -> data)[compIdx];
+            E_val = ((*E) -> data)[compIdx];
+            Istar_val = ((*I_star) -> data)[compIdx];
+            p_se_val = (*p_se)[compIdx];
+
+            if (Estar_val < 0 || Estar_val > S_val || 
+                    Istar_val > E_val)
+
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+            else
+            {
+                output += (std::log(p_se_val)*Estar_val +
+                             std::log(1-p_se_val)*(S_val - Estar_val) +
+                             ln_1m_p_ei*E_val + 
+                             ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
+                             ((*context)->random->choose(S_val, Estar_val)));
+            }
+            compIdx++;
+        }
+
+        E_star_sum = (*E_star)->marginSum(2,startLoc);
+        I_star_sum = (*I_star)->marginSum(2,startLoc);
+        aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum);
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+    
+       return 0;
+    }
+
+
     int FC_E_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
         int err;
@@ -1047,8 +1229,8 @@ namespace SpatialSEIR
 
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartmentMetropolis(*context,
-                                  *E_star,*sliceWidth,(*context) -> compartmentCache);
+        this -> sampleCompartment2(*context,
+                                  *E_star,*sliceWidth);
         return 0;
     }
 
@@ -1318,6 +1500,72 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_R_Star::evalCPU(int startLoc, int startTime)
+    {
+        int j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        double ln_p_ir = std::log(**p_ir);
+        double ln_1m_p_ir = std::log(1-(**p_ir));
+        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
+        long unsigned int I_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff; 
+
+        compIdx = startLoc*nTpts + startTime;
+        for (j = startTime; j < nTpts; j++)
+        {
+            Rstar_val = ((*R_star) -> data)[compIdx];
+            Sstar_val = ((*S_star)->data)[compIdx];
+            Estar_val = ((*E_star) -> data)[compIdx];
+            R_val = ((*R) ->data)[compIdx];
+            I_val = ((*I) ->data)[compIdx];
+            S_val = ((*S)->data)[compIdx];
+            p_se_val = (*p_se)[compIdx];
+            p_rs_val = (*p_rs)[j];
+
+            if (Rstar_val < 0 || Rstar_val > I_val || 
+                    Sstar_val > R_val || 
+                    p_se_val >= 1 || p_se_val <= 0)
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+            else
+            {
+                output += (ln_p_ir*Rstar_val +
+                            ln_1m_p_ir*(I_val - Rstar_val) +
+                            std::log(1-p_rs_val)*(R_val) +
+                            ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                            ((*context) -> random -> choose(I_val, Rstar_val)) +
+                            std::log(p_se_val)*Estar_val +
+                            std::log(1-p_se_val)*(S_val - Estar_val));
+            }
+            compIdx++;
+        } 
+
+        I_star_sum = (*I_star)->marginSum(2,startLoc);
+        R_star_sum = (*R_star)->marginSum(2,startLoc);
+        aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum);
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+
+        return 0;
+    }
+
+
     int FC_R_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
         int err;
@@ -1378,8 +1626,8 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartmentMetropolis(*context,
-                                  *R_star,*sliceWidth,(*context) -> compartmentCache);
+        this -> sampleCompartment2(*context,
+                                  *R_star,*sliceWidth);
         return(0);
     }
     int FC_R_Star::sampleOCL()
