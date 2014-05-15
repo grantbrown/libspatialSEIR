@@ -69,7 +69,7 @@ namespace SpatialSEIR
     {
         int i, j;
         int nLoc = *((*context)->S->ncol);
-        int nTpt = *((*context)->S->ncol);
+        int nTpt = *((*context)->S->nrow);
 
         // Clear file 
         FILE* tmp = fopen(outFilePath -> c_str(), "w");
@@ -352,7 +352,7 @@ namespace SpatialSEIR
             {
                 for (j = 0; j < nTpt; j++)
                 {
-                    (*outFileStream) << ((*context)->p_se)[i] <<  ",";
+                    (*outFileStream) << ((*context)->p_se)[i*nTpt + j] <<  ",";
                 }
             }
         }

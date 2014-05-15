@@ -128,14 +128,13 @@ namespace SpatialSEIR
 
 
     int CompartmentFullConditional::sampleCompartment(ModelContext* context,
-                                       InitData* A0,
                                        CompartmentalModelMatrix* starCompartment,
                                        double width,double* cachedValues)
     {
         // Declare required variables
         int i, j, compIdx;
-        int nLoc = *(A0 -> numLocations);
-        int nTpts = *(starCompartment -> ncol);
+        int nLoc = *(starCompartment -> ncol);
+        int nTpts = *(starCompartment -> nrow); 
         double l,r,y,x,x0;
         
         // Update the relevant CompartmentalModelMatrix instances
@@ -149,13 +148,12 @@ namespace SpatialSEIR
    
         int itrs;
         // Main loop: 
-        for (j = 0; j < nTpts; j ++)
-        { 
-            //std::cout << j << "\n";
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)
-            {
-                compIdx++;
+        for (i = 0; i < nLoc; i++)
+        {
+            for (j = 0; j < nTpts; j ++)
+            { 
+                //std::cout << j << "\n";
+                compIdx = i*nTpts + j; 
                 x = (starCompartment -> data)[compIdx];
                 this -> calculateRelevantCompartments(i,j); 
                 this -> evalCPU(i,j,cachedValues);
@@ -193,7 +191,6 @@ namespace SpatialSEIR
     }
 
     int CompartmentFullConditional::sampleCompartmentMemoized(ModelContext* context,
-                                           InitData* A0,
                                            CompartmentalModelMatrix* starCompartment,
                                            int width,double* cachedValues)
     {
@@ -203,8 +200,8 @@ namespace SpatialSEIR
 
         int i, j, compIdx, memoStart, memoIdx, lastItrMemo;
         int memoIdxBytes = sizeof(int)*(width+1);
-        int nLoc = *(A0 -> numLocations);
-        int nTpts = *(starCompartment -> ncol);
+        int nLoc = *(starCompartment -> ncol);
+        int nTpts = *(starCompartment -> nrow);
         double l,r,y,x0;
         int x, x0_floor;
         
@@ -222,15 +219,14 @@ namespace SpatialSEIR
    
         int itrs;
         // Main loop: 
-        for (j = 0; j < nTpts; j ++)
-        { 
-            //std::cout << j << "\n";
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)
-            {
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j ++)
+            { 
+                //std::cout << j << "\n";
                 memset(memoStored, 0, memoIdxBytes);
                 lastItrMemo = 0;
-                compIdx++;
                 x = (starCompartment -> data)[compIdx];
                 this -> calculateRelevantCompartments(i,j); 
                 this -> evalCPU(i,j,cachedValues);
@@ -290,6 +286,7 @@ namespace SpatialSEIR
                 {
                     this -> updateEvalCache(i,j,cachedValues);
                 }
+                compIdx ++;
             }
         }
         return 0;
@@ -297,14 +294,13 @@ namespace SpatialSEIR
     }
 
     int CompartmentFullConditional::sampleCompartmentMetropolis(ModelContext* context,
-                                                                InitData* A0,
                                                                 CompartmentalModelMatrix* starCompartment,
                                                                 double width,double* cachedValues)
     {
         // Declare required variables
         int i, j, compIdx;
-        int nLoc = *(A0 -> numLocations);
-        int nTpts = *(starCompartment -> ncol);
+        int nLoc = *(starCompartment -> ncol);
+        int nTpts = *(starCompartment -> nrow);
         int x0, x1;
         double initVal, newVal;
         double initProposal, newProposal;
@@ -321,13 +317,12 @@ namespace SpatialSEIR
         this -> evalCPU(0,0,cachedValues);
    
         // Main loop: 
-        for (j = 0; j < nTpts; j ++)
-        { 
-            //std::cout << j << "\n";
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)
-            {
-                compIdx++;
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j ++)
+            { 
+                //std::cout << j << "\n";
                 this -> calculateRelevantCompartments(i,j); 
                 this -> evalCPU(i,j,cachedValues);
                 x0 = (starCompartment -> data)[compIdx];
@@ -353,6 +348,7 @@ namespace SpatialSEIR
                     this -> calculateRelevantCompartments(i,j);
                     this -> setValue(initVal); 
                 }                
+                compIdx ++;
             }
         }
         return 0;
@@ -529,21 +525,21 @@ namespace SpatialSEIR
         // returning upon encountering bad data, but the performance
         // benefit would be small given the relaitive infrequency of 
         // calls.
-        int nLoc = *((*S)->nrow);
-        int nTpts = *((*S)->ncol);
+        int nLoc = *((*S)->ncol);
+        int nTpts = *((*S)->nrow);
 
         int i,j,compIdx;
         int Sstar_val,Estar_val,S_val,R_val;
         double p_se_val, p_rs_val;
         int err = 0;
 
-        for (j = 0; j < nTpts; j++)
+
+        for (i = 0;i<nLoc;i++);
         {
-            compIdx = j*nLoc - 1;
-            p_rs_val = (*p_rs)[j];
-            for (i = 0;i<nLoc;i++);
+            for (j = 0; j < nTpts; j++)
             {
-                compIdx ++; 
+                compIdx = i*nTpts + j;
+                p_rs_val = (*p_rs)[j];
                 Sstar_val = ((*S_star)->data)[compIdx]; 
                 Estar_val = ((*E_star)->data)[compIdx];
                 S_val = ((*S)->data)[compIdx];
@@ -584,10 +580,9 @@ namespace SpatialSEIR
         // values. 
         int i,compIdx,Sstar_val,Estar_val,S_val,R_val;
         double p_se_val, p_rs_val;
-        int nLoc = *((*S)->nrow);  
-        int nTpts = *((*S)->ncol);
+        int nTpts = *((*S)->nrow);
         
-        compIdx = startLoc + startTime*nLoc;
+        compIdx = startLoc*nTpts + startTime;
         for (i = startTime; i < nTpts; i++)
         {
                 Sstar_val = ((*S_star)->data)[compIdx]; 
@@ -617,7 +612,7 @@ namespace SpatialSEIR
                         return(-1);
                     }
                 }
-                compIdx += nLoc; 
+                compIdx ++; 
         }
         return(0);
     }
@@ -625,8 +620,8 @@ namespace SpatialSEIR
     // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
-        int nLoc = *((*S)->nrow);
-        int nTpts = *((*S)->ncol);
+        int nLoc = *((*S)->ncol);
+        int nTpts = *((*S)->nrow);
 
         int i,j,compIdx;
         long double output = 0.0;
@@ -637,13 +632,13 @@ namespace SpatialSEIR
         long unsigned int S_star_sum;
         int64_t aDiff; 
 
-        for (j = 0; j < nTpts; j++)
+
+        for (i = 0;i<nLoc;i++);
         {
-            compIdx = j*nLoc - 1;
-            p_rs_val = (*p_rs)[j];
-            for (i = 0;i<nLoc;i++);
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)
             {
-                compIdx ++; 
+                p_rs_val = (*p_rs)[j];
                 Sstar_val = ((*S_star)->data)[compIdx]; 
                 Estar_val = ((*E_star)->data)[compIdx];
                 S_val = ((*S)->data)[compIdx];
@@ -665,6 +660,7 @@ namespace SpatialSEIR
                            std::log(1-p_se_val)*(S_val) + 
                            ((*context) -> random -> choose(R_val, Sstar_val)) + 
                            ((*context)->random->choosePartial(S_val, Estar_val)));
+                compIdx++;
             }
 
         }
@@ -672,8 +668,8 @@ namespace SpatialSEIR
 
         for (i=0; i< nLoc; i++)
         {
-            S_star_sum = (*S_star)->marginSum(1,i);
-            R_star_sum = (*R_star)->marginSum(1,i);
+            S_star_sum = (*S_star)->marginSum(2,i);
+            R_star_sum = (*R_star)->marginSum(2,i);
             aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
             *value -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
         }
@@ -709,8 +705,8 @@ namespace SpatialSEIR
         }
         *value = output;
 
-        S_star_sum = (*S_star)->marginSum(1,startLoc);
-        R_star_sum = (*R_star)->marginSum(1,startLoc);
+        S_star_sum = (*S_star)->marginSum(2,startLoc);
+        R_star_sum = (*R_star)->marginSum(2,startLoc);
         aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
         *value -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
 
@@ -743,7 +739,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartmentMetropolis(*context,*A0,
+        this -> sampleCompartmentMetropolis(*context,
                                   *S_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
@@ -839,17 +835,17 @@ namespace SpatialSEIR
     int FC_E_Star::cacheEvalCalculation(double* cachedValues)
     {
         int i, j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
+        int nLoc = *((*S) -> ncol);
+        int nTpts = *((*S) -> nrow);
         double ln_1m_p_ei = std::log(1-(**p_ei));     
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;
-        for (j = 0; j < nTpts; j++)     
+
+        for (i = 0; i < nLoc; i++)    
         {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
             {
-                compIdx++;
                 Estar_val = ((*E_star) -> data)[compIdx];
                 S_val = ((*S) -> data)[compIdx];
                 E_val = ((*E) -> data)[compIdx];
@@ -870,6 +866,7 @@ namespace SpatialSEIR
                                              ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
                                              ((*context)->random->choose(S_val, Estar_val)));
                 }
+                compIdx++;
             }
         } 
         return(0);
@@ -878,13 +875,12 @@ namespace SpatialSEIR
     int FC_E_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
         int j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
+        int nTpts = *((*S) -> nrow); 
         double ln_1m_p_ei = std::log(1-(**p_ei));    
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;
 
-        compIdx = startLoc + startTime*nLoc;
+        compIdx = startLoc*nTpts + startTime;
         for (j = startTime; j < nTpts; j++)
         {
             Estar_val = ((*E_star) -> data)[compIdx];
@@ -913,7 +909,7 @@ namespace SpatialSEIR
                     return(-1);
                 }
             }
-            compIdx += nLoc;
+            compIdx++;
         }
        return 0;
     }
@@ -922,8 +918,8 @@ namespace SpatialSEIR
     {
 
         int i, j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
+        int nLoc = *((*S) -> ncol);
+        int nTpts = *((*S) -> nrow);
         double ln_1m_p_ei = std::log(1-(**p_ei));     
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;
@@ -932,12 +928,11 @@ namespace SpatialSEIR
         long unsigned int I_star_sum;
         int64_t aDiff; 
 
-        for (j = 0; j < nTpts; j++)     
+        for (i = 0; i < nLoc; i++)    
         {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
             {
-                compIdx++;
                 Estar_val = ((*E_star) -> data)[compIdx];
                 S_val = ((*S) -> data)[compIdx];
                 E_val = ((*E) -> data)[compIdx];
@@ -959,14 +954,15 @@ namespace SpatialSEIR
                               ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
                               ((*context)->random->choose(S_val, Estar_val)));
                 }
+                compIdx++;
             }
         } 
         
 
         for (i=0; i< nLoc; i++)
         {
-            E_star_sum = (*E_star)->marginSum(1,i);
-            I_star_sum = (*I_star)->marginSum(1,i);
+            E_star_sum = (*E_star)->marginSum(2,i);
+            I_star_sum = (*I_star)->marginSum(2,i);
             aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum);
             output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
         }
@@ -1006,8 +1002,8 @@ namespace SpatialSEIR
             *value = -INFINITY;
             return(-1);
         }
-        E_star_sum = (*E_star)->marginSum(1,startLoc);
-        I_star_sum = (*I_star)->marginSum(1,startLoc);
+        E_star_sum = (*E_star)->marginSum(2,startLoc);
+        I_star_sum = (*I_star)->marginSum(2,startLoc);
         aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum);
         output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
         *value = output;
@@ -1034,7 +1030,7 @@ namespace SpatialSEIR
 
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartmentMetropolis(*context,*A0,
+        this -> sampleCompartmentMetropolis(*context,
                                   *E_star,*sliceWidth,(*context) -> compartmentCache);
         return 0;
     }
@@ -1131,8 +1127,8 @@ namespace SpatialSEIR
     int FC_R_Star::cacheEvalCalculation(double* cachedValues)
     {
         int i, j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*R) -> ncol);
+        int nLoc = *((*R) -> ncol);
+        int nTpts = *((*R) -> nrow);
         double p_se_val;
         double p_rs_val;
         double ln_p_ir = std::log(**p_ir);
@@ -1140,13 +1136,13 @@ namespace SpatialSEIR
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;
 
     
-        for (j = 0; j < nTpts; j++)     
+
+        for (i = 0; i < nLoc; i++)    
         {
-            compIdx = j*nLoc - 1;
-            p_rs_val = (*p_rs)[j];          
-            for (i = 0; i < nLoc; i++)    
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
             {
-                compIdx++;
+                p_rs_val = (*p_rs)[j];          
                 Rstar_val = ((*R_star) -> data)[compIdx];
                 Sstar_val = ((*S_star)->data)[compIdx];
                 Estar_val = ((*E_star) -> data)[compIdx];
@@ -1175,6 +1171,7 @@ namespace SpatialSEIR
                                     std::log(1-p_se_val)*(S_val - Estar_val));
 
                 }
+                compIdx++;
             }
         } 
         return(0);
@@ -1183,8 +1180,7 @@ namespace SpatialSEIR
     int FC_R_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
     {
         int j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*R) -> ncol);
+        int nTpts = *((*R) -> nrow);
         
         double p_se_val;
         double p_rs_val;
@@ -1192,7 +1188,7 @@ namespace SpatialSEIR
         double ln_1m_p_ir = std::log(1-(**p_ir));
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
 
-        compIdx = startLoc + startTime*nLoc;
+        compIdx = startLoc*nTpts + startTime;
         for (j = startTime; j < nTpts; j++)
         {
 
@@ -1228,7 +1224,7 @@ namespace SpatialSEIR
                     return(-1);
                 }
             }
-            compIdx += nLoc;
+            compIdx++;
         } 
         return 0;
     }
@@ -1237,8 +1233,8 @@ namespace SpatialSEIR
     int FC_R_Star::evalCPU()
     {
         int i, j, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*R) -> ncol);
+        int nLoc = *((*R) -> ncol);
+        int nTpts = *((*R) -> nrow);
         double p_se_val;
         double p_rs_val;
         double ln_p_ir = std::log(**p_ir);
@@ -1250,13 +1246,12 @@ namespace SpatialSEIR
         int64_t aDiff; 
 
     
-        for (j = 0; j < nTpts; j++)     
+        for (i = 0; i < nLoc; i++)    
         {
-            compIdx = j*nLoc - 1;
-            p_rs_val = (*p_rs)[j];          
-            for (i = 0; i < nLoc; i++)    
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
             {
-                compIdx++;
+                p_rs_val = (*p_rs)[j];          
                 Rstar_val = ((*R_star) -> data)[compIdx];
                 Sstar_val = ((*S_star)->data)[compIdx];
                 Estar_val = ((*E_star) -> data)[compIdx];
@@ -1285,13 +1280,14 @@ namespace SpatialSEIR
                                 std::log(p_se_val)*Estar_val +
                                 std::log(1-p_se_val)*(S_val - Estar_val));
                 }
+                compIdx++;
             }
         } 
 
         for (i=0; i< nLoc; i++)
         {
-            I_star_sum = (*I_star)->marginSum(1,i);
-            R_star_sum = (*R_star)->marginSum(1,i);
+            I_star_sum = (*I_star)->marginSum(2,i);
+            R_star_sum = (*R_star)->marginSum(2,i);
             aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum);
             output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
         }
@@ -1327,8 +1323,8 @@ namespace SpatialSEIR
         }
 
 
-        I_star_sum = (*I_star)->marginSum(1,startLoc);
-        R_star_sum = (*R_star)->marginSum(1,startLoc);
+        I_star_sum = (*I_star)->marginSum(2,startLoc);
+        R_star_sum = (*R_star)->marginSum(2,startLoc);
         aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum);
         output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
 
@@ -1365,7 +1361,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartmentMetropolis(*context,*A0,
+        this -> sampleCompartmentMetropolis(*context,
                                   *R_star,*sliceWidth,(*context) -> compartmentCache);
         return(0);
     }
@@ -1449,19 +1445,20 @@ namespace SpatialSEIR
     {
         *value = 0.0;
         int i, j, tmp, compIdx;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
+        int nLoc = *((*S) -> ncol);
+        int nTpts = *((*S) -> nrow);
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
-        for (j = 0; j < nTpts; j++)     
+
+        for (i = 0; i < nLoc; i++)    
         {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
             {
-                compIdx++;
                 tmp = ((*E_star) -> data)[compIdx];
                 term1 += std::log((*p_se)[compIdx])*tmp; 
                 term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
+                compIdx++;
             }
         } 
 
@@ -1570,7 +1567,7 @@ namespace SpatialSEIR
         int j;
         long double a,b;
         int nbeta = *((*X) -> ncol_x);
-        int nTpts = *((*R) -> ncol);
+        int nTpts = *((*R) -> nrow);
         double tmp;
         long double term1 = 0.0;
         double term2 = 0.0;
@@ -1583,8 +1580,8 @@ namespace SpatialSEIR
                 *value = -INFINITY;
                 return(-1);
             }
-            a = ((*S_star)-> marginSum(2,j));
-            b = ((*R) -> marginSum(2,j)); 
+            a = ((*S_star)-> marginSum(1,j));
+            b = ((*R) -> marginSum(1,j)); 
             term1 += std::log(tmp)*a; 
             term1 += std::log(1 - tmp)*(b - a);
         }
@@ -1684,20 +1681,21 @@ namespace SpatialSEIR
         *value = 0.0;
         int i, j, Es, compIdx;
         double pse;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
+        int nLoc = *((*S) -> ncol);
+        int nTpts = *((*S) -> nrow);
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
-        for (j = 0; j < nTpts; j++)     
+
+        for (i = 0; i < nLoc; i++)    
         {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
             {
-                compIdx++;
                 Es = ((*E_star) -> data)[compIdx];
                 pse = (*p_se)[compIdx];
                 term1 += std::log(pse)*Es; 
                 term2 += std::log(1-pse)*(((*S) -> data)[compIdx] - Es);
+                compIdx++;
             }
         } 
         term3 += (**rho > 0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
@@ -1802,23 +1800,27 @@ namespace SpatialSEIR
         *value = 0.0;
         int i, j, Es, compIdx;
         double pse;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*S) -> ncol);
+        int nLoc = *((*S) -> ncol);
+        int nTpts = *((*S) -> nrow);
         double term1, term2, term3;
         term1 = 0.0; term2 = 0.0; term3 = 0.0;
-        for (j = 0; j < nTpts; j++)     
+
+        for (i = 0; i < nLoc; i++)    
         {
-            compIdx = j*nLoc - 1;
-            for (i = 0; i < nLoc; i++)    
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
             {
-                compIdx++;
                 Es = ((*E_star) -> data)[compIdx];
                 pse = (*p_se)[compIdx];
                 term1 += std::log(pse)*Es; 
                 term2 += std::log(1-pse)*(((*S) -> data)[compIdx] - Es);
+                compIdx++;
             }
-            term3 += ((*priorAlpha-1)*std::log((*gamma)[j]) - ((*gamma)[j])/(*priorBeta)); 
         } 
+        for (j = 0; j < nTpts; j++)
+        {
+            term3 += ((*priorAlpha-1)*std::log((*gamma)[j]) - ((*gamma)[j])/(*priorBeta)); 
+        }
         *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 
         if (!std::isfinite(*value))
@@ -1903,17 +1905,8 @@ namespace SpatialSEIR
     int FC_P_EI::evalCPU()
     { 
         *value = 0.0;
-        int j;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*E) -> ncol);
-        int i_star_sum = 0;
-        int e_sum = 0;
-        for (j =0; j<(nLoc*nTpts); j++)
-        {
-            i_star_sum += ((*I_star)-> data)[j];
-            e_sum += ((*E)-> data)[j];
-        }
-
+        int i_star_sum = (*I_star) -> marginSum(3,-1);
+        int e_sum = (*E) -> marginSum(3,-1);
         *value = dbeta(**p_ei, *priorAlpha + i_star_sum, *priorBeta - i_star_sum + e_sum); 
         return 0;
     }
@@ -1999,17 +1992,8 @@ namespace SpatialSEIR
     int FC_P_IR::evalCPU()
     {
         *value = 0.0;
-        int j;
-        int nLoc = *((*A0) -> numLocations);
-        int nTpts = *((*I) -> ncol);
-        int r_star_sum = 0;
-        int i_sum = 0;
-        for (j =0; j<(nLoc*nTpts); j++)
-        {
-            r_star_sum += ((*R_star)-> data)[j];
-            i_sum += ((*I)-> data)[j];
-        }
-
+        int r_star_sum = (*R_star) -> marginSum(3,-1);
+        int i_sum = (*I) -> marginSum(3,1);
         *value = dbeta(**p_ir, *priorAlpha + r_star_sum, *priorBeta - r_star_sum + i_sum); 
         return 0;
     }
@@ -2048,8 +2032,6 @@ namespace SpatialSEIR
     {
         *(this -> value) = val;
     }
-
-
 }
 
 

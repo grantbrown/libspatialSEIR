@@ -80,7 +80,7 @@ namespace SpatialSEIR
         compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         p_ei = new double;
         p_ir = new double;
-        p_rs = new double[*(S_starArgs -> inCol)];
+        p_rs = new double[*(S_starArgs -> inRow)];
         N = new int[(*(S_starArgs -> inRow))*(*(S_starArgs -> inCol))];                                          
         int nbeta = (*(xArgs -> inCol_x) + (*(xArgs -> inCol_z)));
         int neta = (*(xArgs -> inRow_z));
@@ -88,12 +88,12 @@ namespace SpatialSEIR
         beta = new double[nbeta];
         betaPrs = new double[nBetaPrs];
         eta = new double[neta];
-        gamma = new double[*(S_starArgs -> inCol)];
+        gamma = new double[*(S_starArgs -> inRow)];
         // Create empty compartment for calculation.
         tmpContainer = new CompartmentalModelMatrix();
         tmpContainer -> createEmptyCompartment((S_starArgs -> inRow), (S_starArgs -> inCol));
 
-        *singleLocation = ((*(S_starArgs -> inRow)) > 1 ? 0 : 1);
+        *singleLocation = ((*(S_starArgs -> inCol)) > 1 ? 0 : 1);
 
         // Initialize Stuff
         A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> S_star0,
@@ -162,7 +162,7 @@ namespace SpatialSEIR
             eta[i] = 0.0;
         }
 
-        for (i = 0; i < *(S->ncol); i++)
+        for (i = 0; i < *(S->nrow); i++)
         {
             gamma[i] = (gammaFCArgs -> gamma)[i];
         }
@@ -383,7 +383,7 @@ namespace SpatialSEIR
                 break;
             }
         }
-        int nPrs = *(I_star -> ncol);
+        int nPrs = *(I_star -> nrow);
         for (i = 0; i < nPrs;i++)
         {
             if (p_rs[i] <= 0 || p_rs[i] >= 1)
@@ -549,14 +549,13 @@ namespace SpatialSEIR
 
     void ModelContext::calculateS_givenE_CPU(int startLoc, int startTime)
     {
-        int i,j,startIdx,idx;
-        startIdx = startTime*(*(S->nrow)) + startLoc;
-        j = 0;
-        for (i = startTime; i < *(S->ncol); i++)
+        int i,startIdx,idx;
+        startIdx = startTime + startLoc*(*(S->nrow));
+        idx = startIdx;
+        for (i = startTime; i < *(S->nrow); i++)
         {
-            idx = startIdx + j*(*(S->nrow));
             (S -> data)[idx] = N[idx] - (R->data)[idx] - (E->data)[idx] - (I->data)[idx];  
-            j += 1;
+            idx += 1;
         }
     }
 
@@ -597,14 +596,13 @@ namespace SpatialSEIR
 
     void ModelContext::calculateE_givenI_CPU(int startLoc, int startTime)
     {
-        int i,j,startIdx,idx;
-        startIdx = startTime*(*(E->nrow)) + startLoc;
-        j = 0;
-        for (i = startTime; i < *(E->ncol); i++)
+        int i,startIdx,idx;
+        startIdx = startTime + startLoc*(*(E->nrow));
+        idx = startIdx;
+        for (i = startTime; i < *(S->nrow); i++)
         {
-            idx = startIdx + j*(*(E->nrow));
             (E -> data)[idx] = N[idx] - (S->data)[idx] - (R->data)[idx] - (I->data)[idx];  
-            j += 1;
+            idx += 1;
         }
     }
 
@@ -644,14 +642,13 @@ namespace SpatialSEIR
 
     void ModelContext::calculateI_givenR_CPU(int startLoc, int startTime)
     {
-        int i,j,startIdx,idx;
-        startIdx = startTime*(*(I->nrow)) + startLoc;
-        j = 0;
-        for (i = startTime; i < *(I->ncol); i++)
+        int i,startIdx,idx;
+        startIdx = startTime + startLoc*(*(E->nrow));
+        idx = startIdx;
+        for (i = startTime; i < *(S->nrow); i++)
         {
-            idx = startIdx + j*(*(I->nrow));
-            (I -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (R->data)[idx];  
-            j += 1;
+            (I -> data)[idx] = N[idx] - (S->data)[idx] - (R->data)[idx] - (E->data)[idx];  
+            idx += 1;
         }
     }
 
@@ -695,14 +692,13 @@ namespace SpatialSEIR
 
     void ModelContext::calculateR_givenS_CPU(int startLoc, int startTime)
     {
-        int i,j,startIdx,idx;
-        startIdx = startTime*(*(R->nrow)) + startLoc;
-        j = 0;
-        for (i = startTime; i < *(R->ncol); i++)
+        int i,startIdx,idx;
+        startIdx = startTime + startLoc*(*(E->nrow));
+        idx = startIdx;
+        for (i = startTime; i < *(S->nrow); i++)
         {
-            idx = startIdx + j*(*(R->nrow));
             (R -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (I->data)[idx];  
-            j += 1;
+            idx += 1;
         }
     }
 
@@ -720,25 +716,25 @@ namespace SpatialSEIR
                                                    CompartmentalModelMatrix *compStarSub, 
                                                    int *compStar0Add,int *compStar0Sub)
     {
-        int i,idx2;
-        int numLoc = *(A0 -> numLocations);
-        int numTpts = *(comp -> ncol);
-        int max2 = numLoc*numTpts;
+        int i,j,idx1,idxL1;
+        int numLoc = *(comp -> ncol);
+        int numTpts = *(comp -> nrow);
 
         for (i = 0; i < numLoc; i++)
         {
-            (comp -> data)[i] = ((comp0)[i] + 
-                    (compStar0Add)[i] - 
-                    (compStar0Sub)[i]);
-        }
 
-        for (i = numLoc; i < max2; i++)
-        {
-            (comp -> data)[i] = (comp -> data)[i - numLoc] + 
-                      (compStarAdd -> data)[i - numLoc] - 
-                      (compStarSub -> data)[i - numLoc];
+            (comp -> data)[i*numTpts] = ((comp0)[i] + 
+                                        (compStar0Add)[i] - 
+                                        (compStar0Sub)[i]);
+            for (j = 1; j < numTpts; j++)
+            {
+                idx1 = i*numTpts + j;
+                idxL1 = idx1 -1; 
+                (comp -> data)[idx1] = (comp -> data)[idxL1] + 
+                                       (compStarAdd -> data)[idxL1] - 
+                                       (compStarSub -> data)[idxL1];
+            }
         }
-
     }
 
     void ModelContext::calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp,int *comp0, 
@@ -747,29 +743,39 @@ namespace SpatialSEIR
                                                    int *compStar0Add,int *compStar0Sub,
                                                    int startLoc, int startTime)
     {
-        int i;
-        int numLoc = *(A0 -> numLocations);
-        int numTpts = *(comp -> ncol);
-        int idx, idx2; 
+        int i,j,idx1,idxL1;
+        int startIdx;
+        int numLoc = *(comp -> ncol);
+        int numTpts = *(comp -> nrow);
+
+        startIdx = startLoc*numTpts + startTime; 
 
         if (startTime == 0)
         {
-            idx = startLoc;
-            (comp -> data)[idx] = ((comp0)[idx] + 
-                    (compStar0Add)[idx] - 
-                    (compStar0Sub)[idx]);
+            (comp -> data)[startIdx] = ((comp0)[startLoc] + 
+                                        (compStar0Add)[startLoc] - 
+                                        (compStar0Sub)[startLoc]);
+            for (j = 1; j < numTpts; j++)
+            {
+                idx1 = startLoc*numTpts + j;
+                idxL1 = idx1 - 1; 
+                (comp -> data)[idx1] = (comp -> data)[idxL1] + 
+                                       (compStarAdd -> data)[idxL1] - 
+                                       (compStarSub -> data)[idxL1];
+            }
         }
-
-        startTime = (startTime == 0 ? 1 : startTime);
-
-        for (i = startTime; i < numTpts; i++)
+        else
         {
-            idx = startLoc + i*numLoc;
-            (comp -> data)[idx] = (comp -> data)[idx - numLoc] + 
-                      (compStarAdd -> data)[idx - numLoc] - 
-                      (compStarSub -> data)[idx - numLoc];
-        } 
-  
+            //
+            for (j = startTime; j<numTpts; j++)
+            {
+                idx1 = startTime*numTpts + j;
+                idxL1 = idx1 - 1; 
+                (comp -> data)[idx1] = (comp -> data)[idxL1] + 
+                                       (compStarAdd -> data)[idxL1] - 
+                                       (compStarSub -> data)[idxL1];    
+            }
+        }
     }
  
     void ModelContext::calculateGenericCompartment_OCL(int *comp,int *comp0, 
@@ -802,8 +808,8 @@ namespace SpatialSEIR
         int i, j, index;
 
         // Calculate dmu: I/N * exp(eta)
-        int nLoc = *(S -> nrow);
-        int nCol = *(S -> ncol);
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
 
         // Calculate rho*sqrt(idmat)
         SpatialSEIR::matMult(this -> p_se, 
@@ -811,13 +817,14 @@ namespace SpatialSEIR
                 p_se_components, 
                 *(scaledDistMat -> numLocations), 
                 *(scaledDistMat -> numLocations),
-                *(I -> nrow),
-                *(I -> ncol),false,false);
-        for (j = 0; j < nCol; j++)
+                *(I -> ncol),
+                *(I -> nrow),false,true);
+
+        for (i = 0; i < nLoc; i++) 
         {
-            for (i = 0; i < nLoc; i++) 
+            for (j = 0; j < nTpt; j++)
             {
-                index = i + j*nLoc;
+                index = i*nTpt + j;
                 p_se[index] = 1-exp(-gamma[j] - p_se_components[index] - (*rho)*p_se[index]);
             }
         }        
@@ -829,11 +836,11 @@ namespace SpatialSEIR
     {
         int i, j, index;
         // Calculate dmu: I/N * exp(eta)
-        int nLoc = *(S -> nrow);
-        int nCol = *(S -> ncol);
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
 
         i = startLoc;
-        for (j = startTime; j < nCol; j++)
+        for (j = startTime; j < nTpt; j++)
         {
             index = i + j*nLoc;
             p_se_components[index] = 
@@ -845,14 +852,14 @@ namespace SpatialSEIR
                 &(p_se_components[startTime*nLoc]), 
                 *(scaledDistMat -> numLocations), 
                 *(scaledDistMat -> numLocations),
-                *(I -> nrow),
-                (nCol - startTime),false,false);
+                *(I -> ncol),
+                (nTpt - startTime),false,true);
 
-        for (j = startTime; j < nCol; j++)
+        for (i = 0; i < nLoc; i++) 
         {
-            for (i = 0; i < nLoc; i++) 
+            for (j = startTime; j < nTpt; j++)
             {
-                index = i + j*nLoc;
+                index = j + i*nTpt;
                 p_se[index] = 1-exp(-gamma[j] -p_se_components[index] - (*rho)*p_se[index]);
             }
         } 
@@ -871,35 +878,18 @@ namespace SpatialSEIR
             eta[i] = std::exp(eta[i]);
         }
         // Calculate dmu: I/N * exp(eta)
-        int nLoc = *(S -> nrow);
-        int nCol = *(S -> ncol);
-        for (j = 0; j < nCol; j++)
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+
+        for (i = 0; i < nLoc; i++) 
         {
-            for (i = 0; i < nLoc; i++) 
+            for (j = 0; j < nTpt; j++)
             {
-                index = i + j*nLoc;
+                index = j + i*nTpt; 
                 p_se_components[index] = 
                    ((I -> data)[index] * (eta[index]))/N[i];
             }
         }
-        /*It would be good to cache parts of this matrix multiplication...*/
-        /*
-        SpatialSEIR::matMult(this -> p_se, 
-                scaledDistMat -> data, 
-                scratch, 
-                *(scaledDistMat -> numLocations), 
-                *(scaledDistMat -> numLocations),
-                *(I -> nrow),
-                *(I -> ncol),false,false);
-        for (j = 0; j < nCol; j++)
-        {
-            for (i = 0; i < nLoc; i++) 
-            {
-                index = i + j*nLoc;
-                p_se[index] = 1-exp(-scratch[index] - *rho*p_se[index]);
-            }
-        } 
-        */
     }
 
     void ModelContext::calculateP_SE_OCL()
