@@ -296,150 +296,6 @@ namespace SpatialSEIR
 
     }
 
-    void CompartmentFullConditional::sampleCompartment2(ModelContext* context,
-                                                       CompartmentalModelMatrix* starCompartment1,
-                                                       CompartmentalModelMatrix* starCompartment2, 
-                                                       CompartmentalModelMatrix* starCompartment3,
-                                                       CompartmentalModelMatrix* compartment1,
-                                                       CompartmentalModelMatrix* compartment2,
-                                                       double width,
-                                                       double* likelihoodCache,
-                                                       double* steadyStateCache,  
-                                                       int* starCompartmentCache1,
-                                                       int* starCompartmentCache2,
-                                                       int* starCompartmentCache3,
-                                                       int* compartmentCache1,
-                                                       int* compartmentCache2)
-    {
-        int nLoc = *(starCompartment1 -> nrow);
-        int nTpts = *(starCompartment1 -> ncol);
-        int i,j;
-
-        this -> calculateRelevantCompartments();
-
-        // Here we do lots of operations along the rows, but the data is usually stored column major.
-        // Transpose the data into compartment caches
-        for (j = 0; j < nTpts; j++)
-        {
-            for (i = 0; i < nLoc; i++)
-            {
-                starCompartmentCache1[j + i*nTpts] = (starCompartment1 -> data)[i + j*nLoc]; 
-                starCompartmentCache2[j + i*nTpts] = (starCompartment2 -> data)[i + j*nLoc]; 
-                starCompartmentCache3[j + i*nTpts] = (starCompartment3 -> data)[i + j*nLoc];     
-                compartmentCache1[j + i*nTpts] = (compartment1 -> data)[i + j*nLoc]; 
-                compartmentCache2[j + i*nTpts] = (compartment2 -> data)[i + j*nLoc]; 
-            }
-        }
-
-        // When we update a star matrix, the only part of it affected directly is within location. 
-        // Use full conditional functions which take this into account. 
-
-        this -> cacheEvalCalculation(starCompartmentCache1, 
-                                  starCompartmentCache2, 
-                                  starCompartmentCache3,
-                                  compartmentCache1,
-                                  compartmentCache2,
-                                  likelihoodCache,
-                                  steadyStateCache);
-        for (i = 0; i < nLoc; i++)
-        {
-            this -> sampleCompartmentLocation(&starCompartmentCache1[i*nTpts], 
-                                              &starCompartmentCache2[i*nTpts], 
-                                              &starCompartmentCache3[i*nTpts],
-                                              &compartmentCache1[i*nTpts],
-                                              &compartmentCache2[i*nTpts],
-                                              &likelihoodCache[i*nTpts],
-                                              &steadyStateCache[i*nTpts],
-                                              i,
-                                              width,
-                                              context); 
-        }
-
-        // Copy the data back to the appropriate place. 
-        
-        for (i = 0; i < nLoc; i++)
-        {
-            for (j = 0; j < nTpts; j++)
-            {
-                (starCompartment2 -> data)[i + j*nLoc] = starCompartmentCache2[j + i*nTpts]; 
-            }
-        } 
-    }
-
-    void CompartmentFullConditional::sampleCompartmentLocation(int* starVector1,
-                                                               int* starVector2,
-                                                               int* starVector3,
-                                                               int* compartmentVector1,
-                                                               int* compartmentVector2,
-                                                               double* likelihoodCacheVector,
-                                                               double* steadyStateCacheVector,
-                                                               int i,
-                                                               double width,
-                                                               ModelContext* context)
-    {
-        int j;
-        int nTpts = *(context -> S_star -> ncol); 
-        int x0, x1;
-        double initVal, newVal;
-        double initProposal, newProposal;
-        double criterion; 
-
-        for (j = 0; j < nTpts; j++)
-        {
-            this -> calculateRelevantCompartments(i, 
-                                                  j,
-                                                  starVector1, 
-                                                  starVector2, 
-                                                  starVector3,
-                                                  compartmentVector1,
-                                                  compartmentVector2);              
-            this -> evalCPU(i,j, starVector1, starVector2, starVector3, 
-                    compartmentVector1, compartmentVector2,
-                    likelihoodCacheVector);
-            x0 = starVector2[j]; 
-            initVal = (this -> getValue());
-            
-            // Propose new value, bounded away from zero;
-            x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
-
-            starVector2[j] = x1;
-
-            this -> calculateRelevantCompartments(i, 
-                                                  j,
-                                                  starVector1, 
-                                                  starVector2, 
-                                                  starVector3,
-                                                  compartmentVector1,
-                                                  compartmentVector2); 
-            this -> evalCPU(i,j, starVector1, starVector2, starVector3, 
-                    compartmentVector1, compartmentVector2,
-                    likelihoodCacheVector);
-
-            newVal = (this->getValue());
-            newProposal = (context -> random -> dnorm(x1, x0,width));
-            initProposal = (context -> random -> dnorm(x0, x1,width));
-            criterion = (newVal - initVal) + (initProposal - newProposal);
-            if (std::log((context -> random -> uniform())) < criterion)
-            {
-                // Accept new value
-            }
-            else
-            {
-                // Keep Original Value
-                starVector2[j] = x0;
-                // Could be optimized by considering x1 and x0
-                this -> calculateRelevantCompartments(i, 
-                                                      j,
-                                                      starVector1, 
-                                                      starVector2, 
-                                                      starVector3,
-                                                      compartmentVector1,
-                                                      compartmentVector2); 
-                this -> setValue(initVal); 
-            }               
-        }
-    }
-
     int CompartmentFullConditional::sampleCompartmentMetropolis(ModelContext* context,
                                                                 InitData* A0,
                                                                 CompartmentalModelMatrix* starCompartment,
@@ -766,18 +622,6 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_S_Star::cacheEvalCalculation(int* starCompartmentCache1,
-                                        int* starCompartmentCache2,
-                                        int* starCompartmentCache3,
-                                        int* compartmentCache1,
-                                        int* compartmentCache2,
-                                        double* likelihoodCache,
-                                        double* steadyStateCache)
-    {
-        //Not implemented
-        return(-1);
-    }
-
     // Evaluate the S_star FC at the current values provided by the context.
     int FC_S_Star::evalCPU()
     {
@@ -878,14 +722,6 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_S_Star::evalCPU(int startLoc, int startTime, int* starVector1,
-                           int* starVector2, int* starVector3, int* compartmentVector1,
-                           int* compartmentVector2, double* likelihoodCache)
-    {
-        //Not implemented
-        return(-1);
-    }
-
     int FC_S_Star::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -902,23 +738,6 @@ namespace SpatialSEIR
     {
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateR_givenS_CPU(startLoc, startTime);
-        return(0);
-    }
-
-    int FC_S_Star::calculateRelevantCompartments(int startLoc, int startTime, 
-                                                 int* starVector1, int* starVector2,
-                                                 int* starVector3,
-                                                 int* compartmentVector1, int* compartmentVector2)
-    {
-        (*context) -> calculateGenericCompartmentVectors(startTime,
-                                                         starVector1, starVector2,
-                                                         starVector3,
-                                                         compartmentVector1,compartmentVector2,
-                                                         *((*A0) -> S_star0),
-                                                         *((*A0) -> E_star0),
-                                                         *((*A0) -> I_star0),
-                                                         *((*A0) -> S0),
-                                                         *((*A0) -> E0));
         return(0);
     }
 
@@ -1099,19 +918,6 @@ namespace SpatialSEIR
        return 0;
     }
 
-    int FC_E_Star::cacheEvalCalculation(int* starVector1,
-                                    int* starVector2,
-                                    int* starVector3,
-                                    int* compartmentVector1,
-                                    int* compartmentVector2,
-                                    double* likelihoodCache,
-                                    double* steadyStateCache)
-    {
-        //Not implemented
-        return(-1);
-    }
-
-
     int FC_E_Star::evalCPU()
     {
 
@@ -1208,14 +1014,6 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_E_Star::evalCPU(int startLoc, int startTime, int* starVector1,
-                           int* starVector2, int* starVector3, int* comprtmentVector1,
-                           int* fromCompartmentVector, double* likelihoodCache)
-    {
-        //Not implemented
-        return(-1);
-    }
-
     int FC_E_Star::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -1231,22 +1029,6 @@ namespace SpatialSEIR
     {
         (*context) -> calculateE_CPU(startLoc, startTime);
         (*context) -> calculateS_givenE_CPU(startLoc, startTime);
-        return(0);
-    }
-    int FC_E_Star::calculateRelevantCompartments(int startLoc, int startTime, 
-                                                 int* starVector1, int* starVector2,
-                                                 int* starVector3,
-                                                 int* compartmentVector1, int* compartmentVector2)
-    {
-        (*context) -> calculateGenericCompartmentVectors(startTime,
-                                                         starVector1, starVector2,
-                                                         starVector3,
-                                                         compartmentVector1,compartmentVector2,
-                                                         *((*A0) -> E_star0),
-                                                         *((*A0) -> I_star0),
-                                                         *((*A0) -> R_star0),
-                                                         *((*A0) -> E0),
-                                                         *((*A0) -> I0));
         return(0);
     }
 
@@ -1451,18 +1233,6 @@ namespace SpatialSEIR
         return 0;
     }
 
-    int FC_R_Star::cacheEvalCalculation(int* starCompartmentCache1,
-                                    int* starCompartmentCache2,
-                                    int* starCompartmentCache3,
-                                    int* compartmentCache1,
-                                    int* compartmentCache2,
-                                    double* likelihoodCache,
-                                    double* steadyStateCache)
-    {
-        //Not implemented
-        return(-1);
-    }
-
 
     int FC_R_Star::evalCPU()
     {
@@ -1571,14 +1341,6 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int FC_R_Star::evalCPU(int startLoc, int startTime, int* starVector1,
-                           int* starVector2, int* starVector3, int* compartmentVector1,
-                           int* compartmentVector2, double* likelihoodCache)
-    {
-        //Not implemented
-        return(-1);
-    }
-
 
     int FC_R_Star::evalOCL()
     {
@@ -1598,24 +1360,6 @@ namespace SpatialSEIR
         (*context) -> calculateR_CPU(startLoc, startTime);
         (*context) -> calculateI_givenR_CPU(startLoc, startTime);
         ((*context) -> calculateP_SE_CPU(startLoc, startTime));
-        return(0);
-    }
-
-    int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime, 
-                                                 int* starVector1, int* starVector2,
-                                                 int* starVector3,
-                                                 int* compartmentVector1, int* compartmentVector2)
-    {
-        (*context) -> calculateGenericCompartmentVectors(startTime,
-                                                         starVector1, starVector2,
-                                                         starVector3,
-                                                         compartmentVector1,compartmentVector2,
-                                                         *((*A0) -> R_star0),
-                                                         *((*A0) -> S_star0),
-                                                         *((*A0) -> E_star0),
-                                                         *((*A0) -> R0),
-                                                         *((*A0) -> S0));
-        // Update P_SE
         return(0);
     }
 

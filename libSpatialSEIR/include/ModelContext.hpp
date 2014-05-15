@@ -113,13 +113,6 @@ namespace SpatialSEIR
                                                  int *compStar0Add, int *compStar0Sub,
                                                  int startLoc, int startTime);
 
-            void calculateGenericCompartmentVectors(int startTime, 
-                                                   int* starVector1, int* starVector2, 
-                                                   int* starVector3,
-                                                   int* compVector1, int* compVector2, 
-                                                   int star0_1, int star0_2, int star0_3, 
-                                                   int comp0_1, int comp0_2);
-
             void calculateGenericCompartment_OCL(int *comp, int *comp0,
                                                  int *compStarAdd, int *compStarSub,
                                                  int *compStar0Add, int *compStar0Sub);
