@@ -21,22 +21,28 @@ namespace SpatialSEIR
     /*
      * Helper functions
      */
-    int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA = false, bool TransB = false)
+    int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB)
     {
         // Use BLAS to matrix multiply, assume column major, non transposing.
         // Double check this code when I have internet access. 
-        if (Acol != Brow)
+
+        if ((TransA ? Arow : Acol) != (TransB ? Bcol : Brow))
         {
-            std::cerr << "Invalid Matrix Dimensions" << std::endl;
+            std::cerr << "Invalid Matrix Dimensions: " << std::endl;
+            std::cerr << "A: " <<  Arow << " x " << Acol << std::endl;
+            std::cerr << "B: " <<  Brow << " x " << Bcol << std::endl;
+            std::cerr << "Transpose: " << TransA << ", " << TransB << std::endl;
+
             throw(-1);
         }
+
         cblas_dgemm(CblasColMajor,
                     TransA ? CblasTrans : CblasNoTrans,
                     TransB ? CblasTrans : CblasNoTrans,
                     Arow, Bcol, Brow,
                     1.0, 
-                    A, Arow, 
-                    B, Brow, 
+                    A, (TransA ? Acol : Arow), 
+                    B, (TransB ? Bcol : Brow), 
                     0.0, output, Brow);
         return 0; 
     }
@@ -315,7 +321,7 @@ namespace SpatialSEIR
         // Set the "value" attribute appropriately
         //this -> evalCPU();
         this -> evalCPU(0,0,cachedValues);
-   
+
         // Main loop: 
         for (i = 0; i < nLoc; i++)
         {
@@ -533,15 +539,15 @@ namespace SpatialSEIR
         double p_se_val, p_rs_val;
         int err = 0;
 
-
         for (i = 0;i<nLoc;i++);
         {
+            compIdx = i*nTpts;
             for (j = 0; j < nTpts; j++)
             {
-                compIdx = i*nTpts + j;
                 p_rs_val = (*p_rs)[j];
                 Sstar_val = ((*S_star)->data)[compIdx]; 
                 Estar_val = ((*E_star)->data)[compIdx];
+
                 S_val = ((*S)->data)[compIdx];
                 R_val = ((*R)->data)[compIdx];
                 p_se_val = (*p_se)[compIdx];
@@ -554,6 +560,8 @@ namespace SpatialSEIR
                     cachedValues[compIdx] = -INFINITY;
                     err += 1;
                 }
+
+
                 else
                 { 
                     cachedValues[compIdx] = (std::log(p_rs_val)*Sstar_val + 
@@ -568,6 +576,7 @@ namespace SpatialSEIR
                     }
                 }
             }
+            compIdx ++ ;
         }
         return(err);
     }
@@ -633,7 +642,7 @@ namespace SpatialSEIR
         int64_t aDiff; 
 
 
-        for (i = 0;i<nLoc;i++);
+        for (i = 0; i<nLoc; i++)
         {
             compIdx = i*nTpts;
             for (j = 0; j < nTpts; j++)
@@ -652,6 +661,13 @@ namespace SpatialSEIR
                     Estar_val > S_val)
                 {
                     *value = -INFINITY;
+                    std::cout << "-Inf cause 1\n";
+                    std:: cout << "(Index: " << compIdx 
+                               << ", S*:" << Sstar_val 
+                               << ", R:" << R_val 
+                               << ", E*:" << Estar_val 
+                               << ", S:" 
+                               <<  S_val << ")\n"; 
                     return(-1);
                 }
                 
@@ -677,6 +693,7 @@ namespace SpatialSEIR
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
+            std::cout << "-Inf cause 2\n";
             return(-1); 
         }
         return(0);

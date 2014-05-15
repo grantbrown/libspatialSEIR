@@ -99,32 +99,32 @@ plotEpidemic2 = function()
 {
     par(mfrow = c(5,2))
 
-    plot(S_star[1,], type = "l", main = "S_star", ylim = c(0, max(max(S_star), max(res$S_star))))
-    lines(res$S_star[1,], col = "red")
+    plot(S_star, type = "l", main = "S_star", ylim = c(0, max(max(S_star), max(res$S_star))))
+    lines(res$S_star, col = "red")
 
-    plot(S[1,], type = "l", main = "S", ylim = c(0, max(max(S), max(res$S))))
-    lines(res$S[1,], col = "red")
+    plot(S, type = "l", main = "S", ylim = c(0, max(max(S), max(res$S))))
+    lines(res$S, col = "red")
 
-    plot(E_star[1,], type = "l", main = "E_star", ylim = c(0, max(max(E_star), max(res$E_star))))
-    lines(res$E_star[1,], col = "red")
+    plot(E_star, type = "l", main = "E_star", ylim = c(0, max(max(E_star), max(res$E_star))))
+    lines(res$E_star, col = "red")
 
-    plot(E[1,], type = "l", main = "E", ylim = c(0, max(max(E), max(res$E))))
-    lines(res$E[1,], col = "red")
+    plot(E, type = "l", main = "E", ylim = c(0, max(max(E), max(res$E))))
+    lines(res$E, col = "red")
 
-    plot(I_star[1,], type = "l", main = "I_star", ylim = c(0, max(max(I_star), max(res$I_star))))
-    lines(res$I_star[1,], col = "red")
+    plot(I_star, type = "l", main = "I_star", ylim = c(0, max(max(I_star), max(res$I_star))))
+    lines(res$I_star, col = "red")
 
-    plot(I[1,], type = "l", main = "I", ylim = c(0, max(max(I), max(res$I))))
-    lines(res$I[1,], col = "red")
+    plot(I, type = "l", main = "I", ylim = c(0, max(max(I), max(res$I))))
+    lines(res$I, col = "red")
 
-    plot(R_star[1,], type = "l", main = "R_star", ylim = c(0, max(max(R_star), max(res$R_star))))
-    lines(res$R_star[1,], col = "red")
+    plot(R_star, type = "l", main = "R_star", ylim = c(0, max(max(R_star), max(res$R_star))))
+    lines(res$R_star, col = "red")
 
-    plot(R[1,], type = "l", main = "R", ylim = c(0, max(max(R), max(res$R))))
-    lines(res$R[1,], col = "red")
+    plot(R, type = "l", main = "R", ylim = c(0, max(max(R), max(res$R))))
+    lines(res$R, col = "red")
 
     plot(p_se, type = "l", main = "p_se")
-    lines(res$p_se[1,], col = "red")
+    lines(res$p_se, col = "red")
 
     plot(p_rs, type = "l", main = "p_rs") 
     lines(res$p_rs, col = "red")
@@ -161,9 +161,32 @@ E = E[,(ThrowAwayTpt + 1):ncol(E), drop = FALSE]
 I = I[,(ThrowAwayTpt + 1):ncol(I), drop = FALSE]
 R = R[,(ThrowAwayTpt + 1):ncol(R), drop = FALSE]
 
-
 Z = Z[(1+ThrowAwayTpt*nrow(S)):nrow(Z),]
 X_prs = X_prs[(ThrowAwayTpt + 1):nrow(X_prs),]
+
+# Transpose Everything to have TXP
+
+S0 = t(S0)
+E0 = t(E0)
+I0 = t(I0)
+R0 = t(R0)
+
+S_star0 = t(S_star0)
+E_star0 = t(E_star0)
+I_star0 = t(I_star0)
+R_star0 = t(R_star0)
+
+S_star = t(S_star)
+E_star = t(E_star)
+I_star = t(I_star)
+R_star = t(R_star)
+
+S = t(S)
+E = t(E)
+I = t(I)
+R = t(R)
+
+
 
 xDim = dim(X)
 zDim = dim(Z)
@@ -281,7 +304,6 @@ res$setRandomSeed(123123)
 
 runSimulation = function(N, batchSize = 100)
 {
-    batchSize = 1000
     tryCatch({
         for (i in 1:(N/batchSize))
         {
@@ -297,6 +319,7 @@ runSimulation = function(N, batchSize = 100)
 }
 
 runSimulation(1000000)
+
 
 
 

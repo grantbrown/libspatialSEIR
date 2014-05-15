@@ -284,7 +284,6 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getR_star()
         output[i] = (context->R_star->data)[i];
     }
     return(output);
-
 }
 
 Rcpp::NumericMatrix spatialSEIRInterface::getP_SE()
@@ -297,30 +296,32 @@ Rcpp::NumericMatrix spatialSEIRInterface::getP_SE()
         output[i] = (context->p_se)[i];
     }
     return(output);
-
 }
+
 Rcpp::NumericVector spatialSEIRInterface::getP_RS()
 {
-    Rcpp::NumericVector output(*(context->S->ncol));
+    Rcpp::NumericVector output(*(context->S->nrow));
     int i;
-    int numVals = (*(context->S->ncol));
+    int numVals = (*(context->S->nrow));
     for (i = 0; i < numVals; i++) 
     {
         output[i] = (context->p_rs)[i]; 
     }
     return(output);
 }
+
 Rcpp::NumericVector spatialSEIRInterface::getGamma()
 {
-    Rcpp::NumericVector output(*(context->S->ncol));
+    Rcpp::NumericVector output(*(context->S->nrow));
     int i;
-    int numVals = (*(context->S->ncol));
+    int numVals = (*(context->S->nrow));
     for (i = 0; i < numVals; i++) 
     {
         output[i] = (context->gamma)[i]; 
     }
     return(output);
 }
+
 Rcpp::NumericVector spatialSEIRInterface::getBeta()
 {
     Rcpp::NumericVector output(((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
@@ -525,22 +526,22 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     }
 
     int compartmentSize = (compartmentDimensions[0]*compartmentDimensions[1]);
-    if (S_star0.size() != compartmentDimensions[0])
+    if (S_star0.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid S_star0 Compartment Size!\n";
         throw(-1);
     }
-    if (E_star0.size() != compartmentDimensions[0])
+    if (E_star0.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid E_star0 Compartment Size!\n";
         throw(-1);
     }
-    if (I_star0.size() != compartmentDimensions[0])
+    if (I_star0.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid I_star0 Compartment Size!\n";
         throw(-1);
     }
-    if (R_star0.size() != compartmentDimensions[0])
+    if (R_star0.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid R_star0 Compartment Size!\n";
         throw(-1);
@@ -572,16 +573,16 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "Invalid N Compartment Size!\n";
         throw(-1);
     }
-    if ((X_pRS.size() % compartmentDimensions[1]) != 0)
+    if ((X_pRS.size() % compartmentDimensions[0]) != 0)
     {
         Rcpp::Rcout << "Invalid X_pRS size.\n";
-        Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[1] << "\n";
+        Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
     }
 
-    if (gamma.size() != compartmentDimensions[1])
+    if (gamma.size() != compartmentDimensions[0])
     {
         Rcpp::Rcout << "Invalid gamma size!\n";
-        Rcpp::Rcout << "Size: " << gamma.size() << ", Number of Time Points: " << compartmentDimensions[1] << "\n";
+        Rcpp::Rcout << "Size: " << gamma.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
         throw(-1);
     }
     if (sliceParams.size() != 7)
@@ -599,9 +600,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
 
 
-    Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[0] 
+    Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[1] 
         << "\n";
-    Rcpp::Rcout << "Rcpp Provided Num Times: " << compartmentDimensions[1] 
+    Rcpp::Rcout << "Rcpp Provided Num Times: " << compartmentDimensions[0] 
         << "\n";
 
     // Gather information for the creation of the 
@@ -677,17 +678,17 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     double phi = 60*60*2.0;
     distanceArgs rawDistArgs; scaledDistanceArgs scaledDistArgs;
     rawDistArgs.inData = DistMat.begin(); 
-    rawDistArgs.dim = &compartmentDimensions[0];
+    rawDistArgs.dim = &compartmentDimensions[1];
     scaledDistArgs.phi = &phi; 
     scaledDistArgs.inData = DistMat.begin();
-    scaledDistArgs.dim = &compartmentDimensions[0];
+    scaledDistArgs.dim = &compartmentDimensions[1];
     Rcpp::Rcout << "Loading covariate information into model context object\n";
 
     // Create the InitData object 
     InitData A0;
     A0.populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
                 S_star0.begin(),E_star0.begin(),I_star0.begin(),
-                R_star0.begin(),&compartmentDimensions[0]);
+                R_star0.begin(),&compartmentDimensions[1]);
 
     Rcpp::Rcout << "Populating Model Context\n";
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
@@ -750,7 +751,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
-    .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Sho verbose level output?")
+    .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")
     ;
 }
 

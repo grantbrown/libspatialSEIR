@@ -255,7 +255,6 @@ namespace SpatialSEIR
                              (priorValues -> P_IR_priorAlpha),
                              (priorValues -> P_IR_priorBeta));
 
-
         // Calculate Compartments
         this -> calculateS_CPU();
         this -> calculateE_CPU();
@@ -269,6 +268,7 @@ namespace SpatialSEIR
         this -> calculateR_CPU();
         this -> calculateP_RS_CPU();
         this -> calculateP_SE_CPU();
+
 
         // Initialize FC Values        
         this -> beta_fc -> evalCPU();
@@ -726,10 +726,11 @@ namespace SpatialSEIR
             (comp -> data)[i*numTpts] = ((comp0)[i] + 
                                         (compStar0Add)[i] - 
                                         (compStar0Sub)[i]);
+            idx1 = i*numTpts;
             for (j = 1; j < numTpts; j++)
             {
-                idx1 = i*numTpts + j;
-                idxL1 = idx1 -1; 
+                idxL1 = idx1;
+                idx1++;
                 (comp -> data)[idx1] = (comp -> data)[idxL1] + 
                                        (compStarAdd -> data)[idxL1] - 
                                        (compStarSub -> data)[idxL1];
@@ -755,10 +756,11 @@ namespace SpatialSEIR
             (comp -> data)[startIdx] = ((comp0)[startLoc] + 
                                         (compStar0Add)[startLoc] - 
                                         (compStar0Sub)[startLoc]);
+            idx1 = startLoc*numTpts;
             for (j = 1; j < numTpts; j++)
             {
-                idx1 = startLoc*numTpts + j;
-                idxL1 = idx1 - 1; 
+                idxL1 = idx1;
+                idx1++;
                 (comp -> data)[idx1] = (comp -> data)[idxL1] + 
                                        (compStarAdd -> data)[idxL1] - 
                                        (compStarSub -> data)[idxL1];
@@ -766,14 +768,17 @@ namespace SpatialSEIR
         }
         else
         {
-            //
+            idx1 = startLoc*numTpts + startTime;
+            idxL1 = idx1 - 1; 
             for (j = startTime; j<numTpts; j++)
             {
-                idx1 = startTime*numTpts + j;
-                idxL1 = idx1 - 1; 
+
+                
                 (comp -> data)[idx1] = (comp -> data)[idxL1] + 
                                        (compStarAdd -> data)[idxL1] - 
                                        (compStarSub -> data)[idxL1];    
+                idxL1 = idx1;
+                idx1++;
             }
         }
     }
@@ -804,28 +809,30 @@ namespace SpatialSEIR
     // Updates: p_se
     void ModelContext::calculateP_SE_CPU()
     {
+
         this -> cacheP_SE_Calculation(); 
         int i, j, index;
 
         // Calculate dmu: I/N * exp(eta)
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
-
+        memset(p_se, 0, nLoc*nTpt*sizeof(double));
         // Calculate rho*sqrt(idmat)
         SpatialSEIR::matMult(this -> p_se, 
                 scaledDistMat -> data, 
                 p_se_components, 
                 *(scaledDistMat -> numLocations), 
                 *(scaledDistMat -> numLocations),
-                *(I -> ncol),
-                *(I -> nrow),false,true);
+                *(I -> nrow),
+                *(I -> ncol),false,true);
 
         for (i = 0; i < nLoc; i++) 
         {
+            index = i*nTpt;
             for (j = 0; j < nTpt; j++)
             {
-                index = i*nTpt + j;
                 p_se[index] = 1-exp(-gamma[j] - p_se_components[index] - (*rho)*p_se[index]);
+                index++;
             }
         }        
     }
@@ -839,12 +846,13 @@ namespace SpatialSEIR
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
 
-        i = startLoc;
+
+        index = startLoc*nTpt + startTime;
         for (j = startTime; j < nTpt; j++)
         {
-            index = i + j*nLoc;
             p_se_components[index] = 
                ((I -> data)[index] * (eta[index]))/N[index];
+            index++;
         }
 
         SpatialSEIR::matMult(&((this -> p_se)[startTime*nLoc]), 
@@ -852,15 +860,17 @@ namespace SpatialSEIR
                 &(p_se_components[startTime*nLoc]), 
                 *(scaledDistMat -> numLocations), 
                 *(scaledDistMat -> numLocations),
-                *(I -> ncol),
-                (nTpt - startTime),false,true);
+                 (nTpt - startTime),
+                *(I -> ncol)
+                ,false,true);
 
         for (i = 0; i < nLoc; i++) 
         {
+            index = i*nTpt + startTime;
             for (j = startTime; j < nTpt; j++)
             {
-                index = j + i*nTpt;
                 p_se[index] = 1-exp(-gamma[j] -p_se_components[index] - (*rho)*p_se[index]);
+                index++;
             }
         } 
     }
@@ -877,17 +887,20 @@ namespace SpatialSEIR
         {
             eta[i] = std::exp(eta[i]);
         }
+
         // Calculate dmu: I/N * exp(eta)
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
 
         for (i = 0; i < nLoc; i++) 
         {
+            index = i*nTpt;
             for (j = 0; j < nTpt; j++)
             {
-                index = j + i*nTpt; 
+
                 p_se_components[index] = 
                    ((I -> data)[index] * (eta[index]))/N[i];
+                index++;
             }
         }
     }
