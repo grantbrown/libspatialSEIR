@@ -1238,8 +1238,16 @@ namespace SpatialSEIR
                                                  int* starVector3,
                                                  int* compartmentVector1, int* compartmentVector2)
     {
-        //Not implemented
-        return(-1);
+        (*context) -> calculateGenericCompartmentVectors(startTime,
+                                                         starVector1, starVector2,
+                                                         starVector3,
+                                                         compartmentVector1,compartmentVector2,
+                                                         *((*A0) -> E_star0),
+                                                         *((*A0) -> I_star0),
+                                                         *((*A0) -> R_star0),
+                                                         *((*A0) -> E0),
+                                                         *((*A0) -> I0));
+        return(0);
     }
 
     int FC_E_Star::sampleCPU()
@@ -1598,8 +1606,17 @@ namespace SpatialSEIR
                                                  int* starVector3,
                                                  int* compartmentVector1, int* compartmentVector2)
     {
-        //Not implemented
-        return(-1);
+        (*context) -> calculateGenericCompartmentVectors(startTime,
+                                                         starVector1, starVector2,
+                                                         starVector3,
+                                                         compartmentVector1,compartmentVector2,
+                                                         *((*A0) -> R_star0),
+                                                         *((*A0) -> S_star0),
+                                                         *((*A0) -> E_star0),
+                                                         *((*A0) -> R0),
+                                                         *((*A0) -> S0));
+        // Update P_SE
+        return(0);
     }
 
     int FC_R_Star::sampleCPU()
