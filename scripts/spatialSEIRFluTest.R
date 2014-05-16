@@ -154,8 +154,31 @@ for (tpt in 1:ncol(R))
 }
 
 
-# Create covariates for predicting P_RS
-# Start with simple intercept
+# Transpose everything for libspatialSEIR
+
+S0 = t(S0)
+E0 = t(E0)
+I0 = t(I0)
+R0 = t(R0)
+
+S_star0 = t(S_star0)
+E_star0 = t(E_star0)
+I_star0 = t(I_star0)
+R_star0 = t(R_star0)
+
+S_star = t(S_star)
+E_star = t(E_star)
+I_star = t(I_star)
+R_star = t(R_star)
+
+S = t(S)
+E = t(E)
+I = t(I)
+R = t(R)
+
+N = t(N)
+
+
 
 X_betaPrs = model.matrix(~as.factor(monthVal))[,1:11]
 betaPrs = rep(0,ncol(X_betaPrs)) 
@@ -172,8 +195,8 @@ rho = 0.1
 
 p_ei = 0.99
 p_ir = 0.8
-p_rs = rep(0.1, ncol(S))
-gamma = rep(0.1, ncol(S))
+p_rs = rep(0.1, nrow(S))
+gamma = rep(0.1, nrow(S))
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
 

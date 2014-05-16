@@ -52,6 +52,7 @@ namespace SpatialSEIR
 
     void ModelContext::setRandomSeed(unsigned int seedValue)
     {
+        std::cout << "Setting seed.\n";
         delete random;
         random = new RandomNumberProvider(seedValue);
     }
@@ -85,6 +86,7 @@ namespace SpatialSEIR
         int nbeta = (*(xArgs -> inCol_x) + (*(xArgs -> inCol_z)));
         int neta = (*(xArgs -> inRow_z));
         int nBetaPrs = *(xPrsArgs -> inCol_x);
+
         beta = new double[nbeta];
         betaPrs = new double[nBetaPrs];
         eta = new double[neta];
@@ -436,6 +438,7 @@ namespace SpatialSEIR
             std::cout << "I_star: " << I_star -> marginSum(3,-1) << "\n";
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
+
 
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
@@ -818,12 +821,13 @@ namespace SpatialSEIR
         memset(p_se, 0, nLoc*nTpt*sizeof(double));
         // Calculate rho*sqrt(idmat)
         SpatialSEIR::matMult(this -> p_se, 
-                scaledDistMat -> data, 
                 p_se_components, 
+                scaledDistMat -> data, 
+                *(I -> nrow),
+                *(I -> ncol), 
                 *(scaledDistMat -> numLocations), 
                 *(scaledDistMat -> numLocations),
-                *(I -> nrow),
-                *(I -> ncol),false,true);
+                false,false);
 
         for (i = 0; i < nLoc; i++) 
         {
@@ -845,33 +849,29 @@ namespace SpatialSEIR
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
 
+        index = startLoc*nTpt + startTime;
+        for (i = startTime; i < nTpt; i++)
+        {
+            p_se_components[index] = 
+               ((I -> data)[index] * (eta[index]))/N[index];
+            index ++;
+        }
+
+        SpatialSEIR::matMult(&((this -> p_se)[startTime]), 
+                &(p_se_components[startTime]), 
+                 scaledDistMat -> data, 
+                 (nTpt - startTime),
+                *(I -> ncol),
+                *(scaledDistMat -> numLocations), 
+                *(scaledDistMat -> numLocations),
+                false,false);
 
         index = startLoc*nTpt + startTime;
         for (j = startTime; j < nTpt; j++)
         {
-            p_se_components[index] = 
-               ((I -> data)[index] * (eta[index]))/N[index];
+            p_se[index] = 1-exp(-gamma[j] -p_se_components[index] - (*rho)*p_se[index]);
             index++;
         }
-
-        SpatialSEIR::matMult(&((this -> p_se)[startTime*nLoc]), 
-                scaledDistMat -> data, 
-                &(p_se_components[startTime*nLoc]), 
-                *(scaledDistMat -> numLocations), 
-                *(scaledDistMat -> numLocations),
-                 (nTpt - startTime),
-                *(I -> ncol)
-                ,false,true);
-
-        for (i = 0; i < nLoc; i++) 
-        {
-            index = i*nTpt + startTime;
-            for (j = startTime; j < nTpt; j++)
-            {
-                p_se[index] = 1-exp(-gamma[j] -p_se_components[index] - (*rho)*p_se[index]);
-                index++;
-            }
-        } 
     }
 
     void ModelContext::cacheP_SE_Calculation()

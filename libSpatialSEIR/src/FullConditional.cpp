@@ -32,18 +32,16 @@ namespace SpatialSEIR
             std::cerr << "A: " <<  Arow << " x " << Acol << std::endl;
             std::cerr << "B: " <<  Brow << " x " << Bcol << std::endl;
             std::cerr << "Transpose: " << TransA << ", " << TransB << std::endl;
-
             throw(-1);
         }
-
         cblas_dgemm(CblasColMajor,
                     TransA ? CblasTrans : CblasNoTrans,
                     TransB ? CblasTrans : CblasNoTrans,
                     Arow, Bcol, Brow,
                     1.0, 
-                    A, (TransA ? Acol : Arow), 
-                    B, (TransB ? Bcol : Brow), 
-                    0.0, output, Brow);
+                    A, Arow,  
+                    B, Brow,  
+                    0.0, output, Arow);
         return 0; 
     }
 

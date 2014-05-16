@@ -64,53 +64,6 @@ gen_dist_mat = function(DistanceDat, PopDat)
     distmatlist
 }
 
-gen_covariates = function(dcm, nweek = 52, nyear =5)
-{
-    cat("Generating covariates...\n")
-    X = cbind(1,matrix(rnorm(3*(ncol(dcm))), ncol = 3), 
-            rbinom(ncol(dcm), 1, 0.2)
-            #, 
-            #diag(rep(1, ncol(dcm))))
-            )
-
-    # Month, Temperature by year
-    Z = array(0, dim = c(nrow(X),4,nweek, nyear))
-
-    for (i in 1:nyear)
-    {
-        for (j in 1:nweek)
-        {
-            # Get actual temperature values here
-            temp_mean = 2*sqrt(-(1:52-26.5)^2 + 800)
-            Z[,,j,i] = cbind(i,(j-26.5),(j-26.5)^2, rnorm(nrow(X), temp_mean, 4)) 
-        }
-    }
-
-
-    #true_fixed_beta = c(-1.2,-0.03,0,-0.025, -0.02, rnorm(ncol(dcm),0, 0.01))
-    true_fixed_beta = c(-8,-0.04,0.0,-0.025, -0.02)
-    true_time_varying_beta = c(0.0004,0.002, 0.004, -0.0004)
-    
-    true_fixed_eta = X %*% true_fixed_beta
-    true_time_varying_eta = array(0, dim = c(nrow(X), nweek, nyear))
-
-    for(i in 1:nyear)
-    {
-        for (j in 1:nweek)
-        {
-            true_time_varying_eta[,j,i] = Z[,,j,i] %*% true_time_varying_beta
-        }
-    }
-    return(list("true_time_varying_eta"=true_time_varying_eta, 
-                "true_fixed_eta"=true_fixed_eta, 
-                "true_time_varying_beta" = true_time_varying_beta, 
-                "true_fixed_beta" = true_fixed_beta, 
-                "X" = X, 
-                "Z" = Z))
-}
-
-
-
 protected_log = function(x, min_x = 0.001)
 {
     out = log(x)
@@ -127,144 +80,115 @@ ilogit = function(x)
     return(ex/(1+ex))
 }
 
-main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_rho = 0.8, nweek = 52, nyear = 5)
+
+
+
+
+main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
 {
+    cat("Generating covariates...\n")
+
+    maxTpt = nTptPerYear*nyear
+    # For simplicity just use intercept for now. 
+    X = matrix(1, ncol = 1, nrow = nrow(dcm))
+    Z = cbind(seq(1,maxTpt), model.matrix(~as.factor(rep(1:12, nyear)))[,2:nTptPerYear])
+    Z = Z[rep(1:nrow(Z), each = nrow(dcm)),] # Same time varying covariates for all spatial locations 
+
+    X_prs = cbind(1, 
+                  sin((1:maxTpt)/nTptPerYear*2*pi),
+                  cos((1:maxTpt)/nTptPerYear*2*pi))
+
+    trueBetaSEFixed = c(-0.3)
+    trueBetaSEVarying = c(0.0001, 0.02, 0.03, 0.05, 0.06, 
+                          0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1)*5
+
+    trueGamma = rep(0.0, maxTpt)
+    trueRho = 0.05
+    rho = trueRho
+
+    true_fixed_eta = X %*% trueBetaSEFixed
+    true_time_varying_eta = Z %*% trueBetaSEVarying
+
+    eta_se = matrix((as.numeric(true_fixed_eta) + 
+                     as.numeric(true_time_varying_eta)), 
+                     nrow = maxTpt, ncol = ncol(dcm), byrow = TRUE)
+    p_se = matrix(0.0, nrow = maxTpt, ncol = ncol(dcm)) 
+    p_ei = 0.9
+    p_ir = 0.9
+    trueBetaRS = c(2.5, -1, 0.5)
+    eta_rs = X_prs %*% trueBetaRS    
+    p_rs = exp(-eta_rs)
+
     cat("Running main simulation...\n")
 
     # TODO: expand to make N change by year
     N = pop[,2]
-    S = array(0, dim = c(length(N), nweek, nyear))
-    E = array(0, dim = c(length(N), nweek, nyear))
-    I = array(0, dim = c(length(N), nweek, nyear))
-    R = array(0, dim = c(length(N), nweek, nyear))
+    S = matrix(0,nrow = maxTpt, ncol = length(N))
+    E = S 
+    I = S
+    R = S
 
-    S_star_output = array(0, dim = c(length(N), nweek, nyear))
-    E_star_output = array(0, dim = c(length(N), nweek, nyear))
-    I_star_output = array(0, dim = c(length(N), nweek, nyear))
-    R_star_output = array(0, dim = c(length(N), nweek, nyear))
+    S_star = S
+    E_star = S
+    I_star = S 
+    R_star = S
 
-    E0 = rbinom(rep(1, length(N)), N, 0.005)
-    I0 = rbinom(rep(1, length(N)), N-E0, 0.04)
-    R0 = rbinom(rep(1, length(N)), N-E0-I0, 0.0005)
+    E0 = 0*N
+    I0 = floor(0.001*N)
+    R0 = floor(0.001*N) 
     S0 = N - R0 - E0 - I0
 
-    if (any(is.na(S0) || is.na(E0) || is.na(I0) || is.na(R0)))
-    {
-        stop("Error: NA's in initial compartments.")
-    }
-
-    if (any(S0 < 0))
-    {
-        stop("Error: Invalid S0 Value")
-    }
-
-    if (any((S0 + E0 + I0 + R0) != N))
-    {
-        stop("WARNING: Initial compartments don't sum to N.")
-    }
+    S_star0 = 0*N
+    E_star0 = I0
+    I_star0 = 0*N
+    R_star0 = floor(0.99*I0)
 
 
     # Parameters:
 
-    p_i = 0.8
-    p_r = 0.3
-    p_s = c(rep(0.005, 8), rep(0.05, 4), rep(0.1, 8), rep(0.4,4), rep(0.5,3),rep(0.925,3),rep(0.1,4),rep(0.005, 18))
-    gammaVal = 0.001*(1-p_s)
 
-    for (year in 1:nyear)
+
+    for (i in 1:maxTpt)
     {
-        cat(paste(year, "\n", sep = ""))
-        for (week in 1:nweek)
+        if (i == 1)
         {
-            cat(".")
-            if (week == 1 & year == 1)
-            {
-                # Initial Case
-                # Compute infection probability
+            S[i,] = S0 + S_star0 - E_star0
+            E[i,] = E0 + E_star0 - I_star0
+            I[i,] = I0 + I_star0 - R_star0
+            R[i,] = R0 + R_star0 - S_star0
+            etaVal = (I[i,]/N)*exp(eta_se[i,])
+            etaVal = etaVal + rho*(dcm %*% etaVal) + trueGamma[i] 
+            p_se[i,] = 1-exp(-etaVal)
 
-                mu = exp(true_fixed_eta + true_time_varying_eta[,week,year])
+            S_star[i,] = rbinom(rep(1,ncol(S)), R[i,], p_rs[i])
+            E_star[i,] = rbinom(rep(1,ncol(S)), S[i,], p_se[i,])
+            I_star[i,] = rbinom(rep(1,ncol(S)), E[i,], p_ei)
+            R_star[i,] = rbinom(rep(1,ncol(S)), I[i,], p_ir)
+        }
+        else
+        {
+            S[i,] = S[i-1,] + S_star[i-1,] - E_star[i-1,]
+            E[i,] = E[i-1,] + E_star[i-1,] - I_star[i-1,]
+            I[i,] = I[i-1,] + I_star[i-1,] - R_star[i-1,]
+            R[i,] = R[i-1,] + R_star[i-1,] - S_star[i-1,]
 
-                # Calculate Infectious Ratio
+            etaVal = (I[i,]/N)*exp(eta_se[i,])
+            etaVal = etaVal + rho*(dcm %*% etaVal) + trueGamma[i] 
+            p_se[i,] = 1-exp(-etaVal)
 
-                delta = I0/N
-                dmatrix = (1/sqrt(dcm))*true_rho
-                diag(dmatrix) = 0
-                p = 1-exp(-delta*mu - as.numeric(dmatrix %*% (delta*mu)))
+            S_star[i,] = rbinom(rep(1,ncol(S)), R[i,], p_rs[i])
+            E_star[i,] = rbinom(rep(1,ncol(S)), S[i,], p_se[i,])
+            I_star[i,] = rbinom(rep(1,ncol(S)), E[i,], p_ei)
+            R_star[i,] = rbinom(rep(1,ncol(S)), I[i,], p_ir)
 
-                if (any(is.na(p)))
-                {
-                    stop("Invalid P")
-                }
-
-                E_star0 = rbinom(rep(1, length(S0)),S0, p) 
-                I_star0 = rbinom(rep(1, length(E0)),E0, p_i)
-                R_star0 = rbinom(rep(1, length(I0)),I0, p_r)
-                S_star0 = rbinom(rep(1, length(R0)),R0, p_s[week])
-
-                if (any(is.na(E_star0)))
-                {
-                    stop("Invalid I star 0")
-                }
-                if (any(is.na(I_star0)))
-                {
-                    stop("Invalid I star 0")
-                }
-                if (any(is.na(R_star0)))
-                {
-                    stop("Invalid R star 0")
-                }
-                if (any(is.na(S_star0)))
-                {
-                    stop("Invalid S star 0")
-                }
-
-                S[,week,year] = S0 - E_star0 + S_star0
-                E[,week,year] = E0 + E_star0 - I_star0
-                I[,week,year] = I0 + I_star0 - R_star0
-                R[,week,year] = R0 + R_star0 - S_star0
-            }
-            else
-            {
-                # Standard Case          
-                # Compute infection probability
-
-                if (week == 1){mr_week = 52; mr_year = year-1}
-                else {mr_week = week-1; mr_year = year} 
-
-                mu = exp(true_fixed_eta + true_time_varying_eta[,mr_week,mr_year])
-                # Calculate Infectious Ratio
-                delta = I[,mr_week,mr_year]/N
-                dmatrix =(1/sqrt(dcm))*true_rho
-                diag(dmatrix) = 0
-                p = 1-exp(-gammaVal[week] -delta*mu - as.numeric(dmatrix %*% (delta*mu)))
-
-                if (any(is.na(p)))
-                {
-                    stop("Invalid P")
-                }
-
-                E_star = rbinom(rep(1, length(S0)),S[,mr_week, mr_year], p) 
-                I_star = rbinom(rep(1, length(E0)),E[,mr_week,mr_year], p_i)
-                R_star = rbinom(rep(1, length(I0)),I[,mr_week,mr_year], p_r)
-                S_star = rbinom(rep(1, length(R0)),R[,mr_week,mr_year], p_s[week])
-                
-                S_star_output[,mr_week,mr_year] = S_star
-                E_star_output[,mr_week,mr_year] = E_star
-                I_star_output[,mr_week,mr_year] = I_star
-                R_star_output[,mr_week,mr_year] = R_star
-
-                S[,week,year] = S[,mr_week, mr_year] + S_star - E_star
-                E[,week,year] = E[,mr_week,mr_year] + E_star - I_star
-                I[,week,year] = I[,mr_week,mr_year] + I_star - R_star
-                R[,week,year] = R[,mr_week,mr_year] + R_star - S_star
-            }
         }
     }
+
     return(list("S" = S, "E" = E, "I"=I, "R"=R, 
-                "S_star" = S_star_output,
-                "E_star" = E_star_output,
-                "I_star" = I_star_output,
-                "R_star" = R_star_output,
+                "S_star" = S_star,
+                "E_star" = E_star,
+                "I_star" = I_star,
+                "R_star" = R_star,
                 "S0"=S0,
                 "E0"=E0,
                 "I0"=I0,
@@ -273,36 +197,22 @@ main_sim = function(pop, dcm, X, Z, true_fixed_eta, true_time_varying_eta, true_
                 "E_star0"=E_star0,
                 "I_star0"=I_star0,
                 "R_star0"=R_star0,
-                "gamma" = gammaVal
+                "gamma" = trueGamma,
+                "true_fixed_beta" = trueBetaSEFixed,
+                "true_time_varying_beta" = trueBetaSEVarying,
+                "true_beta_pRS"=trueBetaRS,
+                "X" = X,
+                "Z" = Z,
+                "X_prs" = X_prs,
+                "p_ei" = p_ei,
+                "p_ir" = p_ir
                 ))
-}
-
-plot_yearly_trends = function(SEIR_Object, main = "SEIR Plot")
-{
-    SEIR_dim = dim(SEIR_Object)
-    plot(0,0,xlim = c(0,52*SEIR_dim[3]), ylim = c(0,max(SEIR_Object)), main = main, type = "n")
-
-    yrs = SEIR_Object[,,1]
-    for (year in 1:SEIR_dim[3])
-    {
-        yrs = cbind(yrs, SEIR_Object[,,year])
-    }
-
-
-    for (spat_loc in 1:SEIR_dim[1])
-    {
-        lines(x = seq(1,ncol(yrs)), y = yrs[spat_loc,], #col = col2rgb("grey", alpha = 0.5))
-        col = "black")
-    }
-    #lines(x = matrix(seq(1, ncol(yrs)), nrow = nrow(yrs), ncol = ncol(yrs), byrow = TRUE), y = yrs)
 }
 
 control_code = function(Nlocations = 20, plots = FALSE)
 {
     data_list = read_data()
     distance_stuff = gen_dist_mat(data_list[["dist"]], data_list[["pop"]])
-
-
 
     keepLocations = sample(1:ncol(distance_stuff[["dcm"]]))[1:Nlocations]
 
@@ -311,20 +221,12 @@ control_code = function(Nlocations = 20, plots = FALSE)
     mcl=distance_stuff$mcl[keepLocations]
     # Distance Matrix
     dcm=distance_stuff$dcm[keepLocations,keepLocations] 
+    dcm = 1/sqrt(dcm)
+    diag(dcm) = 0
     # Population Data
     pop = data_list$pop[keepLocations,] 
 
-    covariates = gen_covariates(dcm)
-    X = covariates$X
-    Z = covariates$Z
-
-    true_fixed_eta = covariates$true_fixed_eta
-    true_time_varying_eta = covariates$true_time_varying_eta
-    
-    true_fixed_beta = covariates$true_fixed_beta
-    true_time_varying_beta = covariates$true_time_varying_beta
-
-    sim_results = main_sim(pop,dcm,X,Z,true_fixed_eta, true_time_varying_eta)
+    sim_results = main_sim(dcm,pop)
 
     if (plots)
     {
@@ -344,8 +246,13 @@ control_code = function(Nlocations = 20, plots = FALSE)
         cat("R_star0:\n", sim_results$R_star0,"\n")
     }
 
-    data_list = list("mcl"=mcl, "dcm"=dcm, "pop"=pop)
-    covariates = list("X"= X, "Z"=Z, "true_fixed_eta"=true_fixed_eta, "true_time_varying_eta"=true_time_varying_eta,"true_fixed_beta" = true_fixed_beta, "true_time_varying_beta" = true_time_varying_beta)
-    save(data_list, covariates, sim_results, file = "./SimulationObjects.robj")
+    data_list = list("mcl"=mcl, "dcm"=dcm, "pop"=pop) 
+    save(data_list, sim_results, file = "./SimulationObjects.robj")
     cat("Done.\n")
 }
+
+
+
+
+
+

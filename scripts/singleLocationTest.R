@@ -251,7 +251,7 @@ priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
-steadyStateConstraintPrecision = 0.01
+steadyStateConstraintPrecision = 0.1
 
 verbose = FALSE 
 debug = FALSE
