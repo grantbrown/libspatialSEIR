@@ -369,6 +369,7 @@ namespace SpatialSEIR
         for (i = 0; i < nLoc; i++)
         {
             sampleCompartmentLocation(i, context, starCompartment, width);
+            std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
         }
         return(0);
     }
@@ -413,6 +414,16 @@ namespace SpatialSEIR
                 this -> calculateRelevantCompartments(i,j);
                 this -> setValue(initVal); 
             }                
+
+
+            if (!std::isfinite(this -> getValue()))
+            {
+                std::cout << "Impossible value selected:\n";
+                std::cout << "(i,j): (" << i << "," << j << ")\n";
+                std::cout << "Data value: " << (starCompartment -> data)[compIdx] << "\n";
+                this -> printDebugInfo(i,j);
+                throw(-1);
+            }
             compIdx ++;
         }
 
@@ -547,7 +558,7 @@ namespace SpatialSEIR
        p_rs = new double*;
        beta = new double*;
        rho = new double*;
-       value = new double;
+       value = new long double;
        steadyStateConstraintPrecision = new double;
        sliceWidth = new double;
        *context = _context;
@@ -817,6 +828,10 @@ namespace SpatialSEIR
         return(0);
     }
 
+    void FC_S_Star::printDebugInfo(int loc, int tpt)
+    {
+        std::cout << "S_star debug info, location " << loc << ", time " << tpt << "\n";     
+    }
 
 
     int FC_S_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
@@ -885,11 +900,11 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
-    double FC_S_Star::getValue()
+    long double FC_S_Star::getValue()
     {
         return(*(this -> value));
     }
-    void FC_S_Star::setValue(double val)
+    void FC_S_Star::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -933,7 +948,7 @@ namespace SpatialSEIR
         beta = new double*;
         sliceWidth = new double;
         steadyStateConstraintPrecision = new double;
-        value = new double;
+        value = new long double;
         
         *context = _context;
         *E_star = _E_star;
@@ -1173,6 +1188,11 @@ namespace SpatialSEIR
        return 0;
     }
 
+    void FC_E_Star::printDebugInfo(int loc, int tpt)
+    {
+        std::cout << "E_star debug info, location " << loc << ", time " << tpt << "\n";     
+    }
+
 
     int FC_E_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
@@ -1238,11 +1258,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_E_Star::getValue()
+    long double FC_E_Star::getValue()
     {
         return(*(this -> value));
     }
-    void FC_E_Star::setValue(double val)
+    void FC_E_Star::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -1284,7 +1304,7 @@ namespace SpatialSEIR
         p_se = new double*;
         sliceWidth = new double;
         steadyStateConstraintPrecision = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *R_star = _R_star;
@@ -1351,7 +1371,7 @@ namespace SpatialSEIR
 
                 if (Rstar_val < 0 || Rstar_val > I_val || 
                         Sstar_val > R_val ||
-                         p_se_val >= 1 || p_se_val <= 0)
+                         p_se_val > 1 || p_se_val < 0)
 
                 {
                     cachedValues[compIdx] = -INFINITY;
@@ -1401,7 +1421,7 @@ namespace SpatialSEIR
 
             if (Rstar_val < 0 || Rstar_val > I_val || 
                     Sstar_val > R_val || 
-                    p_se_val >= 1 || p_se_val <= 0)
+                    p_se_val > 1 || p_se_val < 0)
             {
                 cachedValues[compIdx] = -INFINITY;
                 return(-1);
@@ -1459,7 +1479,7 @@ namespace SpatialSEIR
 
                 if (Rstar_val < 0 || Rstar_val > I_val || 
                         Sstar_val > R_val ||
-                         p_se_val >= 1 || p_se_val <= 0)
+                         p_se_val > 1 || p_se_val < 0)
 
                 {
                     *value = -INFINITY;
@@ -1527,7 +1547,7 @@ namespace SpatialSEIR
 
             if (Rstar_val < 0 || Rstar_val > I_val || 
                     Sstar_val > R_val || 
-                    p_se_val >= 1 || p_se_val <= 0)
+                    p_se_val > 1 || p_se_val < 0)
             {
                 *value = -INFINITY;
                 return(-1);
@@ -1552,7 +1572,7 @@ namespace SpatialSEIR
 
         if (!std::isfinite(output))
         {
-            *value = -INFINITY;
+            *value = -INFINITY;   
             return(-1);
         }
         else
@@ -1563,6 +1583,10 @@ namespace SpatialSEIR
         return 0;
     }
 
+    void FC_R_Star::printDebugInfo(int loc, int tpt)
+    {
+        std::cout << "R_star debug info, location " << loc << ", time " << tpt << "\n";     
+    }
 
     int FC_R_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
     {
@@ -1634,11 +1658,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_R_Star::getValue()
+    long double FC_R_Star::getValue()
     {
         return(*(this -> value));
     }
-    void FC_R_Star::setValue(double val)
+    void FC_R_Star::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -1674,7 +1698,7 @@ namespace SpatialSEIR
         rho = new double*;
         sliceWidth = new double;
         priorPrecision = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *E_star = _E_star;
@@ -1762,11 +1786,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_Beta::getValue()
+    long double FC_Beta::getValue()
     {
         return(*(this -> value));
     }
-    void FC_Beta::setValue(double val)
+    void FC_Beta::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -1798,7 +1822,7 @@ namespace SpatialSEIR
         beta_p_rs = new double*;
         tausq = new double;
         sliceWidth = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *S_star = _S_star;
@@ -1884,11 +1908,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_Beta_P_RS::getValue()
+    long double FC_Beta_P_RS::getValue()
     {
         return(*(this -> value));
     }
-    void FC_Beta_P_RS::setValue(double val)
+    void FC_Beta_P_RS::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -1912,7 +1936,7 @@ namespace SpatialSEIR
         beta = new double*;
         rho = new double*;
         sliceWidth = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *E_star = _E_star;
@@ -1995,11 +2019,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_Rho::getValue()
+    long double FC_Rho::getValue()
     {
         return(*(this -> value));
     }
-    void FC_Rho::setValue(double val)
+    void FC_Rho::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -2027,7 +2051,7 @@ namespace SpatialSEIR
         priorAlpha = new double;
         priorBeta = new double;
         sliceWidth = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *E_star = _E_star;
@@ -2116,11 +2140,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_Gamma::getValue()
+    long double FC_Gamma::getValue()
     {
         return(*(this -> value));
     }
-    void FC_Gamma::setValue(double val)
+    void FC_Gamma::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -2141,7 +2165,7 @@ namespace SpatialSEIR
         p_ei = new double*;
         priorAlpha = new double;
         priorBeta = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *I_star = _I_star;
@@ -2201,11 +2225,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_P_EI::getValue()
+    long double FC_P_EI::getValue()
     {
         return(*(this -> value));
     }
-    void FC_P_EI::setValue(double val)
+    void FC_P_EI::setValue(long double val)
     {
         *(this -> value) = val;
     }
@@ -2227,7 +2251,7 @@ namespace SpatialSEIR
         p_ir = new double*;
         priorAlpha = new double;
         priorBeta = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *R_star = _R_star;
@@ -2287,11 +2311,11 @@ namespace SpatialSEIR
         return -1;
     }
 
-    double FC_P_IR::getValue()
+    long double FC_P_IR::getValue()
     {
         return(*(this -> value));
     }
-    void FC_P_IR::setValue(double val)
+    void FC_P_IR::setValue(long double val)
     {
         *(this -> value) = val;
     }

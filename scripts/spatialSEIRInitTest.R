@@ -147,10 +147,10 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 verbose = FALSE
 debug = FALSE
 
-priorAlpha_pEI = 1;
-priorBeta_pEI = 1;
-priorAlpha_pIR = 1;
-priorBeta_pIR = 1;
+priorAlpha_pEI = 1000;
+priorBeta_pEI = 100;
+priorAlpha_pIR = 1000;
+priorBeta_pIR = 100;
 
 steadyStateConstraintPrecision = 0.01
 

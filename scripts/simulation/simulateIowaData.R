@@ -98,7 +98,7 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
                   sin((1:maxTpt)/nTptPerYear*2*pi),
                   cos((1:maxTpt)/nTptPerYear*2*pi))
 
-    trueBetaSEFixed = c(-0.3)
+    trueBetaSEFixed = c(-0.2)
     trueBetaSEVarying = c(0.0001, 0.02, 0.03, 0.05, 0.06, 
                           0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1)*5
 

@@ -98,8 +98,8 @@ namespace SpatialSEIR
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
-            virtual double getValue() = 0;
-            virtual void setValue(double value) = 0;
+            virtual long double getValue() = 0;
+            virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             double* sliceWidth;
     };
@@ -118,10 +118,11 @@ namespace SpatialSEIR
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
-            virtual double getValue() = 0;
-            virtual void setValue(double value) = 0;
+            virtual long double getValue() = 0;
+            virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
+            virtual void printDebugInfo(int loc, int tpt) = 0;
 
             //Declaration for inherited methods
             int sampleCompartment(ModelContext* context,
@@ -160,8 +161,8 @@ namespace SpatialSEIR
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
-            virtual double getValue() = 0;
-            virtual void setValue(double value) = 0;
+            virtual long double getValue() = 0;
+            virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             int sampleDouble(ModelContext* context, 
                              double* variable,
@@ -200,10 +201,11 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
+            virtual void printDebugInfo(int loc, int tpt);
             virtual ~FC_S_Star();
 
             ModelContext **context;
@@ -218,7 +220,7 @@ namespace SpatialSEIR
             double **p_rs;
             double **beta; 
             double **rho;
-            double* value;
+            long double* value;
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
     };
@@ -249,10 +251,11 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
+            virtual void printDebugInfo(int loc, int tpt);
             ModelContext **context;
             CompartmentalModelMatrix **E_star; 
             CompartmentalModelMatrix **E; 
@@ -264,7 +267,7 @@ namespace SpatialSEIR
             double **p_ei;
             double **rho;
             double **beta;
-            double* value;
+            long double* value;
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
     };
@@ -296,11 +299,11 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc, int startTime);
-
+            virtual void printDebugInfo(int loc, int tpt);
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
             CompartmentalModelMatrix **R;
@@ -313,7 +316,7 @@ namespace SpatialSEIR
             double **p_rs;
             double **p_ir;
             double **p_se;
-            double* value;
+            long double* value;
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
     };
@@ -337,8 +340,8 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
 
             ModelContext **context;
@@ -349,7 +352,7 @@ namespace SpatialSEIR
             double **p_se;
             double **beta;
             double **rho;
-            double* value;
+            long double* value;
             double* sliceWidth;
             double* priorPrecision;
     };
@@ -372,8 +375,8 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
 
             ModelContext **context;
@@ -384,7 +387,7 @@ namespace SpatialSEIR
             double **beta_p_rs;
             double **p_rs;
             double* tausq;
-            double* value;
+            long double* value;
             double* sliceWidth;
 
     };
@@ -407,8 +410,8 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
 
             ModelContext **context;
@@ -419,7 +422,7 @@ namespace SpatialSEIR
             double **p_se;
             double **beta;
             double **rho;
-            double* value;
+            long double* value;
             double* sliceWidth;
 
     };
@@ -444,8 +447,8 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
 
             ModelContext **context;
@@ -458,7 +461,7 @@ namespace SpatialSEIR
             double **gamma;
             double* priorAlpha;
             double* priorBeta;
-            double* value;
+            long double* value;
             double* sliceWidth;
 
     };    
@@ -477,8 +480,8 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
 
             ~FC_P_EI();
@@ -487,7 +490,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **E;
             InitData **A0;
             double **p_ei;
-            double* value;
+            long double* value;
             double* priorAlpha;
             double* priorBeta;
             double* sliceWidth;
@@ -510,8 +513,8 @@ namespace SpatialSEIR
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
-            virtual double getValue();
-            virtual void setValue(double val);
+            virtual long double getValue();
+            virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
 
             ModelContext **context;
@@ -519,7 +522,7 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **I;
             InitData **A0;
             double **p_ir;
-            double* value;
+            long double* value;
             double* priorAlpha;
             double* priorBeta;
             double* sliceWidth;
