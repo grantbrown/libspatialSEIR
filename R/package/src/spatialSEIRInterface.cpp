@@ -601,9 +601,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "Slice sampling parameters must be of length 6: S*,E*,R*,beta,betaPrs,rho,gamma\n";
         throw(-1);
     }
-    if (chainOutputControl.size() != 30)
+    if (chainOutputControl.size() != 32)
     {
-        Rcpp::Rcout << "There are 30 chain output options, please don't leave any blank.\n";
+        Rcpp::Rcout << "There are 32 chain output options, please don't leave any blank.\n";
         throw(-1);
     }
 

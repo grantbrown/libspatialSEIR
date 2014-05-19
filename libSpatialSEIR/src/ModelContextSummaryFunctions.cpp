@@ -89,7 +89,6 @@ namespace SpatialSEIR
     }
 
 
-
     double ModelContext::avgP_SE()
     {
         double out = 0.0;
@@ -127,8 +126,15 @@ namespace SpatialSEIR
         return(out/numTpt);
     }
 
+    double ModelContext::estimateR0()
+    {
+        return(-1.0);
+    }
 
-
+    double ModelContext::estimateR0(int t)
+    {
+        return(-1.0);
+    }
 
 
 

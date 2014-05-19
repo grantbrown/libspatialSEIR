@@ -46,7 +46,7 @@ namespace SpatialSEIR
     {
         context = new ModelContext*;
         iterationStride = new int;
-        variableList = new int[30]; // This will need to be generalized at some point.
+        variableList = new int[31]; // This will need to be generalized at some point.
         outFilePath = new std::string; 
         *context = _context; 
         *outFilePath = *_outFilePath;
@@ -304,6 +304,20 @@ namespace SpatialSEIR
                 (*outFileStream) << "avgP_se_" << j << ",";
             }
         }
+        if (variableList[30] != 0)
+        {
+            // Write r_0 header. 
+            (*outFileStream) << "r_0, ";
+        }
+        if (variableList[31] != 0)
+        {
+            // Write r_0_t header
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << "r_0_" << j << ",";
+            }
+        }
+
         (*outFileStream) << "Iteration,Time\n";
         // Write iteration number
         //Newline
@@ -540,6 +554,21 @@ namespace SpatialSEIR
                 (*outFileStream) << (*context) -> avgP_SE(j) << ",";
             }
         }
+        if (variableList[30] != 0)
+        {
+            // Write r_0 
+            (*outFileStream) << (*context) -> estimateR0() << ", ";
+        }
+        if (variableList[31] != 0)
+        {
+            // Write r_0_t 
+            for (j = 0; j < nTpt; j++)
+            {
+                (*outFileStream) << (*context) -> estimateR0(i) << ", ";
+            }
+        }
+
+
 
         (*outFileStream) << iteration << "," << difftime(time(&*timer), *startTime)  <<"\n";
         outFileStream -> flush();

@@ -165,6 +165,10 @@ namespace SpatialSEIR
 
             double avgP_SE(int tpt);
 
+            double estimateR0();
+            double estimateR0(int t);
+
+
 
 
 

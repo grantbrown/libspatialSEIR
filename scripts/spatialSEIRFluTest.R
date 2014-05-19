@@ -240,7 +240,9 @@ logFileList = c(1, # beta
                 0, # Total E_star_j, j = 1...T
                 0, # Total I_star_j, j = 1...T
                 0, # Total R_star_j, j = 1...T
-                0) # Total pSE_j, j = 1...T
+                0, # Total pSE_j, j = 1...T
+                0, # Estimated R0, basic reproductive number. 
+                0) # Estimated R0_j, j=1...T
 
 
 
