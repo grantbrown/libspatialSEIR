@@ -64,12 +64,21 @@ R = R[(throwAwayTpts+1):nrow(R),]
 
 Z = Z[(1+throwAwayTpts*ncol(S)):nrow(Z),]
 
+Z2 = c()
+
+# Change order of Z
+for (i in 1:ncol(S))
+{
+    Z2 = rbind(Z2, Z[seq(i, nrow(Z), ncol(S)),])
+}
+Z = Z2
+
 xDim = dim(X)
 zDim = dim(Z)
 
 DM = as.numeric(data_list$dcm)
 
-rho = 0.001
+rho = 0.05
 
 p_ei = 0.9
 p_ir = 0.9
@@ -83,6 +92,7 @@ beta = c(sim_results$true_fixed_beta, sim_results$true_time_varying_beta)
 betaPriorPrecision = 1
 
 N = matrix(data_list[["pop"]][,2], nrow = nrow(S), ncol = ncol(S), byrow = TRUE)
+
 
 
 compMatDim = c(nrow(S), ncol(S))

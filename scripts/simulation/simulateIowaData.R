@@ -112,6 +112,7 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
     eta_se = matrix((as.numeric(true_fixed_eta) + 
                      as.numeric(true_time_varying_eta)), 
                      nrow = maxTpt, ncol = ncol(dcm), byrow = TRUE)
+
     p_se = matrix(0.0, nrow = maxTpt, ncol = ncol(dcm)) 
     p_ei = 0.9
     p_ir = 0.9
@@ -186,7 +187,7 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
 
     return(list("S" = S, "E" = E, "I"=I, "R"=R, 
                 "S_star" = S_star,
-                "E_star" = E_star,
+               "E_star" = E_star,
                 "I_star" = I_star,
                 "R_star" = R_star,
                 "S0"=S0,
@@ -205,7 +206,8 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
                 "Z" = Z,
                 "X_prs" = X_prs,
                 "p_ei" = p_ei,
-                "p_ir" = p_ir
+                "p_ir" = p_ir,
+                "p_se" = p_se
                 ))
 }
 
@@ -221,12 +223,14 @@ control_code = function(Nlocations = 20, plots = FALSE)
     mcl=distance_stuff$mcl[keepLocations]
     # Distance Matrix
     dcm=distance_stuff$dcm[keepLocations,keepLocations] 
-    dcm = 1/sqrt(dcm)
-    diag(dcm) = 0
+    sDcm = 1/sqrt(dcm)
+    sDcm = ifelse(dcm < 4*60*60, sDcm, 0)
+    dcm = ifelse(dcm < 4*60*60, dcm, 0)
+    diag(sDcm) = 0
     # Population Data
     pop = data_list$pop[keepLocations,] 
 
-    sim_results = main_sim(dcm,pop)
+    sim_results = main_sim(sDcm,pop)
 
     if (plots)
     {
@@ -246,7 +250,7 @@ control_code = function(Nlocations = 20, plots = FALSE)
         cat("R_star0:\n", sim_results$R_star0,"\n")
     }
 
-    data_list = list("mcl"=mcl, "dcm"=dcm, "pop"=pop) 
+    data_list = list("mcl"=mcl, "dcm"=dcm, "pop"=pop, "sDcm"=sDcm) 
     save(data_list, sim_results, file = "./SimulationObjects.robj")
     cat("Done.\n")
 }

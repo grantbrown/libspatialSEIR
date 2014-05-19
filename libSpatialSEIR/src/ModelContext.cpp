@@ -271,18 +271,6 @@ namespace SpatialSEIR
         this -> calculateP_RS_CPU();
         this -> calculateP_SE_CPU();
 
-
-        // Initialize FC Values        
-        this -> beta_fc -> evalCPU();
-        this -> betaPrs_fc -> evalCPU();
-        this -> p_ei_fc -> evalCPU();
-        this -> p_ir_fc -> evalCPU();
-        this -> gamma_fc -> evalCPU();
-        this -> rho_fc -> evalCPU();
-        this -> S_star_fc -> evalCPU();
-        this -> E_star_fc -> evalCPU();
-        this -> R_star_fc -> evalCPU();
-
         *isPopulated = 1;
 
     }
@@ -297,8 +285,6 @@ namespace SpatialSEIR
             if ((S_star -> data)[i] > (R -> data)[i])
             {
                 std::cout << "S_star too big: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
-                S_star_fc -> evalCPU();
-                std::cout << "Value 2: " << S_star_fc -> getValue() << "\n"; 
                 err = 1;
                 break;
             }
@@ -367,8 +353,6 @@ namespace SpatialSEIR
             {
                 
                 std::cout << "R_star too big: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
-                R_star_fc -> evalCPU();
-                std::cout << "Value 2: " << R_star_fc -> getValue() << "\n"; 
                 err = 1;
                 break;
             }
@@ -406,9 +390,6 @@ namespace SpatialSEIR
         p_ir_fc -> evalCPU();
         rho_fc -> evalCPU();
         gamma_fc -> evalCPU();
-        S_star_fc -> evalCPU();
-        E_star_fc -> evalCPU();
-        R_star_fc -> evalCPU();
         std::cout << "  FC Values:\n";
         std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
         std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
@@ -416,9 +397,6 @@ namespace SpatialSEIR
         std::cout << "    p_ir: " << p_ir_fc ->getValue() << "\n";
         std::cout << "    rho: " << rho_fc ->getValue() << "\n";
         std::cout << "    gamma: " << gamma_fc ->getValue() << "\n";
-        std::cout << "    S_star: " << S_star_fc ->getValue() << "\n";
-        std::cout << "    E_star: " << E_star_fc ->getValue() << "\n";
-        std::cout << "    R_star: " << R_star_fc ->getValue() << "\n"; 
     }
 
     void ModelContext::simulationIter(int* useOCL, bool verbose = false, bool debug = false)
@@ -811,7 +789,6 @@ namespace SpatialSEIR
     // Updates: p_se
     void ModelContext::calculateP_SE_CPU()
     {
-
         this -> cacheP_SE_Calculation(); 
         int i, j, index;
 
@@ -827,7 +804,10 @@ namespace SpatialSEIR
                 *(I -> ncol), 
                 *(scaledDistMat -> numLocations), 
                 *(scaledDistMat -> numLocations),
-                false,false);
+                false,false, 
+                *(I->nrow), 
+                *(scaledDistMat -> numLocations),
+                *(I->nrow));
 
         for (i = 0; i < nLoc; i++) 
         {
@@ -844,34 +824,47 @@ namespace SpatialSEIR
     // only change is to I compartment. 
     void ModelContext::calculateP_SE_CPU(int startLoc, int startTime)
     {
+
         int i, j, index;
+
         // Calculate dmu: I/N * exp(eta)
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
 
         index = startLoc*nTpt + startTime;
-        for (i = startTime; i < nTpt; i++)
+        for (j = startTime; j < nTpt; j++)
         {
             p_se_components[index] = 
                ((I -> data)[index] * (eta[index]))/N[index];
-            index ++;
-        }
-
-        SpatialSEIR::matMult(&((this -> p_se)[startTime]), 
-                &(p_se_components[startTime]), 
-                 scaledDistMat -> data, 
-                 (nTpt - startTime),
-                *(I -> ncol),
-                *(scaledDistMat -> numLocations), 
-                *(scaledDistMat -> numLocations),
-                false,false);
-
-        index = startLoc*nTpt + startTime;
-        for (j = startTime; j < nTpt; j++)
-        {
-            p_se[index] = 1-exp(-gamma[j] -p_se_components[index] - (*rho)*p_se[index]);
             index++;
         }
+
+ 
+
+        //memset(p_se, 0, nLoc*nTpt*sizeof(double));
+        // Calculate rho*sqrt(idmat)
+        SpatialSEIR::matMult(&(p_se[startTime]), 
+                &(p_se_components[startTime]), 
+                scaledDistMat -> data, 
+                (*(I -> nrow) - startTime),
+                *(I -> ncol), 
+                *(scaledDistMat -> numLocations), 
+                *(scaledDistMat -> numLocations),
+                false,false, 
+                *(I->nrow), 
+                *(scaledDistMat -> numLocations),
+                *(I->nrow));
+
+        for (i = 0; i < nLoc; i++) 
+        {
+            index = i*nTpt + startTime;
+            for (j = startTime; j < nTpt; j++)
+            {
+                p_se[index] = 1-exp(-gamma[j] - p_se_components[index] - (*rho)*p_se[index]);
+                index++;
+            }
+        }        
+
     }
 
     void ModelContext::cacheP_SE_Calculation()
@@ -898,7 +891,7 @@ namespace SpatialSEIR
             {
 
                 p_se_components[index] = 
-                   ((I -> data)[index] * (eta[index]))/N[i];
+                   ((I -> data)[index] * (eta[index]))/N[index];
                 index++;
             }
         }

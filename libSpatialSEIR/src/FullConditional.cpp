@@ -21,7 +21,8 @@ namespace SpatialSEIR
     /*
      * Helper functions
      */
-    int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB)
+    int matMult(double* output, double * A, double * B, int Arow, int Acol, 
+            int Brow, int Bcol, bool TransA, bool TransB, int ldA, int ldB, int ldC)
     {
         // Use BLAS to matrix multiply, assume column major, non transposing.
         // Double check this code when I have internet access. 
@@ -39,9 +40,9 @@ namespace SpatialSEIR
                     TransB ? CblasTrans : CblasNoTrans,
                     Arow, Bcol, Brow,
                     1.0, 
-                    A, Arow,  
-                    B, Brow,  
-                    0.0, output, Arow);
+                    A, ldA,  
+                    B, ldB,  
+                    0.0, output, ldC);
         return 0; 
     }
 
@@ -130,235 +131,7 @@ namespace SpatialSEIR
         delete numLocations;
     }
 
-
-    int CompartmentFullConditional::sampleCompartment(ModelContext* context,
-                                       CompartmentalModelMatrix* starCompartment,
-                                       double width,double* cachedValues)
-    {
-        // Declare required variables
-        int i, j, compIdx;
-        int nLoc = *(starCompartment -> ncol);
-        int nTpts = *(starCompartment -> nrow); 
-        double l,r,y,x,x0;
-        
-        // Update the relevant CompartmentalModelMatrix instances
-        this -> calculateRelevantCompartments();
-        
-        // Cache Eval Calculation
-        this -> cacheEvalCalculation(cachedValues);
-
-        // Set the "value" attribute appropriately
-        this -> evalCPU();
-   
-        int itrs;
-        // Main loop: 
-        for (i = 0; i < nLoc; i++)
-        {
-            for (j = 0; j < nTpts; j ++)
-            { 
-                //std::cout << j << "\n";
-                compIdx = i*nTpts + j; 
-                x = (starCompartment -> data)[compIdx];
-                this -> calculateRelevantCompartments(i,j); 
-                this -> evalCPU(i,j,cachedValues);
-                y = (this->getValue()) - (context -> random -> gamma());
-                l = std::max(0.0, (x - (context -> random -> uniform())*width));
-                r = l + width;
-                itrs = 0;
-                do 
-                {
-                    itrs ++;
-                    if (itrs > 1000)
-                    {
-                        if (!std::isfinite(this -> getValue()))
-                        {
-                            std::cout << "(Val, y): (" << (this -> getValue()) << ", " << y << ")" << "\n";
-                            std::cout << "(x, x0): (" << x << ", "<< x0 << ")" << "\n";
-                            std::cout << "l,r: " << l << ", " << r << "\n";
-                            throw(-1);
-                        }
-                        else
-                        {
-                            y = -INFINITY;
-                        }
-                    }
-                    x0 = ((context -> random -> uniform())*(r-l) + l);
-                    (starCompartment -> data)[compIdx] = std::floor(x0);
-                    this -> calculateRelevantCompartments(i,j);
-                    this -> evalCPU(i,j,cachedValues);
-                    if (x0 >= x){r = x0;}
-                    else{l = x0;}
-                } while (y >= (this -> getValue()));
-            }
-        }
-        return 0;
-    }
-
-    int CompartmentFullConditional::sampleCompartmentMemoized(ModelContext* context,
-                                           CompartmentalModelMatrix* starCompartment,
-                                           int width,double* cachedValues)
-    {
-        // Declare required variables
-        double* memo = new double[width + 1];
-        int* memoStored = new int[width + 1];
-
-        int i, j, compIdx, memoStart, memoIdx, lastItrMemo;
-        int memoIdxBytes = sizeof(int)*(width+1);
-        int nLoc = *(starCompartment -> ncol);
-        int nTpts = *(starCompartment -> nrow);
-        double l,r,y,x0;
-        int x, x0_floor;
-        
-        memset(memo, 0, memoIdxBytes);
-        memset(memoStored, 0, memoIdxBytes);
-
-        // Update the relevant CompartmentalModelMatrix instances
-        this -> calculateRelevantCompartments();
-        
-        // Cache Eval Calculation
-        this -> cacheEvalCalculation(cachedValues);
-
-        // Set the "value" attribute appropriately
-        this -> evalCPU();
-   
-        int itrs;
-        // Main loop: 
-        for (i = 0; i < nLoc; i++)
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j ++)
-            { 
-                //std::cout << j << "\n";
-                memset(memoStored, 0, memoIdxBytes);
-                lastItrMemo = 0;
-                x = (starCompartment -> data)[compIdx];
-                this -> calculateRelevantCompartments(i,j); 
-                this -> evalCPU(i,j,cachedValues);
-                y = (this->getValue()) - (context -> random -> gamma());
-                l = std::max(0.0, (x - (context -> random -> uniform())*width));
-                r = l + width;
-                memoStart = l;
-                memoIdx = (x-memoStart);
-                memo[memoIdx] = (this->getValue());
-                memoStored[memoIdx] = 1;
-                if (! std::isfinite(y))
-                {
-                    std::cerr << "Beginning Sampling from location with 0 probability.\n"; 
-                    throw(-1);
-                }
-                itrs = 0;
-                do 
-                {
-                    itrs ++;
-                    if (itrs > 1000000)
-                    {
-                        std::cout << "Sampling Error:\n";
-                        std::cout << "Current Value: " << (this -> getValue()) << "\n";
-                        std::cout << "Starting Value: " << y << "\n";
-                        std::cout << "(x, x0, l, r): (" << x << ", " << x0 << ", " << l  << ", " << r << ")\n";
-                        if (std::isfinite(y))
-                        {
-                            (starCompartment -> data)[compIdx] = x;
-                            (this -> setValue(memo[x-memoStart]));
-                            return(0);
-                        }
-                        throw(-1);
-                    }
-                    x0 = ((context -> random -> uniform())*(r-l) + l);
-                    x0_floor = std::floor(x0);
-                    memoIdx = (x0_floor - memoStart);
-                    if (memoStored[memoIdx])
-                    {
-                        lastItrMemo = 1;
-                        (starCompartment -> data)[compIdx] = x0_floor;
-                        (this -> setValue(memo[memoIdx]));  
-                        this -> calculateRelevantCompartments(i,j);
-                    }
-                    else 
-                    {
-                        lastItrMemo = 0;
-                        (starCompartment -> data)[compIdx] = x0_floor;
-                        this -> calculateRelevantCompartments(i,j);
-                        this -> evalCPU(i,j,cachedValues);
-                        if (x0 >= x){r = x0;}
-                        else{l = x0;}
-                        memoStored[memoIdx] = 1;
-                        memo[memoIdx] = (this->getValue());
-                    }
-                } while (y >= (this -> getValue()));
-                if (lastItrMemo)
-                {
-                    this -> updateEvalCache(i,j,cachedValues);
-                }
-                compIdx ++;
-            }
-        }
-        return 0;
-
-    }
-
-    int CompartmentFullConditional::sampleCompartmentMetropolis(ModelContext* context,
-                                                                CompartmentalModelMatrix* starCompartment,
-                                                                double width,double* cachedValues)
-    {
-        // Declare required variables
-        int i, j, compIdx;
-        int nLoc = *(starCompartment -> ncol);
-        int nTpts = *(starCompartment -> nrow);
-        int x0, x1;
-        double initVal, newVal;
-        double initProposal, newProposal;
-        double criterion;
-        
-        // Update the relevant CompartmentalModelMatrix instances
-        this -> calculateRelevantCompartments();
-        
-        // Cache Eval Calculation
-        this -> cacheEvalCalculation(cachedValues);
-
-        // Set the "value" attribute appropriately
-        //this -> evalCPU();
-        this -> evalCPU(0,0,cachedValues);
-
-        // Main loop: 
-        for (i = 0; i < nLoc; i++)
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j ++)
-            { 
-                //std::cout << j << "\n";
-                this -> calculateRelevantCompartments(i,j); 
-                this -> evalCPU(i,j,cachedValues);
-                x0 = (starCompartment -> data)[compIdx];
-                initVal = (this -> getValue());
-  
-                // Propose new value, bounded away from zero. 
-                x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
-                (starCompartment -> data)[compIdx] = x1;
-                this -> calculateRelevantCompartments(i,j);
-                this -> evalCPU(i,j,cachedValues);
-                newVal = (this->getValue());
-                newProposal = (context -> random -> dnorm(x1, x0,width));
-                initProposal = (context -> random -> dnorm(x0, x1,width));
-                criterion = (newVal - initVal) + (initProposal - newProposal);
-                if (std::log((context -> random -> uniform())) < criterion)
-                {
-                    // Accept new value
-                }
-                else
-                {
-                    // Keep Original Value
-                    (starCompartment -> data)[compIdx] = x0;
-                    this -> calculateRelevantCompartments(i,j);
-                    this -> setValue(initVal); 
-                }                
-                compIdx ++;
-            }
-        }
-        return 0;
-    }
-
-    int CompartmentFullConditional::sampleCompartment2(ModelContext* context,
+    int CompartmentFullConditional::sampleCompartment_CPU(ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,
                                                        double width)
     {
@@ -369,7 +142,7 @@ namespace SpatialSEIR
         for (i = 0; i < nLoc; i++)
         {
             sampleCompartmentLocation(i, context, starCompartment, width);
-            std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
+            //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
         }
         return(0);
     }
@@ -596,182 +369,6 @@ namespace SpatialSEIR
         delete context;
     }
 
-    // Cache the components of the FC_S_Star calculation in cachedValues
-    int FC_S_Star::cacheEvalCalculation(double* cachedValues)
-    {
-        // Cache eval calulation could probably get away with 
-        // returning upon encountering bad data, but the performance
-        // benefit would be small given the relaitive infrequency of 
-        // calls.
-        int nLoc = *((*S)->ncol);
-        int nTpts = *((*S)->nrow);
-
-        int i,j,compIdx;
-        int Sstar_val,Estar_val,S_val,R_val;
-        double p_se_val, p_rs_val;
-        int err = 0;
-
-        for (i = 0;i<nLoc;i++);
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j++)
-            {
-                p_rs_val = (*p_rs)[j];
-                Sstar_val = ((*S_star)->data)[compIdx]; 
-                Estar_val = ((*E_star)->data)[compIdx];
-
-                S_val = ((*S)->data)[compIdx];
-                R_val = ((*R)->data)[compIdx];
-                p_se_val = (*p_se)[compIdx];
-
-                // Check Constraints
-                if (Sstar_val < 0 || 
-                    Sstar_val > R_val ||
-                    Estar_val > S_val)
-                {
-                    cachedValues[compIdx] = -INFINITY;
-                    err += 1;
-                }
-
-
-                else
-                { 
-                    cachedValues[compIdx] = (std::log(p_rs_val)*Sstar_val + 
-                                   std::log(1-p_rs_val)*(R_val - Sstar_val) +
-                                   std::log(1-p_se_val)*(S_val) + 
-                                   ((*context) -> random -> choose(R_val, Sstar_val)) + 
-                                   ((*context)->random->choosePartial(S_val, Estar_val)));
-                    if (!std::isfinite(cachedValues[compIdx]))
-                    {
-                        cachedValues[compIdx] = -INFINITY;
-                        err += 1;
-                    }
-                }
-            }
-            compIdx ++ ;
-        }
-        return(err);
-    }
-
-    int FC_S_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        // If update evalCache encounters invalid data, we're ALWAYS
-        // going to end up back here at the same startLoc startTime with a new 
-        // proposal. Therefore, return immediately upon encountering bad 
-        // values. 
-        int i,compIdx,Sstar_val,Estar_val,S_val,R_val;
-        double p_se_val, p_rs_val;
-        int nTpts = *((*S)->nrow);
-        
-        compIdx = startLoc*nTpts + startTime;
-        for (i = startTime; i < nTpts; i++)
-        {
-                Sstar_val = ((*S_star)->data)[compIdx]; 
-                Estar_val = ((*E_star)->data)[compIdx];
-                S_val = ((*S)->data)[compIdx];
-                R_val = ((*R)->data)[compIdx];
-                p_se_val = (*p_se)[compIdx];
-                p_rs_val = (*p_rs)[i];
-
-                if (Sstar_val < 0 || 
-                    Sstar_val > R_val ||
-                    Estar_val > S_val)
-                {
-                    cachedValues[compIdx] = -INFINITY;
-                    return(-1);
-                }
-                else
-                { 
-                    cachedValues[compIdx] = (std::log(p_rs_val)*Sstar_val + 
-                                   std::log(1-p_rs_val)*(R_val - Sstar_val) +
-                                   std::log(1-p_se_val)*(S_val) + 
-                                   ((*context) -> random -> choose(R_val, Sstar_val)) + 
-                                   ((*context)->random->choosePartial(S_val, Estar_val)));
-                    if (!std::isfinite(cachedValues[compIdx]))
-                    {
-                        cachedValues[compIdx] = -INFINITY;
-                        return(-1);
-                    }
-                }
-                compIdx ++; 
-        }
-        return(0);
-    }
-
-    // Evaluate the S_star FC at the current values provided by the context.
-    int FC_S_Star::evalCPU()
-    {
-        int nLoc = *((*S)->ncol);
-        int nTpts = *((*S)->nrow);
-
-        int i,j,compIdx;
-        long double output = 0.0;
-        int Sstar_val,Estar_val,S_val,R_val;
-        double p_se_val, p_rs_val;
-        *value = 0.0;
-        long unsigned int R_star_sum;
-        long unsigned int S_star_sum;
-        int64_t aDiff; 
-
-
-        for (i = 0; i<nLoc; i++)
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j++)
-            {
-                p_rs_val = (*p_rs)[j];
-                Sstar_val = ((*S_star)->data)[compIdx]; 
-                Estar_val = ((*E_star)->data)[compIdx];
-                S_val = ((*S)->data)[compIdx];
-                R_val = ((*R)->data)[compIdx];
-                p_se_val = (*p_se)[compIdx];
-
-
-                // Check Constraints
-                if (Sstar_val < 0 || 
-                    Sstar_val > R_val ||
-                    Estar_val > S_val)
-                {
-                    *value = -INFINITY;
-                    std::cout << "-Inf cause 1\n";
-                    std:: cout << "(Index: " << compIdx 
-                               << ", S*:" << Sstar_val 
-                               << ", R:" << R_val 
-                               << ", E*:" << Estar_val 
-                               << ", S:" 
-                               <<  S_val << ")\n"; 
-                    return(-1);
-                }
-                
-                output += (std::log(p_rs_val)*Sstar_val + 
-                           std::log(1-p_rs_val)*(R_val - Sstar_val) +
-                           std::log(1-p_se_val)*(S_val) + 
-                           ((*context) -> random -> choose(R_val, Sstar_val)) + 
-                           ((*context)->random->choosePartial(S_val, Estar_val)));
-                compIdx++;
-            }
-
-        }
-        *value = output;
-
-        for (i=0; i< nLoc; i++)
-        {
-            S_star_sum = (*S_star)->marginSum(2,i);
-            R_star_sum = (*R_star)->marginSum(2,i);
-            aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
-            *value -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
-        }
-
-        if (!std::isfinite(*value))
-        {
-            *value = -INFINITY;
-            std::cout << "-Inf cause 2\n";
-            return(-1); 
-        }
-        return(0);
-
-    }
-
     int FC_S_Star::evalCPU(int startLoc, int startTime)
     {
         int i,compIdx,Sstar_val,Estar_val,S_val,R_val;
@@ -782,7 +379,6 @@ namespace SpatialSEIR
         long unsigned int R_star_sum;
         int64_t aDiff;
 
-
         compIdx = startLoc*nTpts + startTime;
         for (i = startTime; i < nTpts; i++)
         {
@@ -802,11 +398,8 @@ namespace SpatialSEIR
                 }
                 else
                 { 
-                    output += (std::log(p_rs_val)*Sstar_val + 
-                               std::log(1-p_rs_val)*(R_val - Sstar_val) +
-                               std::log(1-p_se_val)*(S_val) + 
-                               ((*context) -> random -> choose(R_val, Sstar_val)) + 
-                               ((*context)->random->choosePartial(S_val, Estar_val)));
+                    output += (((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                               ((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)));
                 }
                 compIdx ++; 
         }
@@ -834,42 +427,6 @@ namespace SpatialSEIR
     }
 
 
-    int FC_S_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        int valid = 1;
-        int nvals = (*((*S)->nrow))*(*((*S)->ncol));
-        int i;
-        long double output = 0.0;
-        long unsigned int S_star_sum;
-        long unsigned int R_star_sum;
-        int64_t aDiff;
-
-        valid = updateEvalCache(startLoc, startTime, cachedValues);
-        if (valid < 0)
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-
-        for (i = 0; i < nvals; i++)
-        {
-            output += cachedValues[i];
-        }
-        *value = output;
-
-        S_star_sum = (*S_star)->marginSum(2,startLoc);
-        R_star_sum = (*R_star)->marginSum(2,startLoc);
-        aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
-        *value -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
-
-        if (!std::isfinite(*value))
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        return(0);
-    }
-
     int FC_S_Star::evalOCL()
     {
         //NOT IMPLEMENTED
@@ -891,7 +448,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartment2(*context,
+        this -> sampleCompartment_CPU(*context,
                                   *S_star,*sliceWidth);
         return 0;
     }
@@ -911,14 +468,11 @@ namespace SpatialSEIR
 
 
 
-
-
     /*
      *
      * Implement the full conditional distribution for E_Star
      *
      */    
-
     
     FC_E_Star::FC_E_Star(ModelContext *_context,
                          CompartmentalModelMatrix *_E_star,
@@ -984,152 +538,6 @@ namespace SpatialSEIR
         delete context;
     }
 
-    int FC_E_Star::cacheEvalCalculation(double* cachedValues)
-    {
-        int i, j, compIdx;
-        int nLoc = *((*S) -> ncol);
-        int nTpts = *((*S) -> nrow);
-        double ln_1m_p_ei = std::log(1-(**p_ei));     
-        double p_se_val;
-        int S_val, E_val, Estar_val, Istar_val;
-
-        for (i = 0; i < nLoc; i++)    
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j++)     
-            {
-                Estar_val = ((*E_star) -> data)[compIdx];
-                S_val = ((*S) -> data)[compIdx];
-                E_val = ((*E) -> data)[compIdx];
-                Istar_val = ((*I_star) -> data)[compIdx];
-                p_se_val = (*p_se)[compIdx];
-
-                // Check conditions
-                if (Estar_val < 0 || Estar_val > S_val || 
-                        Istar_val > E_val)
-                {
-                    cachedValues[compIdx] = (-INFINITY);
-                }
-                else
-                {
-                    cachedValues[compIdx] = (std::log(p_se_val)*Estar_val +
-                                             std::log(1-p_se_val)*(S_val - Estar_val) +
-                                             ln_1m_p_ei*E_val + 
-                                             ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
-                                             ((*context)->random->choose(S_val, Estar_val)));
-                }
-                compIdx++;
-            }
-        } 
-        return(0);
-    }
-
-    int FC_E_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        int j, compIdx;
-        int nTpts = *((*S) -> nrow); 
-        double ln_1m_p_ei = std::log(1-(**p_ei));    
-        double p_se_val;
-        int S_val, E_val, Estar_val, Istar_val;
-
-        compIdx = startLoc*nTpts + startTime;
-        for (j = startTime; j < nTpts; j++)
-        {
-            Estar_val = ((*E_star) -> data)[compIdx];
-            S_val = ((*S) -> data)[compIdx];
-            E_val = ((*E) -> data)[compIdx];
-            Istar_val = ((*I_star) -> data)[compIdx];
-            p_se_val = (*p_se)[compIdx];
-
-            if (Estar_val < 0 || Estar_val > S_val || 
-                    Istar_val > E_val)
-
-            {
-                cachedValues[compIdx] = -INFINITY;
-                return(-1);
-            }
-            else
-            {
-                cachedValues[compIdx] = (std::log(p_se_val)*Estar_val +
-                                         std::log(1-p_se_val)*(S_val - Estar_val) +
-                                         ln_1m_p_ei*E_val + 
-                                         ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
-                                         ((*context)->random->choose(S_val, Estar_val)));
-                if (!std::isfinite(cachedValues[compIdx]))
-                {
-                    cachedValues[compIdx] = -INFINITY;
-                    return(-1);
-                }
-            }
-            compIdx++;
-        }
-       return 0;
-    }
-
-    int FC_E_Star::evalCPU()
-    {
-
-        int i, j, compIdx;
-        int nLoc = *((*S) -> ncol);
-        int nTpts = *((*S) -> nrow);
-        double ln_1m_p_ei = std::log(1-(**p_ei));     
-        double p_se_val;
-        int S_val, E_val, Estar_val, Istar_val;
-        long double output = 0.0;
-        long unsigned int E_star_sum;
-        long unsigned int I_star_sum;
-        int64_t aDiff; 
-
-        for (i = 0; i < nLoc; i++)    
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j++)     
-            {
-                Estar_val = ((*E_star) -> data)[compIdx];
-                S_val = ((*S) -> data)[compIdx];
-                E_val = ((*E) -> data)[compIdx];
-                Istar_val = ((*I_star) -> data)[compIdx];
-                p_se_val = (*p_se)[compIdx];
-
-                // Check conditions
-                if (Estar_val < 0 || Estar_val > S_val || 
-                        Istar_val > E_val)
-                {
-                    *value = (-INFINITY);
-                    return(-1);
-                }
-                else
-                {
-                    output += (std::log(p_se_val)*Estar_val +
-                              std::log(1-p_se_val)*(S_val - Estar_val) +
-                              ln_1m_p_ei*E_val + 
-                              ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
-                              ((*context)->random->choose(S_val, Estar_val)));
-                }
-                compIdx++;
-            }
-        } 
-        
-
-        for (i=0; i< nLoc; i++)
-        {
-            E_star_sum = (*E_star)->marginSum(2,i);
-            I_star_sum = (*I_star)->marginSum(2,i);
-            aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum);
-            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
-        }
-        if (!std::isfinite(output))
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        *value = output;
-        return(0);
-
-
-
-    }
-
     int FC_E_Star::evalCPU(int startLoc, int startTime)
     {
         int j, compIdx;
@@ -1141,7 +549,6 @@ namespace SpatialSEIR
         long unsigned int E_star_sum;
         long unsigned int I_star_sum;
         int64_t aDiff; 
-
 
         compIdx = startLoc*nTpts + startTime;
         for (j = startTime; j < nTpts; j++)
@@ -1161,11 +568,9 @@ namespace SpatialSEIR
             }
             else
             {
-                output += (std::log(p_se_val)*Estar_val +
-                             std::log(1-p_se_val)*(S_val - Estar_val) +
+                output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
                              ln_1m_p_ei*E_val + 
-                             ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
-                             ((*context)->random->choose(S_val, Estar_val)));
+                             ((*context) -> random -> choosePartial(E_val, Istar_val)));
             }
             compIdx++;
         }
@@ -1191,40 +596,81 @@ namespace SpatialSEIR
     void FC_E_Star::printDebugInfo(int loc, int tpt)
     {
         std::cout << "E_star debug info, location " << loc << ", time " << tpt << "\n";     
-    }
+        std::cout << "...looking for problems\n";
 
-
-    int FC_E_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        int err;
+        int j, compIdx;
+        int nTpts = *((*S) -> nrow); 
+        double ln_1m_p_ei = std::log(1-(**p_ei));    
+        double p_se_val;
+        int S_val, E_val, Estar_val, Istar_val;
+        long double output = 0.0;
         long unsigned int E_star_sum;
         long unsigned int I_star_sum;
         int64_t aDiff; 
 
-        err = updateEvalCache(startLoc, startTime, cachedValues);
-        if (err < 0)
+
+        compIdx = loc*nTpts + tpt;
+        for (j = tpt; j < nTpts; j++)
         {
-            *value = -INFINITY; 
-            return(-1);
+            std::cout << "time " << j << "\n";
+            Estar_val = ((*E_star) -> data)[compIdx];
+            S_val = ((*S) -> data)[compIdx];
+            E_val = ((*E) -> data)[compIdx];
+            Istar_val = ((*I_star) -> data)[compIdx];
+            p_se_val = (*p_se)[compIdx];
+
+            if (Estar_val < 0 || Estar_val > S_val || 
+                    Istar_val > E_val)
+
+            {
+                std::cout << "Bounds Error Detected:\n";
+                std::cout << "E_star: " << Estar_val << "\n";
+                std::cout << "S: " << S_val << "\n";
+                std::cout << "I_star: " << Istar_val << "\n";
+                return;
+            }
+            else
+            {
+                output = (std::log(p_se_val)*Estar_val +
+                             std::log(1-p_se_val)*(S_val - Estar_val) +
+                             ln_1m_p_ei*E_val + 
+                             ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
+                             ((*context)->random->choose(S_val, Estar_val)));
+                if (!std::isfinite(output))
+                {
+                    std::cout << "Computation Error Detected: " << tpt << "\n";
+                    std::cout << "E_star: " << Estar_val << "\n";
+                    std::cout << "S: " << S_val << "\n";
+                    std::cout << "E: " << E_val << "\n";
+                    std::cout << "I_star: " << Istar_val << "\n";
+                    std::cout << "p_se: " << p_se_val << "\n";
+                    std::cout << "ln_1m_p_ei: " << ln_1m_p_ei << "\n";
+                    return; 
+                }
+            }
+            compIdx++;
         }
-        int maxVal = (*((*E)-> ncol))*(*((*E)-> nrow));
-        int i;
-        long double output = 0.0;
-        for (i = 0; i < maxVal; i++)
-        {
-            output += cachedValues[i];
-        }
-        if (!std::isfinite(output))
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        E_star_sum = (*E_star)->marginSum(2,startLoc);
-        I_star_sum = (*I_star)->marginSum(2,startLoc);
+
+        E_star_sum = (*E_star)->marginSum(2,loc);
+        I_star_sum = (*I_star)->marginSum(2,loc);
         aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum);
         output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
-        *value = output;
-        return(0);
+
+        if (!std::isfinite(output))
+        {
+            std::cout << "Combinatorics Error Detectd:\n";
+            std::cout << "Computation Error Detected:\n";
+            std::cout << "E_star: " << Estar_val << "\n";
+            std::cout << "S: " << S_val << "\n";
+            std::cout << "E: " << E_val << "\n";
+            std::cout << "I_star: " << Istar_val << "\n";
+            std::cout << "p_se: " << p_se_val << "\n";
+            std::cout << "ln_1m_p_ei: " << ln_1m_p_ei << "\n";
+            std::cout << "E_star_sum: " << E_star_sum << "\n";
+            std::cout << "I_star_sum: " << I_star_sum << "\n";
+            return;
+        }    
+       return;
     }
 
     int FC_E_Star::evalOCL()
@@ -1247,7 +693,7 @@ namespace SpatialSEIR
 
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartment2(*context,
+        this -> sampleCompartment_CPU(*context,
                                   *E_star,*sliceWidth);
         return 0;
     }
@@ -1341,187 +787,12 @@ namespace SpatialSEIR
         delete context;
     }
 
-    int FC_R_Star::cacheEvalCalculation(double* cachedValues)
-    {
-        int i, j, compIdx;
-        int nLoc = *((*R) -> ncol);
-        int nTpts = *((*R) -> nrow);
-        double p_se_val;
-        double p_rs_val;
-        double ln_p_ir = std::log(**p_ir);
-        double ln_1m_p_ir = std::log(1-(**p_ir));
-        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;
-
-    
-
-        for (i = 0; i < nLoc; i++)    
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j++)     
-            {
-                p_rs_val = (*p_rs)[j];          
-                Rstar_val = ((*R_star) -> data)[compIdx];
-                Sstar_val = ((*S_star)->data)[compIdx];
-                Estar_val = ((*E_star) -> data)[compIdx];
-                R_val = ((*R) ->data)[compIdx];
-                I_val = ((*I) ->data)[compIdx];
-                S_val = ((*S)->data)[compIdx];
-                p_se_val = (*p_se)[compIdx];
-
-
-                if (Rstar_val < 0 || Rstar_val > I_val || 
-                        Sstar_val > R_val ||
-                         p_se_val > 1 || p_se_val < 0)
-
-                {
-                    cachedValues[compIdx] = -INFINITY;
-                }
-                else
-                {
-                    cachedValues[compIdx] = (ln_p_ir*Rstar_val + 
-                                    ln_1m_p_ir*(I_val -Rstar_val) +
-                                    std::log(1-p_rs_val)*(R_val) +
-                                    ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
-                                    ((*context) -> random -> choose(I_val, Rstar_val)) +
-                                    // p_se components
-                                    std::log(p_se_val)*Estar_val +
-                                    std::log(1-p_se_val)*(S_val - Estar_val));
-
-                }
-                compIdx++;
-            }
-        } 
-        return(0);
-    }
-
-    int FC_R_Star::updateEvalCache(int startLoc, int startTime, double* cachedValues)
-    {
-        int j, compIdx;
-        int nTpts = *((*R) -> nrow);
-        
-        double p_se_val;
-        double p_rs_val;
-        double ln_p_ir = std::log(**p_ir);
-        double ln_1m_p_ir = std::log(1-(**p_ir));
-        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
-
-        compIdx = startLoc*nTpts + startTime;
-        for (j = startTime; j < nTpts; j++)
-        {
-
-            Rstar_val = ((*R_star) -> data)[compIdx];
-            Sstar_val = ((*S_star)->data)[compIdx];
-            Estar_val = ((*E_star) -> data)[compIdx];
-            R_val = ((*R) ->data)[compIdx];
-            I_val = ((*I) ->data)[compIdx];
-            S_val = ((*S)->data)[compIdx];
-            p_se_val = (*p_se)[compIdx];
-            p_rs_val = (*p_rs)[j];
-
-
-            if (Rstar_val < 0 || Rstar_val > I_val || 
-                    Sstar_val > R_val || 
-                    p_se_val > 1 || p_se_val < 0)
-            {
-                cachedValues[compIdx] = -INFINITY;
-                return(-1);
-            }
-            else
-            {
-                cachedValues[compIdx] = (ln_p_ir*Rstar_val +
-                                ln_1m_p_ir*(I_val - Rstar_val) +
-                                std::log(1-p_rs_val)*(R_val) +
-                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
-                                ((*context) -> random -> choose(I_val, Rstar_val)) +
-                                std::log(p_se_val)*Estar_val +
-                                std::log(1-p_se_val)*(S_val - Estar_val));
-                if (!std::isfinite(cachedValues[compIdx]))
-                {
-                    cachedValues[compIdx] = -INFINITY;
-                    return(-1);
-                }
-            }
-            compIdx++;
-        } 
-        return 0;
-    }
-
-
-    int FC_R_Star::evalCPU()
-    {
-        int i, j, compIdx;
-        int nLoc = *((*R) -> ncol);
-        int nTpts = *((*R) -> nrow);
-        double p_se_val;
-        double p_rs_val;
-        double ln_p_ir = std::log(**p_ir);
-        double ln_1m_p_ir = std::log(1-(**p_ir));
-        int Rstar_val, Sstar_val, Estar_val, R_val, I_val,S_val;
-        long double output = 0.0;
-        long unsigned int I_star_sum;
-        long unsigned int R_star_sum;
-        int64_t aDiff; 
-
-    
-        for (i = 0; i < nLoc; i++)    
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j < nTpts; j++)     
-            {
-                p_rs_val = (*p_rs)[j];          
-                Rstar_val = ((*R_star) -> data)[compIdx];
-                Sstar_val = ((*S_star)->data)[compIdx];
-                Estar_val = ((*E_star) -> data)[compIdx];
-                R_val = ((*R) ->data)[compIdx];
-                I_val = ((*I) ->data)[compIdx];
-                S_val = ((*S)->data)[compIdx];
-                p_se_val = (*p_se)[compIdx];
-
-                if (Rstar_val < 0 || Rstar_val > I_val || 
-                        Sstar_val > R_val ||
-                         p_se_val > 1 || p_se_val < 0)
-
-                {
-                    *value = -INFINITY;
-                    return(-1);
-                }
-                else
-                {
-                    output += (ln_p_ir*Rstar_val + 
-                                ln_1m_p_ir*(I_val -Rstar_val) +
-                                std::log(1-p_rs_val)*(R_val) +
-                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
-                                ((*context) -> random -> choose(I_val, Rstar_val)) +
-
-                                // p_se components
-                                std::log(p_se_val)*Estar_val +
-                                std::log(1-p_se_val)*(S_val - Estar_val));
-                }
-                compIdx++;
-            }
-        } 
-
-        for (i=0; i< nLoc; i++)
-        {
-            I_star_sum = (*I_star)->marginSum(2,i);
-            R_star_sum = (*R_star)->marginSum(2,i);
-            aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum);
-            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
-        }
-
-        if (!std::isfinite(*value))
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        *value = output;
-        return(0);
-    }
-
     int FC_R_Star::evalCPU(int startLoc, int startTime)
     {
-        int j, compIdx;
+        int i,j, compIdx;
         int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
         long double output = 0.0;
         
         double p_se_val;
@@ -1538,16 +809,12 @@ namespace SpatialSEIR
         {
             Rstar_val = ((*R_star) -> data)[compIdx];
             Sstar_val = ((*S_star)->data)[compIdx];
-            Estar_val = ((*E_star) -> data)[compIdx];
             R_val = ((*R) ->data)[compIdx];
             I_val = ((*I) ->data)[compIdx];
-            S_val = ((*S)->data)[compIdx];
-            p_se_val = (*p_se)[compIdx];
             p_rs_val = (*p_rs)[j];
 
             if (Rstar_val < 0 || Rstar_val > I_val || 
-                    Sstar_val > R_val || 
-                    p_se_val > 1 || p_se_val < 0)
+                    Sstar_val > R_val)
             {
                 *value = -INFINITY;
                 return(-1);
@@ -1558,12 +825,32 @@ namespace SpatialSEIR
                             ln_1m_p_ir*(I_val - Rstar_val) +
                             std::log(1-p_rs_val)*(R_val) +
                             ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
-                            ((*context) -> random -> choose(I_val, Rstar_val)) +
-                            std::log(p_se_val)*Estar_val +
-                            std::log(1-p_se_val)*(S_val - Estar_val));
+                            ((*context) -> random -> choose(I_val, Rstar_val)));
             }
             compIdx++;
         } 
+
+        // p_se changes, so need to look at p_se component for all locations and 
+        // time points after startTime
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts + startTime;
+            for (j = startTime; j< nTpts; j++)
+            {
+
+                p_se_val = (*p_se)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                if (p_se_val > 1 || p_se_val < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
+                compIdx ++; 
+            }
+        }
 
         I_star_sum = (*I_star)->marginSum(2,startLoc);
         R_star_sum = (*R_star)->marginSum(2,startLoc);
@@ -1583,32 +870,110 @@ namespace SpatialSEIR
         return 0;
     }
 
-    void FC_R_Star::printDebugInfo(int loc, int tpt)
+    void FC_R_Star::printDebugInfo(int startLoc, int startTime)
     {
-        std::cout << "R_star debug info, location " << loc << ", time " << tpt << "\n";     
-    }
+        std::cout << "R_star debug info, location " << startLoc << ", time " << startTime << "\n";     
+        std::cout << "...looking for problems\n";
 
-    int FC_R_Star::evalCPU(int startLoc, int startTime, double* cachedValues)
-    {
-        int err;
-        int maxVal = (*((*R) -> ncol))*(*((*R)->nrow));
-        int i;
+
+        int i,j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
         long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        double ln_p_ir = std::log(**p_ir);
+        double ln_1m_p_ir = std::log(1-(**p_ir));
+        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
         long unsigned int I_star_sum;
         long unsigned int R_star_sum;
         int64_t aDiff; 
 
-        err = updateEvalCache(startLoc, startTime, cachedValues);
-        if (err < 0)
+        compIdx = startLoc*nTpts + startTime;
+        for (j = startTime; j < nTpts; j++)
         {
-            *value = -INFINITY;
-            return(-1);
-        }
-        for (i = 0; i < maxVal; i++)
-        {
-            output += cachedValues[i];
-        }
+            Rstar_val = ((*R_star) -> data)[compIdx];
+            Sstar_val = ((*S_star)->data)[compIdx];
+            Estar_val = ((*E_star) -> data)[compIdx];
+            R_val = ((*R) ->data)[compIdx];
+            I_val = ((*I) ->data)[compIdx];
+            S_val = ((*S)->data)[compIdx];
+            p_rs_val = (*p_rs)[j];
 
+            if (Rstar_val < 0 || Rstar_val > I_val || 
+                    Sstar_val > R_val)
+            {
+
+                std::cout << "Bounds error detected, time " << j << "\n";
+                std::cout << "S_star: " << Sstar_val << "\n";
+                std::cout << "R_star: " << Rstar_val << "\n";
+                std::cout << "I: " << I_val << "\n";
+                std::cout << "R: " << R_val << "\n";
+                return;
+            }
+            else
+            {
+                output += (ln_p_ir*Rstar_val +
+                            ln_1m_p_ir*(I_val - Rstar_val) +
+                            std::log(1-p_rs_val)*(R_val) +
+                            ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                            ((*context) -> random -> choose(I_val, Rstar_val)));
+                if (!std::isfinite(output))
+                {
+                    std::cout << "Calculation Error Detected, time " << j << "\n";
+                    std::cout << "S_star: " << Sstar_val << "\n";
+                    std::cout << "R_star: " << Rstar_val << "\n";
+                    std::cout << "I: " << I_val << "\n";
+                    std::cout << "R: " << R_val << "\n";
+                    std::cout << "log(p_ir): " << ln_p_ir << "\n";
+                    return;
+                }
+            }
+            compIdx++;
+        } 
+
+        // p_se changes, so need to look at p_se component for all locations and 
+        // time points after startTime
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts + startTime;
+            for (j = startTime; j< nTpts; j++)
+            {
+
+                p_se_val = (*p_se)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                if (p_se_val > 1 || p_se_val < 0)
+                {
+                    std::cout << "Non-Local Bounds Error Detected, loc, time: " << i << ", " << j << "\n";
+                    std::cout << "E_star: " << Estar_val << "\n";
+                    std::cout << "S: " << S_val << "\n";
+                    std::cout << "p_se: " << p_se_val << "\n";
+                    return;
+                }
+
+                output += (*context) -> random -> dbinom(Estar_val, S_val, p_se_val);
+
+                if (!std::isfinite(output))
+                {
+                    std::cout<< "Non-Local Calculation Error Detected, loc, time: " << i << ", " << j << "\n";
+                    std::cout << "E_star: " << Estar_val << "\n";
+                    std::cout << "S: " << S_val << "\n";
+                    std::cout << "p_se: " << p_se_val << "\n";
+                    std::cout << "log(p_se): " << std::log(p_se_val) << "\n";
+                    std::cout << "p_se == 0: " << (p_se_val == 0.0) << "\n";
+                    std::cout << "Binomial term: " << ((*context) -> random -> 
+                            dbinom(Estar_val, S_val, p_se_val)) << "\n";
+
+
+                    return;
+                }
+
+                compIdx ++; 
+            }
+        }
 
         I_star_sum = (*I_star)->marginSum(2,startLoc);
         R_star_sum = (*R_star)->marginSum(2,startLoc);
@@ -1617,11 +982,12 @@ namespace SpatialSEIR
 
         if (!std::isfinite(output))
         {
-            *value = -INFINITY;
-            return(-1);
+            std::cout << "Combinatorics Error Detected.\n";
+            return;
         }
-        *value = output;
-        return(0);
+
+        std::cout << "No problems detected?\n";
+        return;
     }
 
 
@@ -1631,7 +997,7 @@ namespace SpatialSEIR
         return -1;
     }
     int FC_R_Star::calculateRelevantCompartments()
-    {
+    {        
         (*context) -> calculateR_CPU();
         (*context) -> calculateI_givenR_CPU();
         ((*context) -> calculateP_SE_CPU());
@@ -1639,7 +1005,6 @@ namespace SpatialSEIR
     }
     int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
-        
         (*context) -> calculateR_CPU(startLoc, startTime);
         (*context) -> calculateI_givenR_CPU(startLoc, startTime);
         ((*context) -> calculateP_SE_CPU(startLoc, startTime));
@@ -1648,7 +1013,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartment2(*context,
+        this -> sampleCompartment_CPU(*context,
                                   *R_star,*sliceWidth);
         return(0);
     }

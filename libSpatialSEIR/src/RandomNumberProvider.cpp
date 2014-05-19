@@ -109,6 +109,14 @@ namespace SpatialSEIR
         }
         return(out);
     }
+    double RandomNumberProvider::dbinom(int x, int n, double p)
+    {
+        if (p == 0.0)
+        {
+            return((x==0 ? 0 : -INFINITY ));
+        }
+        return(choose(n,x) + std::log(p)*x + (std::log(1-p))*(n-x)); 
+    }
     double* RandomNumberProvider::uniform(int n)
     {
         double* output = new double[n];

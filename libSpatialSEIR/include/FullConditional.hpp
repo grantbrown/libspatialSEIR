@@ -50,7 +50,8 @@ namespace SpatialSEIR
         double* gammaWidth;
     };
 
-    int matMult(double* output, double * A, double * B, int Arow, int Acol, int Brow, int Bcol, bool TransA, bool TransB );
+    int matMult(double* output, double * A, double * B, int Arow, int Acol, 
+            int Brow, int Bcol, bool TransA, bool TransB, int ldA, int ldB, int ldC);
 
 
     class InitData
@@ -94,7 +95,6 @@ namespace SpatialSEIR
         public:
             //Template for shared methods
             virtual ~FullConditional(){}; 
-            virtual int evalCPU() = 0;
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
@@ -110,11 +110,7 @@ namespace SpatialSEIR
         public:
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
-            virtual int cacheEvalCalculation(double* cachedValues) = 0;
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues) = 0;
-            virtual int evalCPU() = 0;
             virtual int evalCPU(int startLoc, int startTime) = 0;
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues) = 0;
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
@@ -124,20 +120,7 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
             virtual void printDebugInfo(int loc, int tpt) = 0;
 
-            //Declaration for inherited methods
-            int sampleCompartment(ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width, double* compartmentCache); 
-
-            int sampleCompartmentMemoized(ModelContext* context,
-                                            CompartmentalModelMatrix* destCompartment,
-                                            int width, double* compartmentCache); 
-
-            int sampleCompartmentMetropolis(ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width, double* compartmentCache); 
-
-            int sampleCompartment2(ModelContext* context,
+            int sampleCompartment_CPU(ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
@@ -193,11 +176,7 @@ namespace SpatialSEIR
                       double *_rho,
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
-            virtual int evalCPU();
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
@@ -243,11 +222,7 @@ namespace SpatialSEIR
                       double sliceWidth);
             ~FC_E_Star();
 
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
-            virtual int evalCPU();
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
@@ -291,11 +266,7 @@ namespace SpatialSEIR
                       double sliceWidth);
             ~FC_R_Star();
 
-            virtual int cacheEvalCalculation(double* cachedValues);
-            virtual int updateEvalCache(int startLoc, int startTime, double* cachedValues);
-            virtual int evalCPU();
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalCPU(int startLoc, int startTime, double* cachedValues);
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();

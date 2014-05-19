@@ -76,6 +76,7 @@ class spatialSEIRInterface
         virtual int calculateI();
         virtual int calculateR();
         virtual int calculateP_SE(); 
+        virtual int calculateP_SE2(int i, int j); 
         virtual int calculateP_RS();
         
         // Property Getter Functions
@@ -174,6 +175,16 @@ int spatialSEIRInterface::calculateP_SE()
     if (*(context -> isPopulated))
     {
         (context -> calculateP_SE_CPU());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
+    return(-1);
+}
+int spatialSEIRInterface::calculateP_SE2(int i, int j) 
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateP_SE_CPU(i,j));
         return(0);
     }
     Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
@@ -675,7 +686,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
     // Gather information for the creation of the distance matrices
 
-    double phi = 60*60*2.0;
+    double phi = 60*60*4.0;
     distanceArgs rawDistArgs; scaledDistanceArgs scaledDistArgs;
     rawDistArgs.inData = DistMat.begin(); 
     rawDistArgs.dim = &compartmentDimensions[1];
@@ -734,6 +745,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("calculateR", &spatialSEIRInterface::calculateR)
     .method("calculateP_RS", &spatialSEIRInterface::calculateP_RS)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE)
+    .method("calculateP_SE2", &spatialSEIRInterface::calculateP_SE2)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
     .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")
