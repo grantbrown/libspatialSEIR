@@ -258,6 +258,14 @@ steadyStateConstraintPrecision = 0.1
 verbose = FALSE 
 debug = FALSE
 
+
+# pretend not to know the true values of things
+proposal = generateCompartmentProposal(I_star, N)
+beta = c(-1, rep(0, (length(beta)-1)))
+betaPrs = c(3, rep(0,(length(betaPrs)-1)))
+p_ei = 0.8
+p_ir = 0.8
+
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
@@ -266,14 +274,14 @@ res = spatialSEIRModel(compMatDim,
                       E0,
                       I0,
                       R0,
-                      S_star0,
-                      E_star0,
-                      I_star0,
-                      R_star0,
-                      S_star,
-                      E_star,
-                      I_star,
-                      R_star,
+                      proposal$S_star0,
+                      proposal$E_star0,
+                      proposal$I_star0,
+                      proposal$R_star0,
+                      proposal$S_star,
+                      proposal$E_star,
+                      proposal$I_star,
+                      proposal$R_star,
                       X,
                       Z,
                       X_prs,
@@ -320,7 +328,7 @@ runSimulation = function(N, batchSize = 1000)
     })
 }
 
-runSimulation(1000000)
+#runSimulation(1000000)
 
 
 

@@ -77,6 +77,8 @@ class spatialSEIRInterface
         virtual int calculateR();
         virtual int calculateP_SE(); 
         virtual int calculateP_SE2(int i, int j); 
+        virtual double estimateR0();
+        virtual double estimateR02(int t);
         virtual int calculateP_RS();
         
         // Property Getter Functions
@@ -190,6 +192,25 @@ int spatialSEIRInterface::calculateP_SE2(int i, int j)
     Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
     return(-1);
 }
+double spatialSEIRInterface::estimateR0()
+{
+    if (*(context -> isPopulated))
+    {
+        return((context -> estimateR0()));
+    }
+    Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+    return(-1.0);
+}
+double spatialSEIRInterface::estimateR02(int t)
+{
+    if (*(context -> isPopulated))
+    {
+        return((context -> estimateR0(t)));
+    }
+    Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+    return(-1.0);
+}
+
 int spatialSEIRInterface::calculateP_RS()
 {
     if (*(context -> isPopulated))
@@ -745,7 +766,9 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("calculateR", &spatialSEIRInterface::calculateR)
     .method("calculateP_RS", &spatialSEIRInterface::calculateP_RS)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE)
-    .method("calculateP_SE2", &spatialSEIRInterface::calculateP_SE2)
+    .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE2)
+    .method("estimateR0", &spatialSEIRInterface::estimateR0)
+    .method("estimateR0", &spatialSEIRInterface::estimateR02)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
     .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")

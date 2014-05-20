@@ -148,7 +148,7 @@ for (tpt in 1:ncol(R))
         {
             E_star[,tpt] = E_star[,tpt-1]
         }
-        # I_star fuced
+        # I_star fixed
         R_star[,tpt] = rbinom(rep(1,length(S0)), I[,tpt], 0.8)
     }
 }

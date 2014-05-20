@@ -421,9 +421,78 @@ namespace SpatialSEIR
         return(0);
     }
 
-    void FC_S_Star::printDebugInfo(int loc, int tpt)
+    void FC_S_Star::printDebugInfo(int startLoc, int startTime)
     {
-        std::cout << "S_star debug info, location " << loc << ", time " << tpt << "\n";     
+        std::cout << "S_star debug info, location " << startLoc << ", time " << startTime << "\n";     
+
+        int i,compIdx,Sstar_val,Estar_val,S_val,R_val;
+        double p_se_val, p_rs_val;
+        int nTpts = *((*S)->nrow);
+        long double output = 0.0;
+        long unsigned int S_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff;
+
+        compIdx = startLoc*nTpts + startTime;
+        for (i = startTime; i < nTpts; i++)
+        {
+                Sstar_val = ((*S_star)->data)[compIdx]; 
+                Estar_val = ((*E_star)->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                R_val = ((*R)->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+                p_rs_val = (*p_rs)[i];
+
+                if (Sstar_val < 0 || 
+                    Sstar_val > R_val ||
+                    Estar_val > S_val)
+                {
+                    std::cout << "Bounds Error Detected at time " << i << "\n";
+                    std::cout << "S_star: " << Sstar_val << "\n";
+                    std::cout << "E_star: " << Estar_val << "\n";
+                    std::cout << "R: " << R_val << "\n";
+                    std::cout << "S: " << S_val << "\n";
+                    return;
+                }
+                else
+                { 
+                    output += (((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                               ((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)));
+                }
+                if (! std::isfinite(output))
+                {
+                    std::cout << "Calculation Error Detected at time " << i << "\n";
+                    std::cout << "S_star: " << Sstar_val << "\n";
+                    std::cout << "E_star: " << Estar_val << "\n";
+                    std::cout << "R: " << R_val << "\n";
+                    std::cout << "S: " << S_val << "\n";
+                    std::cout << "p_se: " << p_se_val << "\n";
+                    std::cout << "p_rs: " << p_rs_val << "\n"; 
+                    return;
+                }
+                compIdx ++; 
+        }
+
+        S_star_sum = (*S_star)->marginSum(2,startLoc);
+        R_star_sum = (*R_star)->marginSum(2,startLoc);
+        aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum);
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
+        if (!std::isfinite(output))
+        {
+            std::cout << "Combinatorics Error Detected\n";
+            std::cout << "S_star: " << Sstar_val << "\n";
+            std::cout << "E_star: " << Estar_val << "\n";
+            std::cout << "R: " << R_val << "\n";
+            std::cout << "S: " << S_val << "\n";
+            std::cout << "p_se: " << p_se_val << "\n";
+            std::cout << "p_rs: " << p_rs_val << "\n"; 
+            std::cout << "S_star_sum: " << S_star_sum << "\n";
+            std::cout << "R_star_sum: " << R_star_sum << "\n";
+            return;
+        }
+        return;
+
     }
 
 
