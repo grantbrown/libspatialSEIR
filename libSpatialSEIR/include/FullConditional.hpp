@@ -181,9 +181,9 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_S_star, 
                       CompartmentalModelMatrix *_E_star,
                       CompartmentalModelMatrix *_R, 
-                      CompartmentalModelMatrix *_R_star, 
                       InitData *_A0,
                       double *_p_se,
+                      double *_p_rs,
                       double sliceWidth);
             virtual ~FC_S0(); 
             virtual int evalCPU();
@@ -202,11 +202,11 @@ namespace SpatialSEIR
             CompartmentalModelMatrix** S_star;
             CompartmentalModelMatrix** E_star;
             CompartmentalModelMatrix** R;
-            CompartmentalModelMatrix** R_star;
             InitData** A0;
             double** p_se; 
+            double** p_rs;
             double* sliceWidth;
-            double* value;
+            long double* value;
     };
 
     class FC_E0 : public InitCompartmentFullConditional

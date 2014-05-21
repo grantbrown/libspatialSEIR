@@ -31,13 +31,8 @@ p_rs = exp(-eta_rs)
 N = 100000
 E0 = 0
 I0 = floor(0.001*N)
-R0 = floor(0.001*N)
+R0 = floor(0.001*N) 
 S0 = N-E0-I0-R0
-
-S_star0 = 0
-E_star0 = I0
-I_star0 = 0
-R_star0 = floor(0.99*I0)
 
 S = matrix(0, nrow = 1, ncol = MaxTpt)
 E = matrix(0, nrow = 1, ncol = MaxTpt)
@@ -54,10 +49,10 @@ for (i in 1:MaxTpt)
 {
     if (i == 1)
     {
-        S[i] = S0 + S_star0 - E_star0
-        E[i] = E0 + E_star0 - I_star0
-        I[i] = I0 + I_star0 - R_star0
-        R[i] = R0 + R_star0 - S_star0
+        S[i] = S0
+        E[i] = E0
+        I[i] = I0
+        R[i] = R0
 
         etaVal = -(I[i]/N)*exp(eta_se[i]) - trueGamma[i]
         p_se[i] = 1-exp(etaVal)
@@ -144,11 +139,6 @@ if (ThrowAwayTpt != 0)
     E0 = E[,ThrowAwayTpt]
     I0 = I[,ThrowAwayTpt]
     R0 = R[,ThrowAwayTpt]
-
-    S_star0 = S_star[,ThrowAwayTpt]
-    E_star0 = E_star[,ThrowAwayTpt]
-    I_star0 = I_star[,ThrowAwayTpt]
-    R_star0 = R_star[,ThrowAwayTpt]
 }
 
 S_star = S_star[,(ThrowAwayTpt + 1):ncol(S_star), drop = FALSE]
@@ -171,11 +161,6 @@ E0 = t(E0)
 I0 = t(I0)
 R0 = t(R0)
 
-S_star0 = t(S_star0)
-E_star0 = t(E_star0)
-I_star0 = t(I_star0)
-R_star0 = t(R_star0)
-
 S_star = t(S_star)
 E_star = t(E_star)
 I_star = t(I_star)
@@ -185,8 +170,6 @@ S = t(S)
 E = t(E)
 I = t(I)
 R = t(R)
-
-
 
 xDim = dim(X)
 zDim = dim(Z)
@@ -274,10 +257,6 @@ res = spatialSEIRModel(compMatDim,
                       proposal$E0,
                       proposal$I0,
                       proposal$R0,
-                      proposal$S_star0,
-                      proposal$E_star0,
-                      proposal$I_star0,
-                      proposal$R_star0,
                       proposal$S_star,
                       proposal$E_star,
                       proposal$I_star,

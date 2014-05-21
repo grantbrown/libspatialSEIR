@@ -304,9 +304,9 @@ namespace SpatialSEIR
                  CompartmentalModelMatrix *_S_star,
                  CompartmentalModelMatrix *_E_star,
                  CompartmentalModelMatrix *_R,
-                 CompartmentalModelMatrix *_R_star,
                  InitData *_A0,
                  double *_p_se,
+                 double *_p_rs,
                  double _sliceWidth)
     {
         context = new ModelContext*;
@@ -314,18 +314,17 @@ namespace SpatialSEIR
         S_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
         R = new CompartmentalModelMatrix*;
-        R_star = new CompartmentalModelMatrix*;
         p_se = new double*;
         sliceWidth = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *S = _S;
         *S_star = _S_star;
         *E_star = _E_star;
         *R = _R;
-        *R_star = _R_star;
         *p_se = _p_se;
+        *p_rs = _p_rs;
         *sliceWidth = _sliceWidth;
     }
     FC_S0::~FC_S0()
@@ -334,8 +333,9 @@ namespace SpatialSEIR
         delete S;
         delete S_star;
         delete E_star;
+        delete p_rs;
+        delete p_se;
         delete R;
-        delete R_star;
         delete value;
     }
     
@@ -347,8 +347,49 @@ namespace SpatialSEIR
 
     int FC_S0::evalCPU(int startLoc)
     {
-        // Not Implemented
-        return(-1);
+        int j, compIdx;
+        int nTpts = *((*S) -> nrow); 
+        double p_se_val, p_rs_val;
+        int S_val, R_val, Sstar_val, Estar_val;
+        long double output = 0.0;
+
+        compIdx = startLoc*nTpts;
+        for (j = 0; j < nTpts; j++)
+        {
+            S_val = ((*S) -> data)[compIdx];
+            R_val = ((*R)-> data)[compIdx];
+            Sstar_val = ((*R)-> data)[compIdx];
+            Estar_val = ((*E_star) -> data)[compIdx];
+            p_se_val = (*p_se)[compIdx];
+            p_rs_val = (*p_rs)[j];
+
+
+            if (Estar_val > S_val || Sstar_val > R_val)
+
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+            else
+            {
+                output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
+                            ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
+
+            }
+            compIdx++;
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+    
+       return 0;
     }
 
     int FC_S0::evalOCL()
@@ -379,14 +420,16 @@ namespace SpatialSEIR
 
     int FC_S0::calculateRelevantCompartments()
     {
-        // Not Implemented
-        return(-1);
+        (*context) -> calculateS_CPU();
+        (*context) -> calculateR_givenS_CPU();
+        return(0);
     }
 
     int FC_S0::calculateRelevantCompartments(int startLoc)
     {
-        // Not Implemented
-        return(-1);
+        (*context) -> calculateS_CPU(startLoc,0);
+        (*context) -> calculateR_givenS_CPU(startLoc,0);
+        return(0);
     }
 
     void FC_S0::printDebugInfo(int loc)
