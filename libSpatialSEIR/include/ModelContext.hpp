@@ -104,18 +104,15 @@ namespace SpatialSEIR
             // Updates: Compartment linked by comp pointer
             void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, int *comp0,
                                                  CompartmentalModelMatrix *compStarAdd, 
-                                                 CompartmentalModelMatrix *compStarSub,
-                                                 int *compStar0Add, int *compStar0Sub);
+                                                 CompartmentalModelMatrix *compStarSub); 
 
             void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, int *comp0,
                                                  CompartmentalModelMatrix *compStarAdd, 
                                                  CompartmentalModelMatrix *compStarSub,
-                                                 int *compStar0Add, int *compStar0Sub,
                                                  int startLoc, int startTime);
 
             void calculateGenericCompartment_OCL(int *comp, int *comp0,
-                                                 int *compStarAdd, int *compStarSub,
-                                                 int *compStar0Add, int *compStar0Sub);
+                                                 int *compStarAdd, int *compStarSub);
 
             // Run main simulation 
             int checkCompartmentBounds();

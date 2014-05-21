@@ -67,14 +67,9 @@ namespace SpatialSEIR
                        int *_E0,
                        int *_I0,
                        int *_R0,
-                       int *_S_star0,
-                       int *_E_star0, 
-                       int *_I_star0, 
-                       int *_R_star0,
                        int *nLoc)
     {
         this -> populate(*&_S0, *&_E0, *&_I0, *&_R0, 
-                *&_S_star0, *&_E_star0, *&_I_star0, *&_R_star0,
                 *&nLoc);
     }
 
@@ -87,10 +82,6 @@ namespace SpatialSEIR
                        int *_E0,
                        int *_I0,
                        int *_R0,
-                       int *_S_star0,
-                       int *_E_star0, 
-                       int *_I_star0, 
-                       int *_R_star0,
                        int *nLoc
                        )
     {
@@ -98,10 +89,6 @@ namespace SpatialSEIR
         E0 = new int[*nLoc];
         I0 = new int[*nLoc];
         R0 = new int[*nLoc];
-        S_star0 = new int[*nLoc]; 
-        E_star0 = new int[*nLoc];
-        I_star0 = new int[*nLoc];
-        R_star0 = new int[*nLoc];
         numLocations = new int;
         *numLocations = *nLoc;
         int i;
@@ -111,10 +98,6 @@ namespace SpatialSEIR
             E0[i] = _E0[i];
             I0[i] = _I0[i];
             R0[i] = _R0[i];
-            S_star0[i] = _S_star0[i];
-            E_star0[i] = _E_star0[i];
-            I_star0[i] = _I_star0[i];
-            R_star0[i] = _R_star0[i];
         }
     }
 
@@ -124,10 +107,6 @@ namespace SpatialSEIR
         delete E0;
         delete I0;
         delete R0;
-        delete S_star0;
-        delete E_star0;
-        delete I_star0;
-        delete R_star0;
         delete numLocations;
     }
 
@@ -416,6 +395,8 @@ namespace SpatialSEIR
         throw(-1);
     }
 
+
+
     /*
      *
      * Implement full conditional for E0
@@ -516,9 +497,110 @@ namespace SpatialSEIR
 
     /*
      *
+     * Implement full conditional for I0
+     *
+     */
+    
+    FC_I0::FC_I0(ModelContext* _context, 
+                 CompartmentalModelMatrix *_I,
+                 CompartmentalModelMatrix *_I_star,
+                 CompartmentalModelMatrix *_R_star,
+                 InitData *_A0,
+                 double *_p_ir,
+                 double *_p_se,
+                 double _sliceWidth)
+    {
+        context = new ModelContext*;
+        I = new CompartmentalModelMatrix*;
+        I_star = new CompartmentalModelMatrix*;
+        R_star = new CompartmentalModelMatrix*;
+        A0 = new InitData*;
+        p_ir = new double*;
+        p_se = new double*;
+        sliceWidth = new double;
+        value = new double;
+
+        *context = _context;
+        *I = _I;
+        *R_star = _R_star;
+        *I_star = _I_star;
+        *A0 = _A0;
+        *sliceWidth = _sliceWidth;
+    }
+    FC_I0::~FC_I0()
+    {
+        delete context;
+        delete I;
+        delete I_star;
+        delete R_star;
+        delete A0;
+        delete sliceWidth;
+        delete value;
+    }
+    
+    int FC_I0::evalCPU()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_I0::evalCPU(int startLoc)
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_I0::evalOCL()
+    {
+        // Not Implemented
+        return(-1);
+    }
+    int FC_I0::sampleCPU()
+    {
+        //Not Implemented
+        return(-1);
+    }
+    int FC_I0::sampleOCL()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    long double FC_I0::getValue()
+    {
+        return(*value);
+    }
+
+    void FC_I0::setValue(long double val)
+    {
+        *(this -> value) = val;
+    }
+
+    int FC_I0::calculateRelevantCompartments()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_I0::calculateRelevantCompartments(int startLoc)
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    void FC_I0::printDebugInfo(int loc)
+    {
+        // Not Implemented
+        throw(-1);
+    }
+
+    /*
+     *
      * Implement the full conditional distribution for S_star
      *
      */    
+
+
 
     FC_S_Star::FC_S_Star(ModelContext * _context,
                          CompartmentalModelMatrix *_S_star, 

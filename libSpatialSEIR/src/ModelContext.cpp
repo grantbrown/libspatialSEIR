@@ -98,8 +98,7 @@ namespace SpatialSEIR
         *singleLocation = ((*(S_starArgs -> inCol)) > 1 ? 0 : 1);
 
         // Initialize Stuff
-        A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> S_star0,
-                       _A0 -> E_star0,_A0 -> I_star0,_A0 -> R_star0,_A0 -> numLocations);
+        A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> numLocations);
         X -> genFromDataStream(xArgs -> inData_x, 
                                xArgs -> inData_z,
                                xArgs -> inRow_x,
@@ -507,14 +506,12 @@ namespace SpatialSEIR
     void ModelContext::calculateS_CPU()
     {
         calculateGenericCompartment_CPU(S, A0 -> S0,
-                                    S_star, E_star,
-                                    A0 -> S_star0, A0 -> E_star0);
+                                    S_star, E_star);
     }
     void ModelContext::calculateS_CPU(int startLoc, int startTime)
     {
         calculateGenericCompartment_CPU(S, A0 -> S0,
                                     S_star, E_star,
-                                    A0 -> S_star0, A0 -> E_star0,
                                     startLoc, startTime);
     }
 
@@ -552,15 +549,13 @@ namespace SpatialSEIR
     void ModelContext::calculateE_CPU()
     {
         calculateGenericCompartment_CPU(E, A0 -> E0,
-                                        E_star, I_star,
-                                        A0 -> E_star0, A0 -> I_star0);
+                                        E_star, I_star);
     }
 
     void ModelContext::calculateE_CPU(int startLoc, int startTime)
     {
         calculateGenericCompartment_CPU(E, A0 -> E0,
                                         E_star, I_star,
-                                        A0 -> E_star0, A0 -> I_star0,
                                         startLoc, startTime);
     }
 
@@ -599,15 +594,13 @@ namespace SpatialSEIR
     void ModelContext::calculateI_CPU()
     {
         calculateGenericCompartment_CPU(I, A0 -> I0,
-                                        I_star, R_star,
-                                        A0 -> I_star0, A0 -> R_star0);
+                                        I_star, R_star); 
     }
 
     void ModelContext::calculateI_CPU(int startLoc, int startTime)
     { 
         calculateGenericCompartment_CPU(I, A0 -> I0,
                                         I_star, R_star,
-                                        A0 -> I_star0, A0 -> R_star0,
                                         startLoc, startTime);
     }
 
@@ -646,8 +639,7 @@ namespace SpatialSEIR
     {
 
         calculateGenericCompartment_CPU(R, A0 -> R0,
-                                        R_star, S_star,
-                                        A0 -> R_star0, A0 -> S_star0);
+                                        R_star, S_star);
 
     }
 
@@ -656,7 +648,6 @@ namespace SpatialSEIR
 
         calculateGenericCompartment_CPU(R, A0 -> R0,
                                         R_star, S_star,
-                                        A0 -> R_star0, A0 -> S_star0,
                                         startLoc, startTime);
 
     }
@@ -694,8 +685,7 @@ namespace SpatialSEIR
     // Updates: Compartment linked by comp pointer 
     void ModelContext::calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp,int *comp0, 
                                                    CompartmentalModelMatrix *compStarAdd, 
-                                                   CompartmentalModelMatrix *compStarSub, 
-                                                   int *compStar0Add,int *compStar0Sub)
+                                                   CompartmentalModelMatrix *compStarSub)
     {
         int i,j,idx1,idxL1;
         int numLoc = *(comp -> ncol);
@@ -704,9 +694,7 @@ namespace SpatialSEIR
         for (i = 0; i < numLoc; i++)
         {
 
-            (comp -> data)[i*numTpts] = ((comp0)[i] + 
-                                        (compStar0Add)[i] - 
-                                        (compStar0Sub)[i]);
+            (comp -> data)[i*numTpts] = ((comp0)[i]);
             idx1 = i*numTpts;
             for (j = 1; j < numTpts; j++)
             {
@@ -721,8 +709,7 @@ namespace SpatialSEIR
 
     void ModelContext::calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp,int *comp0, 
                                                    CompartmentalModelMatrix *compStarAdd, 
-                                                   CompartmentalModelMatrix *compStarSub, 
-                                                   int *compStar0Add,int *compStar0Sub,
+                                                   CompartmentalModelMatrix *compStarSub,
                                                    int startLoc, int startTime)
     {
         int j,idx1,idxL1;
@@ -733,9 +720,7 @@ namespace SpatialSEIR
 
         if (startTime == 0)
         {
-            (comp -> data)[startIdx] = ((comp0)[startLoc] + 
-                                        (compStar0Add)[startLoc] - 
-                                        (compStar0Sub)[startLoc]);
+            (comp -> data)[startIdx] = ((comp0)[startLoc]);
             idx1 = startLoc*numTpts;
             for (j = 1; j < numTpts; j++)
             {
@@ -764,8 +749,7 @@ namespace SpatialSEIR
     }
  
     void ModelContext::calculateGenericCompartment_OCL(int *comp,int *comp0, 
-                                                   int *compStarAdd, int *compStarSub, 
-                                                   int *compStar0Add,int *compStar0Sub)
+                                                   int *compStarAdd, int *compStarSub)
     {
         throw(-1);
     }

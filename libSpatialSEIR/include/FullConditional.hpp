@@ -60,21 +60,13 @@ namespace SpatialSEIR
             InitData(int *_S0,
                         int *_E0,
                         int *_I0,
-                        int *_R0,
-                        int *_S_star0,
-                        int *_E_star0,
-                        int *_I_star0,
-                        int *_R_star0,
+                        int *_R0, 
                         int *nLoc);
             InitData();
             void populate(int *_S0,
                           int *_E0,
                           int *_I0,
                           int *_R0,
-                          int *_S_star0,
-                          int *_E_star0,
-                          int *_I_star0,
-                          int *_R_star0,
                           int *nLoc);
 
             ~InitData();
@@ -82,10 +74,6 @@ namespace SpatialSEIR
             int *E0;
             int *I0;
             int *R0;
-            int *S_star0;
-            int *E_star0;
-            int *I_star0;
-            int *R_star0;
             int *numLocations;
     };
 

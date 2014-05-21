@@ -31,10 +31,6 @@ class spatialSEIRInterface
                      SEXP E0_,
                      SEXP I0_,
                      SEXP R0_,
-                     SEXP Sstar0,
-                     SEXP Estar0,
-                     SEXP Istar0,
-                     SEXP Rstar0,
                      SEXP Sstar, 
                      SEXP Estar, 
                      SEXP Istar, 
@@ -439,10 +435,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP E0_,
                      SEXP I0_,
                      SEXP R0_,
-                     SEXP Sstar0,
-                     SEXP Estar0,
-                     SEXP Istar0,
-                     SEXP Rstar0,
                      SEXP Sstar, 
                      SEXP Estar, 
                      SEXP Istar, 
@@ -485,11 +477,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::IntegerVector E0(E0_);
     Rcpp::IntegerVector I0(I0_);
     Rcpp::IntegerVector R0(R0_);
-
-    Rcpp::IntegerVector S_star0(Sstar0);
-    Rcpp::IntegerVector E_star0(Estar0);
-    Rcpp::IntegerVector I_star0(Istar0);
-    Rcpp::IntegerVector R_star0(Rstar0);
 
     Rcpp::IntegerVector S_star(Sstar);
     Rcpp::IntegerVector E_star(Estar);
@@ -558,22 +545,22 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     }
 
     int compartmentSize = (compartmentDimensions[0]*compartmentDimensions[1]);
-    if (S_star0.size() != compartmentDimensions[1])
+    if (S0.size() != compartmentDimensions[1])
     {
-        Rcpp::Rcout << "Invalid S_star0 Compartment Size!\n";
+        Rcpp::Rcout << "Invalid S0 Compartment Size!\n";
         throw(-1);
     }
-    if (E_star0.size() != compartmentDimensions[1])
+    if (E0.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid E_star0 Compartment Size!\n";
         throw(-1);
     }
-    if (I_star0.size() != compartmentDimensions[1])
+    if (I0.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid I_star0 Compartment Size!\n";
         throw(-1);
     }
-    if (R_star0.size() != compartmentDimensions[1])
+    if (R0.size() != compartmentDimensions[1])
     {
         Rcpp::Rcout << "Invalid R_star0 Compartment Size!\n";
         throw(-1);
@@ -718,9 +705,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
     // Create the InitData object 
     InitData A0;
-    A0.populate(S0.begin(),E0.begin(),I0.begin(),R0.begin(),
-                S_star0.begin(),E_star0.begin(),I_star0.begin(),
-                R_star0.begin(),&compartmentDimensions[1]);
+    A0.populate(S0.begin(),E0.begin(),I0.begin(),R0.begin()
+            ,&compartmentDimensions[1]);
 
     Rcpp::Rcout << "Populating Model Context\n";
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
