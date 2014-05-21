@@ -582,52 +582,135 @@ namespace SpatialSEIR
      */
     
     FC_I0::FC_I0(ModelContext* _context, 
+                 CompartmentalModelMatrix *_S,
                  CompartmentalModelMatrix *_I,
-                 CompartmentalModelMatrix *_I_star,
+                 CompartmentalModelMatrix *_R,
+                 CompartmentalModelMatrix *_S_star,
+                 CompartmentalModelMatrix *_E_star,
                  CompartmentalModelMatrix *_R_star,
                  InitData *_A0,
                  double *_p_ir,
+                 double *_p_rs,
                  double *_p_se,
                  double _sliceWidth)
     {
         context = new ModelContext*;
+        S = new CompartmentalModelMatrix*;
         I = new CompartmentalModelMatrix*;
-        I_star = new CompartmentalModelMatrix*;
+        R = new CompartmentalModelMatrix*;
+        S_star = new CompartmentalModelMatrix*;
+        E_star = new CompartmentalModelMatrix*;
         R_star = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_ir = new double*;
+        p_rs = new double*;
         p_se = new double*;
         sliceWidth = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
+        *S = _S;
         *I = _I;
+        *R = _R;
+        *S_star = _S_star;
+        *E_star = _E_star;
         *R_star = _R_star;
-        *I_star = _I_star;
         *A0 = _A0;
+        *p_ir = _p_ir;
+        *p_se = _p_se;
+        *p_rs = _p_rs;
         *sliceWidth = _sliceWidth;
     }
     FC_I0::~FC_I0()
     {
         delete context;
+        delete S;
         delete I;
-        delete I_star;
+        delete R;
+        delete S_star;
+        delete E_star; 
         delete R_star;
         delete A0;
         delete sliceWidth;
+        delete p_ir;
+        delete p_se;
+        delete p_rs;
         delete value;
     }
     
-    int FC_I0::evalCPU()
-    {
-        // Not Implemented
-        return(-1);
-    }
 
     int FC_I0::evalCPU(int startLoc)
     {
-        // Not Implemented
-        return(-1);
+
+        int i,j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
+        long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        double ln_1m_p_ir = std::log(1-(**p_ir));
+        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
+
+        compIdx = startLoc*nTpts;
+        for (j = 0; j < nTpts; j++)
+        {
+            Rstar_val = ((*R_star) -> data)[compIdx];
+            Sstar_val = ((*S_star)->data)[compIdx];
+            R_val = ((*R) ->data)[compIdx];
+            I_val = ((*I) ->data)[compIdx];
+            p_rs_val = (*p_rs)[j];
+
+            if (Rstar_val > I_val || 
+                    Sstar_val > R_val)
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+            else
+            {
+                output +=  (ln_1m_p_ir*(I_val) +
+                            std::log(1-p_rs_val)*(R_val) +
+                            ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                            ((*context) -> random -> choose(I_val, Rstar_val)));
+            }
+            compIdx++;
+        } 
+
+        // p_se changes, so need to look at p_se component for all locations and 
+        // time points after 0
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts;
+            for (j = 0; j< nTpts; j++)
+            {
+
+                p_se_val = (*p_se)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                if (p_se_val > 1 || p_se_val < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
+                compIdx ++; 
+            }
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;   
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+
+        return 0;
     }
 
     int FC_I0::evalOCL()
@@ -658,14 +741,18 @@ namespace SpatialSEIR
 
     int FC_I0::calculateRelevantCompartments()
     {
-        // Not Implemented
-        return(-1);
+        (*context) -> calculateI_CPU();
+        (*context) -> calculateR_givenS_CPU();
+        (*context) -> calculateP_SE_CPU();
+        return(0);
     }
 
     int FC_I0::calculateRelevantCompartments(int startLoc)
     {
-        // Not Implemented
-        return(-1);
+        (*context) -> calculateI_CPU(startLoc, 0);
+        (*context) -> calculateR_givenS_CPU(startLoc, 0);
+        (*context) -> calculateP_SE_CPU(startLoc, 0);
+        return(0);
     }
 
     void FC_I0::printDebugInfo(int loc)
