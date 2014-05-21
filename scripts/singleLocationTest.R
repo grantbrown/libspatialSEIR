@@ -253,7 +253,7 @@ priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
-steadyStateConstraintPrecision = 0.1
+steadyStateConstraintPrecision = 0.001
 
 verbose = FALSE 
 debug = FALSE
@@ -261,19 +261,19 @@ debug = FALSE
 
 # pretend not to know the true values of things
 proposal = generateCompartmentProposal(I_star, N)
-beta = c(-1, rep(0, (length(beta)-1)))
-betaPrs = c(3, rep(0,(length(betaPrs)-1)))
-p_ei = 0.8
-p_ir = 0.8
+#beta = c(-1, rep(0, (length(beta)-1)))
+#betaPrs = c(3, rep(0,(length(betaPrs)-1)))
+#p_ei = 0.8
+#p_ir = 0.8
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       xPrsDim,
-                      S0,
-                      E0,
-                      I0,
-                      R0,
+                      proposal$S0,
+                      proposal$E0,
+                      proposal$I0,
+                      proposal$R0,
                       proposal$S_star0,
                       proposal$E_star0,
                       proposal$I_star0,

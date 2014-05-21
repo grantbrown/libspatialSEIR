@@ -204,6 +204,23 @@ namespace SpatialSEIR
     }
 
 
+    int InitCompartmentFullConditional::sampleCompartment_CPU(ModelContext* context, 
+            int* initCompartment,
+            double width)
+    {
+        //Not Implemented
+        return(-1);
+    }
+
+
+    int InitCompartmentFullConditional::sampleCompartmentLocation(int loc, ModelContext* context, 
+            int* initCompartment,
+            double width)
+    {
+        //Not Implemented
+        return(-1);
+    }
+
 
 
     int ParameterFullConditional::sampleDouble(ModelContext* context,
@@ -297,6 +314,98 @@ namespace SpatialSEIR
         return 0;
     }
 
+
+    FC_S0::FC_S0(ModelContext* _context,
+                 CompartmentalModelMatrix *_S,
+                 CompartmentalModelMatrix *_S_star,
+                 CompartmentalModelMatrix *_E_star,
+                 CompartmentalModelMatrix *_R,
+                 CompartmentalModelMatrix *_R_star,
+                 InitData *_A0,
+                 double *_p_se,
+                 double sliceWidth)
+    {
+        context = new ModelContext*;
+        S = new CompartmentalModelMatrix*;
+        S_star = new CompartmentalModelMatrix*;
+        E_star = new CompartmentalModelMatrix*;
+        R = new CompartmentalModelMatrix*;
+        R_star = new CompartmentalModelMatrix*;
+
+        *context = _context;
+        *S = _S;
+        *S_star = _S_star;
+        *E_star = _E_star;
+        *R = _R;
+        *R_star = _R_star;
+    }
+    FC_S0::~FC_S0()
+    {
+        delete context;
+        delete S;
+        delete S_star;
+        delete E_star;
+        delete R;
+        delete R_star;
+    }
+    
+    int FC_S0::evalCPU()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_S0::evalCPU(int startLoc)
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_S0::evalOCL()
+    {
+        // Not Implemented
+        return(-1);
+    }
+    int FC_S0::sampleCPU()
+    {
+        //Not Implemented
+        return(-1);
+    }
+    int FC_S0::sampleOCL()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    long double FC_S0::getValue()
+    {
+        return(*value);
+    }
+
+    void FC_S0::setValue(long double val)
+    {
+        *(this -> value) = val;
+    }
+
+    int FC_S0::calculateRelevantCompartments()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_S0::calculateRelevantCompartments(int startLoc)
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    void FC_S0::printDebugInfo(int loc)
+    {
+        // Not Implemented
+        throw(-1);
+    }
+
+    
 
     /*
      *

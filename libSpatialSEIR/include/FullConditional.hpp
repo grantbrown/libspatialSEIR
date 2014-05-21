@@ -128,7 +128,31 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
+            double* steadyStateConstraintPrecision;
+            double* sliceWidth;
+    };
 
+    class InitCompartmentFullConditional : public FullConditional
+    {
+        public:
+            virtual ~InitCompartmentFullConditional(){}; 
+            virtual int evalCPU(int startLoc) = 0;
+            virtual int evalOCL() = 0;
+            virtual int sampleCPU() = 0;
+            virtual int sampleOCL() = 0;
+            virtual long double getValue() = 0;
+            virtual void setValue(long double value) = 0;
+            virtual int calculateRelevantCompartments() = 0;
+            virtual int calculateRelevantCompartments(int startLoc) = 0;
+            virtual void printDebugInfo(int loc) = 0;
+
+            int sampleCompartment_CPU(ModelContext* context,
+                                      int* initCompartment, 
+                                      double width); 
+
+            int sampleCompartmentLocation(int loc, ModelContext* context,
+                                          int* initCompartment,
+                                          double width); 
 
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
@@ -158,6 +182,124 @@ namespace SpatialSEIR
 
             double* sliceWidth;
     };
+
+
+
+    class FC_S0 : public InitCompartmentFullConditional
+    {
+        public:
+            FC_S0(ModelContext * _context,
+                      CompartmentalModelMatrix *_S, 
+                      CompartmentalModelMatrix *_S_star, 
+                      CompartmentalModelMatrix *_E_star,
+                      CompartmentalModelMatrix *_R, 
+                      CompartmentalModelMatrix *_R_star, 
+                      InitData *_A0,
+                      double *_p_se,
+                      double sliceWidth);
+            virtual ~FC_S0(); 
+            virtual int evalCPU();
+            virtual int evalCPU(int startLoc);
+            virtual int evalOCL() ;
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual long double getValue();
+            virtual void setValue(long double value);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc);
+            virtual void printDebugInfo(int loc);
+
+            ModelContext** context;
+            CompartmentalModelMatrix** S;
+            CompartmentalModelMatrix** S_star;
+            CompartmentalModelMatrix** E_star;
+            CompartmentalModelMatrix** R;
+            CompartmentalModelMatrix** R_star;
+            InitData** A0;
+            double** p_se; 
+            double* sliceWidth;
+            double* value;
+    };
+
+    class FC_E0 : public InitCompartmentFullConditional
+    { 
+        public:
+            FC_E0(ModelContext * _context,
+                      CompartmentalModelMatrix *_E, 
+                      CompartmentalModelMatrix *_E_star, 
+                      CompartmentalModelMatrix *_I_star,
+                      InitData *_A0,
+                      double *_p_ei,
+                      double sliceWidth);
+            virtual ~FC_E0(); 
+            virtual int evalCPU(int startLoc);
+            virtual int evalOCL() ;
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual long double getValue();
+            virtual void setValue(long double value);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc);
+            virtual void printDebugInfo(int loc);
+
+            int sampleCompartment_CPU(ModelContext* context,
+                                      int* initCompartment, 
+                                      double width); 
+
+            int sampleCompartmentLocation(int loc, ModelContext* context,
+                                          int* initCompartment,
+                                          double width); 
+
+            ModelContext** context;
+            CompartmentalModelMatrix** E;
+            CompartmentalModelMatrix** E_star;
+            CompartmentalModelMatrix** I_star;
+            InitData** A0;
+            double** p_ei;
+            double* sliceWidth;
+    };
+
+    class FC_I0 : public InitCompartmentFullConditional
+    {
+        public:
+            FC_I0(ModelContext * _context,
+                      CompartmentalModelMatrix *_I, 
+                      CompartmentalModelMatrix *_I_star,
+                      CompartmentalModelMatrix *_R_star,
+                      InitData *_A0,
+                      double *_p_ir,
+                      double *_p_se,
+                      double sliceWidth);
+            virtual ~FC_I0(); 
+            virtual int evalCPU(int startLoc);
+            virtual int evalOCL() ;
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual long double getValue();
+            virtual void setValue(long double value);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc);
+            virtual void printDebugInfo(int loc);
+
+            int sampleCompartment_CPU(ModelContext* context,
+                                      int* initCompartment, 
+                                      double width); 
+
+            int sampleCompartmentLocation(int loc, ModelContext* context,
+                                          int* initCompartment,
+                                          double width); 
+
+            ModelContext** context;
+            CompartmentalModelMatrix** I;
+            CompartmentalModelMatrix** I_star;
+            CompartmentalModelMatrix** R_star;
+            InitData** A0;
+            double** p_ir;
+            double** p_se; 
+            double* sliceWidth;
+    };
+
+
 
     class FC_S_Star : public CompartmentFullConditional
     {
