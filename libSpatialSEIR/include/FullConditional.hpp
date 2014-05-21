@@ -186,7 +186,6 @@ namespace SpatialSEIR
                       double *_p_rs,
                       double sliceWidth);
             virtual ~FC_S0(); 
-            virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual int sampleCPU();
@@ -214,13 +213,14 @@ namespace SpatialSEIR
         public:
             FC_E0(ModelContext * _context,
                       CompartmentalModelMatrix *_E, 
-                      CompartmentalModelMatrix *_E_star, 
+                      CompartmentalModelMatrix *_R, 
                       CompartmentalModelMatrix *_I_star,
+                      CompartmentalModelMatrix *_S_star,
                       InitData *_A0,
+                      double *_p_rs,
                       double *_p_ei,
                       double sliceWidth);
             virtual ~FC_E0(); 
-            virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual int sampleCPU();
@@ -241,12 +241,14 @@ namespace SpatialSEIR
 
             ModelContext** context;
             CompartmentalModelMatrix** E;
-            CompartmentalModelMatrix** E_star;
+            CompartmentalModelMatrix** R;
             CompartmentalModelMatrix** I_star;
+            CompartmentalModelMatrix** S_star;
             InitData** A0;
             double** p_ei;
+            double** p_rs;
             double* sliceWidth;
-            double* value;
+            long double* value;
     };
 
     class FC_I0 : public InitCompartmentFullConditional

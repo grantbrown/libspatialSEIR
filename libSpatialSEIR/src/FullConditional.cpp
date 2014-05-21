@@ -339,12 +339,6 @@ namespace SpatialSEIR
         delete value;
     }
     
-    int FC_S0::evalCPU()
-    {
-        // Not Implemented
-        return(-1);
-    }
-
     int FC_S0::evalCPU(int startLoc)
     {
         int j, compIdx;
@@ -435,7 +429,7 @@ namespace SpatialSEIR
     void FC_S0::printDebugInfo(int loc)
     {
         // Not Implemented
-        throw(-1);
+        throw(loc);
     }
 
 
@@ -448,25 +442,32 @@ namespace SpatialSEIR
     
     FC_E0::FC_E0(ModelContext* _context, 
                  CompartmentalModelMatrix *_E,
-                 CompartmentalModelMatrix *_E_star,
+                 CompartmentalModelMatrix *_R,
                  CompartmentalModelMatrix *_I_star,
+                 CompartmentalModelMatrix *_S_star,
                  InitData *_A0,
+                 double *_p_rs,
                  double *_p_ei,
                  double _sliceWidth)
     {
         context = new ModelContext*;
         E = new CompartmentalModelMatrix*;
-        E_star = new CompartmentalModelMatrix*;
+        R = new CompartmentalModelMatrix*;
         I_star = new CompartmentalModelMatrix*;
+        S_star = new CompartmentalModelMatrix*;
         A0 = new InitData*;
+        p_rs = new double*;
         p_ei = new double*;
         sliceWidth = new double;
-        value = new double;
+        value = new long double;
 
         *context = _context;
         *E = _E;
-        *E_star = _E_star;
+        *R = _R;;
         *I_star = _I_star;
+        *S_star = _S_star;
+        *p_rs = _p_rs;
+        *p_ei = _p_ei;
         *A0 = _A0;
         *sliceWidth = _sliceWidth;
     }
@@ -474,23 +475,57 @@ namespace SpatialSEIR
     {
         delete context;
         delete E;
-        delete E_star;
+        delete R;
         delete I_star;
+        delete S_star;
+        delete p_rs;
+        delete p_ei;
         delete A0;
         delete sliceWidth;
         delete value;
     }
     
-    int FC_E0::evalCPU()
-    {
-        // Not Implemented
-        return(-1);
-    }
-
     int FC_E0::evalCPU(int startLoc)
     {
-        // Not Implemented
-        return(-1);
+        int i,compIdx,Sstar_val,E_val,R_val,Istar_val;
+        double p_ei_val, p_rs_val;
+        int nTpts = *((*E)->nrow);
+        long double output = 0.0;
+
+        compIdx = startLoc*nTpts;
+        p_ei_val = **p_ei;
+        for (i = 0; i < nTpts; i++)
+        {
+                Sstar_val = ((*S_star)->data)[compIdx]; 
+                Istar_val = ((*I_star)->data)[compIdx];
+                E_val = ((*E)->data)[compIdx];
+                R_val = ((*R)->data)[compIdx];
+                p_rs_val = (*p_rs)[compIdx];
+
+                if (Istar_val > E_val ||
+                    Sstar_val > R_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                { 
+                    output += (((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                               ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)));
+                }
+                compIdx ++; 
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+        return(0);
     }
 
     int FC_E0::evalOCL()
@@ -521,20 +556,22 @@ namespace SpatialSEIR
 
     int FC_E0::calculateRelevantCompartments()
     {
-        // Not Implemented
-        return(-1);
+        (*context) -> calculateE_CPU();
+        (*context) -> calculateR_givenS_CPU();
+        return(0);
     }
 
     int FC_E0::calculateRelevantCompartments(int startLoc)
     {
-        // Not Implemented
-        return(-1);
+        (*context) -> calculateE_CPU(startLoc, 0);
+        (*context) -> calculateR_givenS_CPU(startLoc,0);
+        return(0);
     }
 
     void FC_E0::printDebugInfo(int loc)
     {
         // Not Implemented
-        throw(-1);
+        throw(loc);
     }
 
 
@@ -634,7 +671,7 @@ namespace SpatialSEIR
     void FC_I0::printDebugInfo(int loc)
     {
         // Not Implemented
-        throw(-1);
+        throw(loc);
     }
 
     /*
