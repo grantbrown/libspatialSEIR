@@ -184,20 +184,66 @@ namespace SpatialSEIR
 
 
     int InitCompartmentFullConditional::sampleCompartment_CPU(ModelContext* context, 
-            int* initCompartment,
-            double width)
+                                                              int* initCompartment,
+                                                              double width)
     {
-        //Not Implemented
-        return(-1);
+
+        int i;
+        int nLoc = *(context -> S -> ncol);        
+        // Main loop: 
+        for (i = 0; i < nLoc; i++)
+        {
+            sampleCompartmentLocation(i, context, initCompartment, width);
+            //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
+        }
+        return(0);
     }
 
 
-    int InitCompartmentFullConditional::sampleCompartmentLocation(int loc, ModelContext* context, 
-            int* initCompartment,
-            double width)
+    int InitCompartmentFullConditional::sampleCompartmentLocation(int i, ModelContext* context, 
+                                                                  int* initCompartment,
+                                                                  double width)
     {
-        //Not Implemented
-        return(-1);
+        int x0, x1;
+        double initVal, newVal;
+        double initProposal, newProposal;
+        double criterion;
+     
+        this -> calculateRelevantCompartments(i); 
+        this -> evalCPU(i);
+        x0 = initCompartment[i];
+        initVal = (this -> getValue());
+
+        // Propose new value, bounded away from zero. 
+        x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
+        initCompartment[i] = x1;
+        this -> calculateRelevantCompartments(i);
+        this -> evalCPU(i);
+        newVal = (this->getValue());
+        newProposal = (context -> random -> dnorm(x1, x0,width));
+        initProposal = (context -> random -> dnorm(x0, x1,width));
+        criterion = (newVal - initVal) + (initProposal - newProposal);
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            // Accept new value
+        }
+        else
+        {
+            // Keep Original Value
+            initCompartment[i] = x0;
+            this -> calculateRelevantCompartments(i);
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected:\n";
+            std::cout << "i: (" << i << "," << ")\n";
+            this -> printDebugInfo(i);
+            throw(-1);
+        }
+        return(0);
+
     }
 
 
@@ -314,6 +360,7 @@ namespace SpatialSEIR
         S_star = new CompartmentalModelMatrix*;
         E_star = new CompartmentalModelMatrix*;
         R = new CompartmentalModelMatrix*;
+        A0 = new InitData*;
         p_se = new double*;
         sliceWidth = new double;
         value = new long double;
@@ -323,6 +370,7 @@ namespace SpatialSEIR
         *S_star = _S_star;
         *E_star = _E_star;
         *R = _R;
+        *A0 = _A0;
         *p_se = _p_se;
         *p_rs = _p_rs;
         *sliceWidth = _sliceWidth;
@@ -346,6 +394,13 @@ namespace SpatialSEIR
         double p_se_val, p_rs_val;
         int S_val, R_val, Sstar_val, Estar_val;
         long double output = 0.0;
+        
+        if (((*A0) -> S0)[startLoc] < 0 || 
+            ((*A0) -> R0)[startLoc] < 0)
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
 
         compIdx = startLoc*nTpts;
         for (j = 0; j < nTpts; j++)
@@ -491,6 +546,14 @@ namespace SpatialSEIR
         double p_ei_val, p_rs_val;
         int nTpts = *((*E)->nrow);
         long double output = 0.0;
+
+        if (((*A0) -> E0)[startLoc] < 0 || 
+            ((*A0) -> R0)[startLoc] < 0)
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+
 
         compIdx = startLoc*nTpts;
         p_ei_val = **p_ei;
@@ -652,6 +715,14 @@ namespace SpatialSEIR
         double p_rs_val;
         double ln_1m_p_ir = std::log(1-(**p_ir));
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
+
+        if (((*A0) -> I0)[startLoc] < 0 || 
+            ((*A0) -> R0)[startLoc] < 0)
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+
 
         compIdx = startLoc*nTpts;
         for (j = 0; j < nTpts; j++)

@@ -654,8 +654,16 @@ namespace SpatialSEIR
 
     void ModelContext::calculateR_givenS_CPU()
     {
+
         int i;
-        int maxItr = (*(I -> nrow))*(*(I -> ncol));
+        int nTpt = *(I -> nrow);
+        int nLoc = *(I -> ncol);
+        int maxItr = nLoc*nTpt;
+        for (i = 0; i < nLoc; i++)
+        {
+            (A0 -> R0)[i] = N[i*nTpt] - (A0 -> S0)[i] - (A0 -> E0)[i] - (A0 -> I0)[i];
+        }
+
         for (i = 0; i < maxItr; i++)
         {
             (R->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (I->data)[i]; 
@@ -665,8 +673,14 @@ namespace SpatialSEIR
     void ModelContext::calculateR_givenS_CPU(int startLoc, int startTime)
     {
         int i,startIdx,idx;
-        startIdx = startTime + startLoc*(*(E->nrow));
+        int nTpt = *(I -> nrow);
+        startIdx = startTime + startLoc*nTpt;
         idx = startIdx;
+        if (startTime == 0)
+        {
+            (A0 -> R0)[startLoc] = (N[startLoc*nTpt] - (A0 -> S0)[startLoc*nTpt] - (A0 -> E0)[startLoc*nTpt]
+                                    - (A0 -> I0)[startLoc*nTpt]);
+        }
         for (i = startTime; i < *(S->nrow); i++)
         {
             (R -> data)[idx] = N[idx] - (S->data)[idx] - (E->data)[idx] - (I->data)[idx];  
