@@ -15,6 +15,9 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    class FC_S0;
+    class FC_E0;
+    class FC_I0;
     class FC_S_Star;
     class FC_E_Star;
     class FC_R_Star;
@@ -175,6 +178,9 @@ namespace SpatialSEIR
             IOProvider *fileProvider;
             RandomNumberProvider *random;
             OCLProvider *oclProvider; 
+            FC_S0 *S0_fc;
+            FC_E0 *E0_fc;
+            FC_I0 *I0_fc;
             FC_S_Star *S_star_fc;
             FC_E_Star *E_star_fc;
             FC_R_Star *R_star_fc;
@@ -184,7 +190,6 @@ namespace SpatialSEIR
             FC_Beta_P_RS *betaPrs_fc;
             FC_P_EI *p_ei_fc;
             FC_P_IR *p_ir_fc;
-
 
             //Data
             CompartmentalModelMatrix* S;

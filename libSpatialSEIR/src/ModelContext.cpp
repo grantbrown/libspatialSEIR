@@ -181,6 +181,40 @@ namespace SpatialSEIR
         *p_ir = *p_ir_;
 
         // Wire up the full conditional classes
+        
+        S0_fc = new FC_S0(this,
+                          S,
+                          S_star,
+                          E_star,
+                          R,
+                          A0,
+                          p_se,
+                          p_rs,
+                          *(sliceWidths -> S_starWidth));
+
+        E0_fc = new FC_E0(this,
+                          E,
+                          R,
+                          I_star,
+                          S_star,
+                          A0,
+                          p_rs,
+                          p_ei,
+                          *(sliceWidths -> E_starWidth));
+
+        I0_fc = new FC_I0(this, 
+                          S,
+                          I,
+                          R,
+                          S_star,
+                          E_star,
+                          R_star,
+                          A0,
+                          p_ir,
+                          p_rs,
+                          p_se,
+                          *(sliceWidths -> E_starWidth));
+
         S_star_fc = new FC_S_Star(this,
                                   S_star,
                                   S,
