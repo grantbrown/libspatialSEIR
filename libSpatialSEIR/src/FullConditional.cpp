@@ -314,6 +314,11 @@ namespace SpatialSEIR
         return 0;
     }
 
+    /*
+     *
+     * Implement Full Conditional for S0
+     *
+     */
 
     FC_S0::FC_S0(ModelContext* _context,
                  CompartmentalModelMatrix *_S,
@@ -323,7 +328,7 @@ namespace SpatialSEIR
                  CompartmentalModelMatrix *_R_star,
                  InitData *_A0,
                  double *_p_se,
-                 double sliceWidth)
+                 double _sliceWidth)
     {
         context = new ModelContext*;
         S = new CompartmentalModelMatrix*;
@@ -331,6 +336,9 @@ namespace SpatialSEIR
         E_star = new CompartmentalModelMatrix*;
         R = new CompartmentalModelMatrix*;
         R_star = new CompartmentalModelMatrix*;
+        p_se = new double*;
+        sliceWidth = new double;
+        value = new double;
 
         *context = _context;
         *S = _S;
@@ -338,6 +346,8 @@ namespace SpatialSEIR
         *E_star = _E_star;
         *R = _R;
         *R_star = _R_star;
+        *p_se = _p_se;
+        *sliceWidth = _sliceWidth;
     }
     FC_S0::~FC_S0()
     {
@@ -347,6 +357,7 @@ namespace SpatialSEIR
         delete E_star;
         delete R;
         delete R_star;
+        delete value;
     }
     
     int FC_S0::evalCPU()
@@ -405,7 +416,103 @@ namespace SpatialSEIR
         throw(-1);
     }
 
+    /*
+     *
+     * Implement full conditional for E0
+     *
+     */
     
+    FC_E0::FC_E0(ModelContext* _context, 
+                 CompartmentalModelMatrix *_E,
+                 CompartmentalModelMatrix *_E_star,
+                 CompartmentalModelMatrix *_I_star,
+                 InitData *_A0,
+                 double *_p_ei,
+                 double _sliceWidth)
+    {
+        context = new ModelContext*;
+        E = new CompartmentalModelMatrix*;
+        E_star = new CompartmentalModelMatrix*;
+        I_star = new CompartmentalModelMatrix*;
+        A0 = new InitData*;
+        p_ei = new double*;
+        sliceWidth = new double;
+        value = new double;
+
+        *context = _context;
+        *E = _E;
+        *E_star = _E_star;
+        *I_star = _I_star;
+        *A0 = _A0;
+        *sliceWidth = _sliceWidth;
+    }
+    FC_E0::~FC_E0()
+    {
+        delete context;
+        delete E;
+        delete E_star;
+        delete I_star;
+        delete A0;
+        delete sliceWidth;
+        delete value;
+    }
+    
+    int FC_E0::evalCPU()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_E0::evalCPU(int startLoc)
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_E0::evalOCL()
+    {
+        // Not Implemented
+        return(-1);
+    }
+    int FC_E0::sampleCPU()
+    {
+        //Not Implemented
+        return(-1);
+    }
+    int FC_E0::sampleOCL()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    long double FC_E0::getValue()
+    {
+        return(*value);
+    }
+
+    void FC_E0::setValue(long double val)
+    {
+        *(this -> value) = val;
+    }
+
+    int FC_E0::calculateRelevantCompartments()
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    int FC_E0::calculateRelevantCompartments(int startLoc)
+    {
+        // Not Implemented
+        return(-1);
+    }
+
+    void FC_E0::printDebugInfo(int loc)
+    {
+        // Not Implemented
+        throw(-1);
+    }
+
 
     /*
      *
