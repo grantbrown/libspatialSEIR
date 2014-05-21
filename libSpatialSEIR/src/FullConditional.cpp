@@ -448,8 +448,9 @@ namespace SpatialSEIR
     }
     int FC_S0::sampleCPU()
     {
-        //Not Implemented
-        return(-1);
+        sampleCompartment_CPU(*context, (*A0)->S0, *sliceWidth);
+        return(0);
+    
     }
     int FC_S0::sampleOCL()
     {
@@ -518,7 +519,7 @@ namespace SpatialSEIR
 
         *context = _context;
         *E = _E;
-        *R = _R;;
+        *R = _R;
         *I_star = _I_star;
         *S_star = _S_star;
         *p_rs = _p_rs;
@@ -598,8 +599,8 @@ namespace SpatialSEIR
     }
     int FC_E0::sampleCPU()
     {
-        //Not Implemented
-        return(-1);
+        sampleCompartment_CPU(*context, (*A0) -> E0, *sliceWidth);
+        return(0);
     }
     int FC_E0::sampleOCL()
     {
@@ -791,8 +792,8 @@ namespace SpatialSEIR
     }
     int FC_I0::sampleCPU()
     {
-        //Not Implemented
-        return(-1);
+        sampleCompartment_CPU(*context, (*A0) -> I0, *sliceWidth);
+        return(0);
     }
     int FC_I0::sampleOCL()
     {

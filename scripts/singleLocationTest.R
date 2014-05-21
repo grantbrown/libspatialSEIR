@@ -307,7 +307,7 @@ runSimulation = function(N, batchSize = 1000)
     })
 }
 
-#runSimulation(1000000)
+#runSimulation(10000)
 
 
 

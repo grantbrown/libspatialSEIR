@@ -231,14 +231,6 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments(int startLoc);
             virtual void printDebugInfo(int loc);
 
-            int sampleCompartment_CPU(ModelContext* context,
-                                      int* initCompartment, 
-                                      double width); 
-
-            int sampleCompartmentLocation(int loc, ModelContext* context,
-                                          int* initCompartment,
-                                          double width); 
-
             ModelContext** context;
             CompartmentalModelMatrix** E;
             CompartmentalModelMatrix** R;
@@ -276,14 +268,6 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc);
             virtual void printDebugInfo(int loc);
-
-            int sampleCompartment_CPU(ModelContext* context,
-                                      int* initCompartment, 
-                                      double width); 
-
-            int sampleCompartmentLocation(int loc, ModelContext* context,
-                                          int* initCompartment,
-                                          double width); 
 
             ModelContext** context;
             CompartmentalModelMatrix** S;

@@ -182,6 +182,7 @@ namespace SpatialSEIR
 
         // Wire up the full conditional classes
         
+        /*
         S0_fc = new FC_S0(this,
                           S,
                           S_star,
@@ -214,7 +215,7 @@ namespace SpatialSEIR
                           p_rs,
                           p_se,
                           *(sliceWidths -> E_starWidth));
-
+        */
         S_star_fc = new FC_S_Star(this,
                                   S_star,
                                   S,
@@ -450,45 +451,57 @@ namespace SpatialSEIR
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
+        /*
+        if (verbose){std::cout << "Sampling S0\n";}
+        if (useOCL[0] == 0){S0_fc -> sampleCPU();}
+        else {S0_fc -> sampleOCL();}
 
+        if (verbose){std::cout << "Sampling E0\n";}
+        if (useOCL[1] == 0){E0_fc -> sampleCPU();}
+        else {E0_fc -> sampleOCL();}
+
+        if (verbose){std::cout << "Sampling I0\n";}
+        if (useOCL[2] == 0){I0_fc -> sampleCPU();}
+        else {I0_fc -> sampleOCL();}
+        */
         if (verbose){std::cout << "Sampling S_star\n";}
-        if (useOCL[0] == 0){S_star_fc -> sampleCPU();}
+        if (useOCL[3] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling E_star\n";}
-        if (useOCL[1] == 0){E_star_fc -> sampleCPU();}
+        if (useOCL[4] == 0){E_star_fc -> sampleCPU();}
         else {E_star_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling R_star\n";}
-        if (useOCL[2] == 0){R_star_fc -> sampleCPU();}
+        if (useOCL[5] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling beta\n";}
-        if (useOCL[3] == 0){beta_fc -> sampleCPU();}
+        if (useOCL[6] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling betaPrs\n";}
-        if (useOCL[4] == 0){betaPrs_fc -> sampleCPU();}
+        if (useOCL[7] == 0){betaPrs_fc -> sampleCPU();}
         else {betaPrs_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling p_ei\n";}
-        if (useOCL[5] == 0){p_ei_fc -> sampleCPU();}
+        if (useOCL[8] == 0){p_ei_fc -> sampleCPU();}
         else {p_ei_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling p_ir\n";}
-        if (useOCL[6] == 0){p_ir_fc -> sampleCPU();}
+        if (useOCL[9] == 0){p_ir_fc -> sampleCPU();}
         else {p_ir_fc -> sampleOCL();}
 
         if (!(*singleLocation))
         {
             // Spatial dependence doesn't apply to single spatial unit. 
             if (verbose){std::cout << "Sampling rho\n";}
-            if (useOCL[7] == 0){rho_fc -> sampleCPU();}
+            if (useOCL[10] == 0){rho_fc -> sampleCPU();}
             else {rho_fc -> sampleOCL();}
         }
 
         if (verbose){std::cout << "Sampling gamma\n";}
-        if (useOCL[8] == 0){gamma_fc -> sampleCPU();}
+        if (useOCL[11] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
 
 
@@ -517,7 +530,7 @@ namespace SpatialSEIR
 
     void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false, bool debug = false)
     {
-        int useOCL[9] = {0};
+        int useOCL[12] = {0};
         int i;
         int itrStart = *numIterations;
         int itrMax = nIterations + (*numIterations);
@@ -941,6 +954,9 @@ namespace SpatialSEIR
         delete numIterations;
         delete fileProvider;
         delete random;
+        delete S0_fc;
+        delete E0_fc;
+        delete I0_fc;
         delete S_star_fc;
         delete E_star_fc;
         delete R_star_fc;
