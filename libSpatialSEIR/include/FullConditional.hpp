@@ -120,32 +120,6 @@ namespace SpatialSEIR
             double* sliceWidth;
     };
 
-    class InitCompartmentFullConditional : public FullConditional
-    {
-        public:
-            virtual ~InitCompartmentFullConditional(){}; 
-            virtual int evalCPU(int startLoc) = 0;
-            virtual int evalOCL() = 0;
-            virtual int sampleCPU() = 0;
-            virtual int sampleOCL() = 0;
-            virtual long double getValue() = 0;
-            virtual void setValue(long double value) = 0;
-            virtual int calculateRelevantCompartments() = 0;
-            virtual int calculateRelevantCompartments(int startLoc) = 0;
-            virtual void printDebugInfo(int loc) = 0;
-
-            int sampleCompartment_CPU(ModelContext* context,
-                                      int* initCompartment, 
-                                      double width); 
-
-            int sampleCompartmentLocation(int loc, ModelContext* context,
-                                          int* initCompartment,
-                                          double width); 
-
-            double* steadyStateConstraintPrecision;
-            double* sliceWidth;
-    };
-
     // Parent class for double precision scalar/vector full conditionals
     class ParameterFullConditional : public FullConditional
     {
@@ -172,11 +146,38 @@ namespace SpatialSEIR
     };
 
 
-
-    class FC_S0 : public InitCompartmentFullConditional
+    // Parent class for S0-R0
+    class InitCompartmentFullConditional : public FullConditional
     {
         public:
-            FC_S0(ModelContext * _context,
+
+            virtual ~InitCompartmentFullConditional(){}; 
+            virtual int evalCPU(int startLoc) = 0;
+            virtual int evalOCL() = 0;
+            virtual int sampleCPU() = 0;
+            virtual int sampleOCL() = 0;
+            virtual long double getValue() = 0;
+            virtual void setValue(long double value) = 0;
+            virtual int calculateRelevantCompartments() = 0;
+            virtual int calculateRelevantCompartments(int startLoc) = 0;
+            virtual void printDebugInfo(int loc) = 0;
+
+            int sampleCompartment_CPU(ModelContext* context,
+                                      int* initCompartment, 
+                                      double width); 
+
+            int sampleCompartmentLocation(int loc, ModelContext* context,
+                                          int* initCompartment,
+                                          double width); 
+ 
+            double* sliceWidth;
+    };
+
+    class FC_S0 : InitCompartmentFullConditional
+    {
+        public:
+
+            FC_S0(ModelContext *_context,
                       CompartmentalModelMatrix *_S, 
                       CompartmentalModelMatrix *_S_star, 
                       CompartmentalModelMatrix *_E_star,
@@ -185,7 +186,7 @@ namespace SpatialSEIR
                       double *_p_se,
                       double *_p_rs,
                       double sliceWidth);
-            virtual ~FC_S0(); 
+            virtual ~FC_S0();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual int sampleCPU();
@@ -195,6 +196,7 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments(int startLoc);
             virtual void printDebugInfo(int loc);
+
 
             ModelContext** context;
             CompartmentalModelMatrix** S;
@@ -206,12 +208,14 @@ namespace SpatialSEIR
             double** p_rs;
             double* sliceWidth;
             long double* value;
+
     };
+
 
     class FC_E0 : public InitCompartmentFullConditional
     { 
         public:
-            FC_E0(ModelContext * _context,
+            FC_E0(ModelContext *_context,
                       CompartmentalModelMatrix *_E, 
                       CompartmentalModelMatrix *_R, 
                       CompartmentalModelMatrix *_I_star,
@@ -246,7 +250,7 @@ namespace SpatialSEIR
     class FC_I0 : public InitCompartmentFullConditional
     {
         public:
-            FC_I0(ModelContext * _context,
+            FC_I0(ModelContext *_context,
                       CompartmentalModelMatrix *_S, 
                       CompartmentalModelMatrix *_I, 
                       CompartmentalModelMatrix *_R, 

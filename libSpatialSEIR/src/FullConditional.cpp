@@ -69,8 +69,8 @@ namespace SpatialSEIR
                        int *_R0,
                        int *nLoc)
     {
-        this -> populate(*&_S0, *&_E0, *&_I0, *&_R0, 
-                *&nLoc);
+        this -> populate(_S0, _E0, _I0, _R0, 
+                nLoc);
     }
 
     InitData::InitData()
@@ -182,7 +182,6 @@ namespace SpatialSEIR
         return(0);
     }
 
-
     int InitCompartmentFullConditional::sampleCompartment_CPU(ModelContext* context, 
                                                               int* initCompartment,
                                                               double width)
@@ -245,7 +244,6 @@ namespace SpatialSEIR
         return(0);
 
     }
-
 
 
     int ParameterFullConditional::sampleDouble(ModelContext* context,
@@ -355,6 +353,7 @@ namespace SpatialSEIR
                  double *_p_rs,
                  double _sliceWidth)
     {
+
         context = new ModelContext*;
         S = new CompartmentalModelMatrix*;
         S_star = new CompartmentalModelMatrix*;
@@ -362,6 +361,7 @@ namespace SpatialSEIR
         R = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_se = new double*;
+        p_rs = new double*;
         sliceWidth = new double;
         value = new long double;
 
@@ -374,21 +374,27 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *p_rs = _p_rs;
         *sliceWidth = _sliceWidth;
+
     }
     FC_S0::~FC_S0()
     {
+
         delete context;
         delete S;
         delete S_star;
         delete E_star;
+        delete R;
         delete p_rs;
         delete p_se;
-        delete R;
+        delete sliceWidth;
         delete value;
+
     }
     
+
     int FC_S0::evalCPU(int startLoc)
     {
+
         int j, compIdx;
         int nTpts = *((*S) -> nrow); 
         double p_se_val, p_rs_val;
@@ -407,7 +413,7 @@ namespace SpatialSEIR
         {
             S_val = ((*S) -> data)[compIdx];
             R_val = ((*R)-> data)[compIdx];
-            Sstar_val = ((*R)-> data)[compIdx];
+            Sstar_val = ((*S_star)-> data)[compIdx];
             Estar_val = ((*E_star) -> data)[compIdx];
             p_se_val = (*p_se)[compIdx];
             p_rs_val = (*p_rs)[j];
@@ -488,14 +494,13 @@ namespace SpatialSEIR
         throw(loc);
     }
 
-
-
     /*
      *
      * Implement full conditional for E0
      *
      */
     
+
     FC_E0::FC_E0(ModelContext* _context, 
                  CompartmentalModelMatrix *_E,
                  CompartmentalModelMatrix *_R,
@@ -637,7 +642,6 @@ namespace SpatialSEIR
         // Not Implemented
         throw(loc);
     }
-
 
     /*
      *

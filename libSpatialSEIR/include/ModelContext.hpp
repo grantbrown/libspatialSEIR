@@ -28,6 +28,7 @@ namespace SpatialSEIR
     class FC_Rho;
     class FC_Gamma;
     class InitData;
+    class TestClass;
 
     class CompartmentalModelMatrix;
     class CovariateMatrix;
@@ -169,11 +170,6 @@ namespace SpatialSEIR
             double estimateR0(int t);
 
 
-
-
-
-
-
             //Logic provider and utility classes
             IOProvider *fileProvider;
             RandomNumberProvider *random;
@@ -222,6 +218,8 @@ namespace SpatialSEIR
             int* isPopulated;
             int* singleLocation;
             int* numIterations;
+
+
     };
 }
 #endif

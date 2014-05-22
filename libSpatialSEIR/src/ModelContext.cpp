@@ -182,7 +182,9 @@ namespace SpatialSEIR
 
         // Wire up the full conditional classes
         
-        /*
+
+
+
         S0_fc = new FC_S0(this,
                           S,
                           S_star,
@@ -215,7 +217,7 @@ namespace SpatialSEIR
                           p_rs,
                           p_se,
                           *(sliceWidths -> E_starWidth));
-        */
+
         S_star_fc = new FC_S_Star(this,
                                   S_star,
                                   S,
@@ -306,7 +308,6 @@ namespace SpatialSEIR
         this -> calculateP_SE_CPU();
 
         *isPopulated = 1;
-
     }
 
     int ModelContext::checkCompartmentBounds()
@@ -475,6 +476,7 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling R_star\n";}
         if (useOCL[5] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
+
 
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[6] == 0){beta_fc -> sampleCPU();}

@@ -253,14 +253,14 @@ res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       xPrsDim,
-                      proposal$S0,
-                      proposal$E0,
-                      proposal$I0,
-                      proposal$R0,
-                      proposal$S_star,
-                      proposal$E_star,
-                      proposal$I_star,
-                      proposal$R_star,
+                      S0,
+                      E0,
+                      I0,
+                      R0,
+                      S_star,
+                      E_star,
+                      I_star,
+                      R_star,
                       X,
                       Z,
                       X_prs,
@@ -307,7 +307,8 @@ runSimulation = function(N, batchSize = 1000)
     })
 }
 
-#runSimulation(10000)
+runSimulation(10000)
+
 
 
 

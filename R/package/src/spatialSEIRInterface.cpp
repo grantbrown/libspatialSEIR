@@ -15,7 +15,7 @@ class spatialSEIRInterface
 
     private:
         //Attributes: 
-        ModelContext* context;
+       ModelContext* context;
         std::string* chainOutputFile;
         int* verbose;
         int* debug;
@@ -90,6 +90,11 @@ class spatialSEIRInterface
         virtual Rcpp::IntegerMatrix getE_star();
         virtual Rcpp::IntegerMatrix getI_star();
         virtual Rcpp::IntegerMatrix getR_star();
+
+        virtual Rcpp::IntegerMatrix getS0();
+        virtual Rcpp::IntegerMatrix getE0();
+        virtual Rcpp::IntegerMatrix getI0();
+        virtual Rcpp::IntegerMatrix getR0();
 
         virtual Rcpp::NumericMatrix getP_SE();
         virtual Rcpp::NumericVector getP_EI();
@@ -217,6 +222,56 @@ int spatialSEIRInterface::calculateP_RS()
     Rcpp::Rcout << "Attept to calculate P_RS on non-populated ModelContext.\n";
     return(-1);
 }
+
+Rcpp::IntegerMatrix spatialSEIRInterface::getS0()
+{
+    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    int numVals = *(context->S->ncol);
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->A0 -> S0)[i];
+    }
+    return(output);
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getE0()
+{
+    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    int numVals = *(context->S->ncol);
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->A0 -> E0)[i];
+    }
+    return(output);
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getI0()
+{
+    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    int numVals = *(context->S->ncol);
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->A0 -> I0)[i];
+    }
+    return(output);
+}
+Rcpp::IntegerMatrix spatialSEIRInterface::getR0()
+{
+    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    int numVals = *(context->S->ncol);
+    int i;
+    for (i = 0; i < numVals; i++)
+    {
+        output[i] = (context->A0 -> R0)[i];
+    }
+    return(output);
+}
+
+
+
+
+
 
 Rcpp::IntegerMatrix spatialSEIRInterface::getS()
 {
@@ -708,6 +763,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     A0.populate(S0.begin(),E0.begin(),I0.begin(),R0.begin()
             ,&compartmentDimensions[1]);
 
+
+
     Rcpp::Rcout << "Populating Model Context\n";
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
@@ -759,6 +816,10 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
     .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")
     .property("R", &spatialSEIRInterface::getR, "Removed Compartment Matrix")
+    .property("S0", &spatialSEIRInterface::getS0, "Initial Susceptible Compartment Matrix")
+    .property("E0", &spatialSEIRInterface::getE0, "Initial Exposed Compartment Matrix")
+    .property("I0", &spatialSEIRInterface::getI0, "Initial Infectious Compartment Matrix")
+    .property("R0", &spatialSEIRInterface::getR0, "Initial Removed Compartment Matrix")
     .property("S_star", &spatialSEIRInterface::getS_star, "Removed to Susceptible Transition Matrix")
     .property("E_star", &spatialSEIRInterface::getE_star, "Susceptible to Exposed Transition Matrix")
     .property("I_star", &spatialSEIRInterface::getI_star, "Exposed to Infectious Transition Matrix")
