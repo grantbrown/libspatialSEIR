@@ -1,4 +1,4 @@
-generateCompartmentProposal = function(I_star, N)
+generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA)
 {
     if (dim(I_star)[1] <= 1)
     {
@@ -16,11 +16,21 @@ generateCompartmentProposal = function(I_star, N)
             stop("N dimension does not match I_star dimension.")
         }
     }
-    S0 = floor(0.95*N[1,])
-    E0 = I_star[1,]
-    I0 = floor(I_star[1,]/2)
-    R0 = N[1,] - floor(S0 + E0 + I0) 
 
+    if (any(is.na(S0)))
+    {
+        S0 = floor(0.95*N[1,])
+    }
+    if (any(is.na(E0)))
+    {
+        E0 = I_star[1,]
+    }
+    if (any(is.na(I0)))
+    {
+        I0 = floor(I_star[1,]/2)
+    }
+   
+    R0 = N[1,] - floor(S0 + E0 + I0) 
     S=E=I=R=S_star=E_star=R_star=I_star*0 
 
     for (tpt in 1:nrow(R))
@@ -68,3 +78,6 @@ generateCompartmentProposal = function(I_star, N)
                 I=I,
                 R=R))
 }
+
+
+

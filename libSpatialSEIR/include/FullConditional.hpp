@@ -116,6 +116,10 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
+            int sliceSampleCompartmentLocation(int loc, ModelContext* context,
+                                               CompartmentalModelMatrix* destCompartment,
+                                               double width);
+
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
     };

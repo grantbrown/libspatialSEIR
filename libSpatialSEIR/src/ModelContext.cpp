@@ -465,27 +465,26 @@ namespace SpatialSEIR
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
-
-
-
-
-
+        /*
         if (verbose){std::cout << "Sampling S0\n";}
         if (useOCL[0] == 0){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}
-        /*
+
+
         if (verbose){std::cout << "Sampling E0\n";}
         if (useOCL[1] == 0){E0_fc -> sampleCPU();}
         else {E0_fc -> sampleOCL();}
 
+
         if (verbose){std::cout << "Sampling I0\n";}
-        if (useOCL[2] == 0){I0_fc -> sampleCPU();}
+        if (useOCL[1] == 0){I0_fc -> sampleCPU();}
         else {I0_fc -> sampleOCL();}
-        
+
         if (verbose){std::cout << "Sampling R0\n";}
         if (useOCL[0] == 0){R0_fc -> sampleCPU();}
         else {R0_fc -> sampleOCL();}
         */
+
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[3] == 0){S_star_fc -> sampleCPU();}
         else {S_star_fc -> sampleOCL();}
@@ -497,11 +496,12 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling R_star\n";}
         if (useOCL[5] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
-        /*
+
+
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[6] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
-        */
+
         if (verbose){std::cout << "Sampling betaPrs\n";}
         if (useOCL[7] == 0){betaPrs_fc -> sampleCPU();}
         else {betaPrs_fc -> sampleOCL();}

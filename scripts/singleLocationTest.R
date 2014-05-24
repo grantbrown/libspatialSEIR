@@ -5,7 +5,7 @@ NYears = 20
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
 
-ThrowAwayTpt = 180
+ThrowAwayTpt = 0
 
 X = matrix(1, ncol = 1)
 Z = cbind(seq(1,NYears*TptPerYear), model.matrix(~as.factor(rep(1:12,NYears)))[,2:TptPerYear])
@@ -225,7 +225,7 @@ logFileList = c(1, # beta
 
 iterationStride = 10000
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(5,5,5,1e-1,1e-1,1e-1,1e-1)
+sliceWidths = c(15,15,15,1e-1,1e-1,1e-1,1e-1)
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
@@ -236,14 +236,14 @@ priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
-steadyStateConstraintPrecision = 0.001
+steadyStateConstraintPrecision = 0.000001
 
 verbose = FALSE 
 debug = FALSE
 
 
 # pretend not to know the true values of things
-proposal = generateCompartmentProposal(I_star, N)
+proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
 #beta = c(-1, rep(0, (length(beta)-1)))
 #betaPrs = c(3, rep(0,(length(betaPrs)-1)))
 #p_ei = 0.8
@@ -290,15 +290,25 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
-
-runSimulation = function(N, batchSize = 1000)
+itrPrint = function(x, wd=8)
 {
+    formatC(x, width = wd, format = "d", flag = "0")
+}
+
+runSimulation = function(N, batchSize = 100)
+{
+    imgNo = 0;
     tryCatch({
         for (i in 1:(N/batchSize))
         {
-            res$simulate(batchSize)
+            imgNo = imgNo + 1 
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
+
+            png(filename = paste("./imgOut/", itrPrint(imgNo), ".png", sep =""), width = 600, height = 1200) 
+                plotEpidemic2()
+            dev.off()
+            res$simulate(batchSize)
             cat(i*batchSize,"\n")
         }}, 
         interrupt = function(interrupt)
