@@ -179,12 +179,12 @@ namespace SpatialSEIR
 
             FC_S0(ModelContext *_context,
                       CompartmentalModelMatrix *_S, 
-                      CompartmentalModelMatrix *_S_star, 
+                      CompartmentalModelMatrix *_E, 
                       CompartmentalModelMatrix *_E_star,
-                      CompartmentalModelMatrix *_R, 
+                      CompartmentalModelMatrix *_I_star, 
                       InitData *_A0,
                       double *_p_se,
-                      double *_p_rs,
+                      double *_p_ei,
                       double sliceWidth);
             virtual ~FC_S0();
             virtual int evalCPU(int startLoc);
@@ -200,12 +200,12 @@ namespace SpatialSEIR
 
             ModelContext** context;
             CompartmentalModelMatrix** S;
-            CompartmentalModelMatrix** S_star;
+            CompartmentalModelMatrix** E;
             CompartmentalModelMatrix** E_star;
-            CompartmentalModelMatrix** R;
+            CompartmentalModelMatrix** I_star;
             InitData** A0;
             double** p_se; 
-            double** p_rs;
+            double** p_ei;
             double* sliceWidth;
             long double* value;
 
@@ -216,13 +216,16 @@ namespace SpatialSEIR
     { 
         public:
             FC_E0(ModelContext *_context,
+                      CompartmentalModelMatrix *_S, 
                       CompartmentalModelMatrix *_E, 
-                      CompartmentalModelMatrix *_R, 
+                      CompartmentalModelMatrix *_I, 
+                      CompartmentalModelMatrix *_E_star,
                       CompartmentalModelMatrix *_I_star,
-                      CompartmentalModelMatrix *_S_star,
+                      CompartmentalModelMatrix *_R_star, 
                       InitData *_A0,
-                      double *_p_rs,
+                      double *_p_ir,
                       double *_p_ei,
+                      double *_p_se,
                       double sliceWidth);
             virtual ~FC_E0(); 
             virtual int evalCPU(int startLoc);
@@ -236,13 +239,16 @@ namespace SpatialSEIR
             virtual void printDebugInfo(int loc);
 
             ModelContext** context;
+            CompartmentalModelMatrix** S;
             CompartmentalModelMatrix** E;
-            CompartmentalModelMatrix** R;
+            CompartmentalModelMatrix** I;
+            CompartmentalModelMatrix** E_star;
             CompartmentalModelMatrix** I_star;
-            CompartmentalModelMatrix** S_star;
+            CompartmentalModelMatrix** R_star;
             InitData** A0;
+            double** p_se;
+            double** p_ir;
             double** p_ei;
-            double** p_rs;
             double* sliceWidth;
             long double* value;
     };
@@ -287,6 +293,44 @@ namespace SpatialSEIR
             double* sliceWidth;
             long double* value;
     };
+
+    class FC_R0 : public InitCompartmentFullConditional
+    {
+        public:
+            FC_R0(ModelContext *_context,
+                      CompartmentalModelMatrix *_R, 
+                      CompartmentalModelMatrix *_S,
+                      CompartmentalModelMatrix *_S_star, 
+                      CompartmentalModelMatrix *_E_star, 
+                      CompartmentalModelMatrix *_R_star,
+                      InitData *_A0,
+                      double *_p_rs,
+                      double *_p_se,
+                      double sliceWidth);
+            virtual ~FC_R0(); 
+            virtual int evalCPU(int startLoc);
+            virtual int evalOCL() ;
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual long double getValue();
+            virtual void setValue(long double value);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int startLoc);
+            virtual void printDebugInfo(int loc);
+
+            ModelContext** context;
+            CompartmentalModelMatrix** R;
+            CompartmentalModelMatrix** S;
+            CompartmentalModelMatrix** S_star;
+            CompartmentalModelMatrix** E_star; 
+            CompartmentalModelMatrix** R_star;
+            InitData** A0;
+            double** p_rs;
+            double** p_se; 
+            double* sliceWidth;
+            long double* value;
+    };
+
 
 
 

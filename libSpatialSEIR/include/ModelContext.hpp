@@ -18,6 +18,7 @@ namespace SpatialSEIR
     class FC_S0;
     class FC_E0;
     class FC_I0;
+    class FC_R0;
     class FC_S_Star;
     class FC_E_Star;
     class FC_R_Star;
@@ -177,6 +178,7 @@ namespace SpatialSEIR
             FC_S0 *S0_fc;
             FC_E0 *E0_fc;
             FC_I0 *I0_fc;
+            FC_R0 *R0_fc;
             FC_S_Star *S_star_fc;
             FC_E_Star *E_star_fc;
             FC_R_Star *R_star_fc;

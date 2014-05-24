@@ -184,25 +184,27 @@ namespace SpatialSEIR
         
 
 
-
         S0_fc = new FC_S0(this,
                           S,
-                          S_star,
+                          E,
                           E_star,
-                          R,
+                          I_star,
                           A0,
                           p_se,
-                          p_rs,
+                          p_ei,
                           *(sliceWidths -> S_starWidth));
 
         E0_fc = new FC_E0(this,
+                          S,
                           E,
-                          R,
+                          I,
+                          E_star,
                           I_star,
-                          S_star,
+                          R_star,
                           A0,
-                          p_rs,
+                          p_ir,
                           p_ei,
+                          p_se,
                           *(sliceWidths -> E_starWidth));
 
         I0_fc = new FC_I0(this, 
@@ -217,6 +219,17 @@ namespace SpatialSEIR
                           p_rs,
                           p_se,
                           *(sliceWidths -> E_starWidth));
+
+        R0_fc = new FC_R0(this,
+                          R,
+                          S,
+                          S_star,
+                          E_star,
+                          R_star,
+                          A0,
+                          p_rs,
+                          p_se, 
+                          *(sliceWidths -> R_starWidth));
 
         S_star_fc = new FC_S_Star(this,
                                   S_star,
@@ -452,11 +465,15 @@ namespace SpatialSEIR
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
-        /*
+
+
+
+
+
         if (verbose){std::cout << "Sampling S0\n";}
         if (useOCL[0] == 0){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}
-
+        /*
         if (verbose){std::cout << "Sampling E0\n";}
         if (useOCL[1] == 0){E0_fc -> sampleCPU();}
         else {E0_fc -> sampleOCL();}
@@ -464,6 +481,10 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling I0\n";}
         if (useOCL[2] == 0){I0_fc -> sampleCPU();}
         else {I0_fc -> sampleOCL();}
+        
+        if (verbose){std::cout << "Sampling R0\n";}
+        if (useOCL[0] == 0){R0_fc -> sampleCPU();}
+        else {R0_fc -> sampleOCL();}
         */
         if (verbose){std::cout << "Sampling S_star\n";}
         if (useOCL[3] == 0){S_star_fc -> sampleCPU();}
@@ -476,12 +497,11 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling R_star\n";}
         if (useOCL[5] == 0){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
-
-
+        /*
         if (verbose){std::cout << "Sampling beta\n";}
         if (useOCL[6] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
-
+        */
         if (verbose){std::cout << "Sampling betaPrs\n";}
         if (useOCL[7] == 0){betaPrs_fc -> sampleCPU();}
         else {betaPrs_fc -> sampleOCL();}
@@ -567,7 +587,14 @@ namespace SpatialSEIR
     void ModelContext::calculateS_givenE_CPU()
     {
         int i;
-        int maxItr = (*(S -> nrow))*(*(S -> ncol));
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+        int maxItr = nLoc*nTpt;
+        for (i = 0; i < nLoc; i++)
+        {
+            (A0 -> S0)[i] = N[i*nTpt] - (A0 -> E0)[i] - (A0 -> I0)[i] - (A0 -> R0)[i];
+        }
+
         for (i = 0; i < maxItr; i++)
         {
             (S->data)[i] = N[i] - (E->data)[i] - (I->data)[i] - (R->data)[i]; 
@@ -577,8 +604,15 @@ namespace SpatialSEIR
     void ModelContext::calculateS_givenE_CPU(int startLoc, int startTime)
     {
         int i,startIdx,idx;
-        startIdx = startTime + startLoc*(*(S->nrow));
+        int nTpt = *(S -> nrow);
+        startIdx = startTime + startLoc*nTpt;
         idx = startIdx;
+        if (startTime == 0)
+        {
+            (A0 -> S0)[startLoc] = (N[startLoc*nTpt] - (A0 -> E0)[startLoc] - (A0 -> I0)[startLoc]
+                                    - (A0 -> R0)[startLoc]);
+        }
+
         for (i = startTime; i < *(S->nrow); i++)
         {
             (S -> data)[idx] = N[idx] - (R->data)[idx] - (E->data)[idx] - (I->data)[idx];  
@@ -611,7 +645,14 @@ namespace SpatialSEIR
     void ModelContext::calculateE_givenI_CPU()
     {
         int i;
-        int maxItr = (*(E -> nrow))*(*(E -> ncol));
+        int nLoc = *(E -> ncol);
+        int nTpt = *(E -> nrow);
+        int maxItr = nLoc*nTpt;
+        for (i = 0; i < nLoc; i++)
+        {
+            (A0 -> E0)[i] = N[i*nTpt] - (A0 -> S0)[i] - (A0 -> I0)[i] - (A0 -> R0)[i];
+        }
+
         for (i = 0; i < maxItr; i++)
         {
             (E->data)[i] = N[i] - (S->data)[i] - (I->data)[i] - (R->data)[i]; 
@@ -622,8 +663,15 @@ namespace SpatialSEIR
     void ModelContext::calculateE_givenI_CPU(int startLoc, int startTime)
     {
         int i,startIdx,idx;
-        startIdx = startTime + startLoc*(*(E->nrow));
+        int nTpt = (*(E -> nrow));
+        startIdx = startTime + startLoc*nTpt;
         idx = startIdx;
+
+        if (startTime == 0)
+        {
+            (A0 -> E0)[startLoc] = (N[idx] - (A0 -> S0)[startLoc] - (A0 -> I0)[startLoc]
+                                    - (A0 -> R0)[startLoc]);
+        }
         for (i = startTime; i < *(S->nrow); i++)
         {
             (E -> data)[idx] = N[idx] - (S->data)[idx] - (R->data)[idx] - (I->data)[idx];  
@@ -656,7 +704,14 @@ namespace SpatialSEIR
     void ModelContext::calculateI_givenR_CPU()
     {
         int i;
-        int maxItr = (*(I -> nrow))*(*(I -> ncol));
+        int nLoc = *(I -> ncol);
+        int nTpt = *(I -> nrow);
+        int maxItr = nLoc*nTpt;
+        for (i = 0; i < nLoc; i++)
+        {
+            (A0 -> I0)[i] = N[i*nTpt] - (A0 -> S0)[i] - (A0 -> E0)[i] - (A0 -> R0)[i];
+        }
+
         for (i = 0; i < maxItr; i++)
         {
             (I->data)[i] = N[i] - (S->data)[i] - (E->data)[i] - (R->data)[i]; 
@@ -666,8 +721,15 @@ namespace SpatialSEIR
     void ModelContext::calculateI_givenR_CPU(int startLoc, int startTime)
     {
         int i,startIdx,idx;
-        startIdx = startTime + startLoc*(*(E->nrow));
+        int nTpt = (*(E -> nrow));
+        startIdx = startTime + startLoc*nTpt;
         idx = startIdx;
+        if (startTime == 0)
+        {
+            (A0 -> I0)[startLoc] = (N[idx] - (A0 -> S0)[startLoc] - (A0 -> E0)[startLoc]
+                                    - (A0 -> R0)[startLoc]);
+        }
+
         for (i = startTime; i < *(S->nrow); i++)
         {
             (I -> data)[idx] = N[idx] - (S->data)[idx] - (R->data)[idx] - (E->data)[idx];  
@@ -727,8 +789,8 @@ namespace SpatialSEIR
         idx = startIdx;
         if (startTime == 0)
         {
-            (A0 -> R0)[startLoc] = (N[startLoc*nTpt] - (A0 -> S0)[startLoc*nTpt] - (A0 -> E0)[startLoc*nTpt]
-                                    - (A0 -> I0)[startLoc*nTpt]);
+            (A0 -> R0)[startLoc] = (N[startLoc*nTpt] - (A0 -> S0)[startLoc] - (A0 -> E0)[startLoc]
+                                    - (A0 -> I0)[startLoc]);
         }
         for (i = startTime; i < *(S->nrow); i++)
         {
@@ -959,6 +1021,7 @@ namespace SpatialSEIR
         delete S0_fc;
         delete E0_fc;
         delete I0_fc;
+        delete R0_fc;
         delete S_star_fc;
         delete E_star_fc;
         delete R_star_fc;
