@@ -116,6 +116,10 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
+            int jointSampleCompartmentLocation(int loc, int batchSize, int numBatches, int* batchCache, ModelContext* context,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width); 
+
             int sliceSampleCompartmentLocation(int loc, ModelContext* context,
                                                CompartmentalModelMatrix* destCompartment,
                                                double width);

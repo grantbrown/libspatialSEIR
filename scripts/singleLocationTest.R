@@ -236,7 +236,7 @@ priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
-steadyStateConstraintPrecision = 0.000001
+steadyStateConstraintPrecision = 1e-10
 
 verbose = FALSE 
 debug = FALSE
@@ -257,10 +257,10 @@ res = spatialSEIRModel(compMatDim,
                       E0,
                       I0,
                       R0,
-                      S_star,
-                      E_star,
+                      proposal$S_star,
+                      proposal$E_star,
                       I_star,
-                      R_star,
+                      proposal$R_star,
                       X,
                       Z,
                       X_prs,
