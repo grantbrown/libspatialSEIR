@@ -31,8 +31,10 @@ namespace SpatialSEIR
             std::vector<cl::Platform> *platforms;
             std::vector<cl::Device> *platformDevices, 
                                     *allDevices, 
-                                    *ctxDevices;
+                                    *ctxDevices; 
             std::vector<std::string> *deviceNames;
+            std::vector<std::vector<size_t> > *workSizes;
+            std::vector<cl_uint> *doublePrecision;
     };
 }
 

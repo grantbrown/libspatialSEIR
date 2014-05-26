@@ -48,6 +48,7 @@ namespace SpatialSEIR
         isPopulated = new int; *isPopulated = 0;
         singleLocation = new int; *singleLocation = -1;
         numIterations = new int; *numIterations = 0;
+        oclProvider = new OCLProvider();
     }
 
     void ModelContext::setRandomSeed(unsigned int seedValue)
@@ -1067,6 +1068,7 @@ namespace SpatialSEIR
         delete[] p_rs;
         delete rho;
         delete config;
+        delete oclProvider;
     }
 }
 

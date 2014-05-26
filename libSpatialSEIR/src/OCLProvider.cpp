@@ -13,6 +13,7 @@
 // Mostly placeholder code, based on Scarpino (2012)
 SpatialSEIR::OCLProvider::OCLProvider()
 {
+    std::cout << "Setting up OpenCL Interface\n";
     try
     {
         platforms = new std::vector<cl::Platform>();
@@ -20,6 +21,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
         allDevices = new std::vector<cl::Device>();
         ctxDevices = new std::vector<cl::Device>();
         deviceNames = new std::vector<std::string>();
+        workSizes = new std::vector<std::vector<size_t> >();
+        doublePrecision = new std::vector<cl_uint>();
     }
     catch(cl::Error e)
     {
@@ -29,7 +32,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
     }
 
     cl_uint i;
-
+    cl_uint j;
+    std::string clExt;
     try
     {
         cl::Platform::get(platforms);
@@ -39,9 +43,18 @@ SpatialSEIR::OCLProvider::OCLProvider()
         for (i = 0; i<ctxDevices -> size();i++)
         {
             deviceNames -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_NAME>());
-            cout << "Adding Device: " 
-                 << (*deviceNames)[i]
-                 << endl;
+            workSizes -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>());
+            clExt = (*ctxDevices)[i].getInfo<CL_DEVICE_EXTENSIONS>();
+            doublePrecision -> push_back((clExt.find("cl_khr_fp64") != std::string::npos));
+            cout << "   Adding Device: " 
+                 << (*deviceNames)[i] << endl;
+            cout << "      Workgroup Sizes: ";
+            for (j = 0; j < (workSizes[i].size()); j++)
+            {
+                cout << ((*workSizes)[i])[j] << ", ";
+            }
+            cout << endl;
+            cout << "      Supports Double Precision: " << (*doublePrecision)[i] << endl;
         }
     }
     catch(cl::Error e)
