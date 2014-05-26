@@ -44,6 +44,13 @@ namespace SpatialSEIR
     struct gammaArgs;
     struct sliceParameters;
     struct priorControl;
+    struct modelConfiguration
+    {
+        int reinfectionMode;
+        int samplingMode; 
+    };
+
+
 
     class ModelContext
     {
@@ -65,8 +72,8 @@ namespace SpatialSEIR
                           double* rho, double* beta, 
                           double* p_ei, double* p_ir, double* betaPrs, 
                           int* N, sliceParameters* sliceWidths,
-                          priorControl* priorInformation);
-
+                          priorControl* priorInformation,
+                          modelConfiguration _config);
 
             // Method: calculateS
             // Accesses: A0, S_star, E_star
@@ -204,6 +211,7 @@ namespace SpatialSEIR
             DistanceMatrix* rawDistMat;
             DistanceMatrix* scaledDistMat;
             CompartmentalModelMatrix* tmpContainer;
+            modelConfiguration* config;
 
             double* beta;
             double* betaPrs;

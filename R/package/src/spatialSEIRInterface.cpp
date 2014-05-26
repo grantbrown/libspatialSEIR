@@ -60,7 +60,8 @@ class spatialSEIRInterface
                      SEXP steadyStateConstraintPrecision_,
                      SEXP verboseFlag,
                      SEXP debugFlag,
-                     SEXP sliceWidths);
+                     SEXP sliceWidths,
+                     SEXP reinfectionMode);
         // Simulation Functions
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);
@@ -519,7 +520,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP steadyStateConstraintPrecision_,
                      SEXP verboseFlag,
                      SEXP debugFlag,
-                     SEXP sliceWidths)
+                     SEXP sliceWidths,
+                     SEXP reinfectionMode)
 {
     int err = 0;
     Rcpp::Rcout << "Wrapping input data in Rcpp vectors.\n";
@@ -565,6 +567,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
     Rcpp::NumericVector steadyStateConstraintPrecision(steadyStateConstraintPrecision_);
     Rcpp::NumericVector sliceParams(sliceWidths);
+
+    Rcpp::IntegerVector reinfectMode(reinfectionMode);
 
     chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
@@ -705,6 +709,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     compartmentArgs S_starArgs, E_starArgs, I_starArgs, R_starArgs;
     gammaArgs gammaFCArgs;
     sliceParameters sliceParamStruct;
+    modelConfiguration modelConfig;
+    modelConfig.reinfectionMode = reinfectMode[0];
+    modelConfig.samplingMode = 1;
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];
@@ -771,7 +778,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     context -> populate(&A0, &xArgs, &xPrsArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
                         rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
-                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues);
+                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,
+                        modelConfig);
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,

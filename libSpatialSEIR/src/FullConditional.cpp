@@ -110,6 +110,25 @@ namespace SpatialSEIR
         delete numLocations;
     }
 
+
+    int CompartmentFullConditional::sampleCompartment_CPU(ModelContext* context,
+                                                       CompartmentalModelMatrix* starCompartment,
+                                                       double width)
+    {
+        int i;
+        int nLoc = *(starCompartment -> ncol);        
+        // Main loop: 
+        for (i = 0; i < nLoc; i++)
+        {
+
+            sampleCompartmentLocation(i, context, starCompartment, width);
+            //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
+        }
+
+        return(0);
+    }
+
+    /*
     int CompartmentFullConditional::sampleCompartment_CPU(ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,
                                                        double width)
@@ -118,7 +137,7 @@ namespace SpatialSEIR
         int i;
         int nLoc = *(starCompartment -> ncol);        
         int nTpts = *(starCompartment -> nrow);
-        int batchSize = 4;
+        int batchSize = 5;
         int numBatches = nTpts % batchSize; 
         int* batchCache = new int[batchSize];
         // Main loop: 
@@ -128,8 +147,10 @@ namespace SpatialSEIR
             //sampleCompartmentLocation(i, context, starCompartment, width);
             //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
         }
+        delete batchCache;
         return(0);
     }
+    */
 
     int CompartmentFullConditional::sampleCompartmentLocation(int i, ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,

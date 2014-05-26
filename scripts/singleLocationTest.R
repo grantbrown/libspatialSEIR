@@ -5,7 +5,7 @@ NYears = 20
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
 
-ThrowAwayTpt = 0
+ThrowAwayTpt = 220
 
 X = matrix(1, ncol = 1)
 Z = cbind(seq(1,NYears*TptPerYear), model.matrix(~as.factor(rep(1:12,NYears)))[,2:TptPerYear])
@@ -24,7 +24,8 @@ p_se = numeric(MaxTpt)
 p_ei = 0.9
 p_ir = 0.9
 
-trueBetaRS = c(2.5, -1, 0.5) 
+#trueBetaRS = c(2.5, -1, 0.5) 
+trueBetaRS = c(2.5, -1, 0.0) 
 eta_rs = X_prs %*% trueBetaRS
 p_rs = exp(-eta_rs)
 
@@ -135,10 +136,10 @@ plotEpidemic2 = function()
 
 if (ThrowAwayTpt != 0)
 {
-    S0 = S[,ThrowAwayTpt]
-    E0 = E[,ThrowAwayTpt]
-    I0 = I[,ThrowAwayTpt]
-    R0 = R[,ThrowAwayTpt]
+    S0 = S[,ThrowAwayTpt+1]
+    E0 = E[,ThrowAwayTpt+1]
+    I0 = I[,ThrowAwayTpt+1]
+    R0 = R[,ThrowAwayTpt+1]
 }
 
 S_star = S_star[,(ThrowAwayTpt + 1):ncol(S_star), drop = FALSE]
@@ -229,14 +230,21 @@ sliceWidths = c(15,15,15,1e-1,1e-1,1e-1,1e-1)
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1
-priorAlpha_pEI = 1;
-priorBeta_pEI = 1;
-priorAlpha_pIR = 1;
-priorBeta_pIR = 1;
+priorAlpha_pEI = 10000;
+priorBeta_pEI = 1000;
+priorAlpha_pIR = 10000;
+priorBeta_pIR = 1000;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
-steadyStateConstraintPrecision = 1e-10
+
+reinfectionMode = 1
+# Mode 1: estimate betaP_RS, S_star
+# Mode 2: fix betaP_RS, estimate S_star
+# Mode 3: fix S_star, ignore betaP_RS
+# Mode 4: No reinfection
+
+steadyStateConstraintPrecision = 0.01
 
 verbose = FALSE 
 debug = FALSE
@@ -257,10 +265,10 @@ res = spatialSEIRModel(compMatDim,
                       E0,
                       I0,
                       R0,
-                      proposal$S_star,
-                      proposal$E_star,
+                      S_star,
+                      E_star,
                       I_star,
-                      proposal$R_star,
+                      R_star,
                       X,
                       Z,
                       X_prs,
@@ -295,7 +303,7 @@ itrPrint = function(x, wd=8)
     formatC(x, width = wd, format = "d", flag = "0")
 }
 
-runSimulation = function(N, batchSize = 100)
+runSimulation = function(N, batchSize = 1000)
 {
     imgNo = 0;
     tryCatch({
