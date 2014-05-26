@@ -999,8 +999,7 @@ namespace SpatialSEIR
                 else
                 {
                     output +=  (ln_1m_p_ir*(I_val) +
-                                std::log(1-p_rs_val)*(R_val) +
-                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                                ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
                                 ((*context) -> random -> choose(I_val, Rstar_val)));
                 }
                 compIdx++;
@@ -1106,9 +1105,133 @@ namespace SpatialSEIR
         return(0);
     }
 
-    void FC_I0::printDebugInfo(int loc)
+    void FC_I0::printDebugInfo(int startLoc)
     {
-        std::cout << "Error Sampling I0, location: " << loc << ", value: " << ((*A0) -> I0)[loc] << "\n";
+        std::cout << "Error Sampling I0, location: " << startLoc << ", value: " << ((*A0) -> I0)[startLoc] << "\n";
+
+        int i,j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
+        long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        double ln_1m_p_ir = std::log(1-(**p_ir));
+        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
+
+        if (((*A0) -> I0)[startLoc] < 0 || 
+            ((*A0) -> R0)[startLoc] < 0)
+        {
+            std::cout << "I0 < 0: " << (((*A0) -> I0)[startLoc]) << "\n"; 
+            throw(-1);
+        }
+        compIdx = startLoc*nTpts;
+
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
+        {
+
+            for (j = 0; j < nTpts; j++)
+            {
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                Sstar_val = ((*S_star)->data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+                p_rs_val = (*p_rs)[j];
+
+                if (Rstar_val > I_val || 
+                        Sstar_val > R_val)
+                {
+                    std::cout << "Bounds error detected at time " << j << "\n";
+                    throw(-1) ;
+                }
+                else
+                {
+                    output +=  (ln_1m_p_ir*(I_val) +
+                                ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                    if (!std::isfinite(output))
+                    {
+                        std::cout << "Computation error detected at time " << j << "\n";
+                        std::cout << "S_star: " << Sstar_val << "\n";
+                        std::cout << "R_star: " << Rstar_val << "\n";
+                        std::cout << "R: " << R_val << "\n";
+                        std::cout << "I: " << I_val << "\n";
+                        std::cout << "p_rs: " << p_rs_val << "\n";
+                        throw(-1);
+                    }
+                }
+                compIdx++;
+            } 
+        }
+        else
+        {
+            for (j = 0; j < nTpts; j++)
+            {
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+
+                if (Rstar_val > I_val)
+                {
+                    std::cout << "Bounds error detected at time " << j << "\n";
+                    throw(-1);
+                }
+                else
+                {
+                    output +=  (ln_1m_p_ir*(I_val) +
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                    if (!std::isfinite(output))
+                    {
+                        std::cout << "Computation error detected at time " << j << "\n";
+                        std::cout << "R_star: " << Rstar_val << "\n";
+                        std::cout << "R: " << R_val << "\n";
+                        std::cout << "I: " << I_val << "\n";
+                        throw(-1);
+                    }
+
+                }
+                compIdx++;
+            } 
+
+        }
+
+        // p_se changes, so need to look at p_se component for all locations and 
+        // time points after 0
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts;
+            for (j = 0; j< nTpts; j++)
+            {
+
+                p_se_val = (*p_se)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                if (p_se_val > 1 || p_se_val < 0)
+                {
+                    std::cout << "p_se bounds error detected at time " << j << ": " << p_se_val << "\n";
+                    throw(-1);
+                }
+
+                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
+                if (!std::isfinite(output))
+                {
+                    std::cout << "p_se computation error detected at time " << j << "\n";
+                    std::cout << "S: " << S_val << "\n";
+                    std::cout << "E_star: " << Estar_val << "\n";
+                    std::cout << "p_se: " << p_se_val << "\n";
+                }
+                compIdx ++; 
+            }
+        }
+
+        if (!std::isfinite(output))
+        {
+
+            throw(-1);
+        }
+        return;
     }
 
     /*
@@ -1897,8 +2020,7 @@ namespace SpatialSEIR
                 {
                     output += (ln_p_ir*Rstar_val +
                                 ln_1m_p_ir*(I_val - Rstar_val) +
-                                std::log(1-p_rs_val)*(R_val) +
-                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                                ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
                                 ((*context) -> random -> choose(I_val, Rstar_val)));
                 }
                 compIdx++;
@@ -2017,8 +2139,7 @@ namespace SpatialSEIR
                 {
                     output += (ln_p_ir*Rstar_val +
                                 ln_1m_p_ir*(I_val - Rstar_val) +
-                                std::log(1-p_rs_val)*(R_val) +
-                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                                ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
                                 ((*context) -> random -> choose(I_val, Rstar_val)));
                     if (!std::isfinite(output))
                     {

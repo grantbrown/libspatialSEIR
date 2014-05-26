@@ -115,6 +115,10 @@ namespace SpatialSEIR
         {
             return((x==0 ? 0 : -INFINITY ));
         }
+        if (p == 1.0)
+        {
+            return((x==n ? 0 : -INFINITY));
+        }
         return(choose(n,x) + std::log(p)*x + (std::log(1-p))*(n-x)); 
     }
     double* RandomNumberProvider::uniform(int n)
