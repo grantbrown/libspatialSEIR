@@ -44,13 +44,13 @@ betaPrs = sim_results$true_beta_pRS
 betaPrsPriorPrecision = 1
 
 
-S0 = S[throwAwayTpts,]
-E0 = E[throwAwayTpts,]
-I0 = I[throwAwayTpts,]
-R0 = R[throwAwayTpts,]
-S_star0 = S_star[throwAwayTpts,]
-E_star0 = E_star[throwAwayTpts,]
-I_star0 = I_star[throwAwayTpts,]
+S0 = S[throwAwayTpts + 1,]
+E0 = E[throwAwayTpts + 1,]
+I0 = I[throwAwayTpts + 1,]
+R0 = R[throwAwayTpts + 1,]
+
+
+
 R_star0 = R_star[throwAwayTpts,]
 
 S_star = S_star[(throwAwayTpts+1):nrow(S_star),]
@@ -164,6 +164,11 @@ priorBeta_pEI = 100;
 priorAlpha_pIR = 1000;
 priorBeta_pIR = 100;
 
+reinfectionMode = 1;
+# Mode 1: estimate betaP_RS, S_star
+# Mode 2: fix betaP_RS, estimate S_star
+# Mode 3: no reinfection
+
 steadyStateConstraintPrecision = 0.01
 
 res = spatialSEIRModel(compMatDim,
@@ -174,10 +179,6 @@ res = spatialSEIRModel(compMatDim,
                       E0,
                       I0,
                       R0,
-                      S_star0,
-                      E_star0,
-                      I_star0,
-                      R_star0,
                       S_star,
                       E_star,
                       I_star,
@@ -207,10 +208,11 @@ res = spatialSEIRModel(compMatDim,
                       steadyStateConstraintPrecision,
                       verbose,
                       debug, 
-                      sliceWidths)
+                      sliceWidths,
+                      reinfectionMode)
 
 res$setRandomSeed(123123)
-runSimulation = function(N, batchSize = 1)
+runSimulation = function(N, batchSize = 10)
 {
     tryCatch({
         for (i in 1:(N/batchSize))
@@ -226,5 +228,5 @@ runSimulation = function(N, batchSize = 1)
     })
 }
 
-runSimulation(5)
+runSimulation(10000)
 

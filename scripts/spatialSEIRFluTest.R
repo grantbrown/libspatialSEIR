@@ -111,21 +111,16 @@ E0 = I_star[,1]
 I0 = floor(sqrt(Y[,1])/2)
 R0 = N[,1] - floor(S0 + E0 + I0)
 
-S_star0 = rbinom(rep(1,length(S0)), R0, 0.05)
-E_star0 = I_star[,1]
-I_star0 = rbinom(rep(1,length(S0)), E0, 0.8)
-R_star0 = rbinom(rep(1,length(S0)), I0, 0.75)
-
 S = E = I = R = S_star = E_star = R_star = I_star*0
 
 for (tpt in 1:ncol(R))
 {
     if (tpt == 1)
     {
-        S[,1] = S0 + S_star0 - E_star0
-        E[,1] = E0 + E_star0 - I_star0
-        I[,1] = I0 + I_star0 - R_star0
-        R[,1] = R0 + R_star0 - S_star0
+        S[,1] = S0
+        E[,1] = E0
+        I[,1] = I0
+        R[,1] = R0
         S_star[,1] = rbinom(rep(1, length(S0)), R[,1], 0.05)
         E_star[,1] = rbinom(rep(1, length(S0)), I_star[,2], 1)
         # I_star fixed
@@ -160,11 +155,6 @@ S0 = t(S0)
 E0 = t(E0)
 I0 = t(I0)
 R0 = t(R0)
-
-S_star0 = t(S_star0)
-E_star0 = t(E_star0)
-I_star0 = t(I_star0)
-R_star0 = t(R_star0)
 
 S_star = t(S_star)
 E_star = t(E_star)
@@ -261,6 +251,11 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 verbose = FALSE
 debug = FALSE
 
+reinfectionMode = 1
+# Mode 1: estimate betaP_RS, S_star
+# Mode 2: fix betaP_RS, estimate S_star
+# Mode 3+: No reinfection
+
 steadyStateConstraintPrecision = 0.01
 
 res = spatialSEIRModel(compMatDim,
@@ -271,10 +266,6 @@ res = spatialSEIRModel(compMatDim,
                       E0,
                       I0,
                       R0,
-                      S_star0,
-                      E_star0,
-                      I_star0,
-                      R_star0,
                       S_star,
                       E_star,
                       I_star,
@@ -304,7 +295,8 @@ res = spatialSEIRModel(compMatDim,
                       steadyStateConstraintPrecision,
                       verbose,
                       debug, 
-                      sliceWidths)
+                      sliceWidths,
+                      reinfectionMode)
 
 
 res$setRandomSeed(123123)
