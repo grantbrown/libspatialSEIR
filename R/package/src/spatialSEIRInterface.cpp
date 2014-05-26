@@ -673,6 +673,19 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "There are 32 chain output options, please don't leave any blank.\n";
         throw(-1);
     }
+    if (reinfectMode[0] == 4)
+    {
+        int maxItr = (compartmentDimensions[0]*compartmentDimensions[1]); 
+        int i;
+        for (i = 0; i < maxItr; i++)
+        {
+            if (S_star[i] != 0)
+            {
+                Rcpp::Rcout << "Error: reinfectionMode indicates that no reinfection shoul occur, but nonzero S_star provided\n";
+                throw(-1);
+            }
+        }
+    }
 
 
 

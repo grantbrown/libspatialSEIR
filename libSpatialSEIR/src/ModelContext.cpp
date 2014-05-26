@@ -79,6 +79,7 @@ namespace SpatialSEIR
         // Allocate space for the transition probabilities
         config = new modelConfiguration();
         *config = config_;
+        std::cout << "RM: " <<  config -> reinfectionMode << "\n";
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         p_se_components = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
@@ -489,10 +490,13 @@ namespace SpatialSEIR
         if (useOCL[3] == 0){R0_fc -> sampleCPU();}
         else {R0_fc -> sampleOCL();}
         */
-
-        if (verbose){std::cout << "Sampling S_star\n";}
-        if (useOCL[4] == 0){S_star_fc -> sampleCPU();}
-        else {S_star_fc -> sampleOCL();}
+    
+        if ((config -> reinfectionMode) <= 2)
+        {
+            if (verbose){std::cout << "Sampling S_star\n";}
+            if (useOCL[4] == 0){S_star_fc -> sampleCPU();}
+            else {S_star_fc -> sampleOCL();}
+        }
 
         if (verbose){std::cout << "Sampling E_star\n";}
         if (useOCL[5] == 0){E_star_fc -> sampleCPU();}
@@ -506,9 +510,12 @@ namespace SpatialSEIR
         if (useOCL[7] == 0){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
 
-        if (verbose){std::cout << "Sampling betaPrs\n";}
-        if (useOCL[8] == 0){betaPrs_fc -> sampleCPU();}
-        else {betaPrs_fc -> sampleOCL();}
+        if ((config -> reinfectionMode) == 1)
+        {
+            if (verbose){std::cout << "Sampling betaPrs\n";}
+            if (useOCL[8] == 0){betaPrs_fc -> sampleCPU();}
+            else {betaPrs_fc -> sampleOCL();}
+        }
 
         if (verbose){std::cout << "Sampling p_ei\n";}
         if (useOCL[9] == 0){p_ei_fc -> sampleCPU();}
@@ -1060,6 +1067,7 @@ namespace SpatialSEIR
         delete p_ir;
         delete[] p_rs;
         delete rho;
+        delete config;
     }
 }
 

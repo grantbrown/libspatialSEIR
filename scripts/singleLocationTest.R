@@ -294,7 +294,8 @@ res = spatialSEIRModel(compMatDim,
                       steadyStateConstraintPrecision,
                       verbose,
                       debug, 
-                      sliceWidths)
+                      sliceWidths,
+                      reinfectionMode)
 
 
 res$setRandomSeed(123123)
