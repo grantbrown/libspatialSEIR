@@ -241,8 +241,7 @@ betaPriorPrecision = 0.1
 reinfectionMode = 1
 # Mode 1: estimate betaP_RS, S_star
 # Mode 2: fix betaP_RS, estimate S_star
-# Mode 3: fix S_star, ignore betaP_RS
-# Mode 4: No reinfection
+# Mode 3+: No reinfection
 
 steadyStateConstraintPrecision = 0.01
 

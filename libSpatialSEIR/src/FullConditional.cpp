@@ -976,32 +976,58 @@ namespace SpatialSEIR
             *value = -INFINITY;
             return(-1);
         }
-
-
         compIdx = startLoc*nTpts;
-        for (j = 0; j < nTpts; j++)
-        {
-            Rstar_val = ((*R_star) -> data)[compIdx];
-            Sstar_val = ((*S_star)->data)[compIdx];
-            R_val = ((*R) ->data)[compIdx];
-            I_val = ((*I) ->data)[compIdx];
-            p_rs_val = (*p_rs)[j];
 
-            if (Rstar_val > I_val || 
-                    Sstar_val > R_val)
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
+        {
+
+            for (j = 0; j < nTpts; j++)
             {
-                *value = -INFINITY;
-                return(-1);
-            }
-            else
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                Sstar_val = ((*S_star)->data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+                p_rs_val = (*p_rs)[j];
+
+                if (Rstar_val > I_val || 
+                        Sstar_val > R_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output +=  (ln_1m_p_ir*(I_val) +
+                                std::log(1-p_rs_val)*(R_val) +
+                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                }
+                compIdx++;
+            } 
+        }
+        else
+        {
+            for (j = 0; j < nTpts; j++)
             {
-                output +=  (ln_1m_p_ir*(I_val) +
-                            std::log(1-p_rs_val)*(R_val) +
-                            ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
-                            ((*context) -> random -> choose(I_val, Rstar_val)));
-            }
-            compIdx++;
-        } 
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+
+                if (Rstar_val > I_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output +=  (ln_1m_p_ir*(I_val) +
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                }
+                compIdx++;
+            } 
+
+        }
 
         // p_se changes, so need to look at p_se component for all locations and 
         // time points after 0
@@ -1163,28 +1189,56 @@ namespace SpatialSEIR
         }
 
         compIdx = startLoc*nTpts;
-        for (j = 0; j < nTpts; j++)
+
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
         {
-            Estar_val = ((*E_star) -> data)[compIdx];
-            Sstar_val = ((*S_star)->data)[compIdx];
-            R_val = ((*R) ->data)[compIdx];
-            S_val = ((*S) ->data)[compIdx];
-            p_rs_val = (*p_rs)[j];
-
-            if (Estar_val > S_val || 
-                    Sstar_val > R_val)
+            for (j = 0; j < nTpts; j++)
             {
-                *value = -INFINITY;
-                return(-1);
-            }
-            else
-            {
-                output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) + 
-                           ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
+                Estar_val = ((*E_star) -> data)[compIdx];
+                Sstar_val = ((*S_star)->data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                S_val = ((*S) ->data)[compIdx];
+                p_rs_val = (*p_rs)[j];
 
-            }
-            compIdx++;
-        } 
+                if (Estar_val > S_val || 
+                        Sstar_val > R_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) + 
+                               ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
+
+                }
+                compIdx++;
+            } 
+        }
+        else 
+        {
+            for (j = 0; j < nTpts; j++)
+            {
+                Estar_val = ((*E_star) -> data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                S_val = ((*S) ->data)[compIdx];
+                p_rs_val = (*p_rs)[j];
+
+                if (Estar_val > S_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)));
+
+                }
+                compIdx++;
+            } 
+
+        }
 
         if (!std::isfinite(output))
         {
@@ -1822,30 +1876,57 @@ namespace SpatialSEIR
         int64_t aDiff; 
 
         compIdx = startLoc*nTpts + startTime;
-        for (j = startTime; j < nTpts; j++)
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
         {
-            Rstar_val = ((*R_star) -> data)[compIdx];
-            Sstar_val = ((*S_star)->data)[compIdx];
-            R_val = ((*R) ->data)[compIdx];
-            I_val = ((*I) ->data)[compIdx];
-            p_rs_val = (*p_rs)[j];
+            for (j = startTime; j < nTpts; j++)
+            {
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                Sstar_val = ((*S_star)->data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+                p_rs_val = (*p_rs)[j];
 
-            if (Rstar_val < 0 || Rstar_val > I_val || 
-                    Sstar_val > R_val)
+                if (Rstar_val < 0 || Rstar_val > I_val || 
+                        Sstar_val > R_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (ln_p_ir*Rstar_val +
+                                ln_1m_p_ir*(I_val - Rstar_val) +
+                                std::log(1-p_rs_val)*(R_val) +
+                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                }
+                compIdx++;
+            } 
+        }
+        else
+        {
+            for (j = startTime; j < nTpts; j++)
             {
-                *value = -INFINITY;
-                return(-1);
-            }
-            else
-            {
-                output += (ln_p_ir*Rstar_val +
-                            ln_1m_p_ir*(I_val - Rstar_val) +
-                            std::log(1-p_rs_val)*(R_val) +
-                            ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
-                            ((*context) -> random -> choose(I_val, Rstar_val)));
-            }
-            compIdx++;
-        } 
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+
+                if (Rstar_val < 0 || Rstar_val > I_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (ln_p_ir*Rstar_val +
+                                ln_1m_p_ir*(I_val - Rstar_val) +
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                }
+                compIdx++;
+            } 
+
+        }
 
         // p_se changes, so need to look at p_se component for all locations and 
         // time points after startTime
@@ -1909,47 +1990,88 @@ namespace SpatialSEIR
         int64_t aDiff; 
 
         compIdx = startLoc*nTpts + startTime;
-        for (j = startTime; j < nTpts; j++)
+        if ((*context) -> config -> reinfectionMode <= 2)
         {
-            Rstar_val = ((*R_star) -> data)[compIdx];
-            Sstar_val = ((*S_star)->data)[compIdx];
-            Estar_val = ((*E_star) -> data)[compIdx];
-            R_val = ((*R) ->data)[compIdx];
-            I_val = ((*I) ->data)[compIdx];
-            S_val = ((*S)->data)[compIdx];
-            p_rs_val = (*p_rs)[j];
-
-            if (Rstar_val < 0 || Rstar_val > I_val || 
-                    Sstar_val > R_val)
+            for (j = startTime; j < nTpts; j++)
             {
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                Sstar_val = ((*S_star)->data)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                p_rs_val = (*p_rs)[j];
 
-                std::cout << "Bounds error detected, time " << j << "\n";
-                std::cout << "S_star: " << Sstar_val << "\n";
-                std::cout << "R_star: " << Rstar_val << "\n";
-                std::cout << "I: " << I_val << "\n";
-                std::cout << "R: " << R_val << "\n";
-                return;
-            }
-            else
-            {
-                output += (ln_p_ir*Rstar_val +
-                            ln_1m_p_ir*(I_val - Rstar_val) +
-                            std::log(1-p_rs_val)*(R_val) +
-                            ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
-                            ((*context) -> random -> choose(I_val, Rstar_val)));
-                if (!std::isfinite(output))
+                if (Rstar_val < 0 || Rstar_val > I_val || 
+                        Sstar_val > R_val)
                 {
-                    std::cout << "Calculation Error Detected, time " << j << "\n";
+
+                    std::cout << "Bounds error detected, time " << j << "\n";
                     std::cout << "S_star: " << Sstar_val << "\n";
                     std::cout << "R_star: " << Rstar_val << "\n";
                     std::cout << "I: " << I_val << "\n";
                     std::cout << "R: " << R_val << "\n";
-                    std::cout << "log(p_ir): " << ln_p_ir << "\n";
                     return;
                 }
-            }
-            compIdx++;
-        } 
+                else
+                {
+                    output += (ln_p_ir*Rstar_val +
+                                ln_1m_p_ir*(I_val - Rstar_val) +
+                                std::log(1-p_rs_val)*(R_val) +
+                                ((*context) -> random -> choosePartial(R_val, Sstar_val)) +
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                    if (!std::isfinite(output))
+                    {
+                        std::cout << "Calculation Error Detected, time " << j << "\n";
+                        std::cout << "S_star: " << Sstar_val << "\n";
+                        std::cout << "R_star: " << Rstar_val << "\n";
+                        std::cout << "I: " << I_val << "\n";
+                        std::cout << "R: " << R_val << "\n";
+                        std::cout << "log(p_ir): " << ln_p_ir << "\n";
+                        return;
+                    }
+                }
+                compIdx++;
+            } 
+        }
+        else 
+        {
+            for (j = startTime; j < nTpts; j++)
+            {
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+
+                if (Rstar_val < 0 || Rstar_val > I_val)
+                {
+
+                    std::cout << "Bounds error detected, time " << j << "\n";
+                    std::cout << "R_star: " << Rstar_val << "\n";
+                    std::cout << "I: " << I_val << "\n";
+                    std::cout << "R: " << R_val << "\n";
+                    return;
+                }
+                else
+                {
+                    output += (ln_p_ir*Rstar_val +
+                                ln_1m_p_ir*(I_val - Rstar_val) +
+                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                    if (!std::isfinite(output))
+                    {
+                        std::cout << "Calculation Error Detected, time " << j << "\n";
+                        std::cout << "R_star: " << Rstar_val << "\n";
+                        std::cout << "I: " << I_val << "\n";
+                        std::cout << "R: " << R_val << "\n";
+                        std::cout << "log(p_ir): " << ln_p_ir << "\n";
+                        return;
+                    }
+                }
+                compIdx++;
+            } 
+
+        }
 
         // p_se changes, so need to look at p_se component for all locations and 
         // time points after startTime

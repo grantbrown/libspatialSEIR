@@ -79,7 +79,6 @@ namespace SpatialSEIR
         // Allocate space for the transition probabilities
         config = new modelConfiguration();
         *config = config_;
-        std::cout << "RM: " <<  config -> reinfectionMode << "\n";
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         p_se_components = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];

@@ -673,7 +673,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "There are 32 chain output options, please don't leave any blank.\n";
         throw(-1);
     }
-    if (reinfectMode[0] == 4)
+    if (reinfectMode[0] > 2)
     {
         int maxItr = (compartmentDimensions[0]*compartmentDimensions[1]); 
         int i;
