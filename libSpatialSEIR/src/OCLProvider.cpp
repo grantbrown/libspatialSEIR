@@ -38,8 +38,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
     {
         cl::Platform::get(platforms);
         (*platforms)[0].getDevices(CL_DEVICE_TYPE_ALL, platformDevices);
-        cl::Context context(*platformDevices);
-        *ctxDevices = context.getInfo<CL_CONTEXT_DEVICES>();
+        context = new cl::Context(*platformDevices);
+        *ctxDevices = context -> getInfo<CL_CONTEXT_DEVICES>();
         for (i = 0; i<ctxDevices -> size();i++)
         {
             deviceNames -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_NAME>());
@@ -73,6 +73,9 @@ SpatialSEIR::OCLProvider::~OCLProvider()
     delete[] allDevices;
     delete[] ctxDevices;
     delete[] deviceNames;
+    delete[] workSizes;
+    delete[] doublePrecision;
+    delete context;
 }
 
 

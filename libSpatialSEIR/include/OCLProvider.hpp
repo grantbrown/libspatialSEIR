@@ -28,6 +28,7 @@ namespace SpatialSEIR
             OCLProvider();
             ~OCLProvider();
             //Attributes
+            cl::Context *context;
             std::vector<cl::Platform> *platforms;
             std::vector<cl::Device> *platformDevices, 
                                     *allDevices, 
