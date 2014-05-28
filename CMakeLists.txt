@@ -52,6 +52,7 @@ add_library(SpatialSEIR SHARED
 	"${SpatialSEIR_Boost_LIBRARIES}"
 	)
 
+add_definitions( -DLSS_KERNEL_DIRECTORY="${CMAKE_BINARY_DIR}/libSpatialSEIR_Kernels/" )
 
 install (TARGETS SpatialSEIR DESTINATION lib)
 install (FILES 
@@ -67,11 +68,12 @@ install (FILES
 
 install (FILES 
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/kernels/test_kernel.cl" 
-            DESTINATION bin)
+            DESTINATION bin/libSpatialSEIR_Kernels)
 
 add_custom_command(TARGET SpatialSEIR POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    COMMAND ${CMAKE_COMMAND} -E copy
                     ${CMAKE_CURRENT_SOURCE_DIR}/libSpatialSEIR/src/kernels/test_kernel.cl
-                    $<TARGET_FILE_DIR:SpatialSEIR>
+                    ${CMAKE_BINARY_DIR}/libSpatialSEIR_Kernels/test_kernel.cl
                  )
+
 
