@@ -25,6 +25,7 @@ SpatialSEIR::OCLProvider::OCLProvider()
         workSizes = new std::vector<std::vector<size_t> >();
         doublePrecision = new std::vector<cl_uint>();
         programs = new std::vector<cl::Program>();
+        test_kernel = new cl::Kernel();
     }
     catch(cl::Error e)
     {
@@ -58,8 +59,17 @@ SpatialSEIR::OCLProvider::OCLProvider()
             cout << endl;
             cout << "      Supports Double Precision: " << (*doublePrecision)[i] << endl;
         }
-        std::cout << "Attempting to compile test kernel:\n";
-        buildProgramForKernel("test_kernel.cl", *ctxDevices);
+        // This might be a memory leak of the vector containing test kernel, though low 
+        // priority as it runs once and the bulk of the data is tracked (via the pointer 
+        // test_kernel)
+        //
+        // todo: figure out more about whether or not this stuff would work as pass by value, 
+        // and how much OpenCL boilerplate needs to remain in memory for a particular kernel 
+        // to be useful (ie, can we discard program objects after obtaining kernels?). Most 
+        // tutorials and documentation don't go into this issue, so we probably need to dig into 
+        // cl.hpp to verify. 
+        test_kernel = &((*(buildProgramForKernel("test_kernel.cl", *ctxDevices)))[0]);
+        std::cout << (test_kernel -> getInfo<CL_KERNEL_FUNCTION_NAME>()) << "\n"; 
     }
     catch(cl::Error e)
     {
@@ -69,29 +79,29 @@ SpatialSEIR::OCLProvider::OCLProvider()
 }
 
 
-int SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFile, std::vector<cl::Device> devices)
+std::vector<cl::Kernel>* SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFile, std::vector<cl::Device> devices)
 {
+    int err;
     const char* progName = ( std::string(LSS_KERNEL_DIRECTORY).append(kernelFile)).c_str();
-    std::cout << "Looking for kernel file here: " << progName << "\n";
     std::ifstream programFile(progName);
     std::string programString(std::istreambuf_iterator<char>(programFile), 
                              (std::istreambuf_iterator<char>()));
-    std::cout << "Kernel: \n";
-    std::cout << programString.c_str() << "\n";
     cl::Program::Sources source(1, std::make_pair(programString.c_str(), 
                                 programString.length() + 1));
-    cl::Program program(*context, source);
-    program.build(devices);
-    std::string log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
-    std::cout << log << "\n";
-    std::vector<cl::Kernel> kernels;
-    program.createKernels(&kernels);
-    unsigned int i;
-    for (i = 0; i < kernels.size(); i++)
+    cl::Program* program = new cl::Program(*context, source);
+    err = program -> build(devices);
+    std::string log = program -> getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
+    if (err != 0)
     {
-        std::cout << kernels[i].getInfo<CL_KERNEL_FUNCTION_NAME>() << "\n";
+        std::cerr << "Error building OpenCL Kernel, code: " << err << "\n"; 
+        std::cerr << "Build Log: \n" << log << "\n";
+        std::cerr << "Kernel Source: \n" << programString.c_str() << "\n";
+        throw(-1);
     }
-    return(0);
+    std::vector<cl::Kernel>* kernels = new std::vector<cl::Kernel>();
+    program -> createKernels(kernels);
+    programs -> push_back(*program);
+    return(kernels);
 }
 
 
@@ -105,6 +115,7 @@ SpatialSEIR::OCLProvider::~OCLProvider()
     delete[] workSizes;
     delete[] doublePrecision;
     delete[] programs;
+    delete test_kernel;
     delete context;
 }
 

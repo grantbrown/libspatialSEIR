@@ -27,10 +27,11 @@ namespace SpatialSEIR
             //Methods 
             OCLProvider();
 
-            int buildProgramForKernel(std::string kernelFile, 
-                    std::vector<cl::Device> devices);
+            std::vector<cl::Kernel>* buildProgramForKernel(std::string kernelFile, 
+                        std::vector<cl::Device> devices);
 
             ~OCLProvider();
+
             //Attributes
             cl::Context *context;
             std::vector<cl::Platform> *platforms;
@@ -41,6 +42,9 @@ namespace SpatialSEIR
             std::vector<std::vector<size_t> > *workSizes;
             std::vector<cl_uint> *doublePrecision;
             std::vector<cl::Program> *programs;
+
+            //Kernels
+            cl::Kernel* test_kernel;
     };
 }
 
