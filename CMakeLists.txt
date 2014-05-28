@@ -65,5 +65,13 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
             DESTINATION include)
 
+install (FILES 
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/kernels/test_kernel.cl" 
+            DESTINATION bin)
 
+add_custom_command(TARGET SpatialSEIR POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${CMAKE_CURRENT_SOURCE_DIR}/libSpatialSEIR/src/kernels/test_kernel.cl
+                    $<TARGET_FILE_DIR:SpatialSEIR>
+                 )
 
