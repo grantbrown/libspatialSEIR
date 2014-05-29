@@ -10,8 +10,6 @@
 #include<vector>
 
 
-// Implement OCLProvider Class
-// Mostly placeholder code, based on Scarpino (2012)
 SpatialSEIR::OCLProvider::OCLProvider()
 {
     std::cout << "Setting up OpenCL Interface\n";
@@ -28,6 +26,7 @@ SpatialSEIR::OCLProvider::OCLProvider()
         doublePrecision = new std::vector<cl_uint>();
         programs = new std::vector<cl::Program>();
         test_kernel = new cl::Kernel();
+        R_Star_p1_kernel = new cl::Kernel();
     }
     catch(cl::Error e)
     {
@@ -71,6 +70,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
         // tutorials and documentation don't go into this issue, so we probably need to dig into 
         // cl.hpp to verify. 
         test_kernel = &((*(buildProgramForKernel("test_kernel.cl", *ctxDevices)))[0]);
+        R_Star_p1_kernel = &((*(buildProgramForKernel("R_Star_FC_Part1.cl", *ctxDevices)))[0]);
+
 
         *cpuQueue = cl::CommandQueue(*context, (*ctxDevices)[0]); 
 
@@ -94,7 +95,15 @@ std::vector<cl::Kernel>* SpatialSEIR::OCLProvider::buildProgramForKernel(std::st
     cl::Program::Sources source(1, std::make_pair(programString.c_str(), 
                                 programString.length() + 1));
     cl::Program* program = new cl::Program(*context, source);
-    err = program -> build(devices);
+    try
+    {
+        err = program -> build(devices);
+    }
+    catch(cl::Error e)
+    {
+        err = 1;
+    }
+
     std::string log = program -> getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
     if (err != 0)
     {
@@ -105,6 +114,7 @@ std::vector<cl::Kernel>* SpatialSEIR::OCLProvider::buildProgramForKernel(std::st
     }
     std::vector<cl::Kernel>* kernels = new std::vector<cl::Kernel>();
     program -> createKernels(kernels);
+
     programs -> push_back(*program);
     return(kernels);
 }
@@ -183,6 +193,7 @@ SpatialSEIR::OCLProvider::~OCLProvider()
     delete[] doublePrecision;
     delete[] programs;
     delete test_kernel;
+    delete R_Star_p1_kernel;
     delete context;
     delete cpuQueue;
     delete gpuQueue;

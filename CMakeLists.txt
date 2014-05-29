@@ -71,9 +71,9 @@ install (FILES
             DESTINATION bin/libSpatialSEIR_Kernels)
 
 add_custom_command(TARGET SpatialSEIR POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy
-                    ${CMAKE_CURRENT_SOURCE_DIR}/libSpatialSEIR/src/kernels/test_kernel.cl
-                    ${CMAKE_BINARY_DIR}/libSpatialSEIR_Kernels/test_kernel.cl
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/libSpatialSEIR/src/kernels/
+                    ${CMAKE_BINARY_DIR}/libSpatialSEIR_Kernels/
                  )
 
 

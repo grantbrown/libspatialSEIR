@@ -44,8 +44,22 @@ namespace SpatialSEIR
             std::vector<cl_uint> *doublePrecision;
             std::vector<cl::Program> *programs;
 
-            //Kernels
+            // FC Methods
+            double FC_R_Star_Part1(int startLoc,
+                                   int startTime,
+                                   int nTpts,
+                                   int* R_star,
+                                   int* S_star,
+                                   int* R,
+                                   int* I,
+                                   double* p_rs,
+                                   double p_ir);
+
+            // Kernels
             cl::Kernel* test_kernel;
+            cl::Kernel* R_Star_p1_kernel;
+
+            // Queues
             cl::CommandQueue* cpuQueue;
             cl::CommandQueue* gpuQueue;
     };

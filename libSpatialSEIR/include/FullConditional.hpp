@@ -83,7 +83,6 @@ namespace SpatialSEIR
         public:
             //Template for shared methods
             virtual ~FullConditional(){}; 
-            virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
@@ -99,7 +98,7 @@ namespace SpatialSEIR
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
             virtual int evalCPU(int startLoc, int startTime) = 0;
-            virtual int evalOCL() = 0;
+            virtual int evalOCL(int startLoc, int startTime) = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
@@ -360,7 +359,7 @@ namespace SpatialSEIR
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalOCL();
+            virtual int evalOCL(int startLoc, int startTime);
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();
@@ -406,7 +405,7 @@ namespace SpatialSEIR
             ~FC_E_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalOCL();
+            virtual int evalOCL(int startLoc, int startTime);
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();
@@ -450,7 +449,7 @@ namespace SpatialSEIR
             ~FC_R_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalOCL();
+            virtual int evalOCL(int startLoc, int startTime);
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();

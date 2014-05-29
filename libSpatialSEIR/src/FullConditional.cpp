@@ -1621,7 +1621,7 @@ namespace SpatialSEIR
     }
 
 
-    int FC_S_Star::evalOCL()
+    int FC_S_Star::evalOCL(int startLoc, int startTime)
     {
         //NOT IMPLEMENTED
         return-1;
@@ -1867,7 +1867,7 @@ namespace SpatialSEIR
        return;
     }
 
-    int FC_E_Star::evalOCL()
+    int FC_E_Star::evalOCL(int startLoc, int startTime)
     {
         //NOT IMPLEMENTED
         return -1;
@@ -2251,10 +2251,71 @@ namespace SpatialSEIR
     }
 
 
-    int FC_R_Star::evalOCL()
+    int FC_R_Star::evalOCL(int startLoc, int startTime)
     {
-        //NOT IMPLEMENTED
-        return -1;
+
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+        int compIdx = startLoc*nTpts + startTime;
+        int Estar_val, S_val;
+        double p_se_val;
+        int i,j;
+
+        if ((*context) -> config -> reinfectionMode > 2)
+        {
+            std::cerr << "FC_R_Star currently only works with OpenCL for reinfectionMode <= 2\n";
+        }
+
+        double output = ((*context) -> oclProvider -> FC_R_Star_Part1(startLoc,
+                                                                startTime,
+                                                                nTpts,
+                                                                &(((*R_star) -> data)[compIdx]),
+                                                                &(((*S_star) -> data)[compIdx]),
+                                                                &(((*R) -> data)[compIdx]),
+                                                                &(((*I) -> data)[compIdx]),
+                                                                &((*p_rs)[startTime]),
+                                                                **p_ir
+                                                                ));
+
+
+        // p_se changes, so need to look at p_se component for all locations and 
+        // time points after startTime
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts + startTime;
+            for (j = startTime; j< nTpts; j++)
+            {
+
+                p_se_val = (*p_se)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                if (p_se_val > 1 || p_se_val < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
+                compIdx ++; 
+            }
+        }
+
+        int  I_star_sum = (*I_star)->marginSum(2,startLoc);
+        int  R_star_sum = (*R_star)->marginSum(2,startLoc);
+        int aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/nTpts;
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;   
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+
+        return 0;
     }
     int FC_R_Star::calculateRelevantCompartments()
     {        
