@@ -29,6 +29,7 @@ namespace SpatialSEIR
 
             std::vector<cl::Kernel>* buildProgramForKernel(std::string kernelFile, 
                         std::vector<cl::Device> devices);
+            int test();
 
             ~OCLProvider();
 
@@ -45,6 +46,8 @@ namespace SpatialSEIR
 
             //Kernels
             cl::Kernel* test_kernel;
+            cl::CommandQueue* cpuQueue;
+            cl::CommandQueue* gpuQueue;
     };
 }
 
