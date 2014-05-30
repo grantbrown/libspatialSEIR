@@ -41,7 +41,7 @@ namespace SpatialSEIR
         err |= R_Star_p1_kernel -> setArg(3, IBuffer);
         err |= R_Star_p1_kernel -> setArg(4, p_rsBuffer);
         err |= R_Star_p1_kernel -> setArg(5, p_ir);
-        err |= R_Star_p1_kernel -> setArg(6, output);
+        err |= R_Star_p1_kernel -> setArg(6, outBuffer);
 
         if (err < 0)
         {

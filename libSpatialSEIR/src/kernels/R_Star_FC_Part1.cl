@@ -3,14 +3,14 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
                               __global int* S_star,
                               __global int* R,
                               __global int* I,
-                              __global double p_rs,
-                              __global double p_ir,
-                              __global double output)
+                              __global double* p_rs,
+                                       double p_ir,
+                              __global double* output)
 {
     size_t i = get_global_id(0);
 
 
-    double p_ir_val = *p_ir;
+    double p_ir_val = p_ir;
     double ln_p_ir = log(p_ir_val);
     double ln_1m_p_ir = log(1-p_ir_val);
     int Rstar_val = R_star[i]; 
