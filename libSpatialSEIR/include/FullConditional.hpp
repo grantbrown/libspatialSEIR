@@ -111,7 +111,15 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
+            int sampleCompartment_OCL(ModelContext* context,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width); 
+
             int sampleCompartmentLocation(int loc, ModelContext* context,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width); 
+
+            int sampleCompartmentLocation_OCL(int loc, ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 

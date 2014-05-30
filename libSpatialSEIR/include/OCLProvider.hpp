@@ -41,6 +41,9 @@ namespace SpatialSEIR
                                     *ctxDevices; 
             std::vector<std::string> *deviceNames;
             std::vector<std::vector<size_t> > *workSizes;
+            std::vector<size_t> *globalMemSizes;
+            std::vector<cl_ulong> *localMemSizes;
+            std::vector<size_t> *numComputeUnits;
             std::vector<cl_uint> *doublePrecision;
             std::vector<cl::Program> *programs;
 

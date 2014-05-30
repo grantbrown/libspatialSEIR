@@ -128,6 +128,25 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int CompartmentFullConditional::sampleCompartment_OCL(ModelContext* context,
+                                                       CompartmentalModelMatrix* starCompartment,
+                                                       double width)
+    {
+        int i;
+        int nLoc = *(starCompartment -> ncol);        
+        // Main loop: 
+        for (i = 0; i < nLoc; i++)
+        {
+
+            sampleCompartmentLocation_OCL(i, context, starCompartment, width);
+            //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
+        }
+
+        return(0);
+    }
+
+
+
     /*
     int CompartmentFullConditional::sampleCompartment_CPU(ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,
@@ -208,6 +227,64 @@ namespace SpatialSEIR
         return(0);
     }
 
+
+    int CompartmentFullConditional::sampleCompartmentLocation_OCL(int i, ModelContext* context,
+                                                       CompartmentalModelMatrix* starCompartment,
+                                                       double width)
+    {
+        int j, compIdx;
+        int nTpts = *(starCompartment -> nrow);
+        int x0, x1;
+        double initVal, newVal;
+        double initProposal, newProposal;
+        double criterion;
+ 
+        compIdx = i*nTpts;
+        for (j = 0; j < nTpts; j ++)
+        { 
+            //std::cout << j << "\n";
+            this -> calculateRelevantCompartments(i,j); 
+            this -> evalOCL(i,j);
+            x0 = (starCompartment -> data)[compIdx];
+            initVal = (this -> getValue());
+
+            // Propose new value, bounded away from zero. 
+            x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
+            (starCompartment -> data)[compIdx] = x1;
+            this -> calculateRelevantCompartments(i,j);
+            this -> evalOCL(i,j);
+            newVal = (this->getValue());
+            newProposal = (context -> random -> dnorm(x1, x0,width));
+            initProposal = (context -> random -> dnorm(x0, x1,width));
+            criterion = (newVal - initVal) + (initProposal - newProposal);
+            if (std::log((context -> random -> uniform())) < criterion)
+            {
+                // Accept new value
+            }
+            else
+            {
+                // Keep Original Value
+                (starCompartment -> data)[compIdx] = x0;
+                this -> calculateRelevantCompartments(i,j);
+                this -> setValue(initVal); 
+            }                
+
+
+            if (!std::isfinite(this -> getValue()))
+            {
+                std::cout << "Impossible value selected:\n";
+                std::cout << "(i,j): (" << i << "," << j << ")\n";
+                std::cout << "Data value: " << (starCompartment -> data)[compIdx] << "\n";
+                this -> printDebugInfo(i,j);
+                throw(-1);
+            }
+            compIdx ++;
+        }
+
+        return(0);
+    }
+
+
     int CompartmentFullConditional::jointSampleCompartmentLocation(int i, int batchSize, int numBatches, int* batchCache, ModelContext* context,
                                                                    CompartmentalModelMatrix* starCompartment,
                                                                    double width)
@@ -230,7 +307,7 @@ namespace SpatialSEIR
             criterion = 0.0;
 
             this -> calculateRelevantCompartments(i,j); 
-            this -> evalCPU(i,j);
+            this -> evalOCL(i,j);
 
             initVal = (this -> getValue());
 
@@ -245,7 +322,7 @@ namespace SpatialSEIR
                 initProposal += (context -> random -> dnorm(x0, x1,width));
             }
             this -> calculateRelevantCompartments(i,j);
-            this -> evalCPU(i,j);
+            this -> evalOCL(i,j);
             newVal = (this->getValue());
             criterion = (newVal - initVal) + (initProposal - newProposal);
             if (std::log((context -> random -> uniform())) < criterion)
@@ -2340,8 +2417,9 @@ namespace SpatialSEIR
     }
     int FC_R_Star::sampleOCL()
     {
-        //NOT IMPLEMENTED
-        return -1;
+        this -> sampleCompartment_OCL(*context,
+                                  *R_star,*sliceWidth);
+        return(0);
     }
 
     long double FC_R_Star::getValue()

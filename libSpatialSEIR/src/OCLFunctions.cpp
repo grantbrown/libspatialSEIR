@@ -18,7 +18,9 @@ namespace SpatialSEIR
                                  double p_ir)
     {
         int remainingTpts = (nTpts - startTime);
+        int i;
         double* output = new double[remainingTpts]();
+        void* mem_map;
 
         cl::Buffer RstarBuffer(*context, CL_MEM_READ_WRITE | 
             CL_MEM_COPY_HOST_PTR, remainingTpts*sizeof(int), R_star);
@@ -59,11 +61,19 @@ namespace SpatialSEIR
                                          NULL
                                          );
 
-        // Do stuff with output
+        mem_map = cpuQueue -> enqueueMapBuffer(outBuffer, CL_TRUE, CL_MAP_READ, 0, remainingTpts*sizeof(double));
+        memcpy(output, mem_map, remainingTpts*sizeof(double));
+
+        double outSum = 0.0;
+        for (i = 0; i < remainingTpts; i++)
+        {
+            outSum += output[i];
+        }
+
 
         delete[] output;
 
-        return(0.0);
+        return(outSum);
 
     }
 

@@ -21,6 +21,9 @@ SpatialSEIR::OCLProvider::OCLProvider()
         ctxDevices = new std::vector<cl::Device>();
         deviceNames = new std::vector<std::string>();
         workSizes = new std::vector<std::vector<size_t> >();
+        globalMemSizes = new std::vector<size_t>();
+        localMemSizes = new std::vector<cl_ulong>();
+        numComputeUnits = new std::vector<size_t>();
         cpuQueue = new cl::CommandQueue();
         gpuQueue = new cl::CommandQueue();
         doublePrecision = new std::vector<cl_uint>();
@@ -48,6 +51,9 @@ SpatialSEIR::OCLProvider::OCLProvider()
         {
             deviceNames -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_NAME>());
             workSizes -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>());
+            globalMemSizes -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>());
+            localMemSizes -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_LOCAL_MEM_SIZE>());
+            numComputeUnits -> push_back((*ctxDevices)[i].getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>());
             clExt = (*ctxDevices)[i].getInfo<CL_DEVICE_EXTENSIONS>();
             doublePrecision -> push_back((clExt.find("cl_khr_fp64") != std::string::npos));
             cout << "   Adding Device: " 
@@ -58,6 +64,9 @@ SpatialSEIR::OCLProvider::OCLProvider()
                 cout << ((*workSizes)[i])[j] << ", ";
             }
             cout << endl;
+            cout << "      Global Memory: " << (*globalMemSizes)[globalMemSizes -> size() - 1] << endl;
+            cout << "      Local Memory: " << (*localMemSizes)[localMemSizes -> size() - 1] << endl;
+            cout << "      Compute Units: " << (*numComputeUnits)[numComputeUnits -> size() - 1] << endl;
             cout << "      Supports Double Precision: " << (*doublePrecision)[i] << endl;
         }
         // This might be a memory leak of the vector containing test kernel, though low 
@@ -192,6 +201,9 @@ SpatialSEIR::OCLProvider::~OCLProvider()
     delete[] workSizes;
     delete[] doublePrecision;
     delete[] programs;
+    delete[] globalMemSizes;
+    delete[] localMemSizes;
+    delete[] numComputeUnits;
     delete test_kernel;
     delete R_Star_p1_kernel;
     delete context;
