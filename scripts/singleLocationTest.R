@@ -325,7 +325,8 @@ runSimulation = function(N, batchSize = 1000)
     })
 }
 
-runSimulation(10000000)
+time = system.time(runSimulation(10000))
+print(time)
 
 
 

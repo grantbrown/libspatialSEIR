@@ -44,6 +44,7 @@ SpatialSEIR::OCLProvider::OCLProvider()
     try
     {
         cl::Platform::get(platforms);
+        // Todo: Handle multiple platforms. 
         (*platforms)[0].getDevices(CL_DEVICE_TYPE_ALL, platformDevices);
         context = new cl::Context(*platformDevices);
         *ctxDevices = context -> getInfo<CL_CONTEXT_DEVICES>();
@@ -78,13 +79,14 @@ SpatialSEIR::OCLProvider::OCLProvider()
         // to be useful (ie, can we discard program objects after obtaining kernels?). Most 
         // tutorials and documentation don't go into this issue, so we probably need to dig into 
         // cl.hpp to verify. 
+
         test_kernel = &((*(buildProgramForKernel("test_kernel.cl", *ctxDevices)))[0]);
+
         R_Star_p1_kernel = &((*(buildProgramForKernel("R_Star_FC_Part1.cl", *ctxDevices)))[0]);
-
-
         *cpuQueue = cl::CommandQueue(*context, (*ctxDevices)[0]); 
-
         test();
+
+
     }
     catch(cl::Error e)
     {
@@ -96,35 +98,40 @@ SpatialSEIR::OCLProvider::OCLProvider()
 
 std::vector<cl::Kernel>* SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFile, std::vector<cl::Device> devices)
 {
-    int err;
-    const char* progName = ( std::string(LSS_KERNEL_DIRECTORY).append(kernelFile)).c_str();
+    int err = 1;
+    std::string log;
+    std::string LKD(LSS_KERNEL_DIRECTORY);
+    LKD = LKD.append(kernelFile);
+    const char* progName = LKD.c_str();
+
     std::ifstream programFile(progName);
     std::string programString(std::istreambuf_iterator<char>(programFile), 
                              (std::istreambuf_iterator<char>()));
     cl::Program::Sources source(1, std::make_pair(programString.c_str(), 
                                 programString.length() + 1));
     cl::Program* program = new cl::Program(*context, source);
+    std::vector<cl::Kernel>* kernels = new std::vector<cl::Kernel>();
     try
     {
         err = program -> build(devices);
+        log = program -> getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
+
+        program -> createKernels(kernels);
+        programs -> push_back(*program);
     }
     catch(cl::Error e)
     {
         err = 1;
     }
-
-    std::string log = program -> getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
     if (err != 0)
     {
         std::cerr << "Error building OpenCL Kernel, code: " << err << "\n"; 
+        std::cerr << "Looking for kernel file here: " << progName << "\n";
         std::cerr << "Build Log: \n" << log << "\n";
         std::cerr << "Kernel Source: \n" << programString.c_str() << "\n";
         throw(-1);
     }
-    std::vector<cl::Kernel>* kernels = new std::vector<cl::Kernel>();
-    program -> createKernels(kernels);
 
-    programs -> push_back(*program);
     return(kernels);
 }
 
