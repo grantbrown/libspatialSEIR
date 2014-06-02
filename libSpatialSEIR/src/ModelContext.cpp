@@ -565,7 +565,7 @@ namespace SpatialSEIR
     {
         int useOCL[13] = {0};
         // TMP: Use OCL for R_star
-        //useOCL[6] = 1;
+        useOCL[6] = 1;
         int i;
         int itrStart = *numIterations;
         int itrMax = nIterations + (*numIterations);

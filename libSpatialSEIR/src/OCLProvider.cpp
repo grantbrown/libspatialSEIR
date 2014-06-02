@@ -115,8 +115,8 @@ std::vector<cl::Kernel>* SpatialSEIR::OCLProvider::buildProgramForKernel(std::st
     {
         err = program -> build(devices);
         log = program -> getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
-
         program -> createKernels(kernels);
+        std::cout << "Building Kernel, Work Group Size: " <<(*kernels)[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>((devices)[0]) << "\n";
         programs -> push_back(*program);
     }
     catch(cl::Error e)

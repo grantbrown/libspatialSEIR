@@ -17,6 +17,7 @@ namespace SpatialSEIR
                                  double* p_rs,
                                  double p_ir)
     {
+        cl::Device device = (cpuQueue -> getInfo<CL_QUEUE_DEVICE>());
         int remainingTpts = (nTpts - startTime);
         int i;
         double* output = new double[remainingTpts]();
@@ -43,14 +44,40 @@ namespace SpatialSEIR
         err |= R_Star_p1_kernel -> setArg(3, IBuffer);
         err |= R_Star_p1_kernel -> setArg(4, p_rsBuffer);
         err |= R_Star_p1_kernel -> setArg(5, p_ir);
-        err |= R_Star_p1_kernel -> setArg(6, outBuffer);
+        err |= R_Star_p1_kernel -> setArg(6, remainingTpts;
+        err |= R_Star_p1_kernel -> setArg(7, outBuffer);
+
+
+
+
+        // Figure out a good way to partition the data. 
+        // Input:
+        // 1. Integers (4 bytes)
+        //    S_star (T)
+        //    R_star (T)
+        //    R      (T)
+        //    I      (T)
+        // 2. Doubles (8 bytes)
+        //    p_rs   (T)
+        //    p_ir   (1)
+        size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+        int localSizeMultiple = (R_Star_p1_kernel -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
+        int maxWorkUnits = (R_Star_p1_kernel -> getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device));
+        int maxLocalSize = localMemPerCore/(4*4 + 8);
+        int numWorkUnits = (maxLocalSize/localSizeMultiple)*localSizeMultiple; 
+
+        // Local Declarations
+        err |= R_Star_p1_kernel -> setArg(8, numWorkUnits*sizeof(int), NULL); //R_star
+        err |= R_Star_p1_kernel -> setArg(9, numWorkUnits*sizeof(int), NULL); //S_star
+        err |= R_Star_p1_kernel -> setArg(10, numWorkUnits*sizeof(int), NULL); //R
+        err |= R_Star_p1_kernel -> setArg(11, numWorkUnits*sizeof(int), NULL); //I
+        err |= R_Star_p1_kernel -> setArg(12, numWorkUnits*sizeof(double), NULL); //p_rs
 
         if (err < 0)
         {
             std::cerr << "Couldn't set kernel args.\n";
             throw(err);
         }
-
         // Optimize this to use subbuffers so that we only write the data 
         // once per sampleR_star event
         cpuQueue -> enqueueNDRangeKernel(*R_Star_p1_kernel,
