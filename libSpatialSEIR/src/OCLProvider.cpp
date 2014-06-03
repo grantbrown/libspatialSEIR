@@ -109,6 +109,7 @@ std::vector<cl::Kernel>* SpatialSEIR::OCLProvider::buildProgramForKernel(std::st
                              (std::istreambuf_iterator<char>()));
     cl::Program::Sources source(1, std::make_pair(programString.c_str(), 
                                 programString.length() + 1));
+
     cl::Program* program = new cl::Program(*context, source);
     std::vector<cl::Kernel>* kernels = new std::vector<cl::Kernel>();
     try
@@ -116,12 +117,14 @@ std::vector<cl::Kernel>* SpatialSEIR::OCLProvider::buildProgramForKernel(std::st
         err = program -> build(devices);
         log = program -> getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
         program -> createKernels(kernels);
-        std::cout << "Building Kernel, Work Group Size: " <<(*kernels)[0].getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>((devices)[0]) << "\n";
         programs -> push_back(*program);
     }
     catch(cl::Error e)
     {
-        err = 1;
+        std::cout << "CL Error in: " << e.what()<< "\n";
+        std::cout << "CL Error: " << e.err()<< "\n";
+        log = program -> getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
+        err = e.err();
     }
     if (err != 0)
     {
@@ -166,15 +169,25 @@ int SpatialSEIR::OCLProvider::test()
         throw(err);
     }
 
-    cpuQueue -> enqueueNDRangeKernel(*test_kernel, 
-                                   0,           // Global Offset
-                                   100,         // Global Size
-                                   1,        // Local Size
-                                   NULL,        // Event Vector
-                                   NULL         // Event Pointer
-                                   );
+    try
+    {
+        err = cpuQueue -> enqueueNDRangeKernel(*test_kernel, 
+                                       0,           // Global Offset
+                                       100,         // Global Size
+                                       1,        // Local Size
+                                       NULL,        // Event Vector
+                                       NULL         // Event Pointer
+                                       );
+    }
+    catch(cl::Error e)
+    {
+        std::cerr << "Error enqueueing kernel: " << e.what() << "\n";
+        std::cerr << "Error: " << e.err() << "\n";
+        throw(-1);
+    }
 
     mappedMemory = (cpuQueue -> enqueueMapBuffer(bufferOut, CL_TRUE, CL_MAP_READ, 0, 100*sizeof(float)));
+
 
     memcpy(out, mappedMemory, sizeof(float)*100);
 

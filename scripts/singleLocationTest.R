@@ -5,7 +5,7 @@ NYears = 20
 TptPerYear = 12
 MaxTpt = NYears*TptPerYear
 
-ThrowAwayTpt = 220
+ThrowAwayTpt = 0
 
 X = matrix(1, ncol = 1)
 Z = cbind(seq(1,NYears*TptPerYear), model.matrix(~as.factor(rep(1:12,NYears)))[,2:TptPerYear])
@@ -325,7 +325,7 @@ runSimulation = function(N, batchSize = 1000)
     })
 }
 
-time = system.time(runSimulation(10000))
+time = system.time(runSimulation(10000,10))
 print(time)
 
 

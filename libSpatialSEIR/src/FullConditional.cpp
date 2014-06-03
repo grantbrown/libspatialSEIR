@@ -1221,6 +1221,10 @@ namespace SpatialSEIR
                         Sstar_val > R_val)
                 {
                     std::cout << "Bounds error detected at time " << j << "\n";
+                    std::cout << "R_star: " << Rstar_val << "\n";
+                    std::cout << "I: " << I_val << "\n";
+                    std::cout << "S_star: " << Sstar_val << "\n";
+                    std::cout << "R: " << R_val << "\n";
                     throw(-1) ;
                 }
                 else
@@ -2354,6 +2358,14 @@ namespace SpatialSEIR
                                                                 **p_ir
                                                                 ));
 
+        std::cout << output << "\n";
+        throw(-1);
+        if (!std::isfinite(output))
+        {
+            std::cout << output << "\n";
+            *value = -INFINITY;
+            return(-1);
+        }
 
         // p_se changes, so need to look at p_se component for all locations and 
         // time points after startTime
