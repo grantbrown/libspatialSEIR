@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(25)
+    control_code(50)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -33,7 +33,7 @@ X  = sim_results$X # X is returned by the simulation as an NxP matrix, where N
                    # is the number of locations and P the number of predictors.
 Z = sim_results$Z 
                                        
-throwAwayTpts = 20
+throwAwayTpts = 0
                 
 # Create basis for p_rs
 
@@ -230,5 +230,6 @@ runSimulation = function(N, batchSize = 10)
     })
 }
 
-runSimulation(10000)
+tm = system.time(runSimulation(100))
+print(tm)
 

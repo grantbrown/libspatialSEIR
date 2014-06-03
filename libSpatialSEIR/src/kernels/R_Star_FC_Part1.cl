@@ -11,11 +11,19 @@ inline double logFactorial(int n)
 
 inline double logChoose(int n, int x)
 {
-    return(logFactorial(n) - logFactorial(x) - logFactorial(n-x)); 
+    if ((x !=0) && (n != 0))
+    {
+        return(logFactorial(n) - logFactorial(x) - logFactorial(n-x)); 
+    }
+    return(0.0);
 }
 
 inline double dbinom(int x, int n, double p)
 {
+    if (n == 0)
+    {
+        return(x==0 ? 0.0 : -INFINITY);
+    }
     return(logChoose(n,x) + x*log(p) + (n-x)*log(1-p));
 }
 
@@ -60,7 +68,7 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
             partialResult = ((logChoose(I_loc[localId], R_star_loc[localId]) 
                               + R_star_loc[localId]*ln_p_ir 
                               + (I_loc[localId] - R_star_loc[localId])*ln_1m_p_ir) 
-                              + dbinom(S_star_loc[localId], R_loc[localId], p_rs[localId]) 
+                              + dbinom(S_star_loc[localId], R_loc[localId], p_rs_loc[localId]) 
                              );
         }
         else
