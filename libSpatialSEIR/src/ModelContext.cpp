@@ -469,7 +469,6 @@ namespace SpatialSEIR
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
-
         if (verbose){std::cout << "Sampling S0\n";}
         if (useOCL[0] == 0){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}

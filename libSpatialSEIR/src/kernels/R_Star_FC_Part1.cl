@@ -2,7 +2,11 @@
 
 inline double logFactorial(int n)
 {
-    return(0.5*log(6.283185*n) + n*log(1.0*n) - n);
+    if (n != 0)
+    {
+        return(0.5*log(6.283185*n) + n*log(1.0*n) - n);
+    }
+    return(0);
 }
 
 inline double logChoose(int n, int x)
@@ -22,6 +26,7 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
                               __global double* p_rs,
                                        double p_ir,
                                        int nTpt,
+                                       int nLoc,
                               __global double* output,
                               __local int* R_star_loc,
                               __local int* S_star_loc,
@@ -31,13 +36,13 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
 {
     size_t globalId = get_global_id(0);
     int i;
-    int terminalLID = - 1;
+    int totalSize = nLoc*nTpt;
     size_t localId = get_local_id(0);
     size_t localSize = get_local_size(0);
     size_t groupId = get_group_id(0); 
     double partialResult = 0.0;
 
-    if (globalId < nTpt)
+    if (globalId < totalSize)
     {
         double p_ir_val = p_ir;
         double ln_p_ir = log(p_ir_val);
@@ -47,7 +52,7 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
         S_star_loc[localId] = S_star[globalId];
         I_loc[localId] = I[globalId];
         R_loc[localId] = R[globalId];
-        p_rs_loc[localId] = p_rs[globalId];
+        p_rs_loc[localId] = p_rs[globalId % nTpt];
 
         if ((R_star_loc[localId] >= 0) && (R_star_loc[localId] <= I_loc[localId]) && 
                       (S_star_loc[localId] <= R_loc[localId]))

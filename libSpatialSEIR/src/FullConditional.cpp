@@ -132,16 +132,52 @@ namespace SpatialSEIR
                                                        CompartmentalModelMatrix* starCompartment,
                                                        double width)
     {
+        double initProposal = 0.0;
+        double newProposal = 0.0;
         int i;
-        int nLoc = *(starCompartment -> ncol);        
-        // Main loop: 
-        for (i = 0; i < nLoc; i++)
+        int x0, x1;
+        
+        int totalPoints = (*(starCompartment -> nrow))*(*(starCompartment -> ncol));
+        // Backup Compartment
+        memcpy(context -> tmpContainer -> data, starCompartment -> data, totalPoints*sizeof(int)); 
+        this -> calculateRelevantCompartments(); 
+        this -> evalOCL();
+        double initVal = (this -> getValue());
+        if (! std::isfinite(initVal))
         {
-
-            sampleCompartmentLocation_OCL(i, context, starCompartment, width);
-            //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
+            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            throw(-1);
         }
+        for (i = 0; i < totalPoints; i++)
+        {
+            x0 = (starCompartment -> data)[i];
+            x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+            (starCompartment -> data)[i] = x1;
+            newProposal += (context -> random -> dnorm(x1, x0,width));
+            initProposal += (context -> random -> dnorm(x0, x1,width));
+        }
+        this -> calculateRelevantCompartments(); 
+        this -> evalOCL();
+        double newVal = (this->getValue());
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
 
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            // Accept new values
+        }
+        else
+        {
+            // Keep Original Value
+            memcpy(starCompartment -> data, context -> tmpContainer -> data, totalPoints*sizeof(int)); 
+            this -> calculateRelevantCompartments();
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        }
         return(0);
     }
 
@@ -228,63 +264,6 @@ namespace SpatialSEIR
     }
 
 
-    int CompartmentFullConditional::sampleCompartmentLocation_OCL(int i, ModelContext* context,
-                                                       CompartmentalModelMatrix* starCompartment,
-                                                       double width)
-    {
-        int j, compIdx;
-        int nTpts = *(starCompartment -> nrow);
-        int x0, x1;
-        double initVal, newVal;
-        double initProposal, newProposal;
-        double criterion;
- 
-        compIdx = i*nTpts;
-        for (j = 0; j < nTpts; j ++)
-        { 
-            //std::cout << j << "\n";
-            this -> calculateRelevantCompartments(i,j); 
-            this -> evalOCL(i,j);
-            x0 = (starCompartment -> data)[compIdx];
-            initVal = (this -> getValue());
-
-            // Propose new value, bounded away from zero. 
-            x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
-            (starCompartment -> data)[compIdx] = x1;
-            this -> calculateRelevantCompartments(i,j);
-            this -> evalOCL(i,j);
-            newVal = (this->getValue());
-            newProposal = (context -> random -> dnorm(x1, x0,width));
-            initProposal = (context -> random -> dnorm(x0, x1,width));
-            criterion = (newVal - initVal) + (initProposal - newProposal);
-            if (std::log((context -> random -> uniform())) < criterion)
-            {
-                // Accept new value
-            }
-            else
-            {
-                // Keep Original Value
-                (starCompartment -> data)[compIdx] = x0;
-                this -> calculateRelevantCompartments(i,j);
-                this -> setValue(initVal); 
-            }                
-
-
-            if (!std::isfinite(this -> getValue()))
-            {
-                std::cout << "Impossible value selected:\n";
-                std::cout << "(i,j): (" << i << "," << j << ")\n";
-                std::cout << "Data value: " << (starCompartment -> data)[compIdx] << "\n";
-                this -> printDebugInfo(i,j);
-                throw(-1);
-            }
-            compIdx ++;
-        }
-
-        return(0);
-    }
-
-
     int CompartmentFullConditional::jointSampleCompartmentLocation(int i, int batchSize, int numBatches, int* batchCache, ModelContext* context,
                                                                    CompartmentalModelMatrix* starCompartment,
                                                                    double width)
@@ -307,7 +286,7 @@ namespace SpatialSEIR
             criterion = 0.0;
 
             this -> calculateRelevantCompartments(i,j); 
-            this -> evalOCL(i,j);
+            this -> evalCPU(i,j);
 
             initVal = (this -> getValue());
 
@@ -322,7 +301,7 @@ namespace SpatialSEIR
                 initProposal += (context -> random -> dnorm(x0, x1,width));
             }
             this -> calculateRelevantCompartments(i,j);
-            this -> evalOCL(i,j);
+            this -> evalCPU(i,j);
             newVal = (this->getValue());
             criterion = (newVal - initVal) + (initProposal - newProposal);
             if (std::log((context -> random -> uniform())) < criterion)
@@ -1702,7 +1681,7 @@ namespace SpatialSEIR
     }
 
 
-    int FC_S_Star::evalOCL(int startLoc, int startTime)
+    int FC_S_Star::evalOCL()
     {
         //NOT IMPLEMENTED
         return-1;
@@ -1948,7 +1927,7 @@ namespace SpatialSEIR
        return;
     }
 
-    int FC_E_Star::evalOCL(int startLoc, int startTime)
+    int FC_E_Star::evalOCL()
     {
         //NOT IMPLEMENTED
         return -1;
@@ -2332,12 +2311,12 @@ namespace SpatialSEIR
     }
 
 
-    int FC_R_Star::evalOCL(int startLoc, int startTime)
+    int FC_R_Star::evalOCL()
     {
 
+        int compIdx;
         int nTpts = *((*R) -> nrow);
         int nLoc = *((*R) -> ncol);
-        int compIdx = startLoc*nTpts + startTime;
         int Estar_val, S_val;
         double p_se_val;
         int i,j;
@@ -2347,16 +2326,16 @@ namespace SpatialSEIR
             std::cerr << "FC_R_Star currently only works with OpenCL for reinfectionMode <= 2\n";
         }
 
-        double output = ((*context) -> oclProvider -> FC_R_Star_Part1(startLoc,
-                                                                startTime,
-                                                                nTpts,
-                                                                &(((*R_star) -> data)[compIdx]),
-                                                                &(((*S_star) -> data)[compIdx]),
-                                                                &(((*R) -> data)[compIdx]),
-                                                                &(((*I) -> data)[compIdx]),
-                                                                &((*p_rs)[startTime]),
-                                                                **p_ir
-                                                               ));
+        double output = ((*context) -> oclProvider -> 
+                FC_R_Star_Part1(nLoc,
+                                nTpts,
+                                (((*R_star) -> data)),
+                                (((*S_star) -> data)),
+                                (((*R) -> data)),
+                                (((*I) -> data)),
+                                ((*p_rs)),
+                                **p_ir
+                               ));
         if (!std::isfinite(output))
         {
             *value = -INFINITY;
@@ -2364,13 +2343,12 @@ namespace SpatialSEIR
         }
 
         // p_se changes, so need to look at p_se component for all locations and 
-        // time points after startTime
+        // time points
         for (i = 0; i < nLoc; i++)
         {
-            compIdx = i*nTpts + startTime;
-            for (j = startTime; j< nTpts; j++)
+            compIdx = i*nTpts;
+            for (j = 0; j< nTpts; j++)
             {
-
                 p_se_val = (*p_se)[compIdx];
                 Estar_val = ((*E_star) -> data)[compIdx];
                 S_val = ((*S)->data)[compIdx];
@@ -2385,9 +2363,9 @@ namespace SpatialSEIR
             }
         }
 
-        int  I_star_sum = (*I_star)->marginSum(2,startLoc);
-        int  R_star_sum = (*R_star)->marginSum(2,startLoc);
-        int aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/nTpts;
+        long unsigned int  I_star_sum = (*I_star)->marginSum(3,-1);
+        long unsigned int  R_star_sum = (*R_star)->marginSum(3,-1);
+        int aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/(nTpts*nLoc);
         output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
 
         if (!std::isfinite(output))

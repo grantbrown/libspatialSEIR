@@ -226,7 +226,7 @@ logFileList = c(1, # beta
 
 iterationStride = 10000
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(15,15,15,1e-1,1e-1,1e-1,1e-1)
+sliceWidths = c(15,15,0.25,1e-1,1e-1,1e-1,1e-1)
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1

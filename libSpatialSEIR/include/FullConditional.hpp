@@ -98,7 +98,7 @@ namespace SpatialSEIR
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
             virtual int evalCPU(int startLoc, int startTime) = 0;
-            virtual int evalOCL(int startLoc, int startTime) = 0;
+            virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
@@ -116,10 +116,6 @@ namespace SpatialSEIR
                                   double width); 
 
             int sampleCompartmentLocation(int loc, ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width); 
-
-            int sampleCompartmentLocation_OCL(int loc, ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
@@ -367,7 +363,7 @@ namespace SpatialSEIR
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalOCL(int startLoc, int startTime);
+            virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();
@@ -413,7 +409,7 @@ namespace SpatialSEIR
             ~FC_E_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalOCL(int startLoc, int startTime);
+            virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();
@@ -457,7 +453,7 @@ namespace SpatialSEIR
             ~FC_R_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
-            virtual int evalOCL(int startLoc, int startTime);
+            virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();
