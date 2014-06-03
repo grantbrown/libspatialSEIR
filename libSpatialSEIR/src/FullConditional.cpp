@@ -2356,13 +2356,9 @@ namespace SpatialSEIR
                                                                 &(((*I) -> data)[compIdx]),
                                                                 &((*p_rs)[startTime]),
                                                                 **p_ir
-                                                                ));
-
-        std::cout << output << "\n";
-        throw(-1);
+                                                               ));
         if (!std::isfinite(output))
         {
-            std::cout << output << "\n";
             *value = -INFINITY;
             return(-1);
         }

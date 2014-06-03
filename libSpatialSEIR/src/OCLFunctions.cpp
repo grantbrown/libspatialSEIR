@@ -36,10 +36,16 @@ namespace SpatialSEIR
         //    p_rs   (T)
         size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
         int localSizeMultiple = (R_Star_p1_kernel -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
-        int maxWorkUnits = (R_Star_p1_kernel -> getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device));
-        int maxWorkUnitsCompile = (R_Star_p1_kernel -> getWorkGroupInfo<CL_KERNEL_COMPILE_WORK_GROUP_SIZE>(device))[0];
         int maxLocalSize = localMemPerCore/(4*4 + 8);
-        int numWorkUnits = (maxLocalSize/localSizeMultiple)*localSizeMultiple; 
+        i=-1;
+        int numWorkUnits = 0;
+        while(numWorkUnits <= maxLocalSize)
+        {
+            i++;
+            numWorkUnits = pow(2,i)*localSizeMultiple;
+        }
+        numWorkUnits = pow(2,i-1)*localSizeMultiple;
+
         int numWorkGroups = (remainingTpts/numWorkUnits); 
             numWorkGroups += (numWorkGroups*numWorkUnits < remainingTpts);
         int globalSize = numWorkGroups*numWorkUnits; 
@@ -47,16 +53,6 @@ namespace SpatialSEIR
         double* output = new double[numWorkGroups]();
         size_t buffSize = remainingTpts*sizeof(int);
         size_t localBuffSize = numWorkUnits*sizeof(int);
-
-        std::cout << "localMemPerCore: " << localMemPerCore << "\n";
-        std::cout << "localSizeMultiple: " << localSizeMultiple << "\n";
-        std::cout << "maxWorkUnits: " << maxWorkUnits << "\n";
-        std::cout << "maxWorkUnitsCompile: " << maxWorkUnitsCompile << "\n";
-        std::cout << "maxLocalSize: " << maxLocalSize << "\n";
-        std::cout << "numWorkUnits: " << numWorkUnits << "\n";
-        std::cout << "numWorkGroups: " << numWorkGroups << "\n";
-        std::cout << "globalSize: " << globalSize << "\n";
-
 
         cl::Buffer RstarBuffer(*context, CL_MEM_WRITE_ONLY | 
             CL_MEM_COPY_HOST_PTR, buffSize, R_star);

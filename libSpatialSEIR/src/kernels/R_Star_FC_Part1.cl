@@ -31,13 +31,13 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
 {
     size_t globalId = get_global_id(0);
     int i;
+    int terminalLID = - 1;
     size_t localId = get_local_id(0);
     size_t localSize = get_local_size(0);
     size_t groupId = get_group_id(0); 
     double partialResult = 0.0;
 
-    globalId = INFINITY;
-    if (globalId <= nTpt)
+    if (globalId < nTpt)
     {
         double p_ir_val = p_ir;
         double ln_p_ir = log(p_ir_val);
@@ -64,7 +64,6 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
         }
     }
     p_rs_loc[localId] = partialResult;
-    p_rs_loc[localId] = localId;
 
     barrier(CLK_LOCAL_MEM_FENCE);    
     for (i = localSize/2; i > 0; i >>= 1)
@@ -72,7 +71,7 @@ __kernel void FC_R_Star_Part1(__global int* R_star,
         if (localId < i)
         {
             p_rs_loc[localId] += p_rs_loc[localId + i]; 
-        }
+        } 
         barrier(CLK_LOCAL_MEM_FENCE);
     }
     if (localId == 0)
