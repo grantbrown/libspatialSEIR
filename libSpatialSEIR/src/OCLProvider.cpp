@@ -30,6 +30,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
         programs = new std::vector<cl::Program>();
         test_kernel = new cl::Kernel();
         R_Star_p1_kernel = new cl::Kernel();
+        R_star_args = new FC_R_Star_KernelData();
+        R_star_args -> totalWorkUnits = -1;
     }
     catch(cl::Error e)
     {
@@ -224,6 +226,7 @@ SpatialSEIR::OCLProvider::~OCLProvider()
     delete[] globalMemSizes;
     delete[] localMemSizes;
     delete[] numComputeUnits;
+    delete R_star_args;
     delete test_kernel;
     delete R_Star_p1_kernel;
     delete context;

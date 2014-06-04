@@ -21,6 +21,15 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    struct FC_R_Star_KernelData
+    {
+        int workGroupSize;
+        int numWorkGroups;
+        int totalWorkUnits;
+        int globalSize;
+        double *outCache;
+    };
+
     class OCLProvider
     {
         public:  
@@ -46,6 +55,7 @@ namespace SpatialSEIR
             std::vector<size_t> *numComputeUnits;
             std::vector<cl_uint> *doublePrecision;
             std::vector<cl::Program> *programs;
+            FC_R_Star_KernelData* R_star_args;
 
             // FC Methods
             double FC_R_Star(int nLoc, 
