@@ -97,6 +97,7 @@ namespace SpatialSEIR
         public:
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
+            virtual int evalCPU() = 0;
             virtual int evalCPU(int startLoc, int startTime) = 0;
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
@@ -108,6 +109,10 @@ namespace SpatialSEIR
             virtual void printDebugInfo(int loc, int tpt) = 0;
 
             int sampleCompartment_CPU(ModelContext* context,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width); 
+
+            int sampleEntireCompartment_CPU(ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
@@ -363,6 +368,7 @@ namespace SpatialSEIR
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
             virtual int evalCPU(int startLoc, int startTime);
+            virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
@@ -409,6 +415,7 @@ namespace SpatialSEIR
             ~FC_E_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
+            virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();
@@ -453,6 +460,7 @@ namespace SpatialSEIR
             ~FC_R_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
+            virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
             virtual int sampleOCL();

@@ -128,6 +128,63 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int CompartmentFullConditional::sampleEntireCompartment_CPU(ModelContext* context,
+                                                       CompartmentalModelMatrix* starCompartment,
+                                                       double width)
+    {
+        double initProposal = 0.0;
+        double newProposal = 0.0;
+        int i;
+        int x0, x1;
+        int totalPoints = (*(starCompartment -> nrow))*(*(starCompartment -> ncol));
+        // Backup Compartment
+        memcpy(context -> tmpContainer -> data, starCompartment -> data, totalPoints*sizeof(int)); 
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double initVal = (this -> getValue());
+        if (! std::isfinite(initVal))
+        {
+            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            throw(-1);
+        }
+        for (i = 0; i < totalPoints; i++)
+        {
+            x0 = (starCompartment -> data)[i];
+            x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+            (starCompartment -> data)[i] = x1;
+            newProposal += (context -> random -> dnorm(x1, x0,width));
+            initProposal += (context -> random -> dnorm(x0, x1,width));
+        }
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double newVal = (this->getValue());
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
+
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            std::cout << " ### ACCEPTING ### " << "\n";
+            // Accept new values
+        }
+        else
+        {
+            std::cout << " not accepting \n";
+            // Keep Original Value
+            memcpy(starCompartment -> data, context -> tmpContainer -> data, totalPoints*sizeof(int)); 
+            this -> calculateRelevantCompartments();
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        }
+
+        return(0);
+    }
+
+
+
     int CompartmentFullConditional::sampleCompartment_OCL(ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,
                                                        double width)
@@ -164,9 +221,11 @@ namespace SpatialSEIR
         if (std::log((context -> random -> uniform())) < criterion)
         {
             // Accept new values
+            std::cout << " ###Accepting###\n";
         }
         else
         {
+            std::cout << "not accepting\n";
             // Keep Original Value
             memcpy(starCompartment -> data, context -> tmpContainer -> data, totalPoints*sizeof(int)); 
             this -> calculateRelevantCompartments();
@@ -1606,6 +1665,12 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int FC_S_Star::evalCPU()
+    {
+        // Not implemented
+        return(-1);
+    }
+
     void FC_S_Star::printDebugInfo(int startLoc, int startTime)
     {
         std::cout << "S_star debug info, location " << startLoc << ", time " << startTime << "\n";     
@@ -1845,6 +1910,12 @@ namespace SpatialSEIR
         }
     
        return 0;
+    }
+
+    int FC_E_Star::evalCPU()
+    {
+        // Not implemented
+        return(-1);
     }
 
     void FC_E_Star::printDebugInfo(int loc, int tpt)
@@ -2150,6 +2221,123 @@ namespace SpatialSEIR
         return 0;
     }
 
+    int FC_R_Star::evalCPU()
+    {
+        int i,j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
+        long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        double ln_p_ir = std::log(**p_ir);
+        double ln_1m_p_ir = std::log(1-(**p_ir));
+        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
+        long unsigned int I_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff; 
+
+
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
+        {
+            for (i = 0; i < nLoc; i++)
+            {
+                compIdx = i*nTpts;
+                for (j = 0; j < nTpts; j++)
+                {
+                    Rstar_val = ((*R_star) -> data)[compIdx];
+                    Sstar_val = ((*S_star)->data)[compIdx];
+                    R_val = ((*R) ->data)[compIdx];
+                    I_val = ((*I) ->data)[compIdx];
+                    p_rs_val = (*p_rs)[j];
+
+                    if (Rstar_val < 0 || Rstar_val > I_val || 
+                            Sstar_val > R_val)
+                    {
+                        *value = -INFINITY;
+                        return(-1);
+                    }
+                    else
+                    {
+                        output += (ln_p_ir*Rstar_val +
+                                    ln_1m_p_ir*(I_val - Rstar_val) +
+                                    ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                                    ((*context) -> random -> choose(I_val, Rstar_val)));
+                    }
+                    compIdx++;
+                } 
+            }
+        }
+        else
+        {
+            for (i = 0; i < nLoc; i++)
+            {
+                compIdx = i*nTpts;
+                for (j = 0; j < nTpts; j++)
+                {
+                    Rstar_val = ((*R_star) -> data)[compIdx];
+                    R_val = ((*R) ->data)[compIdx];
+                    I_val = ((*I) ->data)[compIdx];
+
+                    if (Rstar_val < 0 || Rstar_val > I_val)
+                    {
+                        *value = -INFINITY;
+                        return(-1);
+                    }
+                    else
+                    {
+                        output += (ln_p_ir*Rstar_val +
+                                    ln_1m_p_ir*(I_val - Rstar_val) +
+                                    ((*context) -> random -> choose(I_val, Rstar_val)));
+                    }
+                    compIdx++;
+                } 
+            }
+        }
+
+
+        // p_se changes, so need to look at p_se component for all locations and 
+        // time points
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts;
+            for (j = 0; j< nTpts; j++)
+            {
+
+                p_se_val = (*p_se)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                if (p_se_val > 1 || p_se_val < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
+                compIdx ++; 
+            }
+        }
+
+        I_star_sum = (*I_star)->marginSum(3,-1);
+        R_star_sum = (*R_star)->marginSum(3,-1);
+        aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/(nTpts*nLoc);
+        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;   
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+        return 0;
+    }
+
+
     void FC_R_Star::printDebugInfo(int startLoc, int startTime)
     {
         std::cout << "R_star debug info, location " << startLoc << ", time " << startTime << "\n";     
@@ -2397,8 +2585,11 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
+        /*
         this -> sampleCompartment_CPU(*context,
                                   *R_star,*sliceWidth);
+        */
+        this -> sampleEntireCompartment_CPU(*context, *R_star, *sliceWidth);
         return(0);
     }
     int FC_R_Star::sampleOCL()

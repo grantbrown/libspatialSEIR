@@ -137,7 +137,7 @@ logFileList = c(1, # beta
 
 iterationStride = 10
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(3,3,3,1e-4,1e-4,1e-4,1e-4)
+sliceWidths = c(3,3,0.15,1e-4,1e-4,1e-4,1e-4)
 
 
 # Check validity of dimensions
