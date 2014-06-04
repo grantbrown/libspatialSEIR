@@ -40,6 +40,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/ModelContext.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/ModelContextSummaryFunctions.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditional.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IOProvider.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/RandomNumberProvider.hpp"
