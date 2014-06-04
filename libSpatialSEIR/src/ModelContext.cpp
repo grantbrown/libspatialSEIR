@@ -532,10 +532,11 @@ namespace SpatialSEIR
             else {rho_fc -> sampleOCL();}
         }
 
+        /*
         if (verbose){std::cout << "Sampling gamma\n";}
         if (useOCL[12] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
-
+        */
 
     }
 
@@ -564,7 +565,7 @@ namespace SpatialSEIR
     {
         int useOCL[13] = {0};
         // TMP: Use OCL for R_star
-        //useOCL[6] = 1;
+        useOCL[6] = 1;
         int i;
         int itrStart = *numIterations;
         int itrMax = nIterations + (*numIterations);

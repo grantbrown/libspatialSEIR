@@ -2502,12 +2502,8 @@ namespace SpatialSEIR
     int FC_R_Star::evalOCL()
     {
 
-        int compIdx;
         int nTpts = *((*R) -> nrow);
         int nLoc = *((*R) -> ncol);
-        int Estar_val, S_val;
-        double p_se_val;
-        int i,j;
 
         if ((*context) -> config -> reinfectionMode > 2)
         {
@@ -2515,57 +2511,25 @@ namespace SpatialSEIR
         }
 
         double output = ((*context) -> oclProvider -> 
-                FC_R_Star_Part1(nLoc,
-                                nTpts,
-                                (((*R_star) -> data)),
-                                (((*S_star) -> data)),
-                                (((*R) -> data)),
-                                (((*I) -> data)),
-                                ((*p_rs)),
-                                **p_ir
-                               ));
+                FC_R_Star(nLoc,
+                          nTpts,
+                          ((*S_star) -> data),
+                          ((*E_star) -> data),
+                          ((*R_star) -> data),
+                          ((*S) -> data),
+                          ((*I) -> data),
+                          ((*R) -> data),
+                          (*p_se),
+                          (*p_rs),
+                          **p_ir
+                          ));
         if (!std::isfinite(output))
         {
             *value = -INFINITY;
             return(-1);
         }
-
-        // p_se changes, so need to look at p_se component for all locations and 
-        // time points
-        for (i = 0; i < nLoc; i++)
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j< nTpts; j++)
-            {
-                p_se_val = (*p_se)[compIdx];
-                Estar_val = ((*E_star) -> data)[compIdx];
-                S_val = ((*S)->data)[compIdx];
-                if (p_se_val > 1 || p_se_val < 0)
-                {
-                    *value = -INFINITY;
-                    return(-1);
-                }
-
-                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
-                compIdx ++; 
-            }
-        }
-
-        long unsigned int  I_star_sum = (*I_star)->marginSum(3,-1);
-        long unsigned int  R_star_sum = (*R_star)->marginSum(3,-1);
-        int aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/(nTpts*nLoc);
-        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
-
-        if (!std::isfinite(output))
-        {
-            *value = -INFINITY;   
-            return(-1);
-        }
-        else
-        {
-            *value = output;
-        }
-
+        else 
+        *value = output;
         return 0;
     }
     int FC_R_Star::calculateRelevantCompartments()

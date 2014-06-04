@@ -8,14 +8,17 @@
 
 namespace SpatialSEIR
 {
-    double OCLProvider::FC_R_Star_Part1(int nLoc, 
-                                        int nTpts,
-                                        int* R_star,
-                                        int* S_star,
-                                        int* R,
-                                        int* I,
-                                        double* p_rs,
-                                        double p_ir)
+    double OCLProvider::FC_R_Star(int nLoc, 
+                                  int nTpts,
+                                  int* S_star,
+                                  int* E_star,
+                                  int* R_star,
+                                  int* S,
+                                  int* I,
+                                  int* R,
+                                  double* p_se,
+                                  double* p_rs,
+                                  double p_ir)
     {
         cl::Device device = (cpuQueue -> getInfo<CL_QUEUE_DEVICE>());
         int totalWorkUnits = nLoc*nTpts;
@@ -28,15 +31,18 @@ namespace SpatialSEIR
         //
         // Input:
         // 1. Integers (4 bytes)
-        //    S_star (T)
-        //    R_star (T)
-        //    R      (T)
-        //    I      (T)
+        //    S_star (TxP)
+        //    E_star (TxP)
+        //    R_star (TxP)
+        //    S      (TxP)
+        //    R      (TxP)
+        //    I      (TxP)
         // 2. Doubles (8 bytes)
-        //    p_rs   (T)
+        //    p_rs   (T), might use as (TxP) for simplicity. 
+        //    p_se   (TxP)
         size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
         int localSizeMultiple = (R_Star_p1_kernel -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
-        int maxLocalSize = localMemPerCore/(4*4 + 8);
+        int maxLocalSize = localMemPerCore/(4*6 + 2*8);
         i=-1;
         int workGroupSize = 0;
         while(workGroupSize <= maxLocalSize && workGroupSize < totalWorkUnits)
@@ -65,36 +71,49 @@ namespace SpatialSEIR
         std::cout << "Num Work Groups: " << numWorkGroups << "\n";
         */
 
-        cl::Buffer RstarBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_COPY_HOST_PTR, buffSize, R_star);
         cl::Buffer SstarBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_COPY_HOST_PTR, buffSize, S_star);
-        cl::Buffer RBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_COPY_HOST_PTR, buffSize, R);
+            CL_MEM_USE_HOST_PTR, buffSize, S_star);
+        cl::Buffer EstarBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, buffSize, E_star);
+        cl::Buffer RstarBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, buffSize, R_star);
+        cl::Buffer SBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, buffSize, S);
         cl::Buffer IBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_COPY_HOST_PTR, buffSize, I);
+            CL_MEM_USE_HOST_PTR, buffSize, I);
+        cl::Buffer RBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, buffSize, R);
+        cl::Buffer p_seBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, totalWorkUnits*sizeof(double), p_se);
         cl::Buffer p_rsBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_COPY_HOST_PTR, nTpts*sizeof(double), p_rs);
+            CL_MEM_USE_HOST_PTR, nTpts*sizeof(double), p_rs);
         cl::Buffer outBuffer(*context, CL_MEM_READ_WRITE | 
             CL_MEM_COPY_HOST_PTR, numWorkGroups*sizeof(double), output);
 
         int err;  
 
-        err = R_Star_p1_kernel -> setArg(0, RstarBuffer);
-        err |= R_Star_p1_kernel -> setArg(1, SstarBuffer);
-        err |= R_Star_p1_kernel -> setArg(2, RBuffer);
-        err |= R_Star_p1_kernel -> setArg(3, IBuffer);
-        err |= R_Star_p1_kernel -> setArg(4, p_rsBuffer);
-        err |= R_Star_p1_kernel -> setArg(5, p_ir);
-        err |= R_Star_p1_kernel -> setArg(6, nTpts);
-        err |= R_Star_p1_kernel -> setArg(7, nLoc);
-        err |= R_Star_p1_kernel -> setArg(8, outBuffer);
+        err = R_Star_p1_kernel -> setArg(0, nTpts);
+        err |= R_Star_p1_kernel -> setArg(1, nLoc);
+        err |= R_Star_p1_kernel -> setArg(2, SstarBuffer);
+        err |= R_Star_p1_kernel -> setArg(3, EstarBuffer);
+        err |= R_Star_p1_kernel -> setArg(4, RstarBuffer);
+
+        err |= R_Star_p1_kernel -> setArg(5, SBuffer);
+        err |= R_Star_p1_kernel -> setArg(6, IBuffer);
+        err |= R_Star_p1_kernel -> setArg(7, RBuffer);
+        err |= R_Star_p1_kernel -> setArg(8, p_seBuffer);
+        err |= R_Star_p1_kernel -> setArg(9, p_rsBuffer);
+        err |= R_Star_p1_kernel -> setArg(10, p_ir);
+        err |= R_Star_p1_kernel -> setArg(11, outBuffer);
         // Local Declarations
-        err |= R_Star_p1_kernel -> setArg(9, localBuffSize, NULL); //R_star
-        err |= R_Star_p1_kernel -> setArg(10, localBuffSize, NULL); //S_star
-        err |= R_Star_p1_kernel -> setArg(11, localBuffSize, NULL); //R
-        err |= R_Star_p1_kernel -> setArg(12, localBuffSize, NULL); //I
-        err |= R_Star_p1_kernel -> setArg(13, workGroupSize*sizeof(double), NULL); //p_rs
+        err |= R_Star_p1_kernel -> setArg(12, localBuffSize, NULL); //S_star
+        err |= R_Star_p1_kernel -> setArg(13, localBuffSize, NULL); //E_star
+        err |= R_Star_p1_kernel -> setArg(14, localBuffSize, NULL); //R_star
+        err |= R_Star_p1_kernel -> setArg(15, localBuffSize, NULL); //S
+        err |= R_Star_p1_kernel -> setArg(16, localBuffSize, NULL); //I
+        err |= R_Star_p1_kernel -> setArg(17, localBuffSize, NULL); //R
+        err |= R_Star_p1_kernel -> setArg(18, workGroupSize*sizeof(double), NULL); //p_se
+        err |= R_Star_p1_kernel -> setArg(19, workGroupSize*sizeof(double), NULL); //p_rs
 
         if (err < 0)
         {
@@ -133,8 +152,6 @@ namespace SpatialSEIR
         {
             outSum = -INFINITY;
         }
-
-
 
         delete[] output;
         return(outSum);

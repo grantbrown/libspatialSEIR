@@ -48,14 +48,17 @@ namespace SpatialSEIR
             std::vector<cl::Program> *programs;
 
             // FC Methods
-            double FC_R_Star_Part1(int nLoc, 
-                                   int nTpts,
-                                   int* R_star,
-                                   int* S_star,
-                                   int* R,
-                                   int* I,
-                                   double* p_rs,
-                                   double p_ir);
+            double FC_R_Star(int nLoc, 
+                             int nTpts,
+                             int* S_star,
+                             int* E_star,
+                             int* R_star,
+                             int* S,
+                             int* I,
+                             int* R,
+                             double* p_se,
+                             double* p_rs,
+                             double p_ir);
 
             // Kernels
             cl::Kernel* test_kernel;
