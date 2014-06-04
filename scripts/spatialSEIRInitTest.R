@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(50)
+    control_code(200)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -137,7 +137,7 @@ logFileList = c(1, # beta
 
 iterationStride = 10
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(3,3,0.15,1e-4,1e-4,1e-4,1e-4)
+sliceWidths = c(3,3,0.12,1e-4,1e-4,1e-4,1e-4)
 
 
 # Check validity of dimensions

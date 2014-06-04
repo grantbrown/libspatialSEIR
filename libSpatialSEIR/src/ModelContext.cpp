@@ -469,6 +469,11 @@ namespace SpatialSEIR
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
+        if (verbose){std::cout << "Sampling R_star\n";}
+        if (useOCL[6] == 0){R_star_fc -> sampleCPU();}
+        else {R_star_fc -> sampleOCL();}
+        return;
+
         if (verbose){std::cout << "Sampling S0\n";}
         if (useOCL[0] == 0){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}
@@ -565,7 +570,7 @@ namespace SpatialSEIR
     {
         int useOCL[13] = {0};
         // TMP: Use OCL for R_star
-        //useOCL[6] = 1;
+        useOCL[6] = 1;
         int i;
         int itrStart = *numIterations;
         int itrMax = nIterations + (*numIterations);

@@ -88,7 +88,10 @@ namespace SpatialSEIR
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
+            double acceptanceRatio();
             double* sliceWidth;
+            int* samples;
+            int* accepted;
     };
 
     // Parent class for compartment full conditional distributions
@@ -210,6 +213,7 @@ namespace SpatialSEIR
             virtual long double getValue();
             virtual void setValue(long double value);
             virtual int calculateRelevantCompartments();
+
             virtual int calculateRelevantCompartments(int startLoc);
             virtual void printDebugInfo(int loc);
 
@@ -224,6 +228,8 @@ namespace SpatialSEIR
             double** p_ei;
             double* sliceWidth;
             long double* value;
+            int* samples;
+            int* accepted;
 
     };
 
@@ -267,6 +273,8 @@ namespace SpatialSEIR
             double** p_ei;
             double* sliceWidth;
             long double* value;
+            int* samples;
+            int* accepted;
     };
 
     class FC_I0 : public InitCompartmentFullConditional
@@ -308,6 +316,8 @@ namespace SpatialSEIR
             double** p_se; 
             double* sliceWidth;
             long double* value;
+            int* samples;
+            int* accepted;
     };
 
     class FC_R0 : public InitCompartmentFullConditional
@@ -345,6 +355,8 @@ namespace SpatialSEIR
             double** p_se; 
             double* sliceWidth;
             long double* value;
+            int* samples;
+            int* accepted;
     };
 
 
@@ -394,6 +406,8 @@ namespace SpatialSEIR
             long double* value;
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
+            int* samples;
+            int* accepted;
     };
 
     class FC_E_Star : public CompartmentFullConditional
@@ -438,6 +452,8 @@ namespace SpatialSEIR
             long double* value;
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
+            int* samples;
+            int* accepted;
     };
 
     class FC_R_Star : public CompartmentFullConditional
@@ -484,6 +500,8 @@ namespace SpatialSEIR
             long double* value;
             double* steadyStateConstraintPrecision;
             double* sliceWidth;
+            int* samples;
+            int* accepted;
     };
 
     class FC_Beta : public ParameterFullConditional
@@ -520,6 +538,8 @@ namespace SpatialSEIR
             long double* value;
             double* sliceWidth;
             double* priorPrecision;
+            int* samples;
+            int* accepted;
     };
 
     class FC_Beta_P_RS : public ParameterFullConditional
@@ -554,7 +574,8 @@ namespace SpatialSEIR
             double* tausq;
             long double* value;
             double* sliceWidth;
-
+            int* samples;
+            int* accepted;
     };
 
     class FC_Rho : public ParameterFullConditional 
@@ -589,7 +610,8 @@ namespace SpatialSEIR
             double **rho;
             long double* value;
             double* sliceWidth;
-
+            int* samples;
+            int* accepted;
     };
 
     class FC_Gamma : public ParameterFullConditional 
@@ -628,7 +650,8 @@ namespace SpatialSEIR
             double* priorBeta;
             long double* value;
             double* sliceWidth;
-
+            int* samples;
+            int* accepted;
     };    
 
     class FC_P_EI : public ParameterFullConditional
@@ -659,7 +682,8 @@ namespace SpatialSEIR
             double* priorAlpha;
             double* priorBeta;
             double* sliceWidth;
-
+            int* samples;
+            int* accepted;
     };
 
     class FC_P_IR : public ParameterFullConditional
@@ -691,6 +715,8 @@ namespace SpatialSEIR
             double* priorAlpha;
             double* priorBeta;
             double* sliceWidth;
+            int* samples;
+            int* accepted;
     };
 }
 

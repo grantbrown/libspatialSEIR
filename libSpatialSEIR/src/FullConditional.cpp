@@ -110,6 +110,10 @@ namespace SpatialSEIR
         delete numLocations;
     }
 
+    double FullConditional::acceptanceRatio()
+    {
+        return((*accepted*1.0)/(*samples));
+    }
 
     int CompartmentFullConditional::sampleCompartment_CPU(ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,
@@ -132,6 +136,7 @@ namespace SpatialSEIR
                                                        CompartmentalModelMatrix* starCompartment,
                                                        double width)
     {
+        (this->samples) += 1;
         double initProposal = 0.0;
         double newProposal = 0.0;
         int i;
@@ -162,12 +167,11 @@ namespace SpatialSEIR
 
         if (std::log((context -> random -> uniform())) < criterion)
         {
-            std::cout << " ### ACCEPTING ### " << "\n";
             // Accept new values
+            (this->accepted) += 1;
         }
         else
         {
-            std::cout << " not accepting \n";
             // Keep Original Value
             memcpy(starCompartment -> data, context -> tmpContainer -> data, totalPoints*sizeof(int)); 
             this -> calculateRelevantCompartments();
@@ -189,6 +193,7 @@ namespace SpatialSEIR
                                                        CompartmentalModelMatrix* starCompartment,
                                                        double width)
     {
+        (this->samples) += 1;
         double initProposal = 0.0;
         double newProposal = 0.0;
         int i;
@@ -221,11 +226,11 @@ namespace SpatialSEIR
         if (std::log((context -> random -> uniform())) < criterion)
         {
             // Accept new values
-            std::cout << " ###Accepting###\n";
+            (this->accepted) += 1;
+
         }
         else
         {
-            std::cout << "not accepting\n";
             // Keep Original Value
             memcpy(starCompartment -> data, context -> tmpContainer -> data, totalPoints*sizeof(int)); 
             this -> calculateRelevantCompartments();
@@ -280,6 +285,8 @@ namespace SpatialSEIR
         compIdx = i*nTpts;
         for (j = 0; j < nTpts; j ++)
         { 
+   
+            (this->samples) += 1;
             //std::cout << j << "\n";
             this -> calculateRelevantCompartments(i,j); 
             this -> evalCPU(i,j);
@@ -298,6 +305,7 @@ namespace SpatialSEIR
             if (std::log((context -> random -> uniform())) < criterion)
             {
                 // Accept new value
+                (this->accepted) += 1; 
             }
             else
             {
@@ -339,6 +347,7 @@ namespace SpatialSEIR
         j = 0;
         for (k = 0; k < numBatches; k++)
         { 
+            (this->samples) += 1;
             //init
             newProposal = 0.0;
             initProposal = 0.0;
@@ -366,6 +375,7 @@ namespace SpatialSEIR
             if (std::log((context -> random -> uniform())) < criterion)
             {
                 // Accept new value
+                (this->accepted) += 1; 
             }
             else
             {
@@ -456,6 +466,7 @@ namespace SpatialSEIR
 
             do
             {
+                (this->samples) += 1;
                 x0 = ((context -> random -> uniform())*(r-l) + l);
                 (starCompartment -> data)[compIdx] = std::floor(x0);
                 this -> calculateRelevantCompartments(i,j); 
@@ -464,6 +475,7 @@ namespace SpatialSEIR
                 else{l=x0;}
             } while (y >= (this -> getValue()));
             compIdx ++;
+            (this->accepted) += 1; 
         }
         return(0);
     }
@@ -491,6 +503,7 @@ namespace SpatialSEIR
                                                                   int* initCompartment,
                                                                   double width)
     {
+        (this->samples) += 1;
         int x0, x1;
         double initVal, newVal;
         double initProposal, newProposal;
@@ -513,6 +526,7 @@ namespace SpatialSEIR
         if (std::log((context -> random -> uniform())) < criterion)
         {
             // Accept new value
+            (this->accepted)+=1;
         }
         else
         {
@@ -567,6 +581,7 @@ namespace SpatialSEIR
 
             do
             {
+                (this->samples) += 1;
                 x0 = ((context -> random -> uniform())*(r-l) + l);
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
@@ -574,6 +589,7 @@ namespace SpatialSEIR
                 l = (x0 >= x ? l : x0);
                 r = (x0 < x ? r : x0);  
             } while (y >= (this -> getValue()));
+            accepted++;
         }
         return 0;
     }
@@ -597,6 +613,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (i = 0; i < varLen; i++)
         { 
+            (this->samples) += 1;
             x0 = variable[i];
             this -> calculateRelevantCompartments(); 
             this -> evalCPU();
@@ -612,7 +629,9 @@ namespace SpatialSEIR
 
             if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
             {
-                // Accept the new value.
+                // Accept the new value. 
+                (this->accepted)+=1;
+
             }
             else
             {
@@ -652,6 +671,8 @@ namespace SpatialSEIR
         p_ei = new double*;
         sliceWidth = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
 
         *context = _context;
         *S = _S;
@@ -676,6 +697,8 @@ namespace SpatialSEIR
         delete p_se;
         delete sliceWidth;
         delete value;
+        delete samples;
+        delete accepted;
 
     }
     
@@ -856,6 +879,9 @@ namespace SpatialSEIR
         p_ei = new double*;
         sliceWidth = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+
 
         *context = _context;
         *S = _S;
@@ -885,6 +911,9 @@ namespace SpatialSEIR
         delete A0;
         delete sliceWidth;
         delete value;
+        delete samples;
+        delete accepted;
+
     }
     
     int FC_E0::evalCPU(int startLoc)
@@ -1039,6 +1068,9 @@ namespace SpatialSEIR
         p_se = new double*;
         sliceWidth = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+
 
         *context = _context;
         *S = _S;
@@ -1068,6 +1100,9 @@ namespace SpatialSEIR
         delete p_se;
         delete p_rs;
         delete value;
+        delete samples;
+        delete accepted;
+
     }
     
 
@@ -1383,6 +1418,8 @@ namespace SpatialSEIR
         p_se = new double*;
         sliceWidth = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
 
         *context = _context;
         *S = _S;
@@ -1408,6 +1445,9 @@ namespace SpatialSEIR
         delete p_se;
         delete p_rs;
         delete value;
+        delete samples;
+        delete accepted;
+
     }
     
 
@@ -1578,6 +1618,11 @@ namespace SpatialSEIR
        value = new long double;
        steadyStateConstraintPrecision = new double;
        sliceWidth = new double;
+       samples = new int;
+       accepted = new int; 
+       samples = 0;
+       accepted = 0;
+
        *context = _context;
        *S_star = _S_star;
        *S = _S;
@@ -1611,6 +1656,9 @@ namespace SpatialSEIR
         delete steadyStateConstraintPrecision;
         delete sliceWidth;
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_S_Star::evalCPU(int startLoc, int startTime)
@@ -1822,7 +1870,11 @@ namespace SpatialSEIR
         sliceWidth = new double;
         steadyStateConstraintPrecision = new double;
         value = new long double;
-        
+        samples = new int;
+        accepted = new int; 
+        samples = 0;
+        accepted = 0;
+       
         *context = _context;
         *E_star = _E_star;
         *E = _E;
@@ -1855,6 +1907,9 @@ namespace SpatialSEIR
         delete sliceWidth;
         delete steadyStateConstraintPrecision; 
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_E_Star::evalCPU(int startLoc, int startTime)
@@ -2076,6 +2131,10 @@ namespace SpatialSEIR
         sliceWidth = new double;
         steadyStateConstraintPrecision = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+        samples = 0;
+        accepted = 0;
 
         *context = _context;
         *R_star = _R_star;
@@ -2110,6 +2169,9 @@ namespace SpatialSEIR
         delete sliceWidth;
         delete steadyStateConstraintPrecision;
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_R_Star::evalCPU(int startLoc, int startTime)
@@ -2604,6 +2666,10 @@ namespace SpatialSEIR
         sliceWidth = new double;
         priorPrecision = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+        samples = 0;
+        accepted = 0;
 
         *context = _context;
         *E_star = _E_star;
@@ -2631,6 +2697,9 @@ namespace SpatialSEIR
         delete sliceWidth;
         delete priorPrecision;
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_Beta::evalCPU()
@@ -2752,6 +2821,9 @@ namespace SpatialSEIR
         delete value;
         delete sliceWidth;
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_Beta_P_RS::evalCPU()
@@ -2842,6 +2914,11 @@ namespace SpatialSEIR
         rho = new double*;
         sliceWidth = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+        samples = 0;
+        accepted = 0;
+
 
         *context = _context;
         *E_star = _E_star;
@@ -2866,6 +2943,9 @@ namespace SpatialSEIR
         delete value;
         delete sliceWidth;
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_Rho::evalCPU()
@@ -2957,6 +3037,12 @@ namespace SpatialSEIR
         priorBeta = new double;
         sliceWidth = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+        samples = 0;
+        accepted = 0;
+
+
 
         *context = _context;
         *E_star = _E_star;
@@ -2985,6 +3071,9 @@ namespace SpatialSEIR
         delete sliceWidth;
         delete value;
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_Gamma::evalCPU()
@@ -3071,6 +3160,10 @@ namespace SpatialSEIR
         priorAlpha = new double;
         priorBeta = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+        samples = 0;
+        accepted = 0;
 
         *context = _context;
         *I_star = _I_star;
@@ -3092,6 +3185,9 @@ namespace SpatialSEIR
         delete priorAlpha;
         delete priorBeta;
         delete context;
+        delete samples;
+        delete accepted;
+
     }
 
     int FC_P_EI::evalCPU()
@@ -3157,6 +3253,10 @@ namespace SpatialSEIR
         priorAlpha = new double;
         priorBeta = new double;
         value = new long double;
+        samples = new int;
+        accepted = new int; 
+        samples = 0;
+        accepted = 0;
 
         *context = _context;
         *R_star = _R_star;
@@ -3179,6 +3279,8 @@ namespace SpatialSEIR
         delete priorAlpha;
         delete priorBeta;
         delete context;
+        delete samples;
+        delete accepted;
     }
 
     int FC_P_IR::evalCPU()
