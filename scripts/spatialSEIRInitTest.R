@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(200)
+    control_code(900)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -156,7 +156,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     stop("Invalid Compartment Values")
 }
 
-verbose = FALSE
+verbose = TRUE
 debug = FALSE
 
 priorAlpha_pEI = 1000;
@@ -177,14 +177,14 @@ res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       X_betaPrsDim,
-                      proposal$S0,
-                      proposal$E0,
-                      proposal$I0,
-                      proposal$R0,
-                      proposal$S_star,
-                      proposal$E_star,
-                      proposal$I_star,
-                      proposal$R_star,
+                      S0,
+                      E0,
+                      I0,
+                      R0,
+                      S_star,
+                      E_star,
+                      I_star,
+                      R_star,
                       X,
                       Z,
                       X_betaPrs,
@@ -214,7 +214,7 @@ res = spatialSEIRModel(compMatDim,
                       reinfectionMode)
 
 res$setRandomSeed(123123)
-runSimulation = function(N, batchSize = 10)
+runSimulation = function(N, batchSize = 1)
 {
     tryCatch({
         for (i in 1:(N/batchSize))

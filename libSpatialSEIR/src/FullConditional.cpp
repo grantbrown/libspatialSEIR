@@ -433,7 +433,6 @@ namespace SpatialSEIR
             compIdx = i*nTpts;
             for (j = 0; j< nTpts; j++)
             {
-
                 p_se_val = (*p_se)[compIdx];
                 Estar_val = ((*E_star) -> data)[compIdx];
                 S_val = ((*S)->data)[compIdx];

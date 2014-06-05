@@ -396,6 +396,7 @@ namespace SpatialSEIR
         // Main loop: 
         for (i = 0; i < nLoc; i++)
         {
+            std::cout << i << "\n";
             sampleCompartmentLocation(i, context, initCompartment, width);
             //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
         }

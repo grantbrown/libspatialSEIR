@@ -148,7 +148,7 @@ namespace SpatialSEIR
         for (i = 0; i < (R_star_args -> numWorkGroups); i++)
         {
             outSum += (R_star_args -> outCache)[i];
-        }
+        } 
 
         if (std::isnan(outSum))
         {
@@ -157,4 +157,77 @@ namespace SpatialSEIR
 
         return(outSum);
     }
+
+    int SpatialSEIR::OCLProvider::test()
+    {
+
+        float* A = new float[100];
+        float* B = new float[100];
+        float* out = new float[100];
+        float* cpuOut = new float[100];
+        double bias=0.0;
+        int err;
+        void* mappedMemory;
+        int i;
+        for (i = 0; i < 100; i++)
+        {
+            A[i] = i*1.0;
+            B[i] = i*1.0;
+            cpuOut[i] = A[i] + B[i];
+        }
+
+        cl::Buffer bufferA(*context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), A);
+        cl::Buffer bufferB(*context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), B);
+        cl::Buffer bufferOut(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), out);
+
+        err = test_kernel -> setArg(0, bufferA);
+        err |= test_kernel -> setArg(1, bufferB);
+        err |= test_kernel -> setArg(2, bufferOut);
+        if (err < 0)
+        {
+            std::cerr << "Couldn't set kernel args.\n"; 
+            throw(err);
+        }
+
+        try
+        {
+            err = cpuQueue -> enqueueNDRangeKernel(*test_kernel, 
+                                           0,           // Global Offset
+                                           100,         // Global Size
+                                           1,        // Local Size
+                                           NULL,        // Event Vector
+                                           NULL         // Event Pointer
+                                           );
+        }
+        catch(cl::Error e)
+        {
+            std::cerr << "Error enqueueing kernel: " << e.what() << "\n";
+            std::cerr << "Error: " << e.err() << "\n";
+            throw(-1);
+        }
+
+        mappedMemory = (cpuQueue -> enqueueMapBuffer(bufferOut, CL_TRUE, CL_MAP_READ, 0, 100*sizeof(float)));
+
+
+        memcpy(out, mappedMemory, sizeof(float)*100);
+
+        for (i=0;i<100;i++)
+        {
+            bias += pow(cpuOut[i] - out[i], 2);
+        }
+        if (bias > 1e-20)
+        {
+            std::cerr << "OPEN CL ERROR: Invalid Test Result, bias = " << bias << "\n";
+            throw(-1);
+        } 
+        // todo: test output
+        cpuQueue -> enqueueUnmapMemObject(bufferOut, mappedMemory);
+
+        delete A;
+        delete B;
+        delete out;
+        delete cpuOut;
+        return(0); 
+    }
+
 }
