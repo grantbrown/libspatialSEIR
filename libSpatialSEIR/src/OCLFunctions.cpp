@@ -20,7 +20,8 @@ namespace SpatialSEIR
                                   double* p_rs,
                                   double p_ir)
     {
-        cl::Device device = (cpuQueue -> getInfo<CL_QUEUE_DEVICE>());
+        cl::Context* context = *currentContext;
+        cl::Device device = *((*currentDevice) -> device);
         int i;       
         if (R_star_args -> totalWorkUnits == -1)
         {
@@ -42,7 +43,7 @@ namespace SpatialSEIR
             //    p_se   (TxP)
             R_star_args -> totalWorkUnits = nLoc*nTpts;
             size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
-            int localSizeMultiple = (R_Star_p1_kernel -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
+            int localSizeMultiple = (R_Star_kernel -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
             int maxLocalSize = localMemPerCore/(4*6 + 2*8);
             i=-1;
             int workGroupSize = 0;
@@ -93,28 +94,28 @@ namespace SpatialSEIR
 
         int err;  
 
-        err = R_Star_p1_kernel -> setArg(0, nTpts);
-        err |= R_Star_p1_kernel -> setArg(1, nLoc);
-        err |= R_Star_p1_kernel -> setArg(2, SstarBuffer);
-        err |= R_Star_p1_kernel -> setArg(3, EstarBuffer);
-        err |= R_Star_p1_kernel -> setArg(4, RstarBuffer);
+        err = R_Star_kernel -> setArg(0, nTpts);
+        err |= R_Star_kernel -> setArg(1, nLoc);
+        err |= R_Star_kernel -> setArg(2, SstarBuffer);
+        err |= R_Star_kernel -> setArg(3, EstarBuffer);
+        err |= R_Star_kernel -> setArg(4, RstarBuffer);
 
-        err |= R_Star_p1_kernel -> setArg(5, SBuffer);
-        err |= R_Star_p1_kernel -> setArg(6, IBuffer);
-        err |= R_Star_p1_kernel -> setArg(7, RBuffer);
-        err |= R_Star_p1_kernel -> setArg(8, p_seBuffer);
-        err |= R_Star_p1_kernel -> setArg(9, p_rsBuffer);
-        err |= R_Star_p1_kernel -> setArg(10, p_ir);
-        err |= R_Star_p1_kernel -> setArg(11, outBuffer);
+        err |= R_Star_kernel -> setArg(5, SBuffer);
+        err |= R_Star_kernel -> setArg(6, IBuffer);
+        err |= R_Star_kernel -> setArg(7, RBuffer);
+        err |= R_Star_kernel -> setArg(8, p_seBuffer);
+        err |= R_Star_kernel -> setArg(9, p_rsBuffer);
+        err |= R_Star_kernel -> setArg(10, p_ir);
+        err |= R_Star_kernel -> setArg(11, outBuffer);
         // Local Declarations
-        err |= R_Star_p1_kernel -> setArg(12, localBuffSize, NULL); //S_star
-        err |= R_Star_p1_kernel -> setArg(13, localBuffSize, NULL); //E_star
-        err |= R_Star_p1_kernel -> setArg(14, localBuffSize, NULL); //R_star
-        err |= R_Star_p1_kernel -> setArg(15, localBuffSize, NULL); //S
-        err |= R_Star_p1_kernel -> setArg(16, localBuffSize, NULL); //I
-        err |= R_Star_p1_kernel -> setArg(17, localBuffSize, NULL); //R
-        err |= R_Star_p1_kernel -> setArg(18, (R_star_args -> workGroupSize)*sizeof(double), NULL); //p_se
-        err |= R_Star_p1_kernel -> setArg(19, (R_star_args -> workGroupSize)*sizeof(double), NULL); //p_rs
+        err |= R_Star_kernel -> setArg(12, localBuffSize, NULL); //S_star
+        err |= R_Star_kernel -> setArg(13, localBuffSize, NULL); //E_star
+        err |= R_Star_kernel -> setArg(14, localBuffSize, NULL); //R_star
+        err |= R_Star_kernel -> setArg(15, localBuffSize, NULL); //S
+        err |= R_Star_kernel -> setArg(16, localBuffSize, NULL); //I
+        err |= R_Star_kernel -> setArg(17, localBuffSize, NULL); //R
+        err |= R_Star_kernel -> setArg(18, (R_star_args -> workGroupSize)*sizeof(double), NULL); //p_se
+        err |= R_Star_kernel -> setArg(19, (R_star_args -> workGroupSize)*sizeof(double), NULL); //p_rs
 
         if (err < 0)
         {
@@ -125,13 +126,13 @@ namespace SpatialSEIR
         // once per sampleR_star event
         try
         {
-            cpuQueue -> enqueueNDRangeKernel(*R_Star_p1_kernel,
-                                             0,
-                                             R_star_args -> globalSize,
-                                             R_star_args -> workGroupSize,
-                                             NULL,
-                                             NULL
-                                             );
+            (*currentDevice) -> commandQueue -> enqueueNDRangeKernel(*R_Star_kernel,
+                                                                     0,
+                                                                     R_star_args -> globalSize,
+                                                                     R_star_args -> workGroupSize,
+                                                                     NULL,
+                                                                     NULL
+                                                                     );
         }
         catch(cl::Error e)
         {
@@ -140,9 +141,9 @@ namespace SpatialSEIR
             throw(-1);
         }
 
-        mem_map = cpuQueue -> enqueueMapBuffer(outBuffer, CL_TRUE, CL_MAP_READ, 0, (R_star_args -> numWorkGroups)*sizeof(double));
+        mem_map = ((*currentDevice) -> commandQueue) -> enqueueMapBuffer(outBuffer, CL_TRUE, CL_MAP_READ, 0, (R_star_args -> numWorkGroups)*sizeof(double));
         memcpy((R_star_args -> outCache), mem_map, (R_star_args -> numWorkGroups)*sizeof(double));
-        cpuQueue -> enqueueUnmapMemObject(outBuffer, mem_map);
+        ((*currentDevice) -> commandQueue) -> enqueueUnmapMemObject(outBuffer, mem_map);
 
         double outSum = 0.0;
         for (i = 0; i < (R_star_args -> numWorkGroups); i++)
@@ -176,9 +177,9 @@ namespace SpatialSEIR
             cpuOut[i] = A[i] + B[i];
         }
 
-        cl::Buffer bufferA(*context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), A);
-        cl::Buffer bufferB(*context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), B);
-        cl::Buffer bufferOut(*context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), out);
+        cl::Buffer bufferA(**currentContext, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), A);
+        cl::Buffer bufferB(**currentContext, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), B);
+        cl::Buffer bufferOut(**currentContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 100*sizeof(float), out);
 
         err = test_kernel -> setArg(0, bufferA);
         err |= test_kernel -> setArg(1, bufferB);
@@ -191,7 +192,7 @@ namespace SpatialSEIR
 
         try
         {
-            err = cpuQueue -> enqueueNDRangeKernel(*test_kernel, 
+            err = (*currentDevice) -> commandQueue -> enqueueNDRangeKernel(*test_kernel, 
                                            0,           // Global Offset
                                            100,         // Global Size
                                            1,        // Local Size
@@ -206,7 +207,7 @@ namespace SpatialSEIR
             throw(-1);
         }
 
-        mappedMemory = (cpuQueue -> enqueueMapBuffer(bufferOut, CL_TRUE, CL_MAP_READ, 0, 100*sizeof(float)));
+        mappedMemory = ((*currentDevice) -> commandQueue -> enqueueMapBuffer(bufferOut, CL_TRUE, CL_MAP_READ, 0, 100*sizeof(float)));
 
 
         memcpy(out, mappedMemory, sizeof(float)*100);
@@ -221,7 +222,7 @@ namespace SpatialSEIR
             throw(-1);
         } 
         // todo: test output
-        cpuQueue -> enqueueUnmapMemObject(bufferOut, mappedMemory);
+        ((*currentDevice) -> commandQueue) -> enqueueUnmapMemObject(bufferOut, mappedMemory);
 
         delete A;
         delete B;

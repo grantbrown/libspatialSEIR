@@ -30,34 +30,54 @@ namespace SpatialSEIR
         double *outCache;
     };
 
+    class DeviceContainer
+    {
+        public:
+            DeviceContainer(cl::Device inDevice, cl::Context inContext);
+            ~DeviceContainer();
+            cl::Device* device;
+            cl::CommandQueue * commandQueue;
+    };
+
+    class PlatformContainer
+    {
+        public:
+            PlatformContainer(cl::Platform inPlatform);
+            ~PlatformContainer();
+
+            cl::Platform *platform;
+            cl::Context *context;
+            std::vector<DeviceContainer> *devices;
+            std::vector<std::string> *deviceTypes; // CPU or GPU
+            std::vector<std::string> *deviceNames;
+            std::vector<cl_uint> *doublePrecision;
+    };
+
     class OCLProvider
     {
         public:  
             //Methods 
             OCLProvider();
 
-            std::vector<cl::Kernel>* buildProgramForKernel(std::string kernelFile, 
-                        std::vector<cl::Device> devices);
-            int test();
+
+            void setDevice(int platformId, int deviceId);
 
             ~OCLProvider();
 
             //Attributes
-            cl::Context *context;
-            std::vector<cl::Platform> *platforms;
-            std::vector<cl::Device> *platformDevices, 
-                                    *allDevices, 
-                                    *ctxDevices; 
-            std::vector<std::string> *deviceNames;
-            std::vector<std::vector<size_t> > *workSizes;
-            std::vector<size_t> *globalMemSizes;
-            std::vector<cl_ulong> *localMemSizes;
-            std::vector<size_t> *numComputeUnits;
-            std::vector<cl_uint> *doublePrecision;
+            cl::Platform **currentPlatform;
+            cl::Context **currentContext;
+            DeviceContainer **currentDevice;
+            int *isSetup;
+
+            std::vector<PlatformContainer> *platforms;
+            cl::Kernel buildProgramForKernel(std::string kernelFile, 
+                    DeviceContainer device);
             std::vector<cl::Program> *programs;
             FC_R_Star_KernelData* R_star_args;
 
             // FC Methods
+            int test(); 
             double FC_R_Star(int nLoc, 
                              int nTpts,
                              int* S_star,
@@ -72,7 +92,7 @@ namespace SpatialSEIR
 
             // Kernels
             cl::Kernel* test_kernel;
-            cl::Kernel* R_Star_p1_kernel;
+            cl::Kernel* R_Star_kernel;
 
             // Queues
             cl::CommandQueue* cpuQueue;
