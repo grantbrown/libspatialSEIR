@@ -24,6 +24,12 @@ else()
              of the boost random library.")
 endif()
 
+
+
+message("building clBLAS")
+add_subdirectory("${CMAKE_SOURCE_DIR}/clBLAS/src")
+
+
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures"
                     "."
