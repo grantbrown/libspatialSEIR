@@ -7,14 +7,40 @@
 #include <OCLProvider.hpp>
 #include <ModelContext.hpp>
 #include <CovariateMatrix.hpp>
+#include <CompartmentalModelMatrix.hpp>
 
 namespace SpatialSEIR
 {
     void OCLProvider::calculateP_SE(ModelContext* ctx)
     {
         ctx -> X -> calculate_eta_CPU(ctx -> eta, ctx -> beta);
-        int nrowz = *(ctx -> X -> nrow_z);
-        // unfinished
+        int nLoc = *(ctx -> S -> ncol);
+        int nTpt = *(ctx -> S -> nrow); 
+
+        // Kernel 1
+        // Input:
+        // 1. Integers (4 bytes)
+        //    I (TxP)
+        //    N (TxP)
+        // 2. Doubles (8 bytes)
+        //    eta (not exponentiated) (TxP)
+        // Kernel 2
+        // Input:
+        // 1. Doubles (8 bytes)
+        //    p_se_components (TxP) (allready on device)
+        //    scaled distance matrix (PxP)
+        //    p_se for output matrix (TxP)
+
+
+
+        // Translation from pure c++ process:
+        // 1. Exponentiate eta
+        // 2. eta -> p_seComponents
+        // 3. Matrix mult
+        //    (A) p_se as output. 
+        //    (B) p_se_components as first matrix
+        //    (C) scaled distance matrix as second matrix
+
         return;
     }
 

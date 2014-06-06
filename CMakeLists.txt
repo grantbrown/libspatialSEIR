@@ -32,6 +32,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/clBLAS/src")
 
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures"
+                    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS"
                     "."
 					"${SpatialSEIR_Boost_INCLUDE_DIRS}")
 
