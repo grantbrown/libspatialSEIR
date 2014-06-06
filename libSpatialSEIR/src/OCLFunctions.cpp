@@ -5,9 +5,19 @@
 #include <CL/cl.hpp>
 #include <cmath>
 #include <OCLProvider.hpp>
+#include <ModelContext.hpp>
+#include <CovariateMatrix.hpp>
 
 namespace SpatialSEIR
 {
+    void OCLProvider::calculateP_SE(ModelContext* ctx)
+    {
+        ctx -> X -> calculate_eta_CPU(ctx -> eta, ctx -> beta);
+        int nrowz = *(ctx -> X -> nrow_z);
+        // unfinished
+        return;
+    }
+
     double OCLProvider::FC_R_Star(int nLoc, 
                                   int nTpts,
                                   int* S_star,
@@ -21,7 +31,7 @@ namespace SpatialSEIR
                                   double p_ir)
     {
         cl::Context* context = *currentContext;
-        cl::Device device = *((*currentDevice) -> device);
+        cl::Device device = **((*currentDevice) -> device);
         int i;       
         if (R_star_args -> totalWorkUnits == -1)
         {

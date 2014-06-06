@@ -14,7 +14,8 @@
 #endif
 
 #include <CL/cl.hpp>
-
+#include <ModelContext.hpp>
+#include <clBLAS.h>
 
 namespace SpatialSEIR
 {
@@ -33,21 +34,21 @@ namespace SpatialSEIR
     class DeviceContainer
     {
         public:
-            DeviceContainer(cl::Device inDevice, cl::Context inContext);
+            DeviceContainer(cl::Device *inDevice, cl::Context *inContext);
             ~DeviceContainer();
-            cl::Device* device;
+            cl::Device** device;
             cl::CommandQueue * commandQueue;
     };
 
     class PlatformContainer
     {
         public:
-            PlatformContainer(cl::Platform inPlatform);
+            PlatformContainer(cl::Platform *inPlatform);
             ~PlatformContainer();
 
-            cl::Platform *platform;
+            cl::Platform **platform;
             cl::Context *context;
-            std::vector<DeviceContainer> *devices;
+            std::vector<DeviceContainer*> *devices;
             std::vector<std::string> *deviceTypes; // CPU or GPU
             std::vector<std::string> *deviceNames;
             std::vector<cl_uint> *doublePrecision;
@@ -70,9 +71,9 @@ namespace SpatialSEIR
             DeviceContainer **currentDevice;
             int *isSetup;
 
-            std::vector<PlatformContainer> *platforms;
+            std::vector<PlatformContainer*> *platforms;
             cl::Kernel buildProgramForKernel(std::string kernelFile, 
-                    DeviceContainer device);
+                    DeviceContainer *device);
             std::vector<cl::Program> *programs;
             FC_R_Star_KernelData* R_star_args;
 
@@ -89,6 +90,8 @@ namespace SpatialSEIR
                              double* p_se,
                              double* p_rs,
                              double p_ir);
+
+            void calculateP_SE(ModelContext* ctx);
 
             // Kernels
             cl::Kernel* test_kernel;

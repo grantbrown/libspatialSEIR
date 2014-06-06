@@ -10,12 +10,11 @@
 #include<vector>
 
 
-SpatialSEIR::DeviceContainer::DeviceContainer(cl::Device inDevice, cl::Context inContext)
+SpatialSEIR::DeviceContainer::DeviceContainer(cl::Device *inDevice, cl::Context *inContext)
 {
-    device = new cl::Device;
+    device = new cl::Device*;
     *device = inDevice; 
-    commandQueue = new cl::CommandQueue();
-    *commandQueue = cl::CommandQueue(inContext, inDevice); 
+    commandQueue = new cl::CommandQueue(*inContext, *inDevice); 
 }
 SpatialSEIR::DeviceContainer::~DeviceContainer()
 {
@@ -23,48 +22,90 @@ SpatialSEIR::DeviceContainer::~DeviceContainer()
     delete device;
 }
 
-SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform inPlatform)
+SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
 {
     //Store platform
-    platform = new cl::Platform(); 
+    platform = new cl::Platform*; 
     *platform = inPlatform;
 
-    //Temporarily store all platform devices to create context
-    std::vector<cl::Device> allDevices;
-    platform -> getDevices(CL_DEVICE_TYPE_CPU, &allDevices);
-    context = new cl::Context(allDevices);
+    //Store all platform devices to create context
+    std::vector<cl::Device>* allDevices = new std::vector<cl::Device>();
+    (*platform) -> getDevices(CL_DEVICE_TYPE_ALL, allDevices);
+    context = new cl::Context(*allDevices);
 
     // Process and store devices by type
-    devices = new std::vector<DeviceContainer>();
+    devices = new std::vector<DeviceContainer*>();
     deviceTypes = new std::vector<std::string>();
     deviceNames = new std::vector<std::string>();
     doublePrecision = new std::vector<cl_uint>();
 
-    std::vector<cl::Device> cpuDevices; 
-    std::vector<cl::Device> gpuDevices; 
+    std::vector<cl::Device> *cpuDevices = new std::vector<cl::Device>; 
+    std::vector<cl::Device> *gpuDevices = new std::vector<cl::Device>; 
 
-    platform -> getDevices(CL_DEVICE_TYPE_CPU, &cpuDevices);
-    platform -> getDevices(CL_DEVICE_TYPE_GPU, &gpuDevices);
+    try
+    {
+        (*platform) -> getDevices(CL_DEVICE_TYPE_CPU, cpuDevices);
+    }
+    catch(cl::Error e)
+    {
+       if (e.err() == -1) 
+       {
+           std::cout << "...no OpenCL CPU devices found\n";
+       }
+       else
+       {
+           std::cerr << "Error querying CPU devices.\n";
+           std::cerr << e.what() << "\n";
+           throw(e.err());
+       }
+
+    }
+
+    try
+    {
+        (*platform) -> getDevices(CL_DEVICE_TYPE_GPU, gpuDevices);
+    }
+    catch(cl::Error e)
+    {
+       if (e.err() == -1) 
+       {
+           std::cout << "...no OpenCL GPU devices found\n";
+       }
+       else
+       {
+           std::cerr << "Error querying GPU devices.\n";
+           std::cerr << e.what() << "\n";
+           throw(e.err());
+       }
+    }
+
 
     std::string clExt;
     cl_uint i;
-    for (i = 0; i < cpuDevices.size(); i++)
-    {   
-        devices -> push_back(DeviceContainer(cpuDevices[i], *context));
-        clExt = cpuDevices[i].getInfo<CL_DEVICE_EXTENSIONS>();
+    DeviceContainer* newDevice;
+    for (i = 0; i < cpuDevices -> size(); i++)
+    {  
+        std::cout << "Adding CPU Device: ";
+        newDevice = new DeviceContainer(&(*cpuDevices)[i], context);
+        devices -> push_back(newDevice);
+        clExt = (*(newDevice -> device)) -> getInfo<CL_DEVICE_EXTENSIONS>();
         doublePrecision -> push_back((clExt.find("cl_khr_fp64") != std::string::npos));
         deviceTypes -> push_back("CPU");
-        deviceNames -> push_back(cpuDevices[i].getInfo<CL_DEVICE_NAME>());
+        deviceNames -> push_back((*(newDevice -> device)) -> getInfo<CL_DEVICE_NAME>());
+        std::cout << (*deviceNames)[deviceNames -> size() - 1] << "\n";
+
     }
-    for (i = 0; i < gpuDevices.size(); i++)
+    for (i = 0; i < gpuDevices -> size(); i++)
     {   
-        devices -> push_back(DeviceContainer(gpuDevices[i], *context));
-        clExt = gpuDevices[i].getInfo<CL_DEVICE_EXTENSIONS>();
+        std::cout << "Adding CPU Device: ";
+        newDevice = new DeviceContainer(&((*gpuDevices)[i]), context);
+        devices -> push_back(newDevice);
+        clExt = (*(newDevice -> device)) -> getInfo<CL_DEVICE_EXTENSIONS>();
         doublePrecision -> push_back((clExt.find("cl_khr_fp64") != std::string::npos));
         deviceTypes -> push_back("GPU");
-        deviceNames -> push_back(gpuDevices[i].getInfo<CL_DEVICE_NAME>());
+        deviceNames -> push_back((*(newDevice -> device)) -> getInfo<CL_DEVICE_NAME>());
+        std::cout << (*deviceNames)[deviceNames -> size() - 1] << "\n";
     }
- 
 }
 
 SpatialSEIR::PlatformContainer::~PlatformContainer()
@@ -84,7 +125,7 @@ SpatialSEIR::OCLProvider::OCLProvider()
     try
     {
         // Allocate space for platforms and current config
-        platforms = new std::vector<PlatformContainer>();
+        platforms = new std::vector<PlatformContainer*>();
         currentPlatform = new cl::Platform*;
         currentContext = new cl::Context*;
         currentDevice = new DeviceContainer*;
@@ -98,28 +139,34 @@ SpatialSEIR::OCLProvider::OCLProvider()
 
         // Build platforms, devices, contexts
         cl_uint i;
-        std::vector<cl::Platform> pformVec;
-        cl::Platform::get(&pformVec);
-        for (i = 0; i < pformVec.size(); i++) 
+        std::vector<cl::Platform> *pformVec = new std::vector<cl::Platform>;
+        cl::Platform::get(pformVec);
+
+        PlatformContainer* newPlatform;
+        for (i = 0; i < pformVec -> size(); i++) 
         {
-            platforms -> push_back(PlatformContainer(pformVec[i]));
+            newPlatform = new PlatformContainer((&(*pformVec)[i]));
+            platforms -> push_back(newPlatform);
         }
         // Flag for existence of current<item>s
         isSetup = new int; *isSetup = 0;
+
 
     }
     catch(cl::Error e)
     {
         cout << "Problem getting platforms:" << endl;
         cout << e.what() << ": Error Code " << e.err() << endl;
-        return;
+        throw(-1);
     }
 
     // Create Kernels
+    // Dummy code to pick device 0,0
     setDevice(0,0);
-    *test_kernel = buildProgramForKernel("test_kernel.cl", (**currentDevice));
-    *R_Star_kernel = buildProgramForKernel("R_Star_FC.cl", (**currentDevice));
 
+    *test_kernel = buildProgramForKernel("test_kernel.cl", (*currentDevice));
+
+    *R_Star_kernel = buildProgramForKernel("R_Star_FC.cl", (*currentDevice));
 
     test();
 }
@@ -138,16 +185,16 @@ SpatialSEIR::OCLProvider::~OCLProvider()
 
 void SpatialSEIR::OCLProvider::setDevice(int platformId, int deviceId)
 {
-    *currentPlatform = (*platforms)[platformId].platform;
-    *currentContext = (*platforms)[platformId].context;
-    *currentDevice = &((*((*platforms)[platformId].devices))[deviceId]);
+    *currentPlatform = (*((*platforms)[platformId] -> platform));
+    *currentContext = (*platforms)[platformId] -> context;
+    *currentDevice = ((*((*platforms)[platformId] -> devices))[deviceId]);
     *isSetup = 1;
 }
 
-cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFile, DeviceContainer device)
+cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFile, DeviceContainer* device)
 {
     int err = 1;
-    std::vector<cl::Device> devices; devices.push_back(*device.device);
+    std::vector<cl::Device> devices; devices.push_back(**(device -> device));
     std::string log;
     // LKD is set at compile time, intall directory of OpenCL kernels. 
     std::string LKD(LSS_KERNEL_DIRECTORY);
