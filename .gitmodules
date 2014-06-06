@@ -1,0 +1,3 @@
+[submodule "clBLAS"]
+	path = clBLAS
+	url = https://github.com/grantbrown/clBLAS.git
