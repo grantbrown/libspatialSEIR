@@ -59,8 +59,6 @@ namespace SpatialSEIR
         public:  
             //Methods 
             OCLProvider();
-
-
             void setDevice(int platformId, int deviceId);
 
             ~OCLProvider();
@@ -96,6 +94,7 @@ namespace SpatialSEIR
             // Kernels
             cl::Kernel* test_kernel;
             cl::Kernel* R_Star_kernel;
+            cl::Kernel* p_se_kernel1;
 
             // Queues
             cl::CommandQueue* cpuQueue;

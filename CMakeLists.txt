@@ -26,8 +26,6 @@ endif()
 
 
 
-message("building clBLAS")
-add_subdirectory("${CMAKE_SOURCE_DIR}/clBLAS/src")
 
 
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
@@ -49,6 +47,11 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditional.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS.h"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS-complex.h"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS.version.h"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clAmdBlas.h"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clAmdBlas.version.h" 
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IOProvider.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/RandomNumberProvider.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"
@@ -69,6 +72,11 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CovariateMatrix.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/DistanceMatrix.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS.h"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS-complex.h"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS.version.h"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clAmdBlas.h"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clAmdBlas.version.h"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/OCLProvider.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/ModelContext.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditional.hpp"
@@ -80,5 +88,15 @@ add_custom_command(TARGET SpatialSEIR PRE_BUILD
                     ${CMAKE_CURRENT_SOURCE_DIR}/libSpatialSEIR/src/kernels/
                     ${CMAKE_BINARY_DIR}/libSpatialSEIR_Kernels/
                  )
+
+
+include(ExternalProject)
+
+ExternalProject_Add(
+                    clBLAS
+                    SOURCE_DIR "${CMAKE_SOURCE_DIR}/clBLAS/src"
+                    UPDATE_COMMAND ""
+                    INSTALL_COMMAND ""
+                    )
 
 

@@ -13,9 +13,27 @@ namespace SpatialSEIR
 {
     void OCLProvider::calculateP_SE(ModelContext* ctx)
     {
+        cl::Context* context = *currentContext;
+        cl::Device device = **((*currentDevice) -> device);
+
         ctx -> X -> calculate_eta_CPU(ctx -> eta, ctx -> beta);
         int nLoc = *(ctx -> S -> ncol);
         int nTpt = *(ctx -> S -> nrow); 
+
+
+
+        size_t intBuffSize = nLoc*nTpt*sizeof(int);
+        size_t doubleBuffSize = nLoc*nTpt*sizeof(double);
+        cl::Buffer IBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, intBuffSize, (ctx -> I -> data));
+        cl::Buffer NBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, intBuffSize, (ctx -> N));
+
+        cl::Buffer etaBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, doubleBuffSize, (ctx -> p_se));
+        cl::Buffer p_seBuffer(*context, CL_MEM_WRITE_ONLY | 
+            CL_MEM_USE_HOST_PTR, doubleBuffSize, (ctx -> p_se));
+
 
         // Kernel 1
         // Input:
@@ -24,6 +42,73 @@ namespace SpatialSEIR
         //    N (TxP)
         // 2. Doubles (8 bytes)
         //    eta (not exponentiated) (TxP)
+
+        // Calculate work size for kernel 1 (todo: cache this)
+        int totalWorkUnits = nLoc*nTpt;
+        size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+        int localSizeMultiple = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
+        int maxLocalSize = localMemPerCore/(2*4 + 1*8);
+        int i=-1;
+        int workGroupSize = 0;
+        while(workGroupSize <= maxLocalSize && workGroupSize < totalWorkUnits)
+        {
+            i++;
+            workGroupSize = pow(2,i)*localSizeMultiple;
+        }
+        if (workGroupSize < totalWorkUnits)
+        {
+            workGroupSize = pow(2,i-1)*localSizeMultiple;
+        }
+
+        int numWorkGroups = ((R_star_args -> totalWorkUnits)/workGroupSize); 
+            numWorkGroups += (numWorkGroups*workGroupSize < (R_star_args -> totalWorkUnits));
+        int globalSize = numWorkGroups*workGroupSize;
+
+        int err;
+
+        err = p_se_kernel1 -> setArg(0, nLoc);
+        err |= p_se_kernel1 -> setArg(1, nTpt);
+        err |= p_se_kernel1 -> setArg(2, IBuffer);
+        err |= p_se_kernel1 -> setArg(3, NBuffer);
+        err |= p_se_kernel1 -> setArg(4, etaBuffer);
+        err |= p_se_kernel1 -> setArg(5, workGroupSize*sizeof(int), NULL); //I
+        err |= p_se_kernel1 -> setArg(6, workGroupSize*sizeof(int), NULL); //N
+        err |= p_se_kernel1 -> setArg(7, workGroupSize*sizeof(double), NULL); //eta
+
+
+        if (err < 0)
+        {
+            std::cerr << "Couldn't set kernel args.\n";
+            throw(err);
+        }
+        // Optimize this to use subbuffers so that we only write the data 
+        // once per sampleR_star event
+        try
+        {
+            (*currentDevice) -> commandQueue -> enqueueNDRangeKernel(*p_se_kernel1,
+                                                                     0,
+                                                                     globalSize,
+                                                                     workGroupSize,
+                                                                     NULL,
+                                                                     NULL
+                                                                     );
+        }
+        catch(cl::Error e)
+        {
+            std::cerr << "Error enqueueing kernel: " << e.what() << "\n";
+            std::cerr << "Error: " << e.err() << "\n";
+            throw(-1);
+        }
+
+
+        
+
+
+
+
+
+
+
         // Kernel 2
         // Input:
         // 1. Doubles (8 bytes)
@@ -40,6 +125,10 @@ namespace SpatialSEIR
         //    (A) p_se as output. 
         //    (B) p_se_components as first matrix
         //    (C) scaled distance matrix as second matrix
+
+
+
+
 
         return;
     }
