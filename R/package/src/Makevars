@@ -1,1 +1,1 @@
-PKG_LIBS = -lOpenCL -lSpatialSEIR
+PKG_LIBS = '$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"' -lOpenCL -lSpatialSEIR -lclBLAS 

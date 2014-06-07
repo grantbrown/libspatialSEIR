@@ -8,6 +8,7 @@
 #include <ModelContext.hpp>
 #include <CovariateMatrix.hpp>
 #include <CompartmentalModelMatrix.hpp>
+#include <DistanceMatrix.hpp>
 
 namespace SpatialSEIR
 {
@@ -29,10 +30,13 @@ namespace SpatialSEIR
         cl::Buffer NBuffer(*context, CL_MEM_WRITE_ONLY | 
             CL_MEM_USE_HOST_PTR, intBuffSize, (ctx -> N));
 
-        cl::Buffer etaBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_USE_HOST_PTR, doubleBuffSize, (ctx -> p_se));
-        cl::Buffer p_seBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_USE_HOST_PTR, doubleBuffSize, (ctx -> p_se));
+        cl::Buffer etaBuffer(*context, CL_MEM_READ_WRITE | 
+            CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> p_se));
+        cl::Buffer p_seBuffer(*context, CL_MEM_READ_WRITE | 
+            CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> p_se));
+        cl::Buffer distMatBuffer(*context, CL_MEM_WRITE_ONLY | 
+                CL_MEM_USE_HOST_PTR, nLoc*nLoc*sizeof(double) , 
+                ctx -> scaledDistMat -> data);
 
 
         // Kernel 1
@@ -100,15 +104,6 @@ namespace SpatialSEIR
             throw(-1);
         }
 
-
-        
-
-
-
-
-
-
-
         // Kernel 2
         // Input:
         // 1. Doubles (8 bytes)
@@ -125,11 +120,84 @@ namespace SpatialSEIR
         //    (A) p_se as output. 
         //    (B) p_se_components as first matrix
         //    (C) scaled distance matrix as second matrix
+        // 4. Final assembly
 
 
+        /*
+         * clblasOrder order
+         * clblasTranspose transA
+         * clblasTranspose transB
+         * size_t M,
+         * size_t N,
+         * size_t K,
+         * cl_double alpha,
+         * const cl_mem A,
+         * size_t offA,
+         * size_t lda,
+         * const cl_mem B,
+         * size_t offB,
+         * size_t ldb,
+         * cl_double beta,
+         * cl_mem C,
+         * size_t offC,
+         * size_t ldc,
+         * cl_uint numCommandQueues,
+         * cl_command_queue* commandQueues,
+         * cl_uint numEventsInWaitList,
+         * const cl_event* eventWaitList,
+         * cl_event* events
+         */
+        cl_uint numCommandQueues = 1;
+        clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
+                                           clblasNoTrans,       // TransB
+                                           clblasNoTrans,       // TransA
+                                           nTpt,                // M
+                                           nLoc,                // N
+                                           nLoc,                // K
+                                           1.0,                 // alpha
+                                           etaBuffer(),         // A
+                                           0,                   // offA
+                                           nTpt,                // ldA
+                                           distMatBuffer(),     // B
+                                           0,                   // offB
+                                           nLoc,                // ldB
+                                           0.0,                 // Beta
+                                           p_seBuffer(),        // C
+                                           0,                   // offC
+                                           nTpt,                // ldC
+                                           numCommandQueues,    // numCommandQueues
+                                           &((*(**currentDevice).commandQueue)()), // commandQueues
+                                           0,                   // numEventsInWaitList
+                                           NULL,                // eventWaitList
+                                           NULL);               // events 
+
+        std::cout << "clBLAS returned: " << multErr << "\n";
+        
+        void* p_seComonentsMap = ((*currentDevice) -> commandQueue) -> enqueueMapBuffer(
+                etaBuffer, CL_TRUE, CL_MAP_READ, 0, totalWorkUnits*sizeof(double));
+        void* p_seMap = ((*currentDevice) -> commandQueue) -> enqueueMapBuffer(
+                p_seBuffer, CL_TRUE, CL_MAP_READ, 0, totalWorkUnits*sizeof(double));
+
+        memcpy(ctx -> p_se_components, p_seComonentsMap, totalWorkUnits*sizeof(double));
+        memcpy(ctx -> p_se, p_seMap, totalWorkUnits*sizeof(double));
 
 
+        ((*currentDevice) -> commandQueue) -> enqueueUnmapMemObject(etaBuffer, p_seComonentsMap);
+        ((*currentDevice) -> commandQueue) -> enqueueUnmapMemObject(p_seBuffer, p_seMap);
 
+
+        int index,j;
+        for (i = 0; i < nLoc; i++) 
+        {
+            index = i*nTpt;
+            for (j = 0; j < nTpt; j++)
+            {
+                (ctx -> p_se)[index] = 1-exp(-(ctx -> gamma)[j] - (ctx -> p_se_components)[index] - (*(ctx -> rho))*(ctx->p_se)[index]);
+                index++;
+            }
+        }        
+
+        
         return;
     }
 
@@ -357,3 +425,4 @@ namespace SpatialSEIR
     }
 
 }
+
