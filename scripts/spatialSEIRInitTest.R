@@ -230,6 +230,6 @@ runSimulation = function(N, batchSize = 1)
     })
 }
 
-tm = system.time(runSimulation(100))
-print(tm)
+#tm = system.time(runSimulation(100))
+#print(tm)
 

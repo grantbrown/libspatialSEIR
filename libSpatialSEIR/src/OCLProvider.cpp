@@ -149,6 +149,17 @@ SpatialSEIR::OCLProvider::OCLProvider()
             newPlatform = new PlatformContainer((&(*pformVec)[i]));
             platforms -> push_back(newPlatform);
         }
+
+
+        // Initialize clBLAS library
+        
+        clblasStatus err = clblasSetup();
+        if (err != CL_SUCCESS)
+        {
+            std::cout << "Error setting up clBLAS library: " << err << "\n";
+            throw(-1);
+        }
+
         // Flag for existence of current<item>s
         isSetup = new int; *isSetup = 0;
 
@@ -176,6 +187,7 @@ SpatialSEIR::OCLProvider::OCLProvider()
 
 SpatialSEIR::OCLProvider::~OCLProvider()
 {
+    clblasTeardown();
     delete currentPlatform;
     delete currentContext;
     delete currentDevice;

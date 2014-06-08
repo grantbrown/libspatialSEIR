@@ -14,6 +14,7 @@ namespace SpatialSEIR
 {
     void OCLProvider::calculateP_SE(ModelContext* ctx)
     {
+
         cl::Context* context = *currentContext;
         cl::Device device = **((*currentDevice) -> device);
 
@@ -64,10 +65,14 @@ namespace SpatialSEIR
             workGroupSize = pow(2,i-1)*localSizeMultiple;
         }
 
-        int numWorkGroups = ((R_star_args -> totalWorkUnits)/workGroupSize); 
-            numWorkGroups += (numWorkGroups*workGroupSize < (R_star_args -> totalWorkUnits));
+        int numWorkGroups = (totalWorkUnits/workGroupSize); 
+            numWorkGroups += (numWorkGroups*workGroupSize < totalWorkUnits);
         int globalSize = numWorkGroups*workGroupSize;
 
+
+        std::cout << "Global Size: " << globalSize << "\n";
+        std::cout << "Work Group Size: " << workGroupSize << "\n";
+        std::cout << "Total Size: " << totalWorkUnits << "\n";
         int err;
 
         err = p_se_kernel1 -> setArg(0, nLoc);
@@ -78,6 +83,9 @@ namespace SpatialSEIR
         err |= p_se_kernel1 -> setArg(5, workGroupSize*sizeof(int), NULL); //I
         err |= p_se_kernel1 -> setArg(6, workGroupSize*sizeof(int), NULL); //N
         err |= p_se_kernel1 -> setArg(7, workGroupSize*sizeof(double), NULL); //eta
+
+
+
 
 
         if (err < 0)
@@ -104,6 +112,7 @@ namespace SpatialSEIR
             throw(-1);
         }
 
+        std::cout << "Part 2:\n";
         // Kernel 2
         // Input:
         // 1. Doubles (8 bytes)
@@ -171,7 +180,11 @@ namespace SpatialSEIR
                                            NULL,                // eventWaitList
                                            NULL);               // events 
 
-        std::cout << "clBLAS returned: " << multErr << "\n";
+        if (multErr != CL_SUCCESS)
+        { 
+            std::cout << "clBLAS Error Encountered: " << multErr << "\n";
+            throw(-1);
+        }
         
         void* p_seComonentsMap = ((*currentDevice) -> commandQueue) -> enqueueMapBuffer(
                 etaBuffer, CL_TRUE, CL_MAP_READ, 0, totalWorkUnits*sizeof(double));

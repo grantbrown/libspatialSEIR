@@ -1021,7 +1021,7 @@ namespace SpatialSEIR
 
     void ModelContext::calculateP_SE_OCL()
     {
-        throw(-1);
+        oclProvider -> calculateP_SE(this); 
     }
 
     ModelContext::~ModelContext()

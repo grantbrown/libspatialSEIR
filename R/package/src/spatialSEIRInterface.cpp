@@ -74,6 +74,7 @@ class spatialSEIRInterface
         virtual int calculateR();
         virtual int calculateP_SE(); 
         virtual int calculateP_SE2(int i, int j); 
+        virtual int calculateP_SE_OCL();
         virtual double estimateR0();
         virtual double estimateR02(int t);
         virtual int calculateP_RS();
@@ -194,6 +195,17 @@ int spatialSEIRInterface::calculateP_SE2(int i, int j)
     Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
     return(-1);
 }
+int spatialSEIRInterface::calculateP_SE_OCL() 
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> calculateP_SE_OCL());
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
+    return(-1);
+}
+
 double spatialSEIRInterface::estimateR0()
 {
     if (*(context -> isPopulated))
@@ -831,6 +843,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("calculateP_RS", &spatialSEIRInterface::calculateP_RS)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE2)
+    .method("calculateP_SE_OCL", &spatialSEIRInterface::calculateP_SE_OCL)
     .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("estimateR0", &spatialSEIRInterface::estimateR02)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
