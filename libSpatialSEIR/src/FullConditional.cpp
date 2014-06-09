@@ -174,6 +174,60 @@ namespace SpatialSEIR
 
     }
     
+    int FC_S0::evalCPU()
+    {
+
+        int i,j,compIdx;
+        int nLoc = *((*S) -> ncol); 
+        int nTpts = *((*S) -> nrow); 
+        double p_se_val, p_ei_val;
+        int S_val, E_val, Istar_val, Estar_val;
+        long double output = 0.0;
+        p_ei_val = **p_ei;       
+        for (i = 0; i<nLoc; i++)
+        {
+            if (((*A0) -> S0)[i] < 0 || 
+                ((*A0) -> E0)[i] < 0)
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)
+            {
+                S_val = ((*S) -> data)[compIdx];
+                E_val = ((*E) -> data)[compIdx];
+                Istar_val = ((*I_star)-> data)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+                if (Estar_val > S_val || Istar_val > E_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
+                                ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)));
+
+                }
+                compIdx++;
+            }
+        }
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+        return 0;
+    }
+
+
 
     int FC_S0::evalCPU(int startLoc)
     {
@@ -234,7 +288,7 @@ namespace SpatialSEIR
     }
     int FC_S0::sampleCPU()
     {
-        sampleCompartment_CPU(*context, (*A0)->S0, *sliceWidth);
+        sampleEntireCompartment_CPU(*context, (*A0)->S0, *sliceWidth);
         return(0);
     
     }
@@ -387,6 +441,69 @@ namespace SpatialSEIR
         delete accepted;
 
     }
+
+    int FC_E0::evalCPU()
+    {
+        int i,j,compIdx,S_val,E_val,I_val,Istar_val,Estar_val,Rstar_val;
+        double p_ei_val, p_ir_val, p_se_val;
+        int nLoc = *((*E)->ncol);
+        int nTpts = *((*E)->nrow);
+        long double output = 0.0;
+
+        p_ei_val = **p_ei;
+        p_ir_val = **p_ir;
+        for (i = 0; i < nLoc; i++)
+        {
+            if (((*A0) -> E0)[i] < 0 || 
+                ((*A0) -> I0)[i] < 0)
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)
+            {
+                Rstar_val = ((*R_star)->data)[compIdx]; 
+                Estar_val = ((*E_star) -> data)[compIdx];
+                Istar_val = ((*I_star)->data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                E_val = ((*E)->data)[compIdx];
+                I_val = ((*I)->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+
+                if (Istar_val > E_val ||
+                    Rstar_val > I_val || 
+                    p_se_val > 1 || 
+                    p_se_val < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                { 
+                    output += (((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val)) + 
+                               ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)) + 
+                               ((*context) -> random -> dbinom(Estar_val,S_val, p_se_val)));
+
+                }
+                compIdx ++; 
+            }
+        }
+
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+        return(0);
+    }
+
     
     int FC_E0::evalCPU(int startLoc)
     {
@@ -467,7 +584,7 @@ namespace SpatialSEIR
     }
     int FC_E0::sampleCPU()
     {
-        sampleCompartment_CPU(*context, (*A0) -> E0, *sliceWidth);
+        sampleEntireCompartment_CPU(*context, (*A0) -> E0, *sliceWidth);
         return(0);
     }
     int FC_E0::sampleOCL()
@@ -576,6 +693,112 @@ namespace SpatialSEIR
 
     }
     
+    int FC_I0::evalCPU()
+    {
+
+        int i,j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
+        long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        double ln_1m_p_ir = std::log(1-(**p_ir));
+        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
+
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
+        {
+            for (i = 0; i<nLoc; i++)
+            {
+                if (((*A0) -> I0)[i] < 0 || 
+                    ((*A0) -> R0)[i] < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                compIdx = i*nTpts;
+                for (j = 0; j < nTpts; j++)
+                {
+                    Estar_val = ((*E_star) -> data)[compIdx];
+                    Rstar_val = ((*R_star) -> data)[compIdx];
+                    Sstar_val = ((*S_star)->data)[compIdx];
+                    S_val = ((*S)->data)[compIdx];
+                    R_val = ((*R) ->data)[compIdx];
+                    I_val = ((*I) ->data)[compIdx];
+                    p_rs_val = (*p_rs)[j];
+                    p_se_val = (*p_se)[compIdx];
+
+                    if (Rstar_val > I_val || 
+                            Sstar_val > R_val || 
+                            p_se_val > 1 || p_se_val < 0)
+                    {
+                        *value = -INFINITY;
+                        return(-1);
+                    }
+                    else
+                    {
+                        output +=  (ln_1m_p_ir*(I_val) +
+                                    ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                                    ((*context) -> random -> choose(I_val, Rstar_val)) + 
+                                    ((*context) -> random -> dbinom(Estar_val,S_val, p_se_val)));
+                    }
+                    compIdx++;
+                } 
+            }
+        }
+        else
+        {
+            for (i = 0; i<nLoc; i++)
+            {
+                compIdx = i*nTpts;
+                if (((*A0) -> I0)[i] < 0 || 
+                    ((*A0) -> R0)[i] < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                for (j = 0; j < nTpts; j++)
+                {
+                    Rstar_val = ((*R_star) -> data)[compIdx];
+                    S_val = ((*S)->data)[compIdx];
+                    I_val = ((*I) ->data)[compIdx];
+                    R_val = ((*R) ->data)[compIdx];
+                    p_se_val = (*p_se)[compIdx];
+                    Estar_val = ((*E_star) -> data)[compIdx];
+
+
+                    if (Rstar_val > I_val || p_se_val > 1 || p_se_val < 0)
+                    {
+                        *value = -INFINITY;
+                        return(-1);
+                    }
+                    else
+                    {
+                        output +=  (ln_1m_p_ir*(I_val) +
+                                    ((*context) -> random -> choose(I_val, Rstar_val)) + 
+                                    ((*context) -> random -> dbinom(Estar_val,S_val, p_se_val)));
+                    }
+                    compIdx++;
+                } 
+            }
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;   
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+
+        return 0;
+    }
+
 
     int FC_I0::evalCPU(int startLoc)
     {
@@ -691,7 +914,7 @@ namespace SpatialSEIR
     }
     int FC_I0::sampleCPU()
     {
-        sampleCompartment_CPU(*context, (*A0) -> I0, *sliceWidth);
+        sampleEntireCompartment_CPU(*context, (*A0) -> I0, *sliceWidth);
         return(0);
     }
     int FC_I0::sampleOCL()
@@ -922,6 +1145,107 @@ namespace SpatialSEIR
     }
     
 
+    int FC_R0::evalCPU()
+    {
+
+        int i, j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
+
+        long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        int Sstar_val, Estar_val, R_val, S_val;   
+
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
+        {
+            for (i = 0; i < nLoc;i++)
+            {
+                if (((*A0) -> S0)[i] < 0 || 
+                    ((*A0) -> R0)[i] < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                compIdx = i*nTpts;
+
+                for (j = 0; j < nTpts; j++)
+                {
+                    Estar_val = ((*E_star) -> data)[compIdx];
+                    Sstar_val = ((*S_star)->data)[compIdx];
+                    R_val = ((*R) ->data)[compIdx];
+                    S_val = ((*S) ->data)[compIdx];
+                    p_rs_val = (*p_rs)[j];
+
+                    if (Estar_val > S_val || 
+                            Sstar_val > R_val)
+                    {
+                        *value = -INFINITY;
+                        return(-1);
+                    }
+                    else
+                    {
+                        output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) + 
+                                   ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
+
+                    }
+                    compIdx++;
+                } 
+            }
+        }
+        else 
+        {
+            for (i = 0; i < nLoc;i++)
+            {
+
+                if (((*A0) -> S0)[i] < 0 || 
+                    ((*A0) -> R0)[i] < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                compIdx = i*nTpts;
+
+                for (j = 0; j < nTpts; j++)
+                {
+                    Estar_val = ((*E_star) -> data)[compIdx];
+                    R_val = ((*R) ->data)[compIdx];
+                    S_val = ((*S) ->data)[compIdx];
+                    p_rs_val = (*p_rs)[j];
+
+                    if (Estar_val > S_val)
+                    {
+                        *value = -INFINITY;
+                        return(-1);
+                    }
+                    else
+                    {
+                        output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)));
+
+                    }
+                    compIdx++;
+                } 
+            }
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;   
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+
+        return 0;
+    }
+
     int FC_R0::evalCPU(int startLoc)
     {
 
@@ -1013,7 +1337,7 @@ namespace SpatialSEIR
     }
     int FC_R0::sampleCPU()
     {
-        sampleCompartment_CPU(*context, (*A0) -> R0, *sliceWidth);
+        sampleEntireCompartment_CPU(*context, (*A0) -> R0, *sliceWidth);
         return(0);
     }
     int FC_R0::sampleOCL()

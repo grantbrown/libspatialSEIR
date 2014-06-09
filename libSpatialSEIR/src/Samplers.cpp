@@ -396,12 +396,67 @@ namespace SpatialSEIR
         // Main loop: 
         for (i = 0; i < nLoc; i++)
         {
-            std::cout << i << "\n";
             sampleCompartmentLocation(i, context, initCompartment, width);
             //std::cout << "(i,val): (" << i << ", " << this->getValue() << ")\n";
         }
         return(0);
     }
+
+    int InitCompartmentFullConditional::sampleEntireCompartment_CPU(ModelContext* context,
+                                                                    int* initCompartment,
+                                                                       double width)
+    {
+        (this->samples) += 1;
+        double initProposal = 0.0;
+        double newProposal = 0.0;
+        int i;
+        int x0, x1;
+        int nLoc = *(context -> S -> ncol);        
+        // Backup Compartment
+        memcpy(context -> tmpContainer -> data, initCompartment, nLoc*sizeof(int)); 
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double initVal = (this -> getValue());
+        if (! std::isfinite(initVal))
+        {
+            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            throw(-1);
+        }
+        for (i = 0; i < nLoc; i++)
+        {
+            x0 = (initCompartment)[i];
+            x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+            (initCompartment)[i] = x1;
+            newProposal += (context -> random -> dnorm(x1, x0,width));
+            initProposal += (context -> random -> dnorm(x0, x1,width));
+        }
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double newVal = (this->getValue());
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
+
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            // Accept new values
+            (this->accepted) += 1;
+        }
+        else
+        {
+            // Keep Original Value
+            memcpy(initCompartment, context -> tmpContainer -> data, nLoc*sizeof(int)); 
+            this -> calculateRelevantCompartments();
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        }
+
+        return(0);
+    }
+
 
 
     int InitCompartmentFullConditional::sampleCompartmentLocation(int i, ModelContext* context, 

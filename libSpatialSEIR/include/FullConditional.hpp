@@ -171,6 +171,7 @@ namespace SpatialSEIR
         public:
 
             virtual ~InitCompartmentFullConditional(){}; 
+            virtual int evalCPU() = 0;
             virtual int evalCPU(int startLoc) = 0;
             virtual int evalOCL() = 0;
             virtual int sampleCPU() = 0;
@@ -184,6 +185,10 @@ namespace SpatialSEIR
             int sampleCompartment_CPU(ModelContext* context,
                                       int* initCompartment, 
                                       double width); 
+
+            int sampleEntireCompartment_CPU(ModelContext* context,
+                                            int* initCompartment,
+                                            double width); 
 
             int sampleCompartmentLocation(int loc, ModelContext* context,
                                           int* initCompartment,
@@ -206,6 +211,7 @@ namespace SpatialSEIR
                       double *_p_ei,
                       double sliceWidth);
             virtual ~FC_S0();
+            virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual int sampleCPU();
@@ -250,6 +256,7 @@ namespace SpatialSEIR
                       double *_p_se,
                       double sliceWidth);
             virtual ~FC_E0(); 
+            virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual int sampleCPU();
@@ -293,6 +300,7 @@ namespace SpatialSEIR
                       double *_p_se,
                       double sliceWidth);
             virtual ~FC_I0(); 
+            virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual int sampleCPU();
@@ -334,6 +342,7 @@ namespace SpatialSEIR
                       double *_p_se,
                       double sliceWidth);
             virtual ~FC_R0(); 
+            virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual int sampleCPU();
