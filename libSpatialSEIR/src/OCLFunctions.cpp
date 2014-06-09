@@ -18,6 +18,10 @@ namespace SpatialSEIR
         cl::Context* context = *currentContext;
         cl::Device device = **((*currentDevice) -> device);
 
+        cl::Event part1Finished;
+        //std::vector<cl::Event> waitList;
+        //waitList.push_back(part1Finished);
+
         ctx -> X -> calculate_eta_CPU(ctx -> eta, ctx -> beta);
         int nLoc = *(ctx -> S -> ncol);
         int nTpt = *(ctx -> S -> nrow); 
@@ -102,7 +106,7 @@ namespace SpatialSEIR
                                                                      globalSize,
                                                                      workGroupSize,
                                                                      NULL,
-                                                                     NULL
+                                                                     &part1Finished
                                                                      );
         }
         catch(cl::Error e)
@@ -176,8 +180,8 @@ namespace SpatialSEIR
                                            nTpt,                // ldC
                                            numCommandQueues,    // numCommandQueues
                                            &((*(**currentDevice).commandQueue)()), // commandQueues
-                                           0,                   // numEventsInWaitList
-                                           NULL,                // eventWaitList
+                                           1,                   // numEventsInWaitList
+                                           &(part1Finished()),            // eventWaitList
                                            NULL);               // events 
 
         if (multErr != CL_SUCCESS)
