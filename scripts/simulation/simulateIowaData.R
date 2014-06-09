@@ -211,7 +211,7 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
                 ))
 }
 
-control_code = function(Nlocations = 20, plots = FALSE)
+control_code = function(Nlocations = 20, Nyear = 5, plots = FALSE)
 {
     data_list = read_data()
     distance_stuff = gen_dist_mat(data_list[["dist"]], data_list[["pop"]])
@@ -230,7 +230,7 @@ control_code = function(Nlocations = 20, plots = FALSE)
     # Population Data
     pop = data_list$pop[keepLocations,] 
 
-    sim_results = main_sim(sDcm,pop)
+    sim_results = main_sim(sDcm,pop,nyear = Nyear)
 
     if (plots)
     {

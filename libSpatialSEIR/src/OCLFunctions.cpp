@@ -4,12 +4,14 @@
 
 #include <CL/cl.hpp>
 #include <cmath>
+#include <cblas.h>
 #include <OCLProvider.hpp>
 #include <ModelContext.hpp>
 #include <CovariateMatrix.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <DistanceMatrix.hpp>
 
+#include <unistd.h>
 namespace SpatialSEIR
 {
     void OCLProvider::calculateP_SE(ModelContext* ctx)
@@ -18,29 +20,27 @@ namespace SpatialSEIR
         cl::Context* context = *currentContext;
         cl::Device device = **((*currentDevice) -> device);
 
-        cl::Event part1Finished;
-        //std::vector<cl::Event> waitList;
-        //waitList.push_back(part1Finished);
+        cl::Event part1Finished, part2Finished, part3Finished;
+        std::vector<cl::Event> waitList;
+        waitList.push_back(part2Finished);
 
         ctx -> X -> calculate_eta_CPU(ctx -> eta, ctx -> beta);
         int nLoc = *(ctx -> S -> ncol);
         int nTpt = *(ctx -> S -> nrow); 
 
-
-
         size_t intBuffSize = nLoc*nTpt*sizeof(int);
         size_t doubleBuffSize = nLoc*nTpt*sizeof(double);
         cl::Buffer IBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_USE_HOST_PTR, intBuffSize, (ctx -> I -> data));
+            CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> I -> data));
         cl::Buffer NBuffer(*context, CL_MEM_WRITE_ONLY | 
-            CL_MEM_USE_HOST_PTR, intBuffSize, (ctx -> N));
+            CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> N));
 
         cl::Buffer etaBuffer(*context, CL_MEM_READ_WRITE | 
-            CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> p_se));
+            CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> eta));
         cl::Buffer p_seBuffer(*context, CL_MEM_READ_WRITE | 
             CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> p_se));
         cl::Buffer distMatBuffer(*context, CL_MEM_WRITE_ONLY | 
-                CL_MEM_USE_HOST_PTR, nLoc*nLoc*sizeof(double) , 
+                CL_MEM_COPY_HOST_PTR, nLoc*nLoc*sizeof(double) , 
                 ctx -> scaledDistMat -> data);
 
 
@@ -73,38 +73,36 @@ namespace SpatialSEIR
             numWorkGroups += (numWorkGroups*workGroupSize < totalWorkUnits);
         int globalSize = numWorkGroups*workGroupSize;
 
-
-        std::cout << "Global Size: " << globalSize << "\n";
-        std::cout << "Work Group Size: " << workGroupSize << "\n";
-        std::cout << "Total Size: " << totalWorkUnits << "\n";
         int err;
 
-        err = p_se_kernel1 -> setArg(0, nLoc);
-        err |= p_se_kernel1 -> setArg(1, nTpt);
-        err |= p_se_kernel1 -> setArg(2, IBuffer);
-        err |= p_se_kernel1 -> setArg(3, NBuffer);
-        err |= p_se_kernel1 -> setArg(4, etaBuffer);
-        err |= p_se_kernel1 -> setArg(5, workGroupSize*sizeof(int), NULL); //I
-        err |= p_se_kernel1 -> setArg(6, workGroupSize*sizeof(int), NULL); //N
-        err |= p_se_kernel1 -> setArg(7, workGroupSize*sizeof(double), NULL); //eta
-
-
-
-
-
-        if (err < 0)
-        {
-            std::cerr << "Couldn't set kernel args.\n";
-            throw(err);
-        }
-        // Optimize this to use subbuffers so that we only write the data 
-        // once per sampleR_star event
         try
         {
-            (*currentDevice) -> commandQueue -> enqueueNDRangeKernel(*p_se_kernel1,
-                                                                     0,
-                                                                     globalSize,
-                                                                     workGroupSize,
+            err = p_se_kernel1 -> setArg(0, nLoc);
+            err |= p_se_kernel1 -> setArg(1, nTpt);
+            err |= p_se_kernel1 -> setArg(2, IBuffer);
+            err |= p_se_kernel1 -> setArg(3, NBuffer);
+            err |= p_se_kernel1 -> setArg(4, etaBuffer);
+            err |= p_se_kernel1 -> setArg(5, workGroupSize*sizeof(int), NULL); //I
+            err |= p_se_kernel1 -> setArg(6, workGroupSize*sizeof(int), NULL); //N
+            err |= p_se_kernel1 -> setArg(7, workGroupSize*sizeof(double), NULL); //eta
+            if (err < 0)
+            {
+                std::cerr << "Couldn't set kernel args.\n";
+                throw(err);
+            }
+        }
+        catch(cl::Error e)
+        {
+            std::cerr << "Error setting kernel arguments: " << e.what() << "\n";
+            std::cerr << "Error: " << e.err() << "\n";
+            throw(-1);
+        }
+        try
+        {
+            ((*currentDevice) -> commandQueue) -> enqueueNDRangeKernel(*p_se_kernel1,
+                                                                     cl::NDRange(0),
+                                                                     cl::NDRange(globalSize),
+                                                                     cl::NDRange(workGroupSize),
                                                                      NULL,
                                                                      &part1Finished
                                                                      );
@@ -115,12 +113,11 @@ namespace SpatialSEIR
             std::cerr << "Error: " << e.err() << "\n";
             throw(-1);
         }
-
-        std::cout << "Part 2:\n";
+    
         // Kernel 2
         // Input:
         // 1. Doubles (8 bytes)
-        //    p_se_components (TxP) (allready on device)
+        //    p_se_components (TxP) (already on device)
         //    scaled distance matrix (PxP)
         //    p_se for output matrix (TxP)
 
@@ -161,7 +158,10 @@ namespace SpatialSEIR
          * cl_event* events
          */
         cl_uint numCommandQueues = 1;
-        clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
+        
+        try
+        {
+           clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
                                            clblasNoTrans,       // TransB
                                            clblasNoTrans,       // TransA
                                            nTpt,                // M
@@ -182,39 +182,72 @@ namespace SpatialSEIR
                                            &((*(**currentDevice).commandQueue)()), // commandQueues
                                            1,                   // numEventsInWaitList
                                            &(part1Finished()),            // eventWaitList
-                                           NULL);               // events 
-
-        if (multErr != CL_SUCCESS)
-        { 
-            std::cout << "clBLAS Error Encountered: " << multErr << "\n";
+                                           &((waitList[0])()));               // events 
+           
+            if (multErr != CL_SUCCESS)
+            { 
+                std::cout << "clBLAS Error Encountered: " << multErr << "\n";
+                throw(-1);
+            }
+        
+        }
+        catch(cl::Error e)
+        {
             throw(-1);
         }
-        
-        void* p_seComonentsMap = ((*currentDevice) -> commandQueue) -> enqueueMapBuffer(
-                etaBuffer, CL_TRUE, CL_MAP_READ, 0, totalWorkUnits*sizeof(double));
+
+        // Kernel 3
+        // Input:
+        // 1. Doubles (8 bytes)
+        //    p_se_components (TxP) (already on device)
+        //    p_se for output matrix (TxP) (already on device)
+        //
+        //
+
+        // Part 3 kernel
+        try
+        {
+            err = p_se_kernel2 -> setArg(0, nLoc);
+            err |= p_se_kernel2 -> setArg(1, nTpt);
+            err |= p_se_kernel2 -> setArg(2, *(ctx -> rho));
+            err |= p_se_kernel2 -> setArg(3, etaBuffer);
+            err |= p_se_kernel2 -> setArg(4, p_seBuffer);
+            err |= p_se_kernel2 -> setArg(5, workGroupSize*sizeof(double), NULL); // p_seComponents loc
+            err |= p_se_kernel2 -> setArg(6, workGroupSize*sizeof(double), NULL); // p_se loc
+            if (err < 0)
+            {
+                std::cout << "Error setting kernel args \n";
+            }
+        }
+        catch(cl::Error e)
+        {
+            std::cerr << "Error setting kernel arguments: " << e.what() << "\n";
+            std::cerr << "Error: " << e.err() << "\n";
+            throw(-1);
+        }
+
+        try
+        {
+            ((*currentDevice) -> commandQueue) -> enqueueNDRangeKernel(*p_se_kernel2,
+                                                                     cl::NDRange(0),
+                                                                     cl::NDRange(globalSize),
+                                                                     cl::NDRange(workGroupSize),
+                                                                     &waitList,
+                                                                     &part3Finished
+                                                                     );
+            clWaitForEvents(1, &(part3Finished()));
+
+        }
+        catch(cl::Error e)
+        {
+            std::cerr << "Error enqueueing kernel: " << e.what() << "\n";
+            std::cerr << "Error: " << e.err() << "\n";
+            throw(-1);
+        }
         void* p_seMap = ((*currentDevice) -> commandQueue) -> enqueueMapBuffer(
                 p_seBuffer, CL_TRUE, CL_MAP_READ, 0, totalWorkUnits*sizeof(double));
-
-        memcpy(ctx -> p_se_components, p_seComonentsMap, totalWorkUnits*sizeof(double));
         memcpy(ctx -> p_se, p_seMap, totalWorkUnits*sizeof(double));
-
-
-        ((*currentDevice) -> commandQueue) -> enqueueUnmapMemObject(etaBuffer, p_seComonentsMap);
         ((*currentDevice) -> commandQueue) -> enqueueUnmapMemObject(p_seBuffer, p_seMap);
-
-
-        int index,j;
-        for (i = 0; i < nLoc; i++) 
-        {
-            index = i*nTpt;
-            for (j = 0; j < nTpt; j++)
-            {
-                (ctx -> p_se)[index] = 1-exp(-(ctx -> gamma)[j] - (ctx -> p_se_components)[index] - (*(ctx -> rho))*(ctx->p_se)[index]);
-                index++;
-            }
-        }        
-
-        
         return;
     }
 

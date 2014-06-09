@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(200)
+    control_code(900,20)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}

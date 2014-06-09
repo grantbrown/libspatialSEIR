@@ -137,6 +137,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
         test_kernel = new cl::Kernel();
         R_Star_kernel = new cl::Kernel();
         p_se_kernel1 = new cl::Kernel();
+        p_se_kernel2 = new cl::Kernel();
+
 
         // Build platforms, devices, contexts
         cl_uint i;
@@ -182,6 +184,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
 
     *p_se_kernel1 = buildProgramForKernel("p_se_kernel1.cl", (*currentDevice));
 
+    *p_se_kernel2 = buildProgramForKernel("p_se_kernel2.cl", (*currentDevice));
+
     test();
 }
 
@@ -196,6 +200,7 @@ SpatialSEIR::OCLProvider::~OCLProvider()
     delete test_kernel;
     delete R_Star_kernel;
     delete p_se_kernel1;
+    delete p_se_kernel2;
     delete isSetup;
 }
 

@@ -95,6 +95,8 @@ namespace SpatialSEIR
             cl::Kernel* test_kernel;
             cl::Kernel* R_Star_kernel;
             cl::Kernel* p_se_kernel1;
+            cl::Kernel* p_se_kernel2;
+
 
             // Queues
             cl::CommandQueue* cpuQueue;

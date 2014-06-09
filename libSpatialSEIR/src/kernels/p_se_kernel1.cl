@@ -12,7 +12,7 @@ __kernel void p_se_kernel1(int nLoc,
     size_t globalId = get_global_id(0);
     size_t localId = get_local_id(0);
     size_t localSize = get_local_size(0);
-    int totalSize = nLoc*nTpt;
+    size_t totalSize = nLoc*nTpt;
 
     if (globalId < totalSize)
     {
@@ -20,10 +20,9 @@ __kernel void p_se_kernel1(int nLoc,
         N_loc[localId] = N[globalId];
         eta_loc[localId] = eta[globalId];
 
-        eta_loc[localId] = (exp(eta_loc[localId])*I_loc[localId])/N_loc[localId];
+        eta_loc[localId] = (exp(eta_loc[localId])*I_loc[localId])/(N_loc[localId]);
         
         eta[globalId] = eta_loc[localId];
-        
     }
     else
     {

@@ -917,8 +917,11 @@ namespace SpatialSEIR
         // Calculate dmu: I/N * exp(eta)
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
+
+
         memset(p_se, 0, nLoc*nTpt*sizeof(double));
         // Calculate rho*sqrt(idmat)
+
         SpatialSEIR::matMult(this -> p_se, 
                 p_se_components, 
                 scaledDistMat -> data, 
