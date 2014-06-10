@@ -201,43 +201,10 @@ priorAlpha_pIR = 1000
 priorBeta_pIR = 100
 
 outFileName = "./chainOutput.txt"
-logFileList = c(1, # beta
-                1, # rho
-                1, # gamma
-                0, # p_se
-                1, # p_ei
-                1, # p_ir
-                1, # p_rs 
-                0, # S*
-                0, # E*
-                0, # I*
-                0, # R*
-                1, # S total
-                1, # E total
-                1, # I total
-                1, # R total
-                1, # S_star total
-                1, # E_star total
-                1, # I_star total
-                1, # R_star total
-                1, # Average pSE
-                1, # Average pRS
-                0, # Total S_j, j = 1...T
-                0, # Total E_j, j = 1...T
-                0, # Total I_j, j = 1...T
-                0, # Total R_j, j = 1...T
-                0, # Total S_star_j, j = 1...T
-                0, # Total E_star_j, j = 1...T
-                0, # Total I_star_j, j = 1...T
-                0, # Total R_star_j, j = 1...T
-                0, # Total pSE_j, j = 1...T
-                0, # Estimated R0, basic reproductive number. 
-                0) # Estimated R0_j, j=1...T
 
 
 
-
-iterationStride = 10
+iterationStride = 100
 
 # S,E,R,S0,I0,beta,betaPrs,rho,gamma
 sliceWidths = c(0.26,  # S_star
@@ -299,7 +266,6 @@ res = spatialSEIRModel(compMatDim,
                       p_ir,
                       N,
                       outFileName, 
-                      logFileList, 
                       iterationStride,
                       steadyStateConstraintPrecision,
                       verbose,
@@ -327,7 +293,8 @@ runSimulation = function(N, batchSize = 100)
 }
 
 
-runSimulation(500000,1000)
+#runSimulation(500000,1000)
+runSimulation(10000,10)
 res$printAcceptanceRates()
 
 

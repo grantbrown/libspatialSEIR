@@ -55,7 +55,6 @@ class spatialSEIRInterface
                      SEXP p_ir_,
                      SEXP N_,
                      SEXP outFile,
-                     SEXP logVarList,
                      SEXP iterationStride,
                      SEXP steadyStateConstraintPrecision_,
                      SEXP verboseFlag,
@@ -65,6 +64,9 @@ class spatialSEIRInterface
         // Simulation Functions
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);
+        virtual int setTrace(int locationIndex);
+        virtual int setTrace2(int locationIndex, int timeIndex);
+
 
         // Calculation Functions
         virtual int printDebugInfo();
@@ -130,6 +132,26 @@ int spatialSEIRInterface::simulate(int iters)
 {
     context -> runSimulation_CPU(iters,*(verbose),*(debug));
     return(0);
+}
+int spatialSEIRInterface::setTrace(int locationIndex)
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> fileProvider -> setTrace(locationIndex));
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
+    return(-1);
+}
+int spatialSEIRInterface::setTrace2(int locationIndex, int timeIndex)
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> fileProvider -> setTrace(locationIndex, timeIndex));
+        return(0);
+    }
+    Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
+    return(-1);
 }
 int spatialSEIRInterface::printDebugInfo()
 {
@@ -561,7 +583,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP p_ir_,
                      SEXP N_,
                      SEXP outFile,
-                     SEXP logVarList,
                      SEXP iterationStride,
                      SEXP steadyStateConstraintPrecision_,
                      SEXP verboseFlag,
@@ -618,14 +639,12 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
     chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
-    Rcpp::IntegerVector chainOutputControl(logVarList); 
 
     Rcpp::IntegerVector vFlag(verboseFlag);
     Rcpp::IntegerVector dFlag(debugFlag);
     *verbose = vFlag[0];
     *debug = dFlag[0];
-    // logVarList: (Beta, rho,gamma,p_se,p_ei,p_ir,betaPrs,S*, E*, I*, R*)
-    // Nonzero if respective variables are to be output
+
     Rcpp::IntegerVector chainStride(iterationStride);
     
 
@@ -712,11 +731,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     if (sliceParams.size() != 9)
     {
         Rcpp::Rcout << "Slice sampling parameters must be of length 9: S*,E*,R*,S0,I0,beta,betaPrs,rho,gamma\n";
-        throw(-1);
-    }
-    if (chainOutputControl.size() != 32)
-    {
-        Rcpp::Rcout << "There are 32 chain output options, please don't leave any blank.\n";
         throw(-1);
     }
     if (reinfectMode[0] > 2)
@@ -844,7 +858,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
-            (int*) chainOutputControl.begin(),(int*) chainStride.begin());
+            (int*) chainStride.begin());
 
     Rcpp::Rcout << "Context setup complete.\n";
     return(err);
@@ -872,6 +886,8 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("printDebugInfo", &spatialSEIRInterface::printDebugInfo)
     .method("setRandomSeed", &spatialSEIRInterface::setRandomSeed)
     .method("simulate", &spatialSEIRInterface::simulate)
+    .method("setTrace", &spatialSEIRInterface::setTrace)
+    .method("setTrace", &spatialSEIRInterface::setTrace2)
     .method("calculateS", &spatialSEIRInterface::calculateS)
     .method("calculateE", &spatialSEIRInterface::calculateE)
     .method("calculateI", &spatialSEIRInterface::calculateI)

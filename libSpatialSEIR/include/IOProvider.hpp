@@ -1,5 +1,6 @@
 #include<iostream>
 #include<fstream>
+#include<vector>
 #include<cstdio>
 #include<time.h>
 
@@ -11,6 +12,12 @@ namespace SpatialSEIR
     //Forward declare required classes
     class ModelContext;
 
+    struct TimeLocationTrace
+    {
+        int locationIndex;
+        int timeIndex;
+    };
+
     class IOProvider
     {
         public:
@@ -20,13 +27,14 @@ namespace SpatialSEIR
             //Full Constructor
             IOProvider(ModelContext* context,
                        std::string* outFilePath, 
-                       int* variableList,
                        int* iterationStride);
             //Initialize
             int populate(ModelContext* context,
                          std::string* outFilePath,
-                         int* variableList,
                          int* iterationStride);
+            //Methods
+            void setTrace(int locationIndex);
+            void setTrace(int locationIndex, int timeIndex);
             int close();
             int fileInit();
             int catIter(int iteration);
@@ -34,11 +42,11 @@ namespace SpatialSEIR
 
             //Attributes
             ModelContext** context;
-            int* variableList;
             int* iterationStride;
             bool* isOpen;
             time_t* timer;
             time_t* startTime;
+            std::vector<TimeLocationTrace*> *timeLocationTraces;
             std::ofstream* outFileStream;
             std::string* outFilePath;
     };
