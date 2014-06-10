@@ -449,6 +449,18 @@ namespace SpatialSEIR
         std::cout << "    gamma: " << gamma_fc ->getValue() << "\n";
     }
 
+    void ModelContext::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
+    {
+        S0_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);     
+        I0_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);  
+        S_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);  
+        E_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        R_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        beta_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        betaPrs_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        rho_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+    }
+
     void ModelContext::simulationIter(int* useOCL, bool verbose = false, bool debug = false)
     {
         if (debug)

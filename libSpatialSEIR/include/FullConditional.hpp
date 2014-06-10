@@ -91,6 +91,7 @@ namespace SpatialSEIR
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
+            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
             double acceptanceRatio();
             double* sliceWidth;
             int* samples;
@@ -140,7 +141,6 @@ namespace SpatialSEIR
                                                double width);
 
             double* steadyStateConstraintPrecision;
-            double* sliceWidth;
     };
 
     // Parent class for double precision scalar/vector full conditionals
@@ -165,8 +165,6 @@ namespace SpatialSEIR
                                        double* variable,
                                        int varLen,
                                        double width);
-
-            double* sliceWidth;
     };
 
 
@@ -199,8 +197,7 @@ namespace SpatialSEIR
             int sampleCompartmentLocation(int loc, ModelContext* context,
                                           int* initCompartment,
                                           double width); 
- 
-            double* sliceWidth;
+
     };
 
     class FC_S0 : public InitCompartmentFullConditional
@@ -238,7 +235,6 @@ namespace SpatialSEIR
             InitData** A0;
             double** p_se; 
             double** p_ei;
-            double* sliceWidth;
             long double* value;
 
     };
@@ -283,7 +279,6 @@ namespace SpatialSEIR
             double** p_se;
             double** p_ir;
             double** p_ei;
-            double* sliceWidth;
             long double* value;
     };
 
@@ -326,7 +321,6 @@ namespace SpatialSEIR
             double** p_ir;
             double** p_rs;
             double** p_se; 
-            double* sliceWidth;
             long double* value;
     };
 
@@ -365,7 +359,6 @@ namespace SpatialSEIR
             InitData** A0;
             double** p_rs;
             double** p_se; 
-            double* sliceWidth;
             long double* value;
     };
 
@@ -416,7 +409,6 @@ namespace SpatialSEIR
             double **rho;
             long double* value;
             double* steadyStateConstraintPrecision;
-            double* sliceWidth;
     };
 
     class FC_E_Star : public CompartmentFullConditional
@@ -461,7 +453,6 @@ namespace SpatialSEIR
             double **beta;
             long double* value;
             double* steadyStateConstraintPrecision;
-            double* sliceWidth;
     };
 
     class FC_R_Star : public CompartmentFullConditional
@@ -508,7 +499,6 @@ namespace SpatialSEIR
             double **p_se;
             long double* value;
             double* steadyStateConstraintPrecision;
-            double* sliceWidth;
     };
 
     class FC_Beta : public ParameterFullConditional
@@ -544,7 +534,6 @@ namespace SpatialSEIR
             double **beta;
             double **rho;
             long double* value;
-            double* sliceWidth;
             double* priorPrecision;
     };
 
@@ -580,7 +569,6 @@ namespace SpatialSEIR
             double **p_rs;
             double* tausq;
             long double* value;
-            double* sliceWidth;
     };
 
     class FC_Rho : public ParameterFullConditional 
@@ -615,7 +603,6 @@ namespace SpatialSEIR
             double **beta;
             double **rho;
             long double* value;
-            double* sliceWidth;
     };
 
     class FC_Gamma : public ParameterFullConditional 
@@ -654,7 +641,6 @@ namespace SpatialSEIR
             double* priorAlpha;
             double* priorBeta;
             long double* value;
-            double* sliceWidth;
     };    
 
     class FC_P_EI : public ParameterFullConditional
@@ -685,7 +671,6 @@ namespace SpatialSEIR
             long double* value;
             double* priorAlpha;
             double* priorBeta;
-            double* sliceWidth;
     };
 
     class FC_P_IR : public ParameterFullConditional
@@ -717,7 +702,6 @@ namespace SpatialSEIR
             long double* value;
             double* priorAlpha;
             double* priorBeta;
-            double* sliceWidth;
     };
 }
 

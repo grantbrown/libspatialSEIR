@@ -133,6 +133,7 @@ namespace SpatialSEIR
             void simulationIter(int* useOCL, bool verbose, bool debug);
             void runSimulation(int nIterations, int* useOCL, bool verbose, bool debug);
             void runSimulation_CPU(int nIterations, bool verbose, bool debug);
+            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
 
             // Method: calculatePi

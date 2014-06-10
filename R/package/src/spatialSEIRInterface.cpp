@@ -87,6 +87,7 @@ class spatialSEIRInterface
         // Property Getter Functions
         // (All of this stuff is read only, should 
         // be changed only by calls to libspatialSEIR)
+        virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
         virtual void printAcceptanceRates();       
         virtual Rcpp::IntegerMatrix getS();
         virtual Rcpp::IntegerMatrix getE();
@@ -259,6 +260,16 @@ int spatialSEIRInterface::calculateP_RS()
     }
     Rcpp::Rcout << "Attept to calculate P_RS on non-populated ModelContext.\n";
     return(-1);
+}
+
+void spatialSEIRInterface::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
+{
+    if ((*(context -> numIterations)) == 0)
+    {
+        Rcpp::Rcout << "No samples drawn.\n";
+        return;
+    }
+    (context -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange));
 }
 
 void spatialSEIRInterface::printAcceptanceRates()
@@ -899,6 +910,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("estimateR0", &spatialSEIRInterface::estimateR02)
     .method("printAcceptanceRates", &spatialSEIRInterface::printAcceptanceRates)
+    .method("updateSamplingParameters", &spatialSEIRInterface::updateSamplingParameters)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
     .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")

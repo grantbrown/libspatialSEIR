@@ -276,12 +276,17 @@ res = spatialSEIRModel(compMatDim,
 
 res$setRandomSeed(123123)
 
-runSimulation = function(N, batchSize = 100)
+runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0.05, proportionChange = 0.01, printAR = FALSE)
 {
     tryCatch({
         for (i in 1:(N/batchSize))
         {
             res$simulate(batchSize)
+            if (printAR)
+            {
+                res$printAcceptanceRates()
+            }
+            res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
             cat(i*batchSize,"\n")
@@ -294,8 +299,10 @@ runSimulation = function(N, batchSize = 100)
 
 
 #runSimulation(500000,1000)
-runSimulation(10000,10)
-res$printAcceptanceRates()
+runSimulation(1000,50, printAR =TRUE)
+runSimulation(10000,100, printAR = TRUE)
+runSimulation(100000,1000, printAR = TRUE)
+
 
 
 
