@@ -106,7 +106,7 @@ namespace SpatialSEIR
         int totalPoints = (*(starCompartment -> nrow))*(*(starCompartment -> ncol));
         // Backup Compartment
         memcpy(context -> tmpContainer -> data, starCompartment -> data, totalPoints*sizeof(int)); 
-        this -> calculateRelevantCompartments(); 
+        this -> calculateRelevantCompartments_OCL(); 
         this -> evalOCL();
         double initVal = (this -> getValue());
         if (! std::isfinite(initVal))
@@ -122,7 +122,7 @@ namespace SpatialSEIR
             newProposal += (context -> random -> dnorm(x1, x0,width));
             initProposal += (context -> random -> dnorm(x0, x1,width));
         }
-        this -> calculateRelevantCompartments(); 
+        this -> calculateRelevantCompartments_OCL(); 
         this -> evalOCL();
         double newVal = (this->getValue());
         double criterion = (newVal - initVal) + (initProposal - newProposal);
@@ -137,7 +137,7 @@ namespace SpatialSEIR
         {
             // Keep Original Value
             memcpy(starCompartment -> data, context -> tmpContainer -> data, totalPoints*sizeof(int)); 
-            this -> calculateRelevantCompartments();
+            this -> calculateRelevantCompartments_OCL();
             this -> setValue(initVal); 
         }                
 

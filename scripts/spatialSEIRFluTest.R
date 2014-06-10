@@ -2,7 +2,7 @@ library(spatialSEIR)
 set.seed(12313)
 
 dataSubsetStartDate = "2008-01-01"
-dataSubsetEndDate = "2009-06-01"
+dataSubsetEndDate = "2010-06-01"
 
 
 ####################################
@@ -326,7 +326,8 @@ runSimulation = function(N, batchSize = 100)
     })
 }
 
-runSimulation(1000,10)
+
+runSimulation(500000,1000)
 res$printAcceptanceRates()
 
 

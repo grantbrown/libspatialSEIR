@@ -315,6 +315,14 @@ namespace SpatialSEIR
         return(0);
     }
 
+
+    int FC_S0::calculateRelevantCompartments_OCL()
+    {
+        (*context) -> calculateS_CPU();
+        (*context) -> calculateE_givenI_CPU(); 
+        return(0);
+    }
+
     int FC_S0::calculateRelevantCompartments(int startLoc)
     {
         (*context) -> calculateS_CPU(startLoc,0);
@@ -604,6 +612,14 @@ namespace SpatialSEIR
     }
 
     int FC_E0::calculateRelevantCompartments()
+    {
+        (*context) -> calculateE_CPU();
+        (*context) -> calculateI_givenR_CPU();
+        (*context) -> calculateP_SE_CPU();
+        return(0);
+    }
+
+    int FC_E0::calculateRelevantCompartments_OCL()
     {
         (*context) -> calculateE_CPU();
         (*context) -> calculateI_givenR_CPU();
@@ -940,6 +956,15 @@ namespace SpatialSEIR
         (*context) -> calculateP_SE_CPU();
         return(0);
     }
+
+    int FC_I0::calculateRelevantCompartments_OCL()
+    {
+        (*context) -> calculateI_CPU();
+        (*context) -> calculateR_givenS_CPU();
+        (*context) -> calculateP_SE_CPU();
+        return(0);
+    }
+
 
     int FC_I0::calculateRelevantCompartments(int startLoc)
     {
@@ -1362,7 +1387,12 @@ namespace SpatialSEIR
         (*context) -> calculateS_givenE_CPU();
         return(0);
     }
-
+    int FC_R0::calculateRelevantCompartments_OCL()
+    {
+        (*context) -> calculateR_CPU();
+        (*context) -> calculateS_givenE_CPU();
+        return(0);
+    }
     int FC_R0::calculateRelevantCompartments(int startLoc)
     {
         (*context) -> calculateR_CPU(startLoc, 0);
@@ -1646,6 +1676,12 @@ namespace SpatialSEIR
         return-1;
     }
     int FC_S_Star::calculateRelevantCompartments()
+    {
+        (*context) -> calculateS_CPU();
+        (*context) -> calculateR_givenS_CPU();
+        return(0);
+    }
+    int FC_S_Star::calculateRelevantCompartments_OCL()
     {
         (*context) -> calculateS_CPU();
         (*context) -> calculateR_givenS_CPU();
@@ -1958,6 +1994,12 @@ namespace SpatialSEIR
         return -1;
     }
     int FC_E_Star::calculateRelevantCompartments()
+    {
+        (*context) -> calculateE_CPU();
+        (*context) -> calculateS_givenE_CPU();
+        return(0);
+    }
+    int FC_E_Star::calculateRelevantCompartments_OCL()
     {
         (*context) -> calculateE_CPU();
         (*context) -> calculateS_givenE_CPU();
@@ -2500,6 +2542,15 @@ namespace SpatialSEIR
         ((*context) -> calculateP_SE_CPU());
         return(0);
     }
+
+    int FC_R_Star::calculateRelevantCompartments_OCL()
+    {
+        (*context) -> calculateR_CPU();
+        (*context) -> calculateI_givenR_CPU();
+        ((*context) -> calculateP_SE_OCL());
+        return(0);
+    }
+
     int FC_R_Star::calculateRelevantCompartments(int startLoc, int startTime)
     {
         (*context) -> calculateR_CPU(startLoc, startTime);
@@ -2645,8 +2696,14 @@ namespace SpatialSEIR
     {
         ((*context) -> calculateP_SE_CPU());
         return(0);
+    }
+    int FC_Beta::calculateRelevantCompartments_OCL()
+    {
+        ((*context) -> calculateP_SE_OCL());
+        return(0);
 
     }
+
 
     int FC_Beta::sampleCPU()
     {
@@ -2772,7 +2829,11 @@ namespace SpatialSEIR
          ((*context) -> calculateP_RS_CPU());      
          return(0);
     }
-
+    int FC_Beta_P_RS::calculateRelevantCompartments_OCL()
+    {
+         ((*context) -> calculateP_RS_CPU());      
+         return(0);
+    }
     int FC_Beta_P_RS::sampleCPU()
     {
         int nbeta = *((*X) -> ncol_x);
@@ -2891,6 +2952,11 @@ namespace SpatialSEIR
     int FC_Rho::calculateRelevantCompartments()
     {
        (*context) -> calculateP_SE_CPU();
+       return(0); 
+    }
+    int FC_Rho::calculateRelevantCompartments_OCL()
+    {
+       (*context) -> calculateP_SE_OCL();
        return(0); 
     }
 
@@ -3023,6 +3089,11 @@ namespace SpatialSEIR
        (*context) -> calculateP_SE_CPU();
        return(0); 
     }
+    int FC_Gamma::calculateRelevantCompartments_OCL()
+    {
+       (*context) -> calculateP_SE_OCL();
+       return(0); 
+    }
 
     int FC_Gamma::sampleCPU()
     {
@@ -3106,6 +3177,11 @@ namespace SpatialSEIR
         return -1;
     }
     int FC_P_EI::calculateRelevantCompartments()
+    {
+        // Not used, Do nothing
+        return(0);
+    }
+    int FC_P_EI::calculateRelevantCompartments_OCL()
     {
         // Not used, Do nothing
         return(0);
@@ -3198,9 +3274,15 @@ namespace SpatialSEIR
         //NOT IMPLEMENTED
         return -1;
     }
+
     int FC_P_IR::calculateRelevantCompartments()
     {
-        // Not used, do nothing. 
+        // not used, do nothing. 
+        return(0);
+    }
+    int FC_P_IR::calculateRelevantCompartments_OCL()
+    {
+        // Not used, Do nothing
         return(0);
     }
 
