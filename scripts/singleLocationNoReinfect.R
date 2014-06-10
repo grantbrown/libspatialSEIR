@@ -225,8 +225,20 @@ logFileList = c(1, # beta
                 0) # Estimated R0_j, j = 1...T 
 
 iterationStride = 10000
-# S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(15,15,15,1e-1,1e-1,1e-1,1e-1)
+
+# S,E,R,S0,I0,beta,betaPrs,rho,gamma
+sliceWidths = c(0.26,  # S_star
+                0.1,  # E_star
+                0.15, # I_star
+                0.22, # S0
+                0.24, # I0
+                0.8, # beta
+                0.2, # betaPrs
+                0.015,# rho
+                0.01  # gamma
+                )
+
+
 
 priorAlpha_gamma = 0.1
 priorBeta_gamma = 1

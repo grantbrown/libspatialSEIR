@@ -186,8 +186,6 @@ namespace SpatialSEIR
 
         // Wire up the full conditional classes
         
-
-
         S0_fc = new FC_S0(this,
                           S,
                           E,
@@ -196,7 +194,7 @@ namespace SpatialSEIR
                           A0,
                           p_se,
                           p_ei,
-                          *(sliceWidths -> S_starWidth));
+                          *(sliceWidths -> S0Width));
 
         E0_fc = new FC_E0(this,
                           S,
@@ -209,7 +207,7 @@ namespace SpatialSEIR
                           p_ir,
                           p_ei,
                           p_se,
-                          *(sliceWidths -> E_starWidth));
+                          *(sliceWidths -> S0Width));
 
         I0_fc = new FC_I0(this, 
                           S,
@@ -222,7 +220,7 @@ namespace SpatialSEIR
                           p_ir,
                           p_rs,
                           p_se,
-                          *(sliceWidths -> E_starWidth));
+                          *(sliceWidths -> I0Width));
 
         R0_fc = new FC_R0(this,
                           R,
@@ -233,7 +231,7 @@ namespace SpatialSEIR
                           A0,
                           p_rs,
                           p_se, 
-                          *(sliceWidths -> R_starWidth));
+                          *(sliceWidths -> I0Width));
 
         S_star_fc = new FC_S_Star(this,
                                   S_star,
@@ -565,7 +563,7 @@ namespace SpatialSEIR
     {
         int useOCL[13] = {0};
         // TMP: Use OCL for R_star
-        useOCL[6] = 1;
+        //useOCL[6] = 1;
         int i;
         int itrStart = *numIterations;
         int itrMax = nIterations + (*numIterations);

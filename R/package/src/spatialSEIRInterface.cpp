@@ -96,10 +96,10 @@ class spatialSEIRInterface
         virtual Rcpp::IntegerMatrix getI_star();
         virtual Rcpp::IntegerMatrix getR_star();
 
-        virtual Rcpp::IntegerMatrix getS0();
-        virtual Rcpp::IntegerMatrix getE0();
-        virtual Rcpp::IntegerMatrix getI0();
-        virtual Rcpp::IntegerMatrix getR0();
+        virtual Rcpp::IntegerVector getS0();
+        virtual Rcpp::IntegerVector getE0();
+        virtual Rcpp::IntegerVector getI0();
+        virtual Rcpp::IntegerVector getR0();
 
         virtual Rcpp::NumericMatrix getP_SE();
         virtual Rcpp::NumericVector getP_EI();
@@ -275,9 +275,9 @@ void spatialSEIRInterface::printAcceptanceRates()
     Rcpp::Rcout << "p_ir:      conjugate\n"; 
 }
 
-Rcpp::IntegerMatrix spatialSEIRInterface::getS0()
+Rcpp::IntegerVector spatialSEIRInterface::getS0()
 {
-    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    Rcpp::IntegerVector output(*(context->S->ncol));
     int numVals = *(context->S->ncol);
     int i;
     for (i = 0; i < numVals; i++)
@@ -286,9 +286,9 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getS0()
     }
     return(output);
 }
-Rcpp::IntegerMatrix spatialSEIRInterface::getE0()
+Rcpp::IntegerVector spatialSEIRInterface::getE0()
 {
-    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    Rcpp::IntegerVector output(*(context->S->ncol));
     int numVals = *(context->S->ncol);
     int i;
     for (i = 0; i < numVals; i++)
@@ -297,9 +297,9 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getE0()
     }
     return(output);
 }
-Rcpp::IntegerMatrix spatialSEIRInterface::getI0()
+Rcpp::IntegerVector spatialSEIRInterface::getI0()
 {
-    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    Rcpp::IntegerVector output(*(context->S->ncol));
     int numVals = *(context->S->ncol);
     int i;
     for (i = 0; i < numVals; i++)
@@ -308,9 +308,9 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getI0()
     }
     return(output);
 }
-Rcpp::IntegerMatrix spatialSEIRInterface::getR0()
+Rcpp::IntegerVector spatialSEIRInterface::getR0()
 {
-    Rcpp::IntegerMatrix output(*(context->S->ncol));
+    Rcpp::IntegerVector output(*(context->S->ncol));
     int numVals = *(context->S->ncol);
     int i;
     for (i = 0; i < numVals; i++)
@@ -709,9 +709,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "Size: " << gamma.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
         throw(-1);
     }
-    if (sliceParams.size() != 7)
+    if (sliceParams.size() != 9)
     {
-        Rcpp::Rcout << "Slice sampling parameters must be of length 6: S*,E*,R*,beta,betaPrs,rho,gamma\n";
+        Rcpp::Rcout << "Slice sampling parameters must be of length 9: S*,E*,R*,S0,I0,beta,betaPrs,rho,gamma\n";
         throw(-1);
     }
     if (chainOutputControl.size() != 32)
@@ -775,10 +775,12 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];
     sliceParamStruct.R_starWidth = &sliceParams[2];
-    sliceParamStruct.betaWidth = &sliceParams[3];
-    sliceParamStruct.betaPrsWidth = &sliceParams[4];
-    sliceParamStruct.rhoWidth = &sliceParams[5];
-    sliceParamStruct.gammaWidth = &sliceParams[6];
+    sliceParamStruct.S0Width = &sliceParams[3];
+    sliceParamStruct.I0Width = &sliceParams[4];
+    sliceParamStruct.betaWidth = &sliceParams[5];
+    sliceParamStruct.betaPrsWidth = &sliceParams[6];
+    sliceParamStruct.rhoWidth = &sliceParams[7];
+    sliceParamStruct.gammaWidth = &sliceParams[8];
 
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];

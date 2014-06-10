@@ -44,6 +44,8 @@ namespace SpatialSEIR
         double* S_starWidth;
         double* E_starWidth;
         double* R_starWidth;
+        double* S0Width;
+        double* I0Width;
         double* betaWidth;
         double* betaPrsWidth;
         double* rhoWidth;

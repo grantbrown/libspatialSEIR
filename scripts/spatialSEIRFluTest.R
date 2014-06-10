@@ -239,8 +239,17 @@ logFileList = c(1, # beta
 
 iterationStride = 10
 
-# S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(0.4,0.3,0.05,0.25,0.25,0.015,0.01)
+# S,E,R,S0,I0,beta,betaPrs,rho,gamma
+sliceWidths = c(0.26,  # S_star
+                0.14,  # E_star
+                0.15, # I_star
+                0.22, # S0
+                0.24, # I0
+                0.8, # beta
+                0.2, # betaPrs
+                0.015,# rho
+                0.01  # gamma
+                )
 
 if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     any(R<0) || any(S_star<0) || any(E_star<0) || any(R_star<0))

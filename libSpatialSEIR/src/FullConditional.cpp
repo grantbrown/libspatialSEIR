@@ -1510,8 +1510,59 @@ namespace SpatialSEIR
 
     int FC_S_Star::evalCPU()
     {
-        // Not implemented
-        return(-1);
+        int i,j,compIdx,Sstar_val,Estar_val,S_val,R_val;
+        double p_se_val, p_rs_val;
+        int nTpts = *((*S)->nrow);
+        int nLoc = *((*S)->ncol);
+        long double output = 0.0;
+        long unsigned int S_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff;
+
+        for (i = 0; i < nLoc ; i++)
+        {
+            compIdx = i*nTpts;
+            
+            for (j = 0; j < nTpts; j++)
+            {
+                    Sstar_val = ((*S_star)->data)[compIdx]; 
+                    Estar_val = ((*E_star)->data)[compIdx];
+                    S_val = ((*S)->data)[compIdx];
+                    R_val = ((*R)->data)[compIdx];
+                    p_se_val = (*p_se)[compIdx];
+                    p_rs_val = (*p_rs)[j];
+
+                    if (Sstar_val < 0 || 
+                        Sstar_val > R_val ||
+                        Estar_val > S_val)
+                    {
+                        *value = -INFINITY;
+                        return(-1);
+                    }
+                    else
+                    { 
+                        output += (((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                                   ((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)));
+                    }
+                    compIdx ++; 
+            }
+
+            S_star_sum = (*S_star)->marginSum(2,i);
+            R_star_sum = (*R_star)->marginSum(2,i);
+            aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+        return(0);
     }
 
     void FC_S_Star::printDebugInfo(int startLoc, int startTime)
@@ -1764,8 +1815,61 @@ namespace SpatialSEIR
 
     int FC_E_Star::evalCPU()
     {
-        // Not implemented
-        return(-1);
+        int i,j, compIdx;
+        int nTpts = *((*S) -> nrow); 
+        int nLoc = *((*S) -> ncol); 
+        double ln_1m_p_ei = std::log(1-(**p_ei));    
+        double p_se_val;
+        int S_val, E_val, Estar_val, Istar_val;
+        long double output = 0.0;
+        long unsigned int E_star_sum;
+        long unsigned int I_star_sum;
+        int64_t aDiff; 
+
+        for (i = 0; i<nLoc; i++)
+        {
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)
+            {
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S) -> data)[compIdx];
+                E_val = ((*E) -> data)[compIdx];
+                Istar_val = ((*I_star) -> data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+
+                if (Estar_val < 0 || Estar_val > S_val || 
+                        Istar_val > E_val)
+
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
+                                 ln_1m_p_ei*E_val + 
+                                 ((*context) -> random -> choosePartial(E_val, Istar_val)));
+                }
+                compIdx++;
+            }
+
+            E_star_sum = (*E_star)->marginSum(2,i);
+            I_star_sum = (*I_star)->marginSum(2,i);
+            aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+    
+       return 0;
     }
 
     void FC_E_Star::printDebugInfo(int loc, int tpt)
