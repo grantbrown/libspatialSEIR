@@ -78,11 +78,14 @@ class spatialSEIRInterface
         virtual double estimateR0();
         virtual double estimateR02(int t);
         virtual int calculateP_RS();
+
+
+
         
         // Property Getter Functions
         // (All of this stuff is read only, should 
         // be changed only by calls to libspatialSEIR)
-        
+        virtual void printAcceptanceRates();       
         virtual Rcpp::IntegerMatrix getS();
         virtual Rcpp::IntegerMatrix getE();
         virtual Rcpp::IntegerMatrix getI();
@@ -236,6 +239,42 @@ int spatialSEIRInterface::calculateP_RS()
     return(-1);
 }
 
+void spatialSEIRInterface::printAcceptanceRates()
+{
+    if ((*(context -> numIterations)) == 0)
+    {
+        Rcpp::Rcout << "No samples drawn.\n";
+        return;
+    }
+    Rcpp::Rcout << "Total iterations so far: " << (*(context -> numIterations)) << "\n";
+    Rcpp::Rcout << "Acceptance rates: \n";
+    Rcpp::Rcout << "S0:       " << (*(context -> S0_fc -> accepted)*1.0)/(*(context -> S0_fc -> samples)) 
+                          << "\n"; 
+    Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> accepted)*1.0)/ 
+                                  (*(context -> I0_fc -> samples)) 
+                          <<  "\n"; 
+    Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
+                                      (*(context -> S_star_fc -> samples)) 
+                              << "\n"; 
+    Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> accepted)*1.0)/
+                                      (*(context -> E_star_fc -> samples)) 
+                              << "\n"; 
+    Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> accepted)*1.0)/
+                                      (*(context -> R_star_fc -> samples)) 
+                              << "\n";  
+    Rcpp::Rcout << "beta:     " << (*(context -> beta_fc -> accepted)*1.0)/
+                                      (*(context -> beta_fc -> samples)) 
+                              << "\n"; 
+    Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> accepted)*1.0)/
+                                      (*(context -> rho_fc -> samples)) 
+                              << "\n"; 
+    Rcpp::Rcout << "betaP_RS: " << (*(context -> betaPrs_fc -> accepted)*1.0)/
+                                      (*(context -> betaPrs_fc -> samples)) 
+                              << "\n"; 
+    Rcpp::Rcout << "p_ei:      conjugate\n";
+    Rcpp::Rcout << "p_ir:      conjugate\n"; 
+}
+
 Rcpp::IntegerMatrix spatialSEIRInterface::getS0()
 {
     Rcpp::IntegerMatrix output(*(context->S->ncol));
@@ -280,11 +319,6 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getR0()
     }
     return(output);
 }
-
-
-
-
-
 
 Rcpp::IntegerMatrix spatialSEIRInterface::getS()
 {
@@ -846,6 +880,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("calculateP_SE_OCL", &spatialSEIRInterface::calculateP_SE_OCL)
     .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("estimateR0", &spatialSEIRInterface::estimateR02)
+    .method("printAcceptanceRates", &spatialSEIRInterface::printAcceptanceRates)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
     .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")

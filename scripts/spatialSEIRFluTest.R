@@ -240,7 +240,7 @@ logFileList = c(1, # beta
 iterationStride = 10
 
 # S,E,R,beta,betaPrs,rho,gamma
-sliceWidths = c(10,10,10,0.05,0.5,0.01,0.01)
+sliceWidths = c(0.4,0.3,0.05,0.25,0.25,0.015,0.01)
 
 if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     any(R<0) || any(S_star<0) || any(E_star<0) || any(R_star<0))
@@ -317,7 +317,8 @@ runSimulation = function(N, batchSize = 100)
     })
 }
 
-runSimulation(1000000,10)
+runSimulation(1000,10)
+res$printAcceptanceRates()
 
 
 

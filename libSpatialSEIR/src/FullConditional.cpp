@@ -143,8 +143,8 @@ namespace SpatialSEIR
         p_ei = new double*;
         sliceWidth = new double;
         value = new long double;
-        samples = new int;
-        accepted = new int; 
+        samples = new int; *samples = 0;
+        accepted = new int; *accepted = 0;
 
         *context = _context;
         *S = _S;
@@ -405,8 +405,8 @@ namespace SpatialSEIR
         p_ei = new double*;
         sliceWidth = new double;
         value = new long double;
-        samples = new int;
-        accepted = new int; 
+        samples = new int; *samples = 0;
+        accepted = new int; *accepted =0; 
 
 
         *context = _context;
@@ -656,8 +656,8 @@ namespace SpatialSEIR
         p_se = new double*;
         sliceWidth = new double;
         value = new long double;
-        samples = new int;
-        accepted = new int; 
+        samples = new int; *samples =0;
+        accepted = new int; *accepted = 0;
 
 
         *context = _context;
@@ -1112,8 +1112,8 @@ namespace SpatialSEIR
         p_se = new double*;
         sliceWidth = new double;
         value = new long double;
-        samples = new int;
-        accepted = new int; 
+        samples = new int; *samples = 0; 
+        accepted = new int; *accepted = 0;
 
         *context = _context;
         *S = _S;
@@ -1415,8 +1415,8 @@ namespace SpatialSEIR
        sliceWidth = new double;
        samples = new int;
        accepted = new int; 
-       samples = 0;
-       accepted = 0;
+       *samples = 0;
+       *accepted = 0;
 
        *context = _context;
        *S_star = _S_star;
@@ -1610,7 +1610,7 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleCompartment_CPU(*context,
+        this -> sampleEntireCompartment_CPU(*context,
                                   *S_star,*sliceWidth);
         return 0;
     }
@@ -1667,8 +1667,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        samples = 0;
-        accepted = 0;
+        *samples = 0;
+        *accepted = 0;
        
         *context = _context;
         *E_star = _E_star;
@@ -1868,7 +1868,7 @@ namespace SpatialSEIR
 
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleCompartment_CPU(*context,
+        this -> sampleEntireCompartment_CPU(*context,
                                   *E_star,*sliceWidth);
         return 0;
     }
@@ -1928,8 +1928,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        samples = 0;
-        accepted = 0;
+        *samples = 0;
+        *accepted = 0;
 
         *context = _context;
         *R_star = _R_star;
@@ -2463,8 +2463,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        samples = 0;
-        accepted = 0;
+        *samples = 0;
+        *accepted = 0;
 
         *context = _context;
         *E_star = _E_star;
@@ -2592,6 +2592,8 @@ namespace SpatialSEIR
         tausq = new double;
         sliceWidth = new double;
         value = new long double;
+        samples = new int; *samples = 0;
+        accepted = new int; *accepted = 0;
 
         *context = _context;
         *S_star = _S_star;
@@ -2711,8 +2713,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        samples = 0;
-        accepted = 0;
+        *samples = 0;
+        *accepted = 0;
 
 
         *context = _context;
@@ -2834,8 +2836,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        samples = 0;
-        accepted = 0;
+        *samples = 0;
+        *accepted = 0;
 
 
 
@@ -2957,8 +2959,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        samples = 0;
-        accepted = 0;
+        *samples = 0;
+        *accepted = 0;
 
         *context = _context;
         *I_star = _I_star;
@@ -3050,8 +3052,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        samples = 0;
-        accepted = 0;
+        *samples = 0;
+        *accepted = 0;
 
         *context = _context;
         *R_star = _R_star;
