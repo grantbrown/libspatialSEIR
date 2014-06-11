@@ -233,7 +233,6 @@ namespace SpatialSEIR
             int* I0_OCL;
             int* S_star_OCL;
             int* E_star_OCL;
-            int* I_star_OCL;
             int* R_star_OCL;
             int* rho_OCL;
             int* beta_OCL;

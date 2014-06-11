@@ -53,7 +53,6 @@ namespace SpatialSEIR
         I0_OCL = new int; *I0_OCL = 0;
         S_star_OCL = new int; *S_star_OCL = 0;
         E_star_OCL = new int; *E_star_OCL = 0;
-        I_star_OCL = new int; *I_star_OCL = 0;
         R_star_OCL = new int; *R_star_OCL = 0;
         rho_OCL = new int; *rho_OCL =0;
         beta_OCL = new int; *beta_OCL = 0;
@@ -1068,7 +1067,6 @@ namespace SpatialSEIR
         delete I0_OCL;
         delete S_star_OCL;
         delete E_star_OCL;
-        delete I_star_OCL;
         delete R_star_OCL;
         delete rho_OCL;
         delete beta_OCL;

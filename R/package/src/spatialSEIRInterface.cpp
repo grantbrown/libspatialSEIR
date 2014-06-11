@@ -116,6 +116,8 @@ class spatialSEIRInterface
         virtual Rcpp::NumericVector getBeta();
         virtual Rcpp::NumericVector getBetaP_RS();
         virtual Rcpp::NumericVector getRho();
+        virtual Rcpp::IntegerVector getOCLPreferences();
+        virtual void setOCLPreferences(Rcpp::IntegerVector prefs);
 
         virtual int getDebug();
         virtual void setDebug(int debug_);
@@ -570,6 +572,37 @@ Rcpp::NumericVector spatialSEIRInterface::getRho()
     return(output);
 }
 
+Rcpp::IntegerVector spatialSEIRInterface::getOCLPreferences()
+{
+    Rcpp::IntegerVector prefs(8);
+    prefs[0] = *(context -> S0_OCL);
+    prefs[1] = *(context -> I0_OCL);
+    prefs[2] = *(context -> S_star_OCL);
+    prefs[3] = *(context -> E_star_OCL);
+    prefs[4] = *(context -> R_star_OCL);
+    prefs[6] = *(context -> beta_OCL);
+    prefs[7] = *(context -> beta_P_RS_OCL);
+    prefs[8] = *(context -> rho_OCL);
+    return(prefs);
+}
+
+void spatialSEIRInterface::setOCLPreferences(Rcpp::IntegerVector prefs)
+{
+    if (prefs.size() != 8)
+    {
+        Rcpp::Rcout << "OCL Preferences must be length 8: S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho\n";
+        throw(-1);
+    }
+    *(context -> S0_OCL) = prefs[0];
+    *(context -> I0_OCL) = prefs[1];
+    *(context -> S_star_OCL) = prefs[2];
+    *(context -> E_star_OCL) = prefs[3];
+    *(context -> R_star_OCL) = prefs[4];
+    *(context -> beta_OCL) = prefs[5];
+    *(context -> beta_P_RS_OCL) = prefs[6];
+    *(context -> rho_OCL) = prefs[7];
+}
+
 int spatialSEIRInterface::getDebug()
 {
     int out;
@@ -974,6 +1007,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
+    .property("oclPreferences", &spatialSEIRInterface::getOCLPreferences, &spatialSEIRInterface::setOCLPreferences, "Use OCL? Length 8:  S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho")
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")
     ;
