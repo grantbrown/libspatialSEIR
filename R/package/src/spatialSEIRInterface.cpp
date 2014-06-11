@@ -6,6 +6,7 @@
 #include <CompartmentalModelMatrix.hpp>
 #include <DistanceMatrix.hpp>
 #include <IOProvider.hpp>
+#include <OCLProvider.hpp>
 
 using namespace Rcpp;
 using namespace SpatialSEIR;
@@ -66,6 +67,7 @@ class spatialSEIRInterface
         virtual int simulate(int iters);
         virtual int setTrace(int locationIndex);
         virtual int setTrace2(int locationIndex, int timeIndex);
+        virtual void setDevice(int platformId, int deviceId);
 
 
         // Calculation Functions
@@ -90,6 +92,7 @@ class spatialSEIRInterface
         virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
         virtual void printSamplingParameters();
         virtual void printAcceptanceRates();       
+        virtual void printOCLSummary();
         virtual Rcpp::IntegerMatrix getS();
         virtual Rcpp::IntegerMatrix getE();
         virtual Rcpp::IntegerMatrix getI();
@@ -135,6 +138,18 @@ int spatialSEIRInterface::simulate(int iters)
     context -> runSimulation_CPU(iters,*(verbose),*(debug));
     return(0);
 }
+
+void spatialSEIRInterface::setDevice(int platformId, int deviceId)
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> oclProvider -> setDevice(platformId, deviceId));
+        return;
+    }
+    Rcpp::Rcout << "ModelContext is not populated.\n";
+    return;
+}
+
 int spatialSEIRInterface::setTrace(int locationIndex)
 {
     if (*(context -> isPopulated))
@@ -271,6 +286,16 @@ void spatialSEIRInterface::updateSamplingParameters(double desiredRatio, double 
         return;
     }
     (context -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange));
+}
+
+void spatialSEIRInterface::printOCLSummary()
+{
+    if (*(context -> isPopulated))
+    {
+        (context -> oclProvider -> printSummary());
+        return;
+    }
+    Rcpp::Rcout << "ModelContext has not been populated.\n";
 }
 
 void spatialSEIRInterface::printSamplingParameters()
@@ -914,6 +939,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("simulate", &spatialSEIRInterface::simulate)
     .method("setTrace", &spatialSEIRInterface::setTrace)
     .method("setTrace", &spatialSEIRInterface::setTrace2)
+    .method("setDevice", &spatialSEIRInterface::setDevice)
     .method("calculateS", &spatialSEIRInterface::calculateS)
     .method("calculateE", &spatialSEIRInterface::calculateE)
     .method("calculateI", &spatialSEIRInterface::calculateI)
@@ -925,6 +951,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("estimateR0", &spatialSEIRInterface::estimateR02)
     .method("printAcceptanceRates", &spatialSEIRInterface::printAcceptanceRates)
+    .method("printOCLSummary", &spatialSEIRInterface::printOCLSummary)
     .method("printSamplingParameters", &spatialSEIRInterface::printSamplingParameters)
     .method("updateSamplingParameters", &spatialSEIRInterface::updateSamplingParameters)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")

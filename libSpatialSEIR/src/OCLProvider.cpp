@@ -189,6 +189,34 @@ SpatialSEIR::OCLProvider::OCLProvider()
     test();
 }
 
+void SpatialSEIR::OCLProvider::printSummary()
+{
+    unsigned int i,j;
+    if (platforms -> size() == 0)
+    {
+        std::cout << "No OpenCL Platforms Detected\n";
+        return;
+    }
+    for (i = 0; i < (platforms -> size()); i++)
+    {
+        std::cout << "Platform " << i << ": "  << (*(((*platforms)[i]) -> platform)) -> getInfo<CL_PLATFORM_NAME>() << "\n";
+        std::cout << "  Devices: \n";
+        for (j = 0; j < (((*(platforms))[i]) -> devices) -> size(); j++)
+        {
+            std::cout << "  " << j << ". " <<  (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_NAME>() << "\n";
+            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << "Type: " << 
+                ((*(((*(platforms))[i]) -> deviceTypes))[j])  << "\n";
+            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << "Supports Double Precision: " << 
+                ((*(((*(platforms))[i]) -> doublePrecision))[j])  << "\n";
+            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
+                "Local Memory: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << "\n";
+            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
+                "Max Compute Units: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << "\n";
+        }
+
+    }
+}
+
 SpatialSEIR::OCLProvider::~OCLProvider()
 {
     clblasTeardown();
@@ -206,9 +234,28 @@ SpatialSEIR::OCLProvider::~OCLProvider()
 
 void SpatialSEIR::OCLProvider::setDevice(int platformId, int deviceId)
 {
-    *currentPlatform = (*((*platforms)[platformId] -> platform));
-    *currentContext = (*platforms)[platformId] -> context;
-    *currentDevice = ((*((*platforms)[platformId] -> devices))[deviceId]);
+
+    unsigned int pID, dID;
+    if (platformId < 0 || deviceId < 0)
+    {
+        std::cerr << "Invalid Arguments\n";
+    }
+    pID = platformId;
+    dID = deviceId;
+    if ((*platforms).size() < pID)
+    {
+         std::cerr << "Invalid Platform.\n";
+         throw(-1);      
+    }
+    if ((*((*platforms)[pID] -> devices)).size() <= dID)
+    {
+        std::cerr << "Invalid Device.\n";
+        throw(-1);
+    }
+
+    *currentPlatform = (*((*platforms)[pID] -> platform));
+    *currentContext = (*platforms)[pID] -> context;
+    *currentDevice = ((*((*platforms)[pID] -> devices))[dID]);
     *isSetup = 1;
 }
 
