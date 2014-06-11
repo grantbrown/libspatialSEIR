@@ -327,7 +327,7 @@ namespace SpatialSEIR
     int FC_S0::sampleOCL()
     {
         // Not Implemented
-        return(-1);
+        return(sampleCPU());
     }
 
     long double FC_S0::getValue()
@@ -630,7 +630,7 @@ namespace SpatialSEIR
     int FC_E0::sampleOCL()
     {
         // Not Implemented
-        return(-1);
+        return(sampleCPU());
     }
 
     long double FC_E0::getValue()
@@ -968,7 +968,7 @@ namespace SpatialSEIR
     int FC_I0::sampleOCL()
     {
         // Not Implemented
-        return(-1);
+        return(sampleCPU());
     }
 
     long double FC_I0::getValue()
@@ -1400,7 +1400,7 @@ namespace SpatialSEIR
     int FC_R0::sampleOCL()
     {
         // Not Implemented
-        return(-1);
+        return(sampleCPU());
     }
 
     long double FC_R0::getValue()
@@ -1736,7 +1736,7 @@ namespace SpatialSEIR
     int FC_S_Star::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
     long double FC_S_Star::getValue()
     {
@@ -2054,7 +2054,7 @@ namespace SpatialSEIR
     int FC_E_Star::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
 
     long double FC_E_Star::getValue()
@@ -2745,7 +2745,7 @@ namespace SpatialSEIR
     int FC_Beta::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
 
     long double FC_Beta::getValue()
@@ -2876,7 +2876,7 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
 
     long double FC_Beta_P_RS::getValue()
@@ -3000,7 +3000,7 @@ namespace SpatialSEIR
     int FC_Rho::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
 
     long double FC_Rho::getValue()
@@ -3135,7 +3135,7 @@ namespace SpatialSEIR
     int FC_Gamma::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
 
     long double FC_Gamma::getValue()
@@ -3232,7 +3232,7 @@ namespace SpatialSEIR
     int FC_P_EI::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
 
     long double FC_P_EI::getValue()
@@ -3330,7 +3330,7 @@ namespace SpatialSEIR
     int FC_P_IR::sampleOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(sampleCPU());
     }
 
     long double FC_P_IR::getValue()
