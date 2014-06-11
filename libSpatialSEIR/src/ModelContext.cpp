@@ -49,6 +49,16 @@ namespace SpatialSEIR
         singleLocation = new int; *singleLocation = -1;
         numIterations = new int; *numIterations = 0;
         oclProvider = new OCLProvider();
+        S0_OCL = new int; *S0_OCL = 0;
+        I0_OCL = new int; *I0_OCL = 0;
+        S_star_OCL = new int; *S_star_OCL = 0;
+        E_star_OCL = new int; *E_star_OCL = 0;
+        I_star_OCL = new int; *I_star_OCL = 0;
+        R_star_OCL = new int; *R_star_OCL = 0;
+        rho_OCL = new int; *rho_OCL =0;
+        beta_OCL = new int; *beta_OCL = 0;
+        beta_P_RS_OCL = new int; *beta_P_RS_OCL = 0;
+
     }
 
     void ModelContext::setRandomSeed(unsigned int seedValue)
@@ -461,7 +471,7 @@ namespace SpatialSEIR
         rho_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
     }
 
-    void ModelContext::simulationIter(int* useOCL, bool verbose = false, bool debug = false)
+    void ModelContext::simulationIter(bool verbose = false, bool debug = false)
     {
         if (debug)
         {
@@ -480,7 +490,7 @@ namespace SpatialSEIR
         }
 
         if (verbose){std::cout << "Sampling S0\n";}
-        if (useOCL[0] == 0){S0_fc -> sampleCPU();}
+        if (!(*S0_OCL)){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}
 
 
@@ -491,7 +501,7 @@ namespace SpatialSEIR
         */
 
         if (verbose){std::cout << "Sampling I0\n";}
-        if (useOCL[2] == 0){I0_fc -> sampleCPU();}
+        if (!(*I0_OCL)){I0_fc -> sampleCPU();}
         else {I0_fc -> sampleOCL();}
 
         /*
@@ -503,56 +513,49 @@ namespace SpatialSEIR
         if ((config -> reinfectionMode) <= 2)
         {
             if (verbose){std::cout << "Sampling S_star\n";}
-            if (useOCL[4] == 0){S_star_fc -> sampleCPU();}
+            if (!(*S_star_OCL)){S_star_fc -> sampleCPU();}
             else {S_star_fc -> sampleOCL();}
         }
 
         if (verbose){std::cout << "Sampling E_star\n";}
-        if (useOCL[5] == 0){E_star_fc -> sampleCPU();}
+        if (!(*E_star_OCL)){E_star_fc -> sampleCPU();}
         else {E_star_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling R_star\n";}
-        if (useOCL[6] == 0){R_star_fc -> sampleCPU();}
+        if (!(*R_star_OCL)){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
 
         if (verbose){std::cout << "Sampling beta\n";}
-        if (useOCL[7] == 0){beta_fc -> sampleCPU();}
+        if (!(*beta_OCL)){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
 
         if ((config -> reinfectionMode) == 1)
         {
             if (verbose){std::cout << "Sampling betaPrs\n";}
-            if (useOCL[8] == 0){betaPrs_fc -> sampleCPU();}
+            if (!(*beta_P_RS_OCL)){betaPrs_fc -> sampleCPU();}
             else {betaPrs_fc -> sampleOCL();}
         }
 
         if (verbose){std::cout << "Sampling p_ei\n";}
-        if (useOCL[9] == 0){p_ei_fc -> sampleCPU();}
-        else {p_ei_fc -> sampleOCL();}
+        p_ei_fc -> sampleCPU();
+
 
         if (verbose){std::cout << "Sampling p_ir\n";}
-        if (useOCL[10] == 0){p_ir_fc -> sampleCPU();}
-        else {p_ir_fc -> sampleOCL();}
+        p_ir_fc -> sampleCPU();
 
         if (!(*singleLocation))
         {
             // Spatial dependence doesn't apply to single spatial unit. 
             if (verbose){std::cout << "Sampling rho\n";}
-            if (useOCL[11] == 0){rho_fc -> sampleCPU();}
+            if (!(*rho_OCL)){rho_fc -> sampleCPU();}
             else {rho_fc -> sampleOCL();}
         }
-
-        /*
-        if (verbose){std::cout << "Sampling gamma\n";}
-        if (useOCL[12] == 0){gamma_fc -> sampleCPU();}
-        else {gamma_fc -> sampleOCL();}
-        */
     }
 
     // Method: runSimulation
     // Accesses: Everything lol
     // Updates: Everything lol
-    void ModelContext::runSimulation(int nIterations, int* useOCL, bool verbose = false, bool debug = false)
+    void ModelContext::runSimulation(int nIterations, bool verbose = false, bool debug = false)
     {
         int i;
         int itrStart = *numIterations;
@@ -563,27 +566,7 @@ namespace SpatialSEIR
             {
                 std::cout << "Iteration: " << i << "\n";
             }
-            this -> simulationIter(&*useOCL, verbose, debug);
-            this -> fileProvider -> catIter(i);
-            (*numIterations) = (*numIterations + 1);
-        }
-    }
-
-    void ModelContext::runSimulation_CPU(int nIterations, bool verbose = false, bool debug = false)
-    {
-        int useOCL[13] = {0};
-        // TMP: Use OCL for R_star
-        //useOCL[6] = 1;
-        int i;
-        int itrStart = *numIterations;
-        int itrMax = nIterations + (*numIterations);
-        for (i = itrStart; i < itrMax; i++)
-        {
-            if (verbose)
-            {
-                std::cout << "Iteration: " << i << "\n";
-            }
-            this -> simulationIter(&*useOCL, verbose, debug);
+            this -> simulationIter(verbose, debug);
             this -> fileProvider -> catIter(i);
             (*numIterations) = (*numIterations + 1);
         }
@@ -1081,6 +1064,15 @@ namespace SpatialSEIR
         delete rho;
         delete config;
         delete oclProvider;
+        delete S0_OCL;
+        delete I0_OCL;
+        delete S_star_OCL;
+        delete E_star_OCL;
+        delete I_star_OCL;
+        delete R_star_OCL;
+        delete rho_OCL;
+        delete beta_OCL;
+        delete beta_P_RS_OCL;
     }
 }
 

@@ -135,7 +135,7 @@ int spatialSEIRInterface::setRandomSeed(int seedVal)
 }
 int spatialSEIRInterface::simulate(int iters)
 {
-    context -> runSimulation_CPU(iters,*(verbose),*(debug));
+    context -> runSimulation(iters,*(verbose),*(debug));
     return(0);
 }
 

@@ -130,9 +130,8 @@ namespace SpatialSEIR
             int checkCompartmentBounds();
             void printFCValues();
             void setRandomSeed(unsigned int seedValue);
-            void simulationIter(int* useOCL, bool verbose, bool debug);
-            void runSimulation(int nIterations, int* useOCL, bool verbose, bool debug);
-            void runSimulation_CPU(int nIterations, bool verbose, bool debug);
+            void simulationIter(bool verbose, bool debug);
+            void runSimulation(int nIterations,  bool verbose, bool debug);
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
 
@@ -230,7 +229,15 @@ namespace SpatialSEIR
             int* singleLocation;
             int* numIterations;
 
-
+            int* S0_OCL;
+            int* I0_OCL;
+            int* S_star_OCL;
+            int* E_star_OCL;
+            int* I_star_OCL;
+            int* R_star_OCL;
+            int* rho_OCL;
+            int* beta_OCL;
+            int* beta_P_RS_OCL;
     };
 }
 #endif
