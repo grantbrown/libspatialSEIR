@@ -76,7 +76,6 @@ namespace SpatialSEIR
                                 compartmentArgs* R_starArgs,
                                 distanceArgs* rawDistArgs,
                                 scaledDistanceArgs* scaledDistArgs,
-                                gammaArgs* gammaFCArgs,
                                 double* rho_, double* beta_, 
                                 double* p_ei_, double* p_ir_, double* betaPrs_, 
                                 int* N_, sliceParameters* sliceWidths,
@@ -103,7 +102,9 @@ namespace SpatialSEIR
         beta = new double[nbeta];
         betaPrs = new double[nBetaPrs];
         eta = new double[neta];
+        //Depricated
         gamma = new double[*(S_starArgs -> inRow)];
+        memset(gamma, 0, *(S_starArgs -> inRow)*sizeof(double));
         // Create empty compartment for calculation.
         tmpContainer = new CompartmentalModelMatrix();
         tmpContainer -> createEmptyCompartment((S_starArgs -> inRow), (S_starArgs -> inCol));
@@ -176,10 +177,6 @@ namespace SpatialSEIR
             eta[i] = 0.0;
         }
 
-        for (i = 0; i < *(S->nrow); i++)
-        {
-            gamma[i] = (gammaFCArgs -> gamma)[i];
-        }
         for (i = 0; i < nBetaPrs; i++)
         {
             betaPrs[i] = betaPrs_[i];
@@ -292,12 +289,6 @@ namespace SpatialSEIR
                             A0,X,p_se,beta,rho,
                             *(sliceWidths -> rhoWidth));
 
-        gamma_fc = new FC_Gamma(this,
-                                E_star,
-                                S,
-                                A0,X,p_se,beta,gamma,(gammaFCArgs -> priorAlpha),
-                                (gammaFCArgs -> priorBeta),
-                                *(sliceWidths -> gammaWidth));
 
         betaPrs_fc = new FC_Beta_P_RS(this,S_star,R,X_pRS,A0,p_rs,betaPrs, 
                                       (priorValues->betaPrsPriorPrecision), 
@@ -448,14 +439,12 @@ namespace SpatialSEIR
         p_ei_fc -> evalCPU();
         p_ir_fc -> evalCPU();
         rho_fc -> evalCPU();
-        gamma_fc -> evalCPU();
         std::cout << "  FC Values:\n";
         std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
         std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
         std::cout << "    p_ei: " << p_ei_fc ->getValue() << "\n";
         std::cout << "    p_ir: " << p_ir_fc ->getValue() << "\n";
         std::cout << "    rho: " << rho_fc ->getValue() << "\n";
-        std::cout << "    gamma: " << gamma_fc ->getValue() << "\n";
     }
 
     void ModelContext::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
@@ -1032,7 +1021,6 @@ namespace SpatialSEIR
         delete R_star_fc;
         delete beta_fc;
         delete rho_fc;
-        delete gamma_fc;
         delete betaPrs_fc;
         delete p_ei_fc;
         delete p_ir_fc;

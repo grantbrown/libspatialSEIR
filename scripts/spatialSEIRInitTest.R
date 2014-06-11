@@ -83,11 +83,6 @@ rho = 0.05
 p_ei = 0.9
 p_ir = 0.9
 
-gamma = rep(0,nrow(S))
-
-priorAlpha_gamma = 0.1
-priorBeta_gamma = 1
-
 beta = c(sim_results$true_fixed_beta, sim_results$true_time_varying_beta)
 betaPriorPrecision = 1
 
@@ -101,7 +96,7 @@ outFileName = "./chainOutput_sim.txt"
 
 iterationStride = 10
 
-# S,E,R,S0,I0,beta,betaPrs,rho,gamma
+# S,E,R,S0,I0,beta,betaPrs,rho
 sliceWidths = c(0.26,  # S_star
                 0.1,  # E_star
                 0.15, # I_star
@@ -109,8 +104,7 @@ sliceWidths = c(0.26,  # S_star
                 0.24, # I0
                 0.8, # beta
                 0.2, # betaPrs
-                0.015,# rho
-                0.01  # gamma
+                0.015# rho
                 )
 
 
@@ -120,7 +114,7 @@ sliceWidths = c(0.26,  # S_star
 
 if (nrow(S) != nrow(E) || nrow(E) != nrow(I) || nrow(I) != nrow(R) || nrow(R) != nrow(S) || 
     ncol(S) != ncol(E) || ncol(E) != ncol(I) || ncol(I) != ncol(R) || ncol(R) != ncol(S) || 
-    nrow(S) != length(gamma) || length(p_ei) != 1 || length(p_ir) != 1
+    length(p_ei) != 1 || length(p_ir) != 1
     || nrow(Z) != nrow(S)*ncol(S))
 {
     stop("Invalid Starting Dimensions")
@@ -166,9 +160,6 @@ res = spatialSEIRModel(compMatDim,
                       X_betaPrs,
                       DM,
                       rho,
-                      gamma,
-                      priorAlpha_gamma,
-                      priorBeta_gamma,
                       priorAlpha_pEI,
                       priorBeta_pEI,
                       priorAlpha_pIR,

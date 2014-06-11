@@ -27,7 +27,6 @@ namespace SpatialSEIR
     class FC_P_IR;
     class FC_Beta_P_RS;
     class FC_Rho;
-    class FC_Gamma;
     class InitData;
     class TestClass;
 
@@ -68,7 +67,6 @@ namespace SpatialSEIR
                           compartmentArgs* R_starArgs,
                           distanceArgs* rawDistArgs,
                           scaledDistanceArgs* scaledDistArgs,
-                          gammaArgs* gammaFCArgs,
                           double* rho, double* beta, 
                           double* p_ei, double* p_ir, double* betaPrs, 
                           int* N, sliceParameters* sliceWidths,
@@ -191,7 +189,6 @@ namespace SpatialSEIR
             FC_R_Star *R_star_fc;
             FC_Beta *beta_fc;
             FC_Rho *rho_fc;
-            FC_Gamma *gamma_fc;
             FC_Beta_P_RS *betaPrs_fc;
             FC_P_EI *p_ei_fc;
             FC_P_IR *p_ir_fc;

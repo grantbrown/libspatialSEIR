@@ -192,9 +192,6 @@ rho = 0.1
 p_ei = 0.99
 p_ir = 0.8
 p_rs = rep(0.1, nrow(S))
-gamma = rep(0.1, nrow(S))
-priorAlpha_gamma = 0.1
-priorBeta_gamma = 1
 
 
 #beta = c(-2,0.1,0.1)
@@ -212,7 +209,7 @@ outFileName = "./chainOutput.txt"
 
 iterationStride = 100
 
-# S,E,R,S0,I0,beta,betaPrs,rho,gamma
+# S,E,R,S0,I0,beta,betaPrs,rho
 sliceWidths = c(0.26,  # S_star
                 0.14,  # E_star
                 0.15, # I_star
@@ -220,8 +217,7 @@ sliceWidths = c(0.26,  # S_star
                 0.24, # I0
                 0.8, # beta
                 0.2, # betaPrs
-                0.015,# rho
-                0.01  # gamma
+                0.015# rho
                 )
 
 if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
@@ -257,9 +253,6 @@ res = spatialSEIRModel(compMatDim,
                       X_betaPrs,
                       DM,
                       rho,
-                      gamma,
-                      priorAlpha_gamma,
-                      priorBeta_gamma,
                       priorAlpha_pEI,
                       priorBeta_pEI,
                       priorAlpha_pIR,

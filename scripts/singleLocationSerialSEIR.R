@@ -186,7 +186,6 @@ p_ir = p_ir
 p_rs = p_rs[(ThrowAwayTpt +1):length(p_rs)]
 p_se = p_se[(ThrowAwayTpt +1):length(p_se)]
 eta_se = eta_se[(ThrowAwayTpt +1):length(eta_se)]
-gamma = trueGamma[(1+ThrowAwayTpt):length(trueGamma)]
 beta = c(trueBetaSEFixed, trueBetaSEVarying) 
 betaPrs = trueBetaRS
 N = matrix(N, nrow = nrow(S), ncol = ncol(S))
@@ -194,7 +193,7 @@ outFileName = "./chainOutput_single.txt"
 
 iterationStride = 10000
 
-# S,E,R,S0,I0,beta,betaPrs,rho,gamma
+# S,E,R,S0,I0,beta,betaPrs,rho
 sliceWidths = c(0.26,  # S_star
                 0.1,  # E_star
                 0.15, # I_star
@@ -202,14 +201,9 @@ sliceWidths = c(0.26,  # S_star
                 0.24, # I0
                 0.8, # beta
                 0.2, # betaPrs
-                0.015,# rho
-                0.01  # gamma
+                0.015# rho
                 )
 
-
-
-priorAlpha_gamma = 0.1
-priorBeta_gamma = 1
 priorAlpha_pEI = 10000;
 priorBeta_pEI = 1000;
 priorAlpha_pIR = 10000;
@@ -258,9 +252,6 @@ res = spatialSEIRModel(compMatDim,
                       X_prs,
                       DM,
                       rho,
-                      gamma,
-                      priorAlpha_gamma,
-                      priorBeta_gamma,
                       priorAlpha_pEI,
                       priorBeta_pEI,
                       priorAlpha_pIR,

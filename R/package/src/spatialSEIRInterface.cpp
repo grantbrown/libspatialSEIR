@@ -41,9 +41,6 @@ class spatialSEIRInterface
                      SEXP X_pRS_,
                      SEXP DistMat_,
                      SEXP rho_,
-                     SEXP gamma_,
-                     SEXP priorAlpha_gamma_,
-                     SEXP priorBeta_gamma_,
                      SEXP priorAlpha_pEI_,
                      SEXP priorBeta_pEI_,
                      SEXP priorAlpha_pIR_,
@@ -112,7 +109,6 @@ class spatialSEIRInterface
         virtual Rcpp::NumericVector getP_EI();
         virtual Rcpp::NumericVector getP_IR();
         virtual Rcpp::NumericVector getP_RS();
-        virtual Rcpp::NumericVector getGamma();
         virtual Rcpp::NumericVector getBeta();
         virtual Rcpp::NumericVector getBetaP_RS();
         virtual Rcpp::NumericVector getRho();
@@ -515,18 +511,6 @@ Rcpp::NumericVector spatialSEIRInterface::getP_RS()
     return(output);
 }
 
-Rcpp::NumericVector spatialSEIRInterface::getGamma()
-{
-    Rcpp::NumericVector output(*(context->S->nrow));
-    int i;
-    int numVals = (*(context->S->nrow));
-    for (i = 0; i < numVals; i++) 
-    {
-        output[i] = (context->gamma)[i]; 
-    }
-    return(output);
-}
-
 Rcpp::NumericVector spatialSEIRInterface::getBeta()
 {
     Rcpp::NumericVector output(((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
@@ -652,9 +636,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP X_pRS_,
                      SEXP DistMat_,
                      SEXP rho_,
-                     SEXP gamma_,
-                     SEXP priorAlpha_gamma_,
-                     SEXP priorBeta_gamma_,
                      SEXP priorAlpha_pEI_,
                      SEXP priorBeta_pEI_,
                      SEXP priorAlpha_pIR_,
@@ -698,9 +679,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
     Rcpp::NumericVector rho(rho_);
 
-    Rcpp::NumericVector gamma(gamma_);
-    Rcpp::NumericVector priorAlpha_gamma(priorAlpha_gamma_);
-    Rcpp::NumericVector priorBeta_gamma(priorBeta_gamma_);
 
     Rcpp::NumericVector priorAlpha_pEI(priorAlpha_pEI_);
     Rcpp::NumericVector priorBeta_pEI(priorBeta_pEI_);
@@ -806,15 +784,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
         Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
     }
 
-    if (gamma.size() != compartmentDimensions[0])
+    if (sliceParams.size() != 8)
     {
-        Rcpp::Rcout << "Invalid gamma size!\n";
-        Rcpp::Rcout << "Size: " << gamma.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
-        throw(-1);
-    }
-    if (sliceParams.size() != 9)
-    {
-        Rcpp::Rcout << "Slice sampling parameters must be of length 9: S*,E*,R*,S0,I0,beta,betaPrs,rho,gamma\n";
+        Rcpp::Rcout << "Slice sampling parameters must be of length 9: S*,E*,R*,S0,I0,beta,betaPrs,rho\n";
         throw(-1);
     }
     if (reinfectMode[0] > 2)
@@ -864,7 +836,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     // Gather information for the creation of the compartment matrices 
     
     compartmentArgs S_starArgs, E_starArgs, I_starArgs, R_starArgs;
-    gammaArgs gammaFCArgs;
     sliceParameters sliceParamStruct;
     modelConfiguration modelConfig;
     modelConfig.reinfectionMode = reinfectMode[0];
@@ -878,7 +849,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     sliceParamStruct.betaWidth = &sliceParams[5];
     sliceParamStruct.betaPrsWidth = &sliceParams[6];
     sliceParamStruct.rhoWidth = &sliceParams[7];
-    sliceParamStruct.gammaWidth = &sliceParams[8];
 
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];
@@ -900,10 +870,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     R_starArgs.inCol = &compartmentDimensions[1];
     R_starArgs.steadyStateConstraintPrecision = steadyStateConstraintPrecision[0];
 
-
-    gammaFCArgs.gamma = gamma.begin();
-    gammaFCArgs.priorAlpha = priorAlpha_gamma.begin();
-    gammaFCArgs.priorBeta = priorBeta_gamma.begin();
 
     priorControl priorValues;
     priorValues.betaPriorPrecision = betaPriorPrecision[0];
@@ -935,7 +901,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
     context -> populate(&A0, &xArgs, &xPrsArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
-                        &R_starArgs, &rawDistArgs,&scaledDistArgs, &gammaFCArgs,
+                        &R_starArgs, &rawDistArgs,&scaledDistArgs,
                         rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
                         betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,
                         modelConfig);
@@ -1003,7 +969,6 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("p_ei", &spatialSEIRInterface::getP_EI, "E to I Transition Probability")
     .property("p_ir", &spatialSEIRInterface::getP_IR, "I to R Transition Probability")
     .property("p_rs", &spatialSEIRInterface::getP_RS, "R-S Transition Probability Vector")
-    .property("gamma", &spatialSEIRInterface::getGamma, "External Infection Component Vector")
     .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
