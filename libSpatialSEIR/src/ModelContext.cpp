@@ -547,9 +547,7 @@ namespace SpatialSEIR
         if (useOCL[12] == 0){gamma_fc -> sampleCPU();}
         else {gamma_fc -> sampleOCL();}
         */
-
     }
-
 
     // Method: runSimulation
     // Accesses: Everything lol
@@ -589,7 +587,6 @@ namespace SpatialSEIR
             this -> fileProvider -> catIter(i);
             (*numIterations) = (*numIterations + 1);
         }
-
     }
 
     // Method: calculateS

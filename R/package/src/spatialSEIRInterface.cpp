@@ -88,6 +88,7 @@ class spatialSEIRInterface
         // (All of this stuff is read only, should 
         // be changed only by calls to libspatialSEIR)
         virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+        virtual void printSamplingParameters();
         virtual void printAcceptanceRates();       
         virtual Rcpp::IntegerMatrix getS();
         virtual Rcpp::IntegerMatrix getE();
@@ -270,6 +271,20 @@ void spatialSEIRInterface::updateSamplingParameters(double desiredRatio, double 
         return;
     }
     (context -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange));
+}
+
+void spatialSEIRInterface::printSamplingParameters()
+{
+    Rcpp::Rcout << "S0:       " << (*(context -> S0_fc -> sliceWidth)) << "\n"; 
+    Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> sliceWidth)) << "\n"; 
+    Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> sliceWidth)) << "\n"; 
+    Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> sliceWidth)) << "\n"; 
+    Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> sliceWidth))<< "\n";  
+    Rcpp::Rcout << "beta:     " << (*(context -> beta_fc -> sliceWidth))  << "\n"; 
+    Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> sliceWidth)) << "\n"; 
+    Rcpp::Rcout << "betaP_RS: " << (*(context -> betaPrs_fc -> sliceWidth)) << "\n"; 
+    Rcpp::Rcout << "p_ei:      conjugate\n";
+    Rcpp::Rcout << "p_ir:      conjugate\n"; 
 }
 
 void spatialSEIRInterface::printAcceptanceRates()
@@ -910,6 +925,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("estimateR0", &spatialSEIRInterface::estimateR02)
     .method("printAcceptanceRates", &spatialSEIRInterface::printAcceptanceRates)
+    .method("printSamplingParameters", &spatialSEIRInterface::printSamplingParameters)
     .method("updateSamplingParameters", &spatialSEIRInterface::updateSamplingParameters)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")

@@ -168,12 +168,18 @@ R = t(R)
 
 N = t(N)
 
+nTptPerYear = 52
+maxTpt = nrow(S)  
 
+X_betaPrs = cbind(1, 
+              sin((1:maxTpt)/nTptPerYear*2*pi),
+              cos((1:maxTpt)/nTptPerYear*2*pi),
+              sin((1:maxTpt)/(maxTpt)*2*pi),
+              cos((1:maxTpt)/(maxTpt)*2*pi)
+              )
+betaPrs = c(3,0,0,0,0)
+betaPrsPriorPrecision = 0.5
 
-X_betaPrs = model.matrix(~as.factor(monthVal))[,1:11]
-betaPrs = rep(0,ncol(X_betaPrs)) 
-betaPrs[1] = 2.5
-betaPrsPriorPrecision = 1
 xDim = dim(X)
 zDim = dim(Z)
 X_betaPrsDim = dim(X_betaPrs)
@@ -232,7 +238,7 @@ reinfectionMode = 1
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
 
-steadyStateConstraintPrecision = 0.01
+steadyStateConstraintPrecision = 0.05
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
@@ -300,8 +306,8 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 
 #runSimulation(500000,1000)
 runSimulation(1000,50, printAR =TRUE)
-runSimulation(10000,100, printAR = TRUE)
-runSimulation(100000,1000, printAR = TRUE)
+#runSimulation(10000,100, printAR = TRUE)
+#runSimulation(100000,1000, printAR = TRUE)
 
 
 

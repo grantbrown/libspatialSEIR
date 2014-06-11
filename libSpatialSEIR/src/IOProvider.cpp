@@ -185,6 +185,11 @@ namespace SpatialSEIR
         {
             return(-1);
         }
+        //Check iteration stride
+        if ((iteration % (*iterationStride)) != 0)
+        {
+            return(1);
+        }
 
         // Write Beta
         int nTpt = *((*context) -> S_star -> nrow);
