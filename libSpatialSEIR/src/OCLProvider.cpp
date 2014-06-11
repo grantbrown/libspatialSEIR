@@ -97,7 +97,7 @@ SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
     }
     for (i = 0; i < gpuDevices -> size(); i++)
     {   
-        std::cout << "Adding CPU Device: ";
+        std::cout << "Adding GPU Device: ";
         newDevice = new DeviceContainer(&((*gpuDevices)[i]), context);
         devices -> push_back(newDevice);
         clExt = (*(newDevice -> device)) -> getInfo<CL_DEVICE_EXTENSIONS>();
