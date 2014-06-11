@@ -564,9 +564,9 @@ Rcpp::IntegerVector spatialSEIRInterface::getOCLPreferences()
     prefs[2] = *(context -> S_star_OCL);
     prefs[3] = *(context -> E_star_OCL);
     prefs[4] = *(context -> R_star_OCL);
-    prefs[6] = *(context -> beta_OCL);
-    prefs[7] = *(context -> beta_P_RS_OCL);
-    prefs[8] = *(context -> rho_OCL);
+    prefs[5] = *(context -> beta_OCL);
+    prefs[6] = *(context -> beta_P_RS_OCL);
+    prefs[7] = *(context -> rho_OCL);
     return(prefs);
 }
 
