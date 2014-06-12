@@ -274,6 +274,7 @@ res = spatialSEIRModel(compMatDim,
 
 
 res$setRandomSeed(123123)
+res$oclPreferences = res$oclPreferences + 1
 
 runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0.05, proportionChange = 0.01, printAR = FALSE)
 {

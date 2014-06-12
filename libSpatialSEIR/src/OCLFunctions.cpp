@@ -16,7 +16,6 @@ namespace SpatialSEIR
 {
     void OCLProvider::calculateP_SE(ModelContext* ctx)
     {
-
         cl::Context* context = *currentContext;
         cl::Device device = **((*currentDevice) -> device);
 
@@ -55,11 +54,13 @@ namespace SpatialSEIR
         // Calculate work size for kernel 1 (todo: cache this)
         int totalWorkUnits = nLoc*nTpt;
         size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+        int deviceMaxSize = (device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
         int localSizeMultiple = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
         int maxLocalSize = localMemPerCore/(2*4 + 1*8);
+        maxLocalSize = std::min(maxLocalSize, deviceMaxSize);
         int i=-1;
         int workGroupSize = 0;
-        while(workGroupSize <= maxLocalSize && workGroupSize < totalWorkUnits)
+        while(workGroupSize < maxLocalSize && workGroupSize < totalWorkUnits)
         {
             i++;
             workGroupSize = pow(2,i)*localSizeMultiple;
@@ -72,6 +73,16 @@ namespace SpatialSEIR
         int numWorkGroups = (totalWorkUnits/workGroupSize); 
             numWorkGroups += (numWorkGroups*workGroupSize < totalWorkUnits);
         int globalSize = numWorkGroups*workGroupSize;
+
+        /*
+        std::cout << "Total Work Units: " << totalWorkUnits << "\n";
+        std::cout << "Local Mem Per Core: " << localMemPerCore << "\n";
+        std::cout << "Local Size Multiple: " << localSizeMultiple << "\n";
+        std::cout << "Reported Maximum Size: " << deviceMaxSize << "\n";
+        std::cout << "Max Local Size: " << maxLocalSize << "\n";
+        std::cout << "Work Group Size: " << workGroupSize << "\n";
+        std::cout << "Global Size: " << globalSize << "\n";
+        */
 
         int err;
 
@@ -286,8 +297,10 @@ namespace SpatialSEIR
             //    p_se   (TxP)
             R_star_args -> totalWorkUnits = nLoc*nTpts;
             size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+            int deviceMaxSize = (device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
             int localSizeMultiple = (R_Star_kernel -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
             int maxLocalSize = localMemPerCore/(4*6 + 2*8);
+            maxLocalSize = std::min(maxLocalSize, deviceMaxSize);
             i=-1;
             int workGroupSize = 0;
             while(workGroupSize <= maxLocalSize && workGroupSize < (R_star_args -> totalWorkUnits))

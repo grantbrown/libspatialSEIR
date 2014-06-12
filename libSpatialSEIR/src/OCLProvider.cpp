@@ -176,17 +176,17 @@ SpatialSEIR::OCLProvider::OCLProvider()
 
     // Create Kernels
     // Dummy code to pick device 0,0
-    setDevice(0,0);
-
-    *test_kernel = buildProgramForKernel("test_kernel.cl", (*currentDevice));
-
-    *R_Star_kernel = buildProgramForKernel("R_Star_FC.cl", (*currentDevice));
-
-    *p_se_kernel1 = buildProgramForKernel("p_se_kernel1.cl", (*currentDevice));
-
-    *p_se_kernel2 = buildProgramForKernel("p_se_kernel2.cl", (*currentDevice));
-
+    setDevice(1,0);
+    buildKernels();
     test();
+}
+
+void SpatialSEIR::OCLProvider::buildKernels()
+{
+    *test_kernel = buildProgramForKernel("test_kernel.cl", (*currentDevice));
+    *R_Star_kernel = buildProgramForKernel("R_Star_FC.cl", (*currentDevice));
+    *p_se_kernel1 = buildProgramForKernel("p_se_kernel1.cl", (*currentDevice));
+    *p_se_kernel2 = buildProgramForKernel("p_se_kernel2.cl", (*currentDevice));
 }
 
 void SpatialSEIR::OCLProvider::printSummary()
@@ -253,9 +253,13 @@ void SpatialSEIR::OCLProvider::setDevice(int platformId, int deviceId)
         throw(-1);
     }
 
+    // Make sure R_star local size is re-calculated
+    R_star_args -> totalWorkUnits = -1;
+
     *currentPlatform = (*((*platforms)[pID] -> platform));
     *currentContext = (*platforms)[pID] -> context;
     *currentDevice = ((*((*platforms)[pID] -> devices))[dID]);
+    buildKernels();
     *isSetup = 1;
 }
 

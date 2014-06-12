@@ -60,6 +60,7 @@ namespace SpatialSEIR
             //Methods 
             OCLProvider();
             void setDevice(int platformId, int deviceId);
+            void buildKernels();
             void printSummary();
 
             ~OCLProvider();
