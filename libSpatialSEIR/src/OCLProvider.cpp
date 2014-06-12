@@ -176,7 +176,7 @@ SpatialSEIR::OCLProvider::OCLProvider()
 
     // Create Kernels
     // Dummy code to pick device 0,0
-    setDevice(1,0);
+    setDevice(0,0);
     buildKernels();
     test();
 }
