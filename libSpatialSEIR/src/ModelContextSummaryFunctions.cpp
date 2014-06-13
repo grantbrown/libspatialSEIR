@@ -131,13 +131,49 @@ namespace SpatialSEIR
         return(-1.0);
     }
 
-    double ModelContext::estimateR0(int t)
+    double ModelContext::estimateR0(int j)
     {
         return(-1.0);
     }
 
+    double* ModelContext::calculateG(int j)
+    {
+        int i, l;
 
+        //Update Eta
+        this -> X -> calculate_eta_CPU(eta, beta);
 
+        int iIndex, lIndex, GIndex;
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+        double* G = new double[nLoc*nLoc];
+        //Exponentiate
+        int nrowz = *(X->nrow_z);
+        for (i = 0; i < nrowz; i++)
+        {
+            eta[i] = std::exp(eta[i]);
+        }
+        for (i = 0; i < nLoc; i++) 
+        {
+            for (l = 0; l < nLoc; l++)
+            { 
+                iIndex = i*nTpt + j;
+                lIndex = l*nTpt + j;
+
+                GIndex = l*nLoc + i;
+                if (i != l)
+                {
+                    G[GIndex] = -(((N[iIndex])/((I->data)[lIndex]))
+                                    * (1-std::exp(((scaledDistMat->data)[GIndex]) 
+                                    * (((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]))));
+                }
+                else
+                { 
+                    G[GIndex] = -(((N[iIndex])/((I->data)[lIndex]))
+                                    * (1-std::exp((((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]))));
+                }
+            }
+        }
+        return(G);
+    }
 }
-
-

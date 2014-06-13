@@ -174,6 +174,7 @@ namespace SpatialSEIR
 
             double estimateR0();
             double estimateR0(int t);
+            double* calculateG(int t);
 
 
             //Logic provider and utility classes

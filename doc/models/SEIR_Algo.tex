@@ -141,6 +141,9 @@ Notes:
         matrix form. 
     \item WLOG, we can make the mixing parameters dependent on space and time, defining $\lambda_{v_1, v_2}$,
         and correspondingly $\theta_{v_1,v_2}$
+    \item When constructing full conditional distributions, it is important to keep in mind the constraint:
+        $S+E+I+R=N$, as well as the fact that $p_{i,j}^{(SE)}$ does, in fact, depend on the value of $I$.
+        This is easy to neglect and hard to debug. 
 
 \end{enumerate}
 To model the $\pi_j^{RS}$, some structure of lower than $T$ dimensions is desireable to reduce potential 
@@ -160,6 +163,33 @@ for the j'th R to S transition probability respectively. Any number of link func
 
 For simplicity, and to parallel the covariate scale used for $\left\{\pi_{ij}^{SE} \right\}$, lets 
 use the log link (or rather, complimentary log link to keep the parameter sign easily interpretable).
+
+\section{Basic Reproductive Number}
+
+Using the next generation matrix approach to $\mathcal{R}_0$ calculation, we first define the matrix $G$ such 
+that $G_{i,l}(t_j)$ is the expected number of infections in spatial location $s_i$ caused by a single infected
+individual in location $s_l$ at time $t_j$.
+
+
+Defining the relevant infection event for a person indexed by $k$ to be: $I_k(s_i, s_l, t_j)$, we see that the expected number of such
+infections is:
+
+\begin{center}
+    $\displaystyle E\big[ \sum_{k=0}^{N_{i,j}}(I_k(s_i, s_l, t_j)) \big]$ \mbreak
+    $\displaystyle = \sum_{k=0}^{N_{i,j}}\cdot P(I_k(s_i, s_l, t_j)) = N_{i,j}\cdot P(I_k(s_i, s_l, t_j)) $ \mbreak 
+    Where, as before: \mbreak
+    $ P(I_k(s_i, s_l, t_j)) = 1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}$ \mbreak
+    This gives: \mbreak
+    $G_{i,l}(t_j) = \frac{N_{i,j}}{I_{l,j}}\cdot \left[1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}\right]$ \mbreak
+    Additionally recall the diagonal case, where $d_{ii} = 0$ and $f(0) = 1$:\mbreak 
+    $G_{i,i}(t_j) = \frac{N_{i,j}}{I_{i,j}}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
+    $ = \delta_{ij}^{-1}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
+
+
+\end{center}
+
+With this matrix constructed, the basic reproductive number can be immediately calculated as the dominant eigenvalue. 
+
 
 \section{Posterior Distribution and Full Conditionals}
 

@@ -284,7 +284,10 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
             res$simulate(batchSize)
             if (printAR)
             {
+                cat("##############\n")
                 res$printAcceptanceRates()
+                res$printSamplingParameters()
+                cat("##############\n")
             }
             res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
             # sleep to allow R to catch up and handle interrupts 
