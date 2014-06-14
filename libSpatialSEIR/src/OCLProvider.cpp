@@ -209,6 +209,9 @@ void SpatialSEIR::OCLProvider::printSummary()
             std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << "Supports Double Precision: " << 
                 ((*(((*(platforms))[i]) -> doublePrecision))[j])  << "\n";
             std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
+                "Preferred double vector width: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> 
+                getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() << "\n";
+            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
                 "Local Memory: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << "\n";
             std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
                 "Max Compute Units: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << "\n";

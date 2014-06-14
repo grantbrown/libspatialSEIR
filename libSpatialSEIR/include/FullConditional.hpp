@@ -161,6 +161,12 @@ namespace SpatialSEIR
                              double* variable,
                              int varLen,
                              double width);
+
+            int sampleDouble_OCL(ModelContext* context, 
+                             double* variable,
+                             int varLen,
+                             double width);
+
             int sampleDoubleMetropolis(ModelContext* context, 
                                        double* variable,
                                        int varLen,
@@ -191,6 +197,10 @@ namespace SpatialSEIR
                                       double width); 
 
             int sampleEntireCompartment_CPU(ModelContext* context,
+                                            int* initCompartment,
+                                            double width); 
+
+            int sampleEntireCompartment_OCL(ModelContext* context,
                                             int* initCompartment,
                                             double width); 
 

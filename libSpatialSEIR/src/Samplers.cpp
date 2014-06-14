@@ -457,6 +457,61 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int InitCompartmentFullConditional::sampleEntireCompartment_OCL(ModelContext* context,
+                                                                    int* initCompartment,
+                                                                       double width)
+    {
+        (*samples) += 1;
+        double initProposal = 0.0;
+        double newProposal = 0.0;
+        int i;
+        int x0, x1;
+        int nLoc = *(context -> S -> ncol);        
+        // Backup Compartment
+        memcpy(context -> tmpContainer -> data, initCompartment, nLoc*sizeof(int)); 
+        this -> calculateRelevantCompartments_OCL(); 
+        this -> evalOCL();
+        double initVal = (this -> getValue());
+        if (! std::isfinite(initVal))
+        {
+            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            throw(-1);
+        }
+        for (i = 0; i < nLoc; i++)
+        {
+            x0 = (initCompartment)[i];
+            x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+            (initCompartment)[i] = x1;
+            newProposal += (context -> random -> dnorm(x1, x0,width));
+            initProposal += (context -> random -> dnorm(x0, x1,width));
+        }
+        this -> calculateRelevantCompartments_OCL(); 
+        this -> evalOCL();
+        double newVal = (this->getValue());
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
+
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            // Accept new values
+            (*accepted) += 1;
+        }
+        else
+        {
+            // Keep Original Value
+            memcpy(initCompartment, context -> tmpContainer -> data, nLoc*sizeof(int)); 
+            this -> calculateRelevantCompartments();
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        }
+
+        return(0);
+    }
+
 
 
     int InitCompartmentFullConditional::sampleCompartmentLocation(int i, ModelContext* context, 
@@ -598,6 +653,55 @@ namespace SpatialSEIR
                 // Keep original value
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
+                this -> setValue(initVal);
+            }
+        }
+        return 0;
+    }
+    int ParameterFullConditional::sampleDouble_OCL(ModelContext* context,
+                                                         double* variable, 
+                                                         int varLen, 
+                                                         double width)
+    {
+        // Declare required variables
+        int i;
+        double x0,x1;
+        double initVal, newVal, initProposal, newProposal;
+
+        // Update the relevant CompartmentalModelMatrix instances
+        this -> calculateRelevantCompartments_OCL();
+
+        // Set the "value" attribute appropriately
+        this -> evalOCL();
+   
+        // Main loop: 
+        for (i = 0; i < varLen; i++)
+        { 
+            (*samples) += 1;
+            x0 = variable[i];
+            this -> calculateRelevantCompartments_OCL(); 
+            this -> evalOCL();
+            initVal = (this->getValue());
+
+            x1 = (context -> random -> normal(x0, width));
+            variable[i] = x1;
+            this -> calculateRelevantCompartments_OCL();
+            this -> evalOCL();
+            newVal = (this->getValue());
+            initProposal = (context->random->dnorm(x0, x1, width));
+            newProposal = (context->random->dnorm(x1, x0, width)); 
+
+            if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
+            {
+                // Accept the new value. 
+                (*accepted)+=1;
+
+            }
+            else
+            {
+                // Keep original value
+                variable[i] = x0;
+                this -> calculateRelevantCompartments_OCL();
                 this -> setValue(initVal);
             }
         }
