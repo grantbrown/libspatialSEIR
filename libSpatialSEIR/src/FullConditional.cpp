@@ -2742,12 +2742,12 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
         return(0);
     }
     int FC_Beta::sampleOCL()
     {
-        sampleDouble_OCL(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        sampleEntireDouble_OCL(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
         return(0);
     }
 
@@ -2872,14 +2872,14 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::sampleCPU()
     {
         int nbeta = *((*X) -> ncol_x);
-        sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *beta_p_rs, nbeta, *sliceWidth); 
         return(0);
     }
 
     int FC_Beta_P_RS::sampleOCL()
     {
         int nbeta = *((*X) -> ncol_x);
-        sampleDouble_OCL(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        sampleEntireDouble_OCL(*context, *beta_p_rs, nbeta, *sliceWidth); 
         return(0);
     }
 
@@ -2998,12 +2998,12 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDoubleMetropolis(*context, *rho, 1, *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *rho, 1, *sliceWidth); 
         return(0);
     }
     int FC_Rho::sampleOCL()
     {
-        sampleDouble_OCL(*context, *rho, 1, *sliceWidth); 
+        sampleEntireDouble_OCL(*context, *rho, 1, *sliceWidth); 
         return(0);
     }
 
@@ -3133,12 +3133,12 @@ namespace SpatialSEIR
 
     int FC_Gamma::sampleCPU()
     {
-        sampleDoubleMetropolis(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
         return(0);
     }
     int FC_Gamma::sampleOCL()
     {
-        sampleDouble_OCL(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
+        sampleEntireDouble_OCL(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
         return(0);
     }
 

@@ -162,6 +162,16 @@ namespace SpatialSEIR
                              int varLen,
                              double width);
 
+            int sampleEntireDouble_CPU(ModelContext* context, 
+                             double* variable,
+                             int varLen,
+                             double width);
+
+            int sampleEntireDouble_OCL(ModelContext* context, 
+                             double* variable,
+                             int varLen,
+                             double width);
+
             int sampleDouble_OCL(ModelContext* context, 
                              double* variable,
                              int varLen,

@@ -658,6 +658,122 @@ namespace SpatialSEIR
         }
         return 0;
     }
+
+    int ParameterFullConditional::sampleEntireDouble_CPU(ModelContext* context,
+                                                         double* variable, 
+                                                         int varLen, 
+                                                         double width)
+    {
+
+        ((*samples)) += 1;
+        double initProposal = 0.0;
+        double newProposal = 0.0;
+        int i;
+        int x0, x1;
+
+        // Backup Parameters (use the compartmentCache)
+        memcpy((context -> compartmentCache), variable, varLen*sizeof(double)); 
+
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double initVal = (this -> getValue());
+        if (! std::isfinite(initVal))
+        {
+            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            throw(-1);
+        }
+        for (i = 0; i < varLen; i++)
+        {
+
+            x0 = (variable)[i];
+            x1 = ((context -> random -> normal(x0, width))); 
+            (variable)[i] = x1;
+            newProposal += (context -> random -> dnorm(x1, x0,width));
+            initProposal += (context -> random -> dnorm(x0, x1,width));
+        }
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double newVal = (this->getValue());
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
+
+
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            // Accept new values
+            (*accepted) += 1;
+        }
+        else
+        {
+            // Keep Original Value
+            memcpy(variable, (context -> compartmentCache), varLen*sizeof(double)); 
+            this -> calculateRelevantCompartments();
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        }
+        return(0);
+    }
+
+    int ParameterFullConditional::sampleEntireDouble_OCL(ModelContext* context,
+                                                         double* variable, 
+                                                         int varLen, 
+                                                         double width)
+    {
+
+        ((*samples)) += 1;
+        double initProposal = 0.0;
+        double newProposal = 0.0;
+        int i;
+        int x0, x1;
+        // Backup Parameters (use the compartmentCache cache)
+        memcpy(context -> compartmentCache, variable, varLen*sizeof(double)); 
+        this -> calculateRelevantCompartments_OCL(); 
+        this -> evalOCL();
+        double initVal = (this -> getValue());
+        if (! std::isfinite(initVal))
+        {
+            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            throw(-1);
+        }
+        for (i = 0; i < varLen; i++)
+        {
+            x0 = (variable)[i];
+            x1 = ((context -> random -> normal(x0, width))); 
+            (variable)[i] = x1;
+            newProposal += (context -> random -> dnorm(x1, x0,width));
+            initProposal += (context -> random -> dnorm(x0, x1,width));
+        }
+        this -> calculateRelevantCompartments_OCL(); 
+        this -> evalOCL();
+        double newVal = (this->getValue());
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
+
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            // Accept new values
+            (*accepted) += 1;
+        }
+        else
+        {
+            // Keep Original Value
+            memcpy(variable, context -> compartmentCache, varLen*sizeof(double)); 
+            this -> calculateRelevantCompartments_OCL();
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        }
+
+        return(0);
+    }
+
     int ParameterFullConditional::sampleDouble_OCL(ModelContext* context,
                                                          double* variable, 
                                                          int varLen, 

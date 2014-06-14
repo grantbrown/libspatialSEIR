@@ -102,8 +102,8 @@ sliceWidths = c(0.26,  # S_star
                 0.15, # I_star
                 0.22, # S0
                 0.24, # I0
-                0.8, # beta
-                0.2, # betaPrs
+                0.1, # beta
+                0.1, # betaPrs
                 0.015# rho
                 )
 
@@ -180,12 +180,17 @@ res = spatialSEIRModel(compMatDim,
                       reinfectionMode)
 
 res$setRandomSeed(123123)
-runSimulation = function(N, batchSize = 1)
+runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0.05, proportionChange = 0.01, printAR = FALSE)
 {
     tryCatch({
         for (i in 1:(N/batchSize))
         {
             res$simulate(batchSize)
+            if (printAR)
+            {
+                res$printAcceptanceRates()
+            }
+            res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
             cat(i*batchSize,"\n")
@@ -196,6 +201,8 @@ runSimulation = function(N, batchSize = 1)
     })
 }
 
-#tm = system.time(runSimulation(100))
+
+
+tm = system.time(runSimulation(10,1))
 #print(tm)
 
