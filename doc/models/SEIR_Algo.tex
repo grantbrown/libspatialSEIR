@@ -161,21 +161,16 @@ let $q=1-p$. Now we introduce a number of assumptions:
     \item Assume that when individuals travel to other spatial locations, their 
         contact behavior is well modeled by the contact behavior of that spatial unit (when in Rome).  
     \item Contact between spatial locations is proportional to some known function $f(d_{il})$
-        of the driving distance (in minutes) between the centroids of $s_i$ and $s_l$
-    \item Unknown and unmeasureable mixing with external populations results in some overall
-        probability of infection for each person in a population. Parameterize this probability as $1-exp(-\gamma_j)$, and let 
-        the $Inf(ext,t_j)$ denote the infection event such that $P(Inf(ext,t_j)) = 1-exp(-\gamma_j)$ and 
-        $P(!Inf(ext,t_j)) = exp(-\gamma_j)$.
+        of the chosen distance metric between the centroids of $s_i$ and $s_l$
 \end{itemize}
 
-
 Define $\delta_{ij}$ to be the proportion of persons who are infectious in spatial unit $s_i$ 
-at time $t_j$. Then, letting $Inf(s_i, t_j)$ be the event that a person becomes 
+at time $t_j$. Then, letting $Inf(s_i, t_j)$ denote the event that a person becomes 
 infected from contact within spatial unit $s_i$ at time $t_j$, we can derive:
 
 \begin{center}
 
-    $P(Inf(.,t_j)) = 1 - P(!Inf(s_i, t_j)) \cdot  P(!Inf(s_{-i}, t_j)) \cdot P(!Inf(ext))$ \mbreak
+    $P(Inf(.,t_j)) = 1 - P(!Inf(s_i, t_j)) \cdot  P(!Inf(s_{-i}, t_j))$ \mbreak
     where \mbreak 
     $P(!Inf(s_i, t_j)) = E(!Inf(s_i, t_j)) = E(E(!Inf(s_i, t_j)|K_i=k_i))$  \mbreak 
     $\displaystyle =E(((1-\delta_{ij})q)^{k_i})$  \mbreak 
@@ -198,10 +193,10 @@ infected from contact within spatial unit $s_i$ at time $t_j$, we can derive:
     $\displaystyle = exp\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}$ \mbreak
     Thus, for the probabilty of infection for a person living in $s_i$ at time $t_j$ we have: \mbreak 
     $\displaystyle 1-\left(e^{-\lambda_i \cdot (\delta_{ij}p)}\right) \left( 
-        e^{\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}}\right)\left(e^{-\gamma_j}\right)
+        e^{\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}}\right)
      $ \mbreak 
 
-    $\displaystyle = 1- exp\left\{-\gamma_j-\delta_{ij}e^{\theta_{i}} - \sum_{\left\{ l \ne i  \right\}}
+    $\displaystyle = 1- exp\left\{-\delta_{ij}e^{\theta_{i}} - \sum_{\left\{ l \ne i  \right\}}
         (f(d_{il})\delta_{il}e^{\theta_{l}})   \right\}$ 
     , where $\theta_{v} = log(\lambda_{v}p)$
  
@@ -217,9 +212,10 @@ Notes:
         $S+E+I+R=N$, as well as the fact that $p_{i,j}^{(SE)}$ does, in fact, depend on the value of $I$.
         This is easy to neglect and hard to debug. 
 
-
-\subsection{Re-infection Process}
 \end{enumerate}
+\subsection{Re-infection Process}
+
+
 To model the $\pi_j^{RS}$, some structure of lower than $T$ dimensions is desireable to reduce potential 
 identifiability issues. A covariate structure constructed to capture natural variation in this quantity 
 (seasonal polynomial components for example) will do nicely. Let $X(\pi_j^{RS})$ and $\beta_{\pi^{RS}}$ 
