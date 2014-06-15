@@ -202,7 +202,16 @@ infected from contact within spatial unit $s_i$ at time $t_j$, we can derive:
  
 \end{center}
 
-Notes: 
+Currently, libspatialSEIR supports distance functions of the form:
+
+\begin{center}
+    $f(d_{il}) = \rho \cdot (d_{il})^{-\frac{1}{2}}$
+\end{center}
+
+Support for other distance functions, such as the gravity model, is planned. \mbreak
+
+
+A few miscellaneous notes: 
 \begin{enumerate}
     \item By defining $f(d_{ii})$ to be equal to $1$ for all $i$, the above expression has a simple 
         matrix form. 
@@ -210,15 +219,25 @@ Notes:
         and correspondingly $\theta_{v_1,v_2}$
     \item When constructing full conditional distributions, it is important to keep in mind the constraint:
         $S+E+I+R=N$, as well as the fact that $p_{i,j}^{(SE)}$ does, in fact, depend on the value of $I$.
-        This is easy to neglect and hard to debug. 
-
+        This is easy to neglect and hard to debug.  \\
+        
 \end{enumerate}
+This spatial probability structure belongs to the CAR, or Conditionally Auto-Regressive, class
+of spatial dependence structures, and can accommodate several different data types. For example, 
+in the case where spatial data is indexed by discrete areal units, a neighborhood matrix may define
+the requisite `distance' between spatial locations. On the opposite end of the spectrum, spatial locations 
+may occur on a continuum (ie, latitude and longitude). In this case, a more usual distance definition of 
+distance can be employed (with or without an explicit spatial range). libspatialSEIR is optomized for the 
+second case (ie, sparse matrix methods are not employed), though is perfectly
+capable of fitting sparser spatial (or entirely non-spatial) models.\\ 
+
+
 \subsection{Re-infection Process}
 
 
 To model the $\pi_j^{RS}$, some structure of lower than $T$ dimensions is desireable to reduce potential 
-identifiability issues. A covariate structure constructed to capture natural variation in this quantity 
-(seasonal polynomial components for example) will do nicely. Let $X(\pi_j^{RS})$ and $\beta_{\pi^{RS}}$ 
+identifiability issues. A covariate structure constructed to capture natural variation in this quantity,
+a set of trigonometric basis functions with appropriate period, for example, will do nicely. Let $X(\pi_j^{RS})$ and $\beta_{\pi^{RS}}$ 
 denote the covariate vector and corresponding regression parameter estimates 
 for the j'th R to S transition probability respectively. Any number of link functions would be appropriate here.
  
@@ -231,15 +250,18 @@ for the j'th R to S transition probability respectively. Any number of link func
     $log(\frac{\pi_j^{RS}}{1-\pi_j^{RS}}) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
 \end{enumerate}
 
-For simplicity, and to parallel the covariate scale used for $\left\{\pi_{ij}^{SE} \right\}$, lets 
-use the log link (or rather, complimentary log link to keep the parameter sign easily interpretable).
+For simplicity, and to parallel the covariate scale used for $\left\{\pi_{ij}^{SE} \right\}$, the log link is used by default, 
+though in the future this is to be modifiable. 
 
 \section{Basic Reproductive Number}
+
+The basic reproductive number, $\mathcal{R}_0$, is an important quantity in epidemiology. While the interepretation must be adapted to 
+the problem of interest, in general terms the basic reproductive number captures the expected number of secondary 
+infections produced by a single infected individual in an entirely susceptible population. 
 
 Using the next generation matrix approach to $\mathcal{R}_0$ calculation, we first define the matrix $G$ such 
 that $G_{i,l}(t_j)$ is the expected number of infections in spatial location $s_i$ caused by a single infected
 individual in location $s_l$ at time $t_j$.
-
 
 Defining the relevant infection event for a person indexed by $k$ to be: $I_k(s_i, s_l, t_j)$, we see that the expected number of such
 infections is:
@@ -254,43 +276,60 @@ infections is:
     Additionally recall the diagonal case, where $d_{ii} = 0$ and $f(0) = 1$:\mbreak 
     $G_{i,i}(t_j) = \frac{N_{i,j}}{I_{i,j}}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
     $ = \delta_{ij}^{-1}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
-
-
 \end{center}
 
 With this matrix constructed, the basic reproductive number can be immediately calculated as the dominant eigenvalue. 
 
 
 \section{Posterior Distribution and Full Conditionals}
+Bringing together the aforementioned spatio-temporal structures we can define the requisit prior distributions and 
+deterministic relationships among parameters, and thus construct the requisit posterior distribution. 
+
+\subsection{Summary of Distribution Components}
+\noi $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\\
+
+\noi $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \sim (indep.)\ binom(S_{ij}, \pi^{SE}_{ij})$ \\
+
+\noi $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \sim\ (indep.)\ binom(E_{ij}, \pi^{(EI)})$\\
+
+\noi $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\\
+
+\noi $\left\{\pi_{IR}  \right\} \sim\ beta(0.5, 0.5)$\\ 
+
+\noi $\left\{\pi^{EI}  \right\} \sim beta(0.5, 0.5)$\\ 
+
+\noi $\left\{ \theta_{ij}\right\} \sim \mathcal{N}(\eta_{ij}, \sigma^2_{\theta})$ \\
+
+\noi $\left\{ \beta \right\} \sim \mathcal{N}(0, \tau^2_\beta) $\\ 
+
+\noi $\left\{ \beta_{\pi^{RS}} \right\} \sim \mathcal{N}(0, \tau^2_{RS}) $\\ 
+
+\noi $\sigma^2_{\theta} \sim \Gamma(\alpha_\theta, \beta_\theta)$\\
+
+\noi $\rho \sim U(0,1)$
+
+
+\subsection{Deterministic Functions}
+
+\noi $S = f_S(S_0, E^*_0, S^*_0, S^*, E^*)$ \\
+
+\noi $E = f_E(E_0, I^*_0, E^*_0, E^*, I^*)$ \\
+
+\noi $I = f_I(I_0, R^*_0, I^*_0, I^*, R^*)$ \\
+
+\noi $R = f_R(R_0, S^*_0, R^*_0, R^*, S^*)$ \\
+
+\noi $\displaystyle log(\pi^{(SE)}_{ij}) = -\delta_{ij}e^{\theta_{ij}} - \sum_{\left\{ l \ne i \right\}}d_{il}\delta_{il}e^{\theta_{il}}$\\
+
+\noi $log(\pi_j^{RS}) = -X(\pi_j^{RS}) \beta_{\pi^{RS}}$\\
+
+\noi $d_{il} = f(\rho, s_i, s_l)$\\
+
+\noi $\delta_{ij} = \frac{I_{ij}}{N_{ij}}$ \\
+
+\noi $\eta_{ij} = X_{ij}\beta$\mbreak
 
 \subsection{Posterior Distribution}
-\subsubsection{Summary of Distribution Components}
-$\{S_{ij}^*\} \sim\  binom(R_{ij}, \pi_j^{(RS)})$\mbreak
-$\{E_{ij}^*\} \sim binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
-$\{I_{ij}^*\} \sim\  binom(E_{ij}, \pi^{(EI)})$\mbreak
-$\{R_{ij}^*\} \sim\  binom(I_{ij}, \pi^{(IR)})$\mbreak
-\noi
-$\left\{\pi_{IR}  \right\} \sim\ beta(0.5, 0.5)$\mbreak 
-$\left\{\pi^{EI}  \right\} \sim beta(0.5, 0.5)$\mbreak 
-%%$\left\{\pi_j^{IR}  \right\} \sim beta(0.5, 0.5)$\mbreak 
-$\left\{ \theta_{ij}\right\} \sim \mathcal{N}(\eta_{ij}, \sigma^2_{\theta})$ \mbreak
-$\left\{ \beta \right\} \sim \mathcal{N}(0, \tau^2_\beta) $\mbreak 
-$\left\{ \beta_{\pi^{RS}} \right\} \sim \mathcal{N}(0, \tau^2_{RS}) $\mbreak 
-$\sigma^2_{\theta} \sim \Gamma(\alpha_\theta, \beta_\theta)$\mbreak
-$\gamma_j \sim \Gamma(\alpha_\gamma, \beta_\gamma)$\mbreak
-$\rho \sim U(0,1)$
-
-\subsubsection{Deterministic Functions}
-$S = f_S(S_0, E^*_0, S^*_0, S^*, E^*)$ \mbreak
-$E = f_E(E_0, I^*_0, E^*_0, E^*, I^*)$ \mbreak
-$I = f_I(I_0, R^*_0, I^*_0, I^*, R^*)$ \mbreak
-$R = f_R(R_0, S^*_0, R^*_0, R^*, S^*)$ \mbreak
-$\displaystyle log(\pi^{(SE)}_{ij}) = -\gamma_j-\delta_{ij}e^{\theta_{ij}} - \sum_{\left\{ l \ne i \right\}}d_{il}\delta_{il}e^{\theta_{il}}$\mbreak
-$log(\pi_j^{RS}) = -X(\pi_j^{RS}) \beta_{\pi^{RS}}$\mbreak
-$d_{il} = f(\rho, s_i, s_l)$\mbreak
-$\delta_{ij} = \frac{I_{ij}}{N_{ij}}$ \mbreak
-$\eta_{ij} = X_{ij}\beta$
-\subsubsection{Posterior Distribution}
 
 \begin{center}
 \begin{multline}
@@ -308,8 +347,7 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[
             + (log(\pi(\rho)))\\
             + \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
             + (\frac{1}{2}log(\pi^{(EI)}) + \frac{1}{2}log(1-\pi^{(EI)})) \\
-            + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)}))    \\
-            + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\} \Bigg]\\
+            + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)})) \Bigg]\\
 \end{multline}
 \end{center}
 
@@ -330,8 +368,7 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \\
             + (log(\pi(\rho)))\\
             +  \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
             + (\frac{1}{2}log(\pi^{(EI)}) + \frac{1}{2}log(1-\pi^{(EI)})) \\
-            + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)})) \\
-            + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\}\Bigg]\\
+            + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)}))\Bigg]\\
 \end{multline}
 \end{center}
 
@@ -364,20 +401,12 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
             %% \pi^{EI}
             + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
             %% \pi^{IR}
-            + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)})))   
-            %% Gamma
-            + \sum_{j=1}^{T} \bigg\{ log(\pi(\gamma_j)) \bigg\}\Bigg]\\
+            + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)})))  \Bigg]\\
 \end{multline}
 \end{center}
 
 
 \subsection{Full Conditional Distributions}
-Depending on when the disease of interest is expected to be detected, the data can be 
-introduced as the $E^*$ exposure counts, or as the $I^*$ infection counts. Other latent 
-processes could also be introduced. For this reason, full conditional distributions are 
-introduced for all categories. 
-
-{\bf{TO DO: Modify full conditionals to reflect additional compartment dependence on star matrices.}}
 
 \begin{itemize}
     \item{Full Conditional For $S^*$}
@@ -403,17 +432,6 @@ introduced for all categories.
     \end{multline}
     \end{center}
 
-    \item{Full Conditional for $I^*$}
-%\subsubsection{$p(I^*|.)$}
-    \begin{center}
-    \begin{multline}
-        \displaystyle
-        log(p(I^*|.)) \propto \sum_{i=1}^n\sum_{j=1}^T\bigg\{ log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg) + log(\pi^{(EI)})\{I^*_{ij}\}          
-            + log(1-\pi^{(EI)})\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\\
-            + log\bigg(\dbinom{I_{ij}}{R^*_{ij}}\bigg) + log(1-\pi^{IR})\{ f_I(I^*, R^*, A_0)_{ij}\}\bigg\}\\
-    \end{multline}
-    \end{center}
-
     \item{Full Conditional for $R^*$}
 %\subsubsection{$p(R^*|.)$}
     \begin{center}
@@ -421,7 +439,8 @@ introduced for all categories.
         \displaystyle
         log(p(R^*|.)) \propto \sum_{i=1}^n\sum_{j=1}^T\bigg\{log\bigg(\dbinom{I_{ij}}{R^*_{ij}}\bigg) + log(\pi^{(IR)})\{R^*_{ij}\}
             + log(1-\pi^{IR})\{f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\\
-            + log\bigg(\dbinom{R_{ij}}{S^*_{ij}}\bigg) + log(1-\pi_j^{(RS)})\{f_R(R^*, S^*, A_0)_{ij}\}\bigg\}\\ 
+            + log\bigg(\dbinom{R_{ij}}{S^*_{ij}}\bigg) + log(1-\pi_j^{(RS)})\{f_R(R^*, S^*, A_0)_{ij}\}\\ 
+            + log(\pi_{ij}^{(SE)})\{E^*_{ij}\} + log(1-\pi_{ij}^{SE})\{f_S(S^*, E^*, A_0)_{ij} - E^*_{ij}\}\bigg\}\\ 
     \end{multline}
     \end{center}
     \item{Full Conditional for $\{\theta\}$}
@@ -456,17 +475,6 @@ introduced for all categories.
             + (log(\pi(\rho)))\\
     \end{multline}
     \end{center}
-
-    \item{Full Conditional for $\gamma_j$}
-    \begin{center}
-    \begin{multline}
-        \displaystyle
-        log(p(\rho|.)) \propto\sum_{i=1}^n \bigg\{ \sum_{j=1}^T\Big\{
-            (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\Big\}\bigg\} \\
-            + (\sum_{j=1}^{T}log(\pi(\gamma_j)))\\
-    \end{multline}
-    \end{center}
-
 
 \item{Full Conditional for $\{\beta_{\pi_{j}^{(RS)}}\}$}
     \begin{center}
@@ -505,12 +513,10 @@ introduced for all categories.
 
 \end{itemize}
 
+\section{MCMC Samplers: Current and Future Work}
 
-\section{Notes}
+\section{OpenCL: Performance Tradeoffs}
 
-\subsection{Random Variate Generation}
-
-The gamma distribution is parameterized by boost as:
-$\displaystyle p(x) = x^{\alpha-1}\frac{e^{-x/\beta}}{\beta^\alpha\Gamma(\alpha)}$
+\section{R Level API Summary}
 
 \end{document}
