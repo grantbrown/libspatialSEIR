@@ -72,22 +72,44 @@ important model parameters. Notable examples include:
 The focus on linear predictors provides an additional layer of flexibility to these models, as they can accommodate 
 temporal basis functions for epidemic shape fitting, intervention indicators for public health efforts, demographic 
 effects on population mixing, and anything else that can be expressed as a linear combination of unknown, normally
-distributed parameters.    
+distributed parameters.\\ 
 
-\subsection{SEIR Structure}
-    \subsubsection{Compartments}
-        Denote the spatial locations (cities) $\left\{s_i : i = 1, ...,n \right\}$ \mbreak
+
+Example code for each of these models is included in the \textit{scripts} directory.
+
+{\bf{to do: Make a knitr walkthrough of one of the more interesting models (Google flu?)}}
+
+
+\subsection{SEIRS Model Family - Formal Development}
+        Developed below is the most general member of the SEIRS family which can be fit with libspatialSEIR, 
+        namely the spatial SEIRS model. Important special cases are discussed in \{ \textit{{\bf{to do:}} Add discussion of special cases.} \}
+
+    \subsubsection{Compartments and Notation}
+        Denote the spatial locations of interest $\left\{s_i : i = 1, ...,n \right\}$ \mbreak
         Let $d(s_i, s_l) = d_{il}$ define a measure of distance between 
-        spatial locations $s_i$ and $s_l$. $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$ \mbreak
-        Let time (in weeks) be denoted ${t_j : j = 1, ...,T}$ \mbreak
-        $\bf{N_j} = (N_{1j}, ..., N_{nj})$ is the vector of population sizes at time i \mbreak
-        $\bf{S_j} = (S_{1j}, ..., S_{nj})$ is the vector of susceptable counts at time i \mbreak
-        $\bf{E_j} = (E_{1j}, ..., E_{nj})$ is the vector of exposed counts at time i \mbreak
-        $\bf{I_j} = (I_{1j}, ..., I_{nj})$ is the vector of infectious counts at time i \mbreak
-        $\bf{R_j} = (R_{1j}, ..., R_{nj})$ is the vector of removed counts at time i. \mbreak
-        $\bf{N_j} = \bf{S_j + E_j + I_j + R_j}$ for all $j$
+        spatial locations. Note that $s_i$ and $s_l$. $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$ \mbreak
+        Let time (in units appropriate to the data and disease process) be denoted ${t_j : j = 1, ...,T}$ \mbreak
+        Define the following components for each $s_i$ and $t_j$: \mbreak
+
+        \begin{itemize}
+            \item {$\bf{N_{ij}}$} is the population size
+            \item {$\bf{S_{ij}}$} is the count of susceptible individuals
+            \item {$\bf{E_{ij}}$} is the count of exposed individuals
+            \item {$\bf{I_{ij}}$} is the count of infectious individuals
+            \item {$\bf{R_{ij}}$} is the count of recovered/removed individuals
+            \item {$\bf{S^*_{ij}}$} is the number of newly susceptible individuals
+            \item {$\bf{E^*_{ij}}$} is the number of newly exposed individuals
+            \item {$\bf{I^*_{ij}}$} is the number of newly infectious individuals
+            \item {$\bf{R^*_{ij}}$} is the number of newly recovered/removed individuals
+        \end{itemize}
+        Let {$\bf{N_j} = \bf{S_j + E_j + I_j + R_j}$} for all $j$\\
+        In addition let ${\bf{S_0, E_0, I_0,}}$ and ${\bf{R_0}}$ denote the $n$-vectors of unknown compartment sizes at the 
+        start of the modeling period. 
+        
 
     \subsubsection{Disease Evolution Process Model}
+    Given the values of the aforementioned parameters, the disease process evolves forward in time 
+    as one would expect based on the definitions.  
     \begin{center}
         $\bf{S_{j+1}} = \bf{S_j} - \bf{E_j^*} + \bf{S_j^*}$\mbreak
         $\bf{E_{j+1}} = \bf{E_j} - \bf{I_j^*} + \bf{E_j^*}$\mbreak
@@ -96,19 +118,29 @@ distributed parameters.
     \end{center}
     \vspace{0.15in}
 
+    While models of this form are often fit using deterministic systems of differential equations, libspatialSEIR uses
+    a heirarchical Bayesian framework in order to adequately capture the inherent variability in the model parameters.
+    Thus, we begin by specifying the following likelihood components:\\
+
     \vspace{0.15in}
+
         \noi
-        $\{S_{ij}^*\} \sim\ iid\  binom(R_{ij}, \pi_j^{(RS)})$\\
-        $\{E_{ij}^*\} \sim binom(S_{ij}, \pi^{SE}_{ij})\\$
-        $\{I_{ij}^*\} \sim\ iid\  binom(E_{ij}, \pi^{(EI)})$\\
-        $\{R_{ij}^*\} \sim\ iid\  binom(I_{ij}, \pi^{(IR)})$\\
+
+        $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\mbreak
+
+        $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \sim (indep.)\ binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
+
+        $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \sim\ (indep.)\ binom(E_{ij}, \pi^{(EI)})$\mbreak
+
+        $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\mbreak
 
 
+        Moving on to the next level of the model, we must specify distribution for the probability terms. $\pi^{EI}$, and $\pi^{IR}$ are easily modeled with standard prior distributions (indeed, beta prior distributions are both flexible and conjugate to the binomial likelihood).  
+More care must be given to the development of a model for the $\left\{\pi^{SE}_{ij} \right\}$ and $\left\{\pi^{RS}_j \right\}$. The first of
+these describes the actual infection process and must account for predictor variables as well as the 
+spatial structure of $\left\{ s_i \right\}$. The second drives the reinfection process, which captures the effects of diminishing temporary immunity, 
+disease strain mutation, and the introduction of new infectious agents. These important components are examined in the following sections. 
 
-$\pi^{EI}$, and $\pi^{IR}$ are easily modeled with standard prior distributions. 
-More care must be given to the development of a model for the $\left\{\pi^{SE}_{ij} \right\}$ and $\left\{\pi^{RS}_j \right\}$, the first of
-which describes the actual infection process and must account for predictor variables as well as the 
-spatial structure of $\left\{ s_i \right\}$, and the second of which captures the diminishing immunity to particular strains of illness. 
 
 \subsection{Infection Process - CAR Model Motivation}
 
@@ -185,6 +217,8 @@ Notes:
         $S+E+I+R=N$, as well as the fact that $p_{i,j}^{(SE)}$ does, in fact, depend on the value of $I$.
         This is easy to neglect and hard to debug. 
 
+
+\subsection{Re-infection Process}
 \end{enumerate}
 To model the $\pi_j^{RS}$, some structure of lower than $T$ dimensions is desireable to reduce potential 
 identifiability issues. A covariate structure constructed to capture natural variation in this quantity 
