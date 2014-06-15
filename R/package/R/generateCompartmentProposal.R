@@ -58,7 +58,7 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
 
             if (reinfection)
             {
-                S_star[tpt,] = rbinom(rep(1, length(S0)), R[tpt,], 0.05)
+                S_star[tpt,] = rbinom(rep(1, length(S0)), R[tpt,], 0.9)
             }
             if (tpt != nrow(R))
             {

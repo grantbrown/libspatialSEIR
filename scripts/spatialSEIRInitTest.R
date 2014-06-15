@@ -147,14 +147,14 @@ res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       X_betaPrsDim,
-                      S0,
-                      E0,
-                      I0,
-                      R0,
-                      S_star,
-                      E_star,
-                      I_star,
-                      R_star,
+                      proposal$S0,
+                      proposal$E0,
+                      proposal$I0,
+                      proposal$R0,
+                      proposal$S_star,
+                      proposal$E_star,
+                      proposal$I_star,
+                      proposal$R_star,
                       X,
                       Z,
                       X_betaPrs,
@@ -178,6 +178,9 @@ res = spatialSEIRModel(compMatDim,
                       debug, 
                       sliceWidths,
                       reinfectionMode)
+
+# Use OpenCL:
+res$oclPreferences = res$oclPreferences + 1 
 
 res$setRandomSeed(123123)
 runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0.05, proportionChange = 0.01, printAR = FALSE)
