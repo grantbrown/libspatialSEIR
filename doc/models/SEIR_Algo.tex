@@ -22,19 +22,59 @@
 \begin{document}
 
 \begin{center}    
-    \noi \bf SEIR Derivation and Algorithm\\
+    \noi \bf libspatialSEIR: Model, Algorithm, and Implementation\\
     \vspace{.05in}
-    \noi Spring 2014\\
+    \noi Summer 2014\\
     \vspace{.05in}
 
     \vspace{.15in}
     \noi Grant Brown\\ 
 
 \end{center}
+\section{The SEIR Compartmental Epidemic Model}
+\subsection{Introduction}
+Compartmental epidemic modeling is a flexible and extensible method of describing epidemic behavior.  
+Such techniques rely on the idea that individuals within a population undergoing an epidemic process 
+can be categorized by disease state. The most common terms used to describe these disease states are: \\ 
 
-\section{Problem Set Up}
+\begin{itemize}
+    \item {\bf{Susceptible}}: Individuals capable of contracting the disease of interest. 
+    \item {\bf{Exposed}}: Individuals who have contracted the disease, but are not yet infectious. 
+    \item {\bf{Infectious}}: Individuals who are capable of spreading the disease.  
+    \item {\bf{Recovered/Removed}}: Individuals who have either recovered or been removed from the population. 
+\end{itemize}
+
+Persons in a population are assumed to move through these disease categories sequentially according to the 
+disease process, though in practice these disease states are combined in different ways. For example, a simple epidemic model
+might use an S-I-R structure in which individuals become immediately infectious (ie, there is no latent period), and 
+are subsequently removed from the population (ie, assuming permanent immunity). For a disease which conferrs only 
+temporary immunity, such as influenza, many
+researchers have employed S-I-R-S models, which include a potential for previously recovered individuals to be reintroduced
+to the susceptible population. Similarly, SEIR and SEIRS models introduce a latent period during which exposed individuals
+are not yet, but will become, infectious. In cases where the reintroduction process is either complicated, or data is sparse, 
+researchers can employ a "Serial SEIR" model, which simply re-sets the susceptible population at regular intervals.\\ 
+
+This diverse family temporal structures has been generalized to allow epidemics to be modeled over space, as well as time.  
+
+\subsection{TL;DR - What is libsaptialSEIR for?}
+
+libspatialSEIR was designed to provide a computationally efficient and user friendly method to fit several important epidemic 
+models in the Bayesian spatial SEIRS family. In particular, spatial and single location models are allowed to evolve through 
+time via one of several SEIRS-like structures, with a particular effort to allow the inclusion of linear predictors to drive
+important model parameters. Notable examples include:
+
+\begin{itemize}
+    \item Single location SEIR and SEIRS models.   
+    \item Spatial SEIR and SEIRS models, employing a user specified measure of distance between spatial locations. 
+    \item Serial SEIR models, both for single locations and spatially indexed data. 
+\end{itemize}
+
+The focus on linear predictors provides an additional layer of flexibility to these models, as they can accommodate 
+temporal basis functions for epidemic shape fitting, intervention indicators for public health efforts, demographic 
+effects on population mixing, and anything else that can be expressed as a linear combination of unknown, normally
+distributed parameters.    
+
 \subsection{SEIR Structure}
-
     \subsubsection{Compartments}
         Denote the spatial locations (cities) $\left\{s_i : i = 1, ...,n \right\}$ \mbreak
         Let $d(s_i, s_l) = d_{il}$ define a measure of distance between 
