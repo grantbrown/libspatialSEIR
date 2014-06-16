@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Libspatialseir : A C++ and OpenCL framework for fast Bayesian spatio-temporal compartmental epidemic modeling. " />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Libspatialseir</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/grantbrown/libspatialSEIR">View on GitHub</a>
+
+          <h1 id="project_title">Libspatialseir</h1>
+          <h2 id="project_tagline">A C++ and OpenCL framework for fast Bayesian spatio-temporal compartmental epidemic modeling. </h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/grantbrown/libspatialSEIR/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/grantbrown/libspatialSEIR/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a name="libspatialseir" class="anchor" href="#libspatialseir"><span class="octicon octicon-link"></span></a>libspatialSEIR</h3>
+
+<p>libspatialSEIR is a C++/OpenCL based framework for fitting Bayesian spatial SEIR and SEIRS compartmental epidemic models.
+The numerical heavy lifting is all done in C++ with the optional use of OpenCL calls to multi-core CPU's and 
+GPU's to accelerate computation. The primary interface is provided via the included R package, which uses the Rcpp 
+library to access the lower level C++ API. </p>
+
+<p>At this point documentation is pretty limited, but a description of the class of models which can be fit
+is available in /doc/models/SEIR_ALGO.pdf</p>
+
+<p>In addition, example R code is available in the /scripts directory.  </p>
+
+<h3>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h3>
+
+<p>While a CRAN friendly version of libspatialSEIR is tentatively planned, the project currently requires some prerequisites:</p>
+
+<ol>
+<li>Git</li>
+<li>CMake</li>
+<li>An appropriate C++ compiler </li>
+<li>Boost random &gt;= 1.4.9 </li>
+<li>An OpenCL distribution</li>
+<li>(preferably) R &gt;= 3.0</li>
+</ol><h3>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>The installation process is still very much in "development" mode. As of now, it has only been tested on Linux Mint, but similar instructions 
+should apply for other platforms. After installing the appropriate pre-requisites, clone a copy of the repository. In order to make sure you 
+get a copy of the embedded version of clBLAS, be sure to clone the repository recursively:</p>
+
+<pre><code>    git clone https://github.com/grantbrown/libspatialSEIR.git --recursive
+</code></pre>
+
+<p>Once you have a copy of the code, change to the project directory and create a build folder. Use CMake to generate the 
+appropriate build files. </p>
+
+<pre><code>    cd libspatialSEIR
+    mkdir build
+    cd build
+    cmake ../
+</code></pre>
+
+<p>Assuming this step completed correctly, make and install the library. At some point it should be feasible to just make the library
+and link to it, but first I need to figure out how to make R play nice with shared objects being placed in non-standard directories. </p>
+
+<pre><code>    make
+    sudo make install
+</code></pre>
+
+<p>Next you'll need to build the R package itself. </p>
+
+<pre><code>    cd ../R
+    R CMD INSTALL package
+</code></pre>
+
+<p>That should be it, though as previously mentioned this is still very much a work in progress. Assuming it worked, you could try out some of
+the example scripts. </p>
+
+<pre><code>    cd ../scripts
+    R
+    &gt; source("./singleLocationTest.R")
+</code></pre>
+
+<pre><code>$ cd your_repo_root/repo_name
+$ git fetch origin
+$ git checkout gh-pages
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Libspatialseir maintained by <a href="https://github.com/grantbrown">grantbrown</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
