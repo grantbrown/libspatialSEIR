@@ -305,7 +305,10 @@ void spatialSEIRInterface::printSamplingParameters()
     Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> sliceWidth)) << "\n"; 
     Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> sliceWidth))<< "\n";  
     Rcpp::Rcout << "beta:     " << (*(context -> beta_fc -> sliceWidth))  << "\n"; 
-    Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> sliceWidth)) << "\n"; 
+    if (*(context -> S_star -> ncol) > 1)
+    {
+        Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> sliceWidth)) << "\n"; 
+    }
     Rcpp::Rcout << "betaP_RS: " << (*(context -> betaPrs_fc -> sliceWidth)) << "\n"; 
     Rcpp::Rcout << "p_ei:      conjugate\n";
     Rcpp::Rcout << "p_ir:      conjugate\n"; 
@@ -337,9 +340,12 @@ void spatialSEIRInterface::printAcceptanceRates()
     Rcpp::Rcout << "beta:     " << (*(context -> beta_fc -> accepted)*1.0)/
                                       (*(context -> beta_fc -> samples)) 
                               << "\n"; 
-    Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> accepted)*1.0)/
-                                      (*(context -> rho_fc -> samples)) 
-                              << "\n"; 
+    if (*(context -> S_star -> ncol) > 1)
+    {
+        Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> accepted)*1.0)/
+                                          (*(context -> rho_fc -> samples)) 
+                                  << "\n"; 
+    }
     Rcpp::Rcout << "betaP_RS: " << (*(context -> betaPrs_fc -> accepted)*1.0)/
                                       (*(context -> betaPrs_fc -> samples)) 
                               << "\n"; 

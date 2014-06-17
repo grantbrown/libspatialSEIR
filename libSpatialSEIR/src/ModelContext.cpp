@@ -456,7 +456,10 @@ namespace SpatialSEIR
         R_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
         beta_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
         betaPrs_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
-        rho_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        if (!(singleLocation))
+        {
+            rho_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        }
     }
 
     void ModelContext::simulationIter(bool verbose = false, bool debug = false)

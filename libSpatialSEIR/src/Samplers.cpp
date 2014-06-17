@@ -669,7 +669,7 @@ namespace SpatialSEIR
         double initProposal = 0.0;
         double newProposal = 0.0;
         int i;
-        int x0, x1;
+        double x0, x1;
 
         // Backup Parameters (use the compartmentCache)
         memcpy((context -> compartmentCache), variable, varLen*sizeof(double)); 
@@ -728,7 +728,7 @@ namespace SpatialSEIR
         double initProposal = 0.0;
         double newProposal = 0.0;
         int i;
-        int x0, x1;
+        double x0, x1;
         // Backup Parameters (use the compartmentCache cache)
         memcpy(context -> compartmentCache, variable, varLen*sizeof(double)); 
         this -> calculateRelevantCompartments_OCL(); 

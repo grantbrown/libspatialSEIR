@@ -1,11 +1,11 @@
     library(spatialSEIR)
 
     set.seed(123123)
-    NYears = 20
+    NYears = 6 
     TptPerYear = 12
     MaxTpt = NYears*TptPerYear
 
-    ThrowAwayTpt = 0
+    ThrowAwayTpt = 10
 
     X = matrix(1, ncol = 1)
     Z = cbind(seq(1,NYears*TptPerYear), model.matrix(~as.factor(rep(1:12,NYears)))[,2:TptPerYear])
@@ -226,24 +226,25 @@ debug = FALSE
 
 
 # pretend not to know the true values of things
-proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
+#proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
+proposal = generateCompartmentProposal(I_star, N)
 #beta = c(-1, rep(0, (length(beta)-1)))
 #betaPrs = c(3, rep(0,(length(betaPrs)-1)))
-#p_ei = 0.8
-#p_ir = 0.8
+p_ei = 0.8
+p_ir = 0.8
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       xPrsDim,
-                      S0,
-                      E0,
-                      I0,
-                      R0,
-                      S_star,
-                      E_star,
-                      I_star,
-                      R_star,
+                      proposal$S0,
+                      proposal$E0,
+                      proposal$I0,
+                      proposal$R0,
+                      proposal$S_star,
+                      proposal$E_star,
+                      proposal$I_star,
+                      proposal$R_star,
                       X,
                       Z,
                       X_prs,
@@ -268,27 +269,30 @@ res = spatialSEIRModel(compMatDim,
                       sliceWidths,
                       reinfectionMode)
 
-
 res$setRandomSeed(123123)
 itrPrint = function(x, wd=8)
 {
     formatC(x, width = wd, format = "d", flag = "0")
 }
 
-runSimulation = function(N, batchSize = 1000)
+imgNo = 0;
+runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0.05, proportionChange = 0.1, printAR = FALSE)
 {
-    imgNo = 0;
     tryCatch({
         for (i in 1:(N/batchSize))
         {
-            imgNo = imgNo + 1 
+            imgNo <<- imgNo + 1 
+            res$simulate(batchSize)
+            if (printAR)
+            {
+                res$printAcceptanceRates()
+            }
+            res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
-
             png(filename = paste("./imgOut/", itrPrint(imgNo), ".png", sep =""), width = 600, height = 1200) 
                 plotEpidemic2()
             dev.off()
-            res$simulate(batchSize)
             cat(i*batchSize,"\n")
         }}, 
         interrupt = function(interrupt)
@@ -297,8 +301,13 @@ runSimulation = function(N, batchSize = 1000)
     })
 }
 
-time = system.time(runSimulation(10000,10))
-print(time)
+
+print("Burn in 1 to adjust sampling widths.")
+runSimulation(10000,100, printAR = FALSE)
+print("Burn in 2 to adjust sampling widths.")
+runSimulation(100000,1000, printAR = FALSE)
+print("Main simulation.")
+runSimulation(10000000,10000, printAR = TRUE)
 
 
 
