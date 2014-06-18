@@ -1730,8 +1730,23 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        this -> sampleEntireCompartment_CPU(*context,
+        this -> sampleCompartment_CPU(*context,
+                                      *S_star,*sliceWidth);
+        /*
+        this -> sampleEntireCompartment2_CPU(*context,
                                   *S_star,*sliceWidth);
+
+        if ((*context) -> random -> uniform() < 0.5)
+        {
+            this -> sampleEntireCompartment2_CPU(*context,
+                                      *S_star,*sliceWidth);
+        }
+        else 
+        {
+            this -> sampleCompartment_CPU(*context,
+                                      *S_star,*sliceWidth);
+        }
+        */
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -2049,8 +2064,23 @@ namespace SpatialSEIR
 
     int FC_E_Star::sampleCPU()
     {
-        this -> sampleEntireCompartment_CPU(*context,
+        //this -> sampleEntireCompartment2_CPU(*context,
+        //                          *E_star,*sliceWidth);
+        this -> sampleCompartment_CPU(*context,
                                   *E_star,*sliceWidth);
+
+        /*
+        if ((*context) -> random -> uniform() < 0.5)
+        {
+            this -> sampleEntireCompartment2_CPU(*context,
+                                      *E_star,*sliceWidth);
+        }
+        else 
+        {
+            this -> sampleCompartment_CPU(*context,
+                                      *E_star,*sliceWidth);
+        }
+        */
         return 0;
     }
 
@@ -2596,11 +2626,23 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        /*
         this -> sampleCompartment_CPU(*context,
                                   *R_star,*sliceWidth);
+
+        //this -> sampleEntireCompartment2_CPU(*context, *R_star, *sliceWidth);
+        /*
+        if ((*context) -> random -> uniform() < 0.5)
+        {
+            this -> sampleEntireCompartment2_CPU(*context,
+                                      *R_star,*sliceWidth);
+        }
+        else 
+        {
+            this -> sampleCompartment_CPU(*context,
+                                      *R_star,*sliceWidth);
+        }
         */
-        this -> sampleEntireCompartment_CPU(*context, *R_star, *sliceWidth);
+
         return(0);
     }
     int FC_R_Star::sampleOCL()
@@ -2701,9 +2743,11 @@ namespace SpatialSEIR
             compIdx = i*nTpts;
             for (j = 0; j < nTpts; j++)     
             {
+                // todo: clean up
                 tmp = ((*E_star) -> data)[compIdx];
-                term1 += std::log((*p_se)[compIdx])*tmp; 
-                term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
+                term1 += (*context) -> random -> dbinom(tmp, ((*S) -> data)[compIdx], (*p_se)[compIdx]);
+                //term1 += std::log((*p_se)[compIdx])*tmp; 
+                //term2 += std::log(1-(*p_se)[compIdx])*(((*S) -> data)[compIdx] - tmp);
                 compIdx++;
             }
         } 
@@ -2742,7 +2786,9 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        //sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+
         return(0);
     }
     int FC_Beta::sampleOCL()
@@ -2839,8 +2885,7 @@ namespace SpatialSEIR
             }
             a = ((*S_star)-> marginSum(1,j));
             b = ((*R) -> marginSum(1,j)); 
-            term1 += std::log(tmp)*a; 
-            term1 += std::log(1 - tmp)*(b - a);
+            term1 = (*context) -> random -> dbinom(a, b, tmp);
         }
         for (j = 0; j < nbeta; j++)
         {
@@ -2872,7 +2917,7 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::sampleCPU()
     {
         int nbeta = *((*X) -> ncol_x);
-        sampleEntireDouble_CPU(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
         return(0);
     }
 
@@ -2961,6 +3006,7 @@ namespace SpatialSEIR
             compIdx = i*nTpts;
             for (j = 0; j < nTpts; j++)     
             {
+                // todo: use dbinom
                 Es = ((*E_star) -> data)[compIdx];
                 pse = (*p_se)[compIdx];
                 term1 += std::log(pse)*Es; 
@@ -2998,7 +3044,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleEntireDouble_CPU(*context, *rho, 1, *sliceWidth); 
+        sampleDoubleMetropolis(*context, *rho, 1, *sliceWidth); 
         return(0);
     }
     int FC_Rho::sampleOCL()

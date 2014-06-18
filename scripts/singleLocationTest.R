@@ -1,22 +1,23 @@
     library(spatialSEIR)
 
     set.seed(123123)
-    NYears = 6 
+    NYears = 6
     TptPerYear = 12
     MaxTpt = NYears*TptPerYear
 
-    ThrowAwayTpt = 10
+    ThrowAwayTpt = 0
 
     X = matrix(1, ncol = 1)
-    Z = cbind(seq(1,NYears*TptPerYear), model.matrix(~as.factor(rep(1:12,NYears)))[,2:TptPerYear])
+
+    Z = cbind(seq(1,NYears*TptPerYear), sin(seq(1,NYears*TptPerYear)/TptPerYear*2*pi))
 
     X_prs = cbind(1, 
                   sin((1:MaxTpt)/TptPerYear*2*pi), 
                   cos((1:MaxTpt)/TptPerYear*2*pi))
 
 
-    trueBetaSEFixed = c(-0.3)
-    trueBetaSEVarying = c(0.0001, 0.2, 0.3, 0.5, 0.6, 0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1)*3
+    trueBetaSEFixed = c(-0.1)
+    trueBetaSEVarying = c(0.001, .2)
     trueGamma = rep(0.0, MaxTpt)  
 
     eta_se = as.numeric((X %*% trueBetaSEFixed)) + (Z %*% trueBetaSEVarying)
@@ -122,11 +123,10 @@
         plot(p_se, type = "l", main = "p_se")
         lines(res$p_se, col = "red")
 
-        plot(p_rs, type = "l", main = "p_rs") 
+        plot(p_rs, type = "l", main = "p_rs", ylim = c(0,1)) 
         lines(res$p_rs, col = "red")
 
     }
-
 
 
 
@@ -134,9 +134,9 @@
 
 # Format for libspatialSEIR
 
-    if (ThrowAwayTpt != 0)
+if (ThrowAwayTpt != 0)
     {
-        S0 = S[,ThrowAwayTpt+1]
+    S0 = S[,ThrowAwayTpt+1]
     E0 = E[,ThrowAwayTpt+1]
     I0 = I[,ThrowAwayTpt+1]
     R0 = R[,ThrowAwayTpt+1]
@@ -191,7 +191,7 @@ betaPrs = trueBetaRS
 N = matrix(N, nrow = nrow(S), ncol = ncol(S))
 outFileName = "./chainOutput_single.txt"
 
-iterationStride = 10000
+iterationStride = 1000
 
 
 # S,E,R,S0,I0,beta,betaPrs,rho
@@ -227,9 +227,9 @@ debug = FALSE
 
 # pretend not to know the true values of things
 #proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
-proposal = generateCompartmentProposal(I_star, N)
-#beta = c(-1, rep(0, (length(beta)-1)))
-#betaPrs = c(3, rep(0,(length(betaPrs)-1)))
+proposal = generateCompartmentProposal(I_star, N, S0 = N[1]-100, I0 = 100, E0 = 0)
+beta = c(5, rep(0, (length(beta)-1)))
+betaPrs = c(6, rep(0,(length(betaPrs)-1)))
 p_ei = 0.8
 p_ir = 0.8
 
@@ -269,14 +269,16 @@ res = spatialSEIRModel(compMatDim,
                       sliceWidths,
                       reinfectionMode)
 
+res$setTrace(0)
 res$setRandomSeed(123123)
 itrPrint = function(x, wd=8)
 {
     formatC(x, width = wd, format = "d", flag = "0")
 }
 
+
 imgNo = 0;
-runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0.05, proportionChange = 0.1, printAR = FALSE)
+runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0.05, proportionChange = 0.1, printAR = FALSE)
 {
     tryCatch({
         for (i in 1:(N/batchSize))
@@ -303,11 +305,14 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 
 
 print("Burn in 1 to adjust sampling widths.")
-runSimulation(10000,100, printAR = FALSE)
+
+runSimulation(10000,100, printAR = FALSE, targetRatio = 0.25)
 print("Burn in 2 to adjust sampling widths.")
-runSimulation(100000,1000, printAR = FALSE)
+runSimulation(100000,1000, printAR = FALSE, targetRatio = 0.15)
+print("Burn in 3 to adjust sampling widths.")
+runSimulation(100000,1000, printAR = FALSE, targetRatio = 0.15)
 print("Main simulation.")
-runSimulation(10000000,10000, printAR = TRUE)
+runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.15)
 
 
 

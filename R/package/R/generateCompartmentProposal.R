@@ -19,7 +19,7 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
 
     if (any(is.na(S0)))
     {
-        S0 = floor(0.95*N[1,])
+        S0 = rbinom(rep(1, ncol(N)), N[1,], 0.9)
     }
     if (any(is.na(E0)))
     {
@@ -31,6 +31,9 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
     }
    
     R0 = N[1,] - floor(S0 + E0 + I0) 
+    R0 = ifelse(R0 < 0, 0, R0)
+
+
     S=E=I=R=S_star=E_star=R_star=I_star*0 
 
     for (tpt in 1:nrow(R))

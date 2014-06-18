@@ -91,6 +91,129 @@ namespace SpatialSEIR
         return(0);
     }
 
+    int CompartmentFullConditional::sampleEntireCompartment2_CPU(ModelContext* context,
+                                                       CompartmentalModelMatrix* starCompartment,
+                                                       double width)
+    {
+        ((*samples)) += 1;
+
+        int proposalType = 0;
+        double proposalTypeDraw = (context -> random -> uniform());
+        int shiftNo;
+        if (proposalTypeDraw < 0.01)
+        {
+            proposalType = 1; // Shift right by two
+        }
+        else if (proposalTypeDraw < 0.02)
+        {
+            proposalType = 2; // Shift left by two
+        }
+        else if (proposalTypeDraw < 0.04)
+        {
+            proposalType = 3; // Shift right by one
+        }
+        else if (proposalTypeDraw < 0.06)
+        {
+            proposalType = 4; // Shift left by one
+        }
+        // Else proposalType is zero, add random noise.
+
+
+        double initProposal = 0.0;
+        double newProposal = 0.0;
+        int i;
+        int x0, x1;
+        int totalPoints = (*(starCompartment -> nrow))*(*(starCompartment -> ncol));
+        // Backup Compartment
+        memcpy(context -> tmpContainer -> data, starCompartment -> data, totalPoints*sizeof(int)); 
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double initVal = (this -> getValue());
+        if (! std::isfinite(initVal))
+        {
+            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            throw(-1);
+        }
+        // Make Proposal
+        if (proposalType == 0)
+        {
+            for (i = 0; i < totalPoints; i++)
+            {
+                x0 = (starCompartment -> data)[i];
+                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                (starCompartment -> data)[i] = x1;
+                newProposal += (context -> random -> dnorm(x1, x0,width));
+                initProposal += (context -> random -> dnorm(x0, x1,width));
+            }
+        }
+        else if (proposalType == 1 || proposalType == 3)
+        {
+            // Shift right by two or one
+            shiftNo = (proposalType == 1 ? 2 : 1);
+            for (i = (totalPoints - 1); i >= shiftNo; i--)
+            {
+                x0 = (starCompartment -> data)[i-shiftNo];
+                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                (starCompartment -> data)[i] = x1;
+                newProposal += (context -> random -> dnorm(x1, x0,width));
+                initProposal += (context -> random -> dnorm(x0, x1,width));
+            }
+            for (i = 0; i < shiftNo; i++)
+            {
+                x0 = (starCompartment -> data)[i];
+                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                (starCompartment -> data)[i] = x1;
+                newProposal += (context -> random -> dnorm(x1, x0,width));
+                initProposal += (context -> random -> dnorm(x0, x1,width));
+            } 
+        }
+        else if (proposalType == 2 || proposalType == 4)
+        {
+            // Shift left by two or one  
+            shiftNo = (proposalType == 2 ? 2 : 1);
+            for (i = 0; i < (totalPoints - shiftNo); i++)
+            {
+                x0 = (starCompartment -> data)[i+shiftNo];
+                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                (starCompartment -> data)[i] = x1;
+                newProposal += (context -> random -> dnorm(x1, x0,width));
+                initProposal += (context -> random -> dnorm(x0, x1,width));
+            }
+            for (i = 0; i < shiftNo; i++)
+            {
+                x0 = (starCompartment -> data)[totalPoints - i];
+                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                (starCompartment -> data)[totalPoints - i] = x1;
+                newProposal += (context -> random -> dnorm(x1, x0,width));
+                initProposal += (context -> random -> dnorm(x0, x1,width));
+            } 
+        }
+        this -> calculateRelevantCompartments(); 
+        this -> evalCPU();
+        double newVal = (this->getValue());
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
+
+        if (std::log((context -> random -> uniform())) < criterion)
+        {
+            // Accept new values
+            (*accepted) += 1;
+        }
+        else
+        {
+            // Keep Original Value
+            memcpy(starCompartment -> data, context -> tmpContainer -> data, totalPoints*sizeof(int)); 
+            this -> calculateRelevantCompartments();
+            this -> setValue(initVal); 
+        }                
+
+        if (!std::isfinite(this -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        }
+        return(0);
+    }
+
 
 
     int CompartmentFullConditional::sampleCompartment_OCL(ModelContext* context,

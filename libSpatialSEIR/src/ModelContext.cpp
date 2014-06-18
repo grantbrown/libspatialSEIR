@@ -484,10 +484,9 @@ namespace SpatialSEIR
         if (!(*S0_OCL)){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}
 
-
         /*
         if (verbose){std::cout << "Sampling E0\n";}
-        if (useOCL[1] == 0){E0_fc -> sampleCPU();}
+        if (!(*S0_OCL)){E0_fc -> sampleCPU();}
         else {E0_fc -> sampleOCL();}
         */
 
@@ -497,10 +496,9 @@ namespace SpatialSEIR
 
         /*
         if (verbose){std::cout << "Sampling R0\n";}
-        if (useOCL[3] == 0){R0_fc -> sampleCPU();}
+        if (!(*I0_OCL)){R0_fc -> sampleCPU();}
         else {R0_fc -> sampleOCL();}
-        */
-    
+        */ 
         if ((config -> reinfectionMode) <= 2)
         {
             if (verbose){std::cout << "Sampling S_star\n";}
@@ -515,6 +513,7 @@ namespace SpatialSEIR
         if (verbose){std::cout << "Sampling R_star\n";}
         if (!(*R_star_OCL)){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
+
 
         if (verbose){std::cout << "Sampling beta\n";}
         if (!(*beta_OCL)){beta_fc -> sampleCPU();}

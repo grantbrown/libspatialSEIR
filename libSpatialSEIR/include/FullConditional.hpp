@@ -124,6 +124,10 @@ namespace SpatialSEIR
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 
 
+            int sampleEntireCompartment2_CPU(ModelContext* context,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double width); 
+
             int sampleCompartment_OCL(ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
                                   double width); 

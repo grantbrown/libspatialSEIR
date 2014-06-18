@@ -52,6 +52,7 @@ namespace SpatialSEIR
         (newTrace -> locationIndex) = locationIndex;
         (newTrace -> timeIndex) = timeIndex;
         timeLocationTraces -> push_back(newTrace);
+        fileInit();
     }
 
     IOProvider::~IOProvider()
@@ -95,6 +96,11 @@ namespace SpatialSEIR
         unsigned int i;
 
         // Clear file 
+        if (*isOpen)
+        {
+            this -> close();
+            *isOpen = false;
+        }
         FILE* tmp = fopen(outFilePath -> c_str(), "w");
         fclose(tmp);
 
@@ -228,16 +234,16 @@ namespace SpatialSEIR
            (*outFileStream)  << ((*context) -> A0 -> E0)[tlTrace.locationIndex] << ", ";
            (*outFileStream)  << ((*context) -> A0 -> I0)[tlTrace.locationIndex] << ", ";
            (*outFileStream)  << ((*context) -> A0 -> R0)[tlTrace.locationIndex] << ", ";
-           (*outFileStream)  << ((*context) -> S -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> E -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> I -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> R -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> S_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> E_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> I_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> R_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> p_se)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex];
-           (*outFileStream)  << ((*context) -> p_rs)[tlTrace.timeIndex];
+           (*outFileStream)  << ((*context) -> S -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> E -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> I -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> R -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> S_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> E_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> I_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> R_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> p_se)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
+           (*outFileStream)  << ((*context) -> p_rs)[tlTrace.timeIndex] << ", ";
 
         }
 
