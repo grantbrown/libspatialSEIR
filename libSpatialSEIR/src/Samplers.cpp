@@ -320,40 +320,44 @@ namespace SpatialSEIR
             x0 = (starCompartment -> data)[compIdx];
             initVal = (this -> getValue());
 
-            // Propose new value, bounded away from zero. 
-            x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
-            (starCompartment -> data)[compIdx] = x1;
-            this -> calculateRelevantCompartments(i,j);
-            this -> evalCPU(i,j);
-            newVal = (this->getValue());
-            newProposal = (context -> random -> dnorm(x1, x0,width));
-            initProposal = (context -> random -> dnorm(x0, x1,width));
-            criterion = (newVal - initVal) + (initProposal - newProposal);
-            if (std::log((context -> random -> uniform())) < criterion)
+            // Propose new value 
+            x1 = std::floor((context -> random -> normal(x0 + 0.5,width)));
+            if (x1 >= 0)
             {
-                // Accept new value
-                (*accepted) += 1; 
-            }
-            else
-            {
-                // Keep Original Value
-                (starCompartment -> data)[compIdx] = x0;
+                    
+
+                (starCompartment -> data)[compIdx] = x1;
                 this -> calculateRelevantCompartments(i,j);
-                this -> setValue(initVal); 
-            }                
+                this -> evalCPU(i,j);
+                newVal = (this->getValue());
+                newProposal = (context -> random -> dnorm(x1, x0,width));
+                initProposal = (context -> random -> dnorm(x0, x1,width));
+                criterion = (newVal - initVal) + (initProposal - newProposal);
+                if (std::log((context -> random -> uniform())) < criterion)
+                {
+                    // Accept new value
+                    (*accepted) += 1; 
+                }
+                else
+                {
+                    // Keep Original Value
+                    (starCompartment -> data)[compIdx] = x0;
+                    this -> calculateRelevantCompartments(i,j);
+                    this -> setValue(initVal); 
+                }                
 
 
-            if (!std::isfinite(this -> getValue()))
-            {
-                std::cout << "Impossible value selected:\n";
-                std::cout << "(i,j): (" << i << "," << j << ")\n";
-                std::cout << "Data value: " << (starCompartment -> data)[compIdx] << "\n";
-                this -> printDebugInfo(i,j);
-                throw(-1);
+                if (!std::isfinite(this -> getValue()))
+                {
+                    std::cout << "Impossible value selected:\n";
+                    std::cout << "(i,j): (" << i << "," << j << ")\n";
+                    std::cout << "Data value: " << (starCompartment -> data)[compIdx] << "\n";
+                    this -> printDebugInfo(i,j);
+                    throw(-1);
+                }
             }
             compIdx ++;
         }
-
         return(0);
     }
 
@@ -542,7 +546,7 @@ namespace SpatialSEIR
         double initVal = (this -> getValue());
         if (! std::isfinite(initVal))
         {
-            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            std::cerr << "Init compartment sampler starting from value of zero probability!\n";
             throw(-1);
         }
         for (i = 0; i < nLoc; i++)
@@ -597,7 +601,7 @@ namespace SpatialSEIR
         double initVal = (this -> getValue());
         if (! std::isfinite(initVal))
         {
-            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            std::cerr << "Init compartment sampler starting from value of zero probability!\n";
             throw(-1);
         }
         for (i = 0; i < nLoc; i++)
@@ -802,7 +806,7 @@ namespace SpatialSEIR
         double initVal = (this -> getValue());
         if (! std::isfinite(initVal))
         {
-            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            std::cerr << "Double sampler starting from value of zero probability!\n";
             throw(-1);
         }
         for (i = 0; i < varLen; i++)
@@ -859,7 +863,7 @@ namespace SpatialSEIR
         double initVal = (this -> getValue());
         if (! std::isfinite(initVal))
         {
-            std::cerr << "Compartment sampler starting from value of zero probability!\n";
+            std::cerr << "Double sampler starting from value of zero probability!\n";
             throw(-1);
         }
         for (i = 0; i < varLen; i++)

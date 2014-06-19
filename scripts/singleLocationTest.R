@@ -210,7 +210,7 @@ priorAlpha_pEI = 10000;
 priorBeta_pEI = 1000;
 priorAlpha_pIR = 10000;
 priorBeta_pIR = 1000;
-betaPrsPriorPrecision = 0.1
+betaPrsPriorPrecision = 0.5
 betaPriorPrecision = 0.1
 
 
@@ -219,7 +219,7 @@ reinfectionMode = 1
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
 
-steadyStateConstraintPrecision = 0.01
+steadyStateConstraintPrecision = 0.1
 
 verbose = FALSE 
 debug = FALSE
@@ -229,7 +229,7 @@ debug = FALSE
 #proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
 proposal = generateCompartmentProposal(I_star, N, S0 = N[1]-100, I0 = 100, E0 = 0)
 beta = c(5, rep(0, (length(beta)-1)))
-betaPrs = c(6, rep(0,(length(betaPrs)-1)))
+betaPrs = c(4, rep(0,(length(betaPrs)-1)))
 p_ei = 0.8
 p_ir = 0.8
 
@@ -306,18 +306,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 
 print("Burn in 1 to adjust sampling widths.")
 
-runSimulation(10000,100, printAR = FALSE, targetRatio = 0.25)
-print("Burn in 2 to adjust sampling widths.")
-runSimulation(100000,1000, printAR = FALSE, targetRatio = 0.15)
-print("Burn in 3 to adjust sampling widths.")
-runSimulation(100000,1000, printAR = FALSE, targetRatio = 0.15)
-print("Main simulation.")
-runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.15)
-
-
-
-
-
-
+runSimulation(20000,100, printAR = TRUE, targetRatio = 0.2)
+runSimulation(1000000,1000, printAR = TRUE, targetRatio = 0.2)
 
 

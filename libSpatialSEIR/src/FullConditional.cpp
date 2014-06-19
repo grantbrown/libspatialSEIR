@@ -1730,13 +1730,14 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
+        /*
         this -> sampleCompartment_CPU(*context,
                                       *S_star,*sliceWidth);
-        /*
+
         this -> sampleEntireCompartment2_CPU(*context,
                                   *S_star,*sliceWidth);
-
-        if ((*context) -> random -> uniform() < 0.5)
+        */
+        if ((*context) -> random -> uniform() < 0.9)
         {
             this -> sampleEntireCompartment2_CPU(*context,
                                       *S_star,*sliceWidth);
@@ -1746,7 +1747,7 @@ namespace SpatialSEIR
             this -> sampleCompartment_CPU(*context,
                                       *S_star,*sliceWidth);
         }
-        */
+
         return 0;
     }
     int FC_S_Star::sampleOCL()
@@ -2875,6 +2876,7 @@ namespace SpatialSEIR
         long double term1 = 0.0;
         double term2 = 0.0;
 
+
         for (j = 0; j < nTpts; j++)
         {
             tmp = (*p_rs)[j];
@@ -2885,8 +2887,10 @@ namespace SpatialSEIR
             }
             a = ((*S_star)-> marginSum(1,j));
             b = ((*R) -> marginSum(1,j)); 
-            term1 = (*context) -> random -> dbinom(a, b, tmp);
+            term1 += std::log(tmp)*(a);
+            term1 += std::log(1-tmp)*(b-a);
         }
+
         for (j = 0; j < nbeta; j++)
         {
             term2 -= ((*tausq)/2)*pow((*beta_p_rs)[j],2);
