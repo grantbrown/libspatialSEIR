@@ -1730,23 +1730,43 @@ namespace SpatialSEIR
 
     int FC_S_Star::sampleCPU()
     {
-        /*
-        this -> sampleCompartment_CPU(*context,
-                                      *S_star,*sliceWidth);
-
-        this -> sampleEntireCompartment2_CPU(*context,
-                                  *S_star,*sliceWidth);
-        */
-        if ((*context) -> random -> uniform() < 0.9)
-        {
-            this -> sampleEntireCompartment2_CPU(*context,
-                                      *S_star,*sliceWidth);
-        }
-        else 
+        int mode = (*context) -> getSamplingMode();
+        if (mode == 1)
         {
             this -> sampleCompartment_CPU(*context,
-                                      *S_star,*sliceWidth);
+                                          *S_star,*sliceWidth);
         }
+        else if (mode == 2)
+        {
+            this -> sampleEntireCompartment_CPU(*context,
+                                       *S_star,*sliceWidth);
+        }
+        else if (mode == 3)
+        {
+            this -> sampleEntireCompartment2_CPU(*context,
+                                       *S_star,*sliceWidth);
+
+        }
+        else if (mode == 4)
+        {
+            if ((*context) -> random -> uniform() < 0.9)
+            {
+                this -> sampleEntireCompartment2_CPU(*context,
+                                          *S_star,*sliceWidth);
+            }
+            else 
+            {
+                this -> sampleCompartment_CPU(*context,
+                                          *S_star,*sliceWidth);
+            }
+        }
+        else
+        {
+            std::cout << "Invalid sampling mode, falling back to default.\n";
+            this -> sampleEntireCompartment_CPU(*context,
+                                       *S_star,*sliceWidth);
+        }
+
 
         return 0;
     }
@@ -2065,23 +2085,43 @@ namespace SpatialSEIR
 
     int FC_E_Star::sampleCPU()
     {
-        //this -> sampleEntireCompartment2_CPU(*context,
-        //                          *E_star,*sliceWidth);
-        this -> sampleCompartment_CPU(*context,
-                                  *E_star,*sliceWidth);
-
-        /*
-        if ((*context) -> random -> uniform() < 0.5)
-        {
-            this -> sampleEntireCompartment2_CPU(*context,
-                                      *E_star,*sliceWidth);
-        }
-        else 
+        int mode = (*context) -> getSamplingMode();
+        if (mode == 1)
         {
             this -> sampleCompartment_CPU(*context,
-                                      *E_star,*sliceWidth);
+                                          *E_star,*sliceWidth);
         }
-        */
+        else if (mode == 2)
+        {
+            this -> sampleEntireCompartment_CPU(*context,
+                                       *E_star,*sliceWidth);
+        }
+        else if (mode == 3)
+        {
+            this -> sampleEntireCompartment2_CPU(*context,
+                                       *E_star,*sliceWidth);
+
+        }
+        else if (mode == 4)
+        {
+            if ((*context) -> random -> uniform() < 0.9)
+            {
+                this -> sampleEntireCompartment2_CPU(*context,
+                                          *E_star,*sliceWidth);
+            }
+            else 
+            {
+                this -> sampleCompartment_CPU(*context,
+                                          *E_star,*sliceWidth);
+            }
+        }
+        else
+        {
+            std::cout << "Invalid sampling mode, falling back to default.\n";
+            this -> sampleEntireCompartment_CPU(*context,
+                                       *E_star,*sliceWidth);
+        }
+
         return 0;
     }
 
@@ -2627,23 +2667,42 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        this -> sampleCompartment_CPU(*context,
-                                  *R_star,*sliceWidth);
-
-        //this -> sampleEntireCompartment2_CPU(*context, *R_star, *sliceWidth);
-        /*
-        if ((*context) -> random -> uniform() < 0.5)
-        {
-            this -> sampleEntireCompartment2_CPU(*context,
-                                      *R_star,*sliceWidth);
-        }
-        else 
+        int mode = (*context) -> getSamplingMode();
+        if (mode == 1)
         {
             this -> sampleCompartment_CPU(*context,
-                                      *R_star,*sliceWidth);
+                                          *R_star,*sliceWidth);
         }
-        */
+        else if (mode == 2)
+        {
+            this -> sampleEntireCompartment_CPU(*context,
+                                       *R_star,*sliceWidth);
+        }
+        else if (mode == 3)
+        {
+            this -> sampleEntireCompartment2_CPU(*context,
+                                       *R_star,*sliceWidth);
 
+        }
+        else if (mode == 4)
+        {
+            if ((*context) -> random -> uniform() < 0.9)
+            {
+                this -> sampleEntireCompartment2_CPU(*context,
+                                          *R_star,*sliceWidth);
+            }
+            else 
+            {
+                this -> sampleCompartment_CPU(*context,
+                                          *R_star,*sliceWidth);
+            }
+        }
+        else
+        {
+            std::cout << "Invalid sampling mode, falling back to default.\n";
+            this -> sampleEntireCompartment_CPU(*context,
+                                       *R_star,*sliceWidth);
+        }
         return(0);
     }
     int FC_R_Star::sampleOCL()
@@ -2787,8 +2846,15 @@ namespace SpatialSEIR
 
     int FC_Beta::sampleCPU()
     {
-        //sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
-        sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        int mode = (*context) -> getSamplingMode();
+        if (mode == 1)
+        {
+            sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        }
+        else
+        {
+            sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        }
 
         return(0);
     }
@@ -2921,7 +2987,16 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::sampleCPU()
     {
         int nbeta = *((*X) -> ncol_x);
-        sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        int mode = (*context) -> getSamplingMode();
+
+        if (mode == 1)
+        {
+            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        }
+        else
+        {
+            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        }
         return(0);
     }
 

@@ -1,8 +1,8 @@
     library(spatialSEIR)
 
     set.seed(123123)
-    NYears = 6
-    TptPerYear = 12
+    NYears = 3
+    TptPerYear = 52
     MaxTpt = NYears*TptPerYear
 
     ThrowAwayTpt = 0
@@ -16,8 +16,8 @@
                   cos((1:MaxTpt)/TptPerYear*2*pi))
 
 
-    trueBetaSEFixed = c(-0.1)
-    trueBetaSEVarying = c(0.001, .2)
+    trueBetaSEFixed = c(0.5)
+    trueBetaSEVarying = c(0.002, .5)
     trueGamma = rep(0.0, MaxTpt)  
 
     eta_se = as.numeric((X %*% trueBetaSEFixed)) + (Z %*% trueBetaSEVarying)
@@ -26,7 +26,7 @@
     p_ir = 0.9
 
 #trueBetaRS = c(2.5, -1, 0.5) 
-    trueBetaRS = c(2.5, -1, 0.0) 
+    trueBetaRS = c(2.5, -1, 0.25) 
     eta_rs = X_prs %*% trueBetaRS
     p_rs = exp(-eta_rs)
 
@@ -306,7 +306,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 
 print("Burn in 1 to adjust sampling widths.")
 
-runSimulation(20000,100, printAR = TRUE, targetRatio = 0.2)
-runSimulation(1000000,1000, printAR = TRUE, targetRatio = 0.2)
+runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
+runSimulation(10000000,1000, printAR = TRUE, targetRatio = 0.2)
 
 

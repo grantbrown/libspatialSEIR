@@ -67,6 +67,16 @@ namespace SpatialSEIR
         random = new RandomNumberProvider(seedValue);
     }
 
+    void ModelContext::setSamplingMode(int mode)
+    {
+        (config -> samplingMode) = mode;
+    }
+
+    int ModelContext::getSamplingMode()
+    {
+        return((config -> samplingMode));
+    }
+
     void ModelContext::populate(InitData* _A0,
                                 covariateArgs* xArgs, 
                                 covariateArgs* xPrsArgs,
@@ -480,6 +490,8 @@ namespace SpatialSEIR
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
+        bool SampleS_star = (random -> uniform() < 0.5);
+
         if (verbose){std::cout << "Sampling S0\n";}
         if (!(*S0_OCL)){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}
@@ -499,11 +511,24 @@ namespace SpatialSEIR
         if (!(*I0_OCL)){R0_fc -> sampleCPU();}
         else {R0_fc -> sampleOCL();}
         */ 
+
+        if (SampleS_star)
+        {
         if ((config -> reinfectionMode) <= 2)
         {
             if (verbose){std::cout << "Sampling S_star\n";}
             if (!(*S_star_OCL)){S_star_fc -> sampleCPU();}
             else {S_star_fc -> sampleOCL();}
+        }
+        }
+        else
+        {
+        if ((config -> reinfectionMode) == 1)
+        {
+            if (verbose){std::cout << "Sampling betaPrs\n";}
+            if (!(*beta_P_RS_OCL)){betaPrs_fc -> sampleCPU();}
+            else {betaPrs_fc -> sampleOCL();}
+        }
         }
 
         if (verbose){std::cout << "Sampling E_star\n";}
@@ -519,12 +544,7 @@ namespace SpatialSEIR
         if (!(*beta_OCL)){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
 
-        if ((config -> reinfectionMode) == 1)
-        {
-            if (verbose){std::cout << "Sampling betaPrs\n";}
-            if (!(*beta_P_RS_OCL)){betaPrs_fc -> sampleCPU();}
-            else {betaPrs_fc -> sampleOCL();}
-        }
+        
 
         if (verbose){std::cout << "Sampling p_ei\n";}
         p_ei_fc -> sampleCPU();

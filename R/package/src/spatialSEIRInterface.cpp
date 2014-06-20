@@ -65,6 +65,8 @@ class spatialSEIRInterface
         virtual int setTrace(int locationIndex);
         virtual int setTrace2(int locationIndex, int timeIndex);
         virtual void setDevice(int platformId, int deviceId);
+        virtual void setSamplingMode(int mode);
+        virtual int getSamplingMode();
 
 
         // Calculation Functions
@@ -147,6 +149,16 @@ void spatialSEIRInterface::setDevice(int platformId, int deviceId)
     }
     Rcpp::Rcout << "ModelContext is not populated.\n";
     return;
+}
+
+void spatialSEIRInterface::setSamplingMode(int mode)
+{
+    context -> setSamplingMode(mode);
+}
+
+int spatialSEIRInterface::getSamplingMode()
+{
+    return((context -> getSamplingMode()));
 }
 
 int spatialSEIRInterface::setTrace(int locationIndex)
@@ -1001,6 +1013,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
+    .property("samplingMode", &spatialSEIRInterface::getSamplingMode, &spatialSEIRInterface::setSamplingMode, "Type of sampler")
     .property("oclPreferences", &spatialSEIRInterface::getOCLPreferences, &spatialSEIRInterface::setOCLPreferences, "Use OCL? Length 8:  S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho")
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")

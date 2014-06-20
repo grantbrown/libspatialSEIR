@@ -131,6 +131,9 @@ namespace SpatialSEIR
             void simulationIter(bool verbose, bool debug);
             void runSimulation(int nIterations,  bool verbose, bool debug);
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+            void setSamplingMode(int mode);
+            int getSamplingMode();
+
 
 
             // Method: calculatePi
@@ -226,6 +229,7 @@ namespace SpatialSEIR
             int* isPopulated;
             int* singleLocation;
             int* numIterations;
+
 
             int* S0_OCL;
             int* I0_OCL;
