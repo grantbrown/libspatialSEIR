@@ -20,6 +20,7 @@ namespace SpatialSEIR
     class CovariateMatrix;
     class OCLProvider;
 
+    //! DEPRICATED - Prior arguments for the gamma term (external infection probability) 
     struct gammaArgs
     {
         double* priorAlpha;
@@ -27,8 +28,7 @@ namespace SpatialSEIR
         double* gamma;
     };
 
-    // Roll gamma prior stuff into
-    // this struct?
+    //! struct containing hyperparameters for beta, betaP_RS, P_EI, and P_IR
     struct priorControl
     {
         double betaPriorPrecision;
@@ -39,6 +39,7 @@ namespace SpatialSEIR
         double P_IR_priorBeta;
     };
 
+    //! struct containing initial slice sampling tuning parameters. 
     struct sliceParameters
     {
         double* S_starWidth;
@@ -52,10 +53,12 @@ namespace SpatialSEIR
         double* gammaWidth;
     };
 
+    //! Wrapper for cblas::dgemm
     int matMult(double* output, double * A, double * B, int Arow, int Acol, 
             int Brow, int Bcol, bool TransA, bool TransB, int ldA, int ldB, int ldC);
 
 
+    //! Simple class containing the starting compartment sizes. 
     class InitData
     {
         public:
@@ -79,7 +82,13 @@ namespace SpatialSEIR
             int *numLocations;
     };
 
-    // Full conditional distribution parent class
+
+    /**
+     * The FullConditional class serves as the grandparent class for the various
+     * full conditional distributions. This structure is helpful, because we can 
+     * then implement general methods which apply to all child classes of FullConditional. 
+     *
+     */
     class FullConditional
     {
         public:
@@ -98,7 +107,14 @@ namespace SpatialSEIR
             int* accepted;
     };
 
-    // Parent class for compartment full conditional distributions
+    /**
+     * The CompartmentFullConditional class inherits the structure of 
+     * FullConditional, and provides general sampling methods which 
+     * apply to all compartment full conditional distributions. These are:
+     * 1. FC_S_Star, the transition compartment from recovered to susceptible
+     * 2. FC_E_Star, the transition compartment from susceptible to exposed
+     * 3. FC_R_Star, the transition compartment from infectious to recovered 
+     */
     class CompartmentFullConditional : public FullConditional 
     {
         public:
@@ -147,7 +163,16 @@ namespace SpatialSEIR
             double* steadyStateConstraintPrecision;
     };
 
-    // Parent class for double precision scalar/vector full conditionals
+    /**
+     * The ParameterFullConditional class inherits the structure of FullConditional,
+     * and provides sampling methods for all of the non-compartment parameters. These
+     * include the following:
+     * 1. FC_Beta, the full conditional for the parameters controlling the exposure probability
+     * 2. FC_Beta_P_RS, the full conditional for the parameters controlling the reinfection probability
+     * 3. FC_Rho, the full conditional for the spatial dependence parameter
+     * 4. FC_P_EI, the full conditional for the E to I transition probability
+     * 5. FC_P_IR, the full conditional for the I to R transition probability 
+     */
     class ParameterFullConditional : public FullConditional
     {
         public:
@@ -188,7 +213,14 @@ namespace SpatialSEIR
     };
 
 
-    // Parent class for S0-R0
+    /**
+     * The InitCompartmentFullConditional class inherits the structure of FullConditional,
+     * and provides sampling methods for the initial compartment size parameters. These are:
+     * 1. FC_S0, the initial susceptible group
+     * 2. FC_E0, the initial exposed group
+     * 3. FC_I0, the initial infectious group
+     * 4. FC_R0, the initial recovered group
+     */
     class InitCompartmentFullConditional : public FullConditional
     {
         public:
@@ -224,6 +256,10 @@ namespace SpatialSEIR
 
     };
 
+    /**
+     * FC_S0 gives the full conditional distribution for the vector of initially
+     * susceptible individuals. 
+     */
     class FC_S0 : public InitCompartmentFullConditional
     {
         public:
@@ -263,7 +299,10 @@ namespace SpatialSEIR
 
     };
 
-
+    /**
+     * FC_E0 gives the full conditional distribution for the vector of initially
+     * exposed individuals. 
+     */
     class FC_E0 : public InitCompartmentFullConditional
     { 
         public:
@@ -306,6 +345,11 @@ namespace SpatialSEIR
             long double* value;
     };
 
+    /**
+     *
+     * FC_I0 gives the full conditional distribution for the vector of initially
+     * infectious individuals. 
+     */
     class FC_I0 : public InitCompartmentFullConditional
     {
         public:
@@ -348,6 +392,10 @@ namespace SpatialSEIR
             long double* value;
     };
 
+    /**
+     * FC_R0 gives the full conditional distribution for the vector of initially
+     * removed/recovered individuals. 
+     */
     class FC_R0 : public InitCompartmentFullConditional
     {
         public:
@@ -389,6 +437,11 @@ namespace SpatialSEIR
 
 
 
+    /**
+     * FC_S_Star gives the full conditional distribution of S_star, the 
+     * transition matrix capturing individuals moving from the removed/recovered
+     * category to the susceptible category. 
+     */
     class FC_S_Star : public CompartmentFullConditional
     {
         public:
@@ -435,6 +488,11 @@ namespace SpatialSEIR
             double* steadyStateConstraintPrecision;
     };
 
+    /**
+     * FC_E_Star gives the full conditional distribution of E_star, the 
+     * transition matrix capturing individuals moving from the susceptible
+     * category to the exposed category. 
+     */
     class FC_E_Star : public CompartmentFullConditional
     {
         public:
@@ -479,6 +537,11 @@ namespace SpatialSEIR
             double* steadyStateConstraintPrecision;
     };
 
+    /**
+     * FC_R_Star gives the full conditional distribution of R_star, the 
+     * transition matrix capturing individuals moving from the infectious
+     * category to the recovered/removed category. 
+     */
     class FC_R_Star : public CompartmentFullConditional
     {
         public:
@@ -525,6 +588,11 @@ namespace SpatialSEIR
             double* steadyStateConstraintPrecision;
     };
 
+    /**
+     * FC_Beta gives the full conditional distribution of beta, the 
+     * vector of regression parameters capturing the exposure intensity 
+     * process. 
+     */
     class FC_Beta : public ParameterFullConditional
     {
         public:
@@ -561,6 +629,11 @@ namespace SpatialSEIR
             double* priorPrecision;
     };
 
+    /**
+     * FC_Beta_P_RS gives the full conditional distribution of beta_p_rs, the 
+     * vector of regression parameters capturing the probability that an individual
+     * transitions from R to S, the removed/recovered category to the susceptible category. 
+     */
     class FC_Beta_P_RS : public ParameterFullConditional
     {
         public:
@@ -595,6 +668,10 @@ namespace SpatialSEIR
             long double* value;
     };
 
+    /**
+     * FC_Rho gives the full conditional distribution of rho, the 
+     * scalar spatial dependence parameter. 
+     */
     class FC_Rho : public ParameterFullConditional 
     {
         public:
@@ -629,6 +706,12 @@ namespace SpatialSEIR
             long double* value;
     };
 
+    /**
+     * FC_Gamma is depricated. Gamma was used to describe a time varying external 
+     * infection source, but was found to be unneccesary for most epidemic models, 
+     * as well as a potential source for identifiability issues. The code remains 
+     * in case this decision changes. 
+     */
     class FC_Gamma : public ParameterFullConditional 
     {
         public:
@@ -667,6 +750,11 @@ namespace SpatialSEIR
             long double* value;
     };    
 
+    /**
+     * FC_P_EI gives the full conditional distribution of p_ei, the 
+     * probability that an exposed individual becomes infectious at a
+     * given time point. 
+     */
     class FC_P_EI : public ParameterFullConditional
     {
         public:
@@ -697,6 +785,11 @@ namespace SpatialSEIR
             double* priorBeta;
     };
 
+    /**
+     * FC_P_IR gives the full conditional distribution of p_ir, the 
+     * probability that an infectious individual recovers/is removed at 
+     * a given time point.
+     */
     class FC_P_IR : public ParameterFullConditional
     {
         

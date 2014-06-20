@@ -2,7 +2,7 @@
 
     set.seed(123123)
     NYears = 3
-    TptPerYear = 52
+    TptPerYear = 12 
     MaxTpt = NYears*TptPerYear
 
     ThrowAwayTpt = 0
@@ -305,7 +305,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 
 
 print("Burn in 1 to adjust sampling widths.")
-
+res$samplingMode = 2
 runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
 runSimulation(10000000,1000, printAR = TRUE, targetRatio = 0.2)
 
