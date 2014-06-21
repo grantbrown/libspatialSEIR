@@ -43,6 +43,11 @@ namespace SpatialSEIR
     struct gammaArgs;
     struct sliceParameters;
     struct priorControl;
+
+    /**
+     * The modelConfiguration struct stores information on the reinfection mode requested for the model
+     * as well as the sampling behavior. This set of features is very much still under development.  
+     */
     struct modelConfiguration
     {
         int reinfectionMode;
@@ -51,13 +56,19 @@ namespace SpatialSEIR
 
 
 
+    /**
+     * The model context class provides the central interface of libspatialSEIR. After instantiation, the populate
+     * method must be called before any meaningful work can be done. Once populated, ModelContext holds pointers to 
+     * all of the required FullConditional instances as well as the data they use. In addition, ModelContext provides
+     * calculation functions and holds pointers to additional utility classes such as OCLProvider, IOProvider, and 
+     * RandomNumberProvider.
+     */
     class ModelContext
     {
         public:
             //Methods
             ModelContext();
             ~ModelContext(); 
-
             void populate(InitData* _A0,
                           covariateArgs* xArgs,
                           covariateArgs* xPrsArgs,
