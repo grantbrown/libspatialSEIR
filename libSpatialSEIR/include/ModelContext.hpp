@@ -120,67 +120,162 @@ namespace SpatialSEIR
                                                           the MCMC sampling mode. MCMC sampling modes are under very active development. */
                               );
 
-            // Method: calculateS
-            // Accesses: A0, S_star, E_star
-            // Updates: S
-            void calculateS_CPU();
-            void calculateS_CPU(int startLoc, int startTime);
-            void calculateS_givenE_CPU();
-            void calculateS_givenE_CPU(int startLoc, int startTime);
-            void calculateS_OCL();
+            /** The zero parameter overload of calculateS_CPU calculates the S compartment from A0, S_star, and E_star.*/
+            void calculateS_CPU(); 
 
-            // Method: calculateE
-            // Accesses: A0, I_star, E_star
-            // Updates: E
-            void calculateE_CPU();
+            /** The two parameter overload of calculateS_CPU again calculates the S compartment 
+                from A0, S_star and E_star, but assumes that only values of S_star and E_star 
+                at column (location) startLoc and after row (time) startTime have changed since 
+                S was last calculated. When applicable, this saves considerable time. */
+            void calculateS_CPU(int startLoc, int startTime); 
+
+            /** The zero parameter overload of calculate S_givenE_CPU takes advantage of the fact that N=S+E+I+R to 
+                update S when E changes.*/
+            void calculateS_givenE_CPU(); 
+
+            /** The two parameter overload of calculate S_givenE_CPU takes 
+                advantage of the fact that N=S+E+I+R to update S when E changes,
+                while assuming that E has only changed for location startLoc and after time
+                point startTime.*/
+            void calculateS_givenE_CPU(int startLoc, int startTime); 
+
+            /** calculateS_OCL works identically to calculateS_CPU using calls to oclProvider to perform 
+                computations in parallel.*/
+            void calculateS_OCL(); 
+
+            /** The zero parameter overload of calculateE_CPU calculates the E compartment from A0, I_star, and E_star.*/
+            void calculateE_CPU(); 
+
+            /** The two parameter overload of calculateE_CPU again calculates the E compartment 
+                from A0, I_star and E_star, but assumes that only values of I_star and E_star 
+                at column (location) startLoc and after row (time) startTime have changed since 
+                E was last calculated. When applicable, this saves considerable time. */
             void calculateE_CPU(int startLoc, int startTime);
-            void calculateE_givenI_CPU();
+
+            /** The zero parameter overload of calculate E_givenI_CPU takes advantage of the fact that N=S+E+I+R to 
+                update E when I changes.*/
+            void calculateE_givenI_CPU(); 
+
+            /** The two parameter overload of calculate E_givenI_CPU takes 
+                advantage of the fact that N=S+E+I+R to update E when I changes,
+                while assuming that I has only changed for location startLoc and after time
+                point startTime.*/
             void calculateE_givenI_CPU(int startLoc, int startTime);
-            void calculateE_OCL();
 
-            // Method: calculateI
-            // Accesses: A0, I_star, R_star
-            // Updates: I
+            /** calculateE_OCL works identically to calculateS_CPU using calls to oclProvider to perform 
+                computations in parallel.*/
+            void calculateE_OCL();  
+
+            /** The zero parameter overload of calculateI_CPU calculates the I compartment from A0, I_star, and R_star.*/
             void calculateI_CPU();
-            void calculateI_CPU(int startLoc, int startTime);
-            void calculateI_givenR_CPU();
-            void calculateI_givenR_CPU(int startLoc, int startTime);
-            void calculateI_OCL();
 
-            // Method: calculateR
-            // Accesses: A0, R_star, S_star
-            // Updates: R
+            /** The two parameter overload of calculateI_CPU again calculates the I compartment 
+                from A0, I_star and R_star, but assumes that only values of I_star and R_star 
+                at column (location) startLoc and after row (time) startTime have changed since 
+                I was last calculated. When applicable, this saves considerable time. */
+            void calculateI_CPU(int startLoc, int startTime);
+
+            /** The zero parameter overload of calculate I_givenR_CPU takes advantage of the fact that N=S+E+I+R to 
+                update I when R changes.*/
+            void calculateI_givenR_CPU(); 
+
+            /** The two parameter overload of calculate I_givenR_CPU takes 
+                advantage of the fact that N=S+E+I+R to update I when R changes,
+                while assuming that R has only changed for location startLoc and after time
+                point startTime.*/
+            void calculateI_givenR_CPU(int startLoc, int startTime);
+
+            /** calculateI_OCL works identically to calculateI_CPU using calls to oclProvider to perform 
+                computations in parallel.*/
+            void calculateI_OCL(); 
+
+            /** The zero parameter overload of calculateR_CPU calculates the R compartment from A0, R_star, and S_star.*/
             void calculateR_CPU();
+
+            /** The two parameter overload of calculateR_CPU again calculates the R compartment 
+                from A0, R_star and S_star, but assumes that only values of R_star and S_star 
+                at column (location) startLoc and after row (time) startTime have changed since 
+                I was last calculated. When applicable, this saves considerable time. */
             void calculateR_CPU(int startLoc, int startTime);
+
+            /** The zero parameter overload of calculate R_givenS_CPU takes advantage of the fact that N=S+E+I+R to 
+                update R when S changes.*/
             void calculateR_givenS_CPU();
+
+            /** The two parameter overload of calculate R_givenS_CPU takes 
+                advantage of the fact that N=S+E+I+R to update R when S changes,
+                while assuming that S has only changed for location startLoc and after time
+                point startTime.*/
             void calculateR_givenS_CPU(int startLoc, int startTime);
+
+            /** calculateR_OCL works identically to calculateR_CPU using calls to oclProvider to perform 
+                computations in parallel.*/
             void calculateR_OCL();
 
-            // Method calculateGenericCompartment
-            // Accesses: A0, compartments linked by compStar pointers
-            // Updates: Compartment linked by comp pointer
-            void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, int *comp0,
-                                                 CompartmentalModelMatrix *compStarAdd, 
-                                                 CompartmentalModelMatrix *compStarSub); 
+            /**< The four parameter overload of calculateGenericCompartment_CPU takes advantege of the 
+                 common calculation pattern for S,E,I, and R to provide a single function mapping starting and 
+                 transition values to the filan CompartmentalModelMatrix values. */
+            void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, /**< pointer to CompartmentalModelMatrix to be calculated.*/ 
+                                                 int *comp0, /**< pointer to integer array containing starting values for comp.*/
+                                                 CompartmentalModelMatrix *compStarAdd, /**< pointer to transition matrix into comp.*/
+                                                 CompartmentalModelMatrix *compStarSub /**< pointer to transition CompartmentalModelMatrix out of comp.*/
+                                                 );  
 
-            void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, int *comp0,
-                                                 CompartmentalModelMatrix *compStarAdd, 
-                                                 CompartmentalModelMatrix *compStarSub,
-                                                 int startLoc, int startTime);
+            /** The six parameter overload of calculateGenericCompartment_CPU takes advantege of the 
+                common calculation pattern for S,E,I, and R to provide a single function mapping starting and 
+                transition values to the filan CompartmentalModelMatrix values, assuming that only location startLoc and time points after startTime
+                need be considered. */
+            void calculateGenericCompartment_CPU(CompartmentalModelMatrix *comp, /**< pointer to CompartmentalModelMatrix to be calculated*/ 
+                                                 int *comp0,/**< pointer to integer array containing starting values for comp*/
+                                                 CompartmentalModelMatrix *compStarAdd, /**< pointer to transition matrix into comp*/ 
+                                                 CompartmentalModelMatrix *compStarSub,/**< pointer to transition CompartmentalModelMatrix out of comp*/
+                                                 int startLoc, /**< location to update*/
+                                                 int startTime /**< time after which update is needed*/
+                                                 );
 
-            void calculateGenericCompartment_OCL(int *comp, int *comp0,
-                                                 int *compStarAdd, int *compStarSub);
+            /** calculateGenericCompartment_OCL works identically to calculateGenericCompartment_CPU while using
+               calls to oclProvider to perform calculations in parallel.*/
+            void calculateGenericCompartment_OCL(int *comp, /**< pointer to CompartmentalModelMatrix to be calculated*/ 
+                                                 int *comp0,/**< pointer to integer array containing starting values for comp*/
+                                                 int *compStarAdd, /**< pointer to transition matrix into comp*/ 
+                                                 int *compStarSub /**< pointer to transition CompartmentalModelMatrix out of comp*/
+                                                 );
 
-            // Run main simulation 
-            int checkCompartmentBounds();
-            void printFCValues();
-            void setRandomSeed(unsigned int seedValue);
-            void simulationIter(bool verbose, bool debug);
-            void runSimulation(int nIterations,  bool verbose, bool debug);
-            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+            /** checkCompartmentBounds is a debug mode function which checks for impossible compartment 
+                values and prints errors accordingly. */
+            int checkCompartmentBounds(); 
+
+            /** printFCValues is a semi-depricated debug mode function which displays the current full conditional 
+                likelihood values of the model parameters.*/
+            void printFCValues(); 
+
+            /** setRandomSeed sets the seed used by the pseudorandom number generator provided by
+                RandomNumberProvider*/
+            void setRandomSeed(unsigned int seedValue); 
+              
+            /** simulationIter runs a single MCMC update given the current model state. Optionally,
+                verbose and debug level output is available.*/
+            void simulationIter(bool verbose, bool debug); 
+                                                  
+            /** runSimulation runs nIterations MCMC updates given the current 
+                model state. Optionally, verbose and debug level output is available.*/
+            void runSimulation(int nIterations,  bool verbose, bool debug);             
+
+            /** updateSamplingParameters moves the various slice sampling widths / Metropolis-Hastings tuning 
+                parameters up or down depending on the current acceptance rate, and re-sets the acceptance 
+                counters. 
+             */ 
+            void updateSamplingParameters(double desiredRatio, /**< desired MCMC acceptance ratio*/ 
+                                          double targetWidth, /**< target ratio tolerance (how close is close enough)*/ 
+                                          double proportionChange /**< proportion to change the sampling parameters by*/
+                                          );
+
+            /** setSamplingMode sets... the sampling mode. This part of the API is in flux. 
+             */
             void setSamplingMode(int mode);
-            int getSamplingMode();
 
+            /** getSamplingMode returns the current sampling mode as an integer */
+            int getSamplingMode();
 
 
             // Method: calculatePi
