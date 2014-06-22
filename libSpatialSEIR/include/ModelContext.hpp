@@ -69,20 +69,56 @@ namespace SpatialSEIR
             //Methods
             ModelContext();
             ~ModelContext(); 
-            void populate(InitData* _A0,
-                          covariateArgs* xArgs,
-                          covariateArgs* xPrsArgs,
-                          compartmentArgs* S_starArgs, 
-                          compartmentArgs* E_starArgs,
-                          compartmentArgs* I_starArgs,
-                          compartmentArgs* R_starArgs,
-                          distanceArgs* rawDistArgs,
-                          scaledDistanceArgs* scaledDistArgs,
-                          double* rho, double* beta, 
-                          double* p_ei, double* p_ir, double* betaPrs, 
-                          int* N, sliceParameters* sliceWidths,
-                          priorControl* priorInformation,
-                          modelConfiguration _config);
+            /**
+             * The populate method is the entry point to working with spatial SEIR models in libspatialSEIR. 
+             */
+            void populate(InitData* _A0, /**< A0 must be an instance of InitData, which 
+                                              contains the starting values of S0, E0, I0, R0*/
+                          covariateArgs* xArgs, /**< xArgs is an instance of covariateArgs which contains
+                                                     the dimensions of the fixed and time varying covariate 
+                                                     matrices driving the exposure process. 
+                                                    */
+                          covariateArgs* xPrsArgs, /**< xPrsArgs is an instance of covariateArgs which contains
+                                                     the dimensions of the fixed and time varying covariate 
+                                                     matrices driving the reinfection process. 
+                                                    */
+                          compartmentArgs* S_starArgs, /**< S_starArgs is an instance of compartmentArgs
+                                                            containing the dimensions and data for S_star,
+                                                            along with the steadyStateConstraintPrecision
+                                                            parameter.*/ 
+                          compartmentArgs* E_starArgs, /**< E_starArgs is an instance of compartmentArgs
+                                                            containing the dimensions and data for E_star,
+                                                            along with the steadyStateConstraintPrecision
+                                                            parameter.*/ 
+                          compartmentArgs* I_starArgs, /**< I_starArgs is an instance of compartmentArgs
+                                                            containing the dimensions and data for I_star,
+                                                            along with the steadyStateConstraintPrecision
+                                                            parameter.*/ 
+                          compartmentArgs* R_starArgs,/**< R_starArgs is an instance of compartmentArgs
+                                                            containing the dimensions and data for R_star,
+                                                            along with the steadyStateConstraintPrecision
+                                                            parameter.*/ 
+                          distanceArgs* rawDistArgs, /**< rawDistAgs is the distanceArgs struct 
+                                                          containing the data and dimension of the unscaled
+                                                          distance matrix. 
+                                                        */
+                          scaledDistanceArgs* scaledDistArgs, /**< scaledDistArgs is the scaledDistanceArgs struct 
+                                                                   containing the data and dimension of the unscaled
+                                                                   distance matrix. 
+                                                               */
+                          double* rho, /**< rho gives the starting value of the spatial dependence parameter*/
+                          double* beta,/**< beta gives the starting vector of regression parameters driving the exposure process.*/ 
+                          double* p_ei,/**< p_ei is the starting value of the exposed to infectious transition probability. */
+                          double* p_ir,/**< p_ir is the starting value of the infectious to removed/recovered transition probability.*/ 
+                          double* betaPrs,/**< betaPrs is the starting vector of regression parameters driving the reinfection process.*/ 
+                          int* N,/**< N is the matrix of population sizes, corresponding in dimension to the CompartmentalModelMatrix instances.*/ 
+                          sliceParameters* sliceWidths, /**< sliceWidths is an instance of sliceParameters which gives the slice sampling widths/
+                                                            Metropolis-Hastings tuning parameters for the various FullConditional distributions.*/
+                          priorControl* priorInformation, /**< The priorControl struct gives the prior precisions for the regression parameters, 
+                                                             and the prior alpha and beta parameters for the p_ei and p_ir distributions.*/
+                          modelConfiguration _config /**< The modelConfiguration struct gives the reinfection mode (SEIRS, SEIR, SSEIR) and 
+                                                          the MCMC sampling mode. MCMC sampling modes are under very active development. */
+                              );
 
             // Method: calculateS
             // Accesses: A0, S_star, E_star
