@@ -303,95 +303,169 @@ namespace SpatialSEIR
             /** calculateP_RS_CPU calculates the reinfection probability p_rs.*/
             void calculateP_RS_CPU();
 
-            // Summary Functions:
+            /** Calculates the sum of all components of S.*/
             int totalS();
+            /** Calculates the sum of all components of E.*/
             int totalE();
+            /** Calculates the sum of all components of I.*/
             int totalI();
+            /** Calculates the sum of all components of R.*/
             int totalR();
 
+            /** Calculates the sum of all components of S.*/
             int totalS(int tpt);
+            /** Calculates the sum of all components of E.*/
             int totalE(int tpt);
+            /** Calculates the sum of all components of I.*/
             int totalI(int tpt);
+            /** Calculates the sum of all components of R.*/
             int totalR(int tpt);
 
+            /** Calculates the sum of all components of S_star.*/
             int totalS_star();
+            /** Calculates the sum of all components of E_star.*/
             int totalE_star();
+            /** Calculates the sum of all components of I_star.*/
             int totalI_star();
+            /** Calculates the sum of all components of R_star.*/
             int totalR_star();
 
+            /** Calculates the sum of all components of S_star.*/
             int totalS_star(int tpt);
+            /** Calculates the sum of all components of E_star.*/
             int totalE_star(int tpt);
+            /** Calculates the sum of all components of I_star.*/
             int totalI_star(int tpt);
+            /** Calculates the sum of all components of R_star.*/
             int totalR_star(int tpt);
 
+            /** Calculates the average of all components of p_se.*/
             double avgP_SE();
+            /** Calculates the average of all components of p_rs.*/
             double avgP_RS();
-
+            /** Calculates the average of all components of p_se for a particular time point..*/
             double avgP_SE(int tpt);
 
+            /** Estimates the average basic reproductive number across all time periods and spatial locations.*/
             double estimateR0();
+            /** Estimates the basic reproductive number for time point t*/
             double estimateR0(int t);
+            /** Calculates the next generation matrix used */
             double* calculateG(int t);
 
 
             //Logic provider and utility classes
+            /** pointer to an IOProvider instance which writes selected sampler output to a comma delimited text file.*/
             IOProvider *fileProvider;
+            /** pointer to a RandomNumberProvider instance which provides random numbers from various distributions as well
+                implementations of several probability density functions.*/
             RandomNumberProvider *random;
+            /** pointer to an instance of OCLProvider which supplies an interface for selecting active OpenCL devices as well
+                as parallelized computations required for various FullConditional distributions.*/
             OCLProvider *oclProvider; 
+            /** Pointer to FullConditional distribution for the initial suscptible population.*/
             FC_S0 *S0_fc;
+            /** Pointer to FullConditional distribution for the initial exposed population - not used*/
             FC_E0 *E0_fc;
+            /** Pointer to FullConditional distribution for the initial infectious population*/
             FC_I0 *I0_fc;
+            /** Pointer to FullConditional distribution for the initial recovered population - not used*/
             FC_R0 *R0_fc;
+            /** Pointer to FullConditional distribution for the transition matrix S_star*/
             FC_S_Star *S_star_fc;
+            /** Pointer to FullConditional distribution for the transition matrix E_star*/
             FC_E_Star *E_star_fc;
+            /** Pointer to FullConditional distribution for the transition matrix R_star*/
             FC_R_Star *R_star_fc;
+            /** Pointer to FullConditional distribution for the regression parameters beta*/
             FC_Beta *beta_fc;
+            /** Pointer to FullConditional distribution for the spatial depenence parameter rho*/
             FC_Rho *rho_fc;
+            /** Pointer to FullConditional distribution for the regression parameters betaP_RS*/
             FC_Beta_P_RS *betaPrs_fc;
+            /** Pointer to FullConditional distribution for the transition probability p_ei*/
             FC_P_EI *p_ei_fc;
+            /** Pointer to FullConditional distribution for the transition probability p_ir*/
             FC_P_IR *p_ir_fc;
 
             //Data
+            /** Pointer to the CompartmentalModelMatrix data structure storing the S compartment.*/ 
             CompartmentalModelMatrix* S;
+            /** Pointer to the CompartmentalModelMatrix data structure storing the E compartment.*/ 
             CompartmentalModelMatrix* E;
+            /** Pointer to the CompartmentalModelMatrix data structure storing the I compartment.*/ 
             CompartmentalModelMatrix* I;
+            /** Pointer to the CompartmentalModelMatrix data structure storing the R compartment.*/ 
             CompartmentalModelMatrix* R;
+            /** Pointer to the CompartmentalModelMatrix data structure storing the S_star compartment.*/ 
             CompartmentalModelMatrix* S_star;
+            /** Pointer to the CompartmentalModelMatrix data structure storing the E_star compartment.*/ 
             CompartmentalModelMatrix* E_star;
+            /** Pointer to the CompartmentalModelMatrix data structure storing the I_star compartment.*/ 
             CompartmentalModelMatrix* I_star;
+            /** Pointer to the CompartmentalModelMatrix data structure storing the R_star compartment.*/ 
             CompartmentalModelMatrix* R_star;
+            /** Pointer to InitData instance containing the data for the initial compartment sizes.*/ 
             InitData* A0;
+            /** Pointer to CovariateMatrix instance containing covariate informating driving the exposure process.*/
             CovariateMatrix* X;
+            /** Pointer to CovariateMatrix instance containing covariate informating driving the reinfection process.*/
             CovariateMatrix* X_pRS;
+            /** Pointer to the DistanceMatrix instance containing the unscaled distance data. */
             DistanceMatrix* rawDistMat;
+            /** Pointer to the DistanceMatrix scaledDistMat containing the unscaled distance data. */
             DistanceMatrix* scaledDistMat;
+            /** Extra compartment storage for caching integer computations*/
             CompartmentalModelMatrix* tmpContainer;
+            /** Pointer to modelConfiguration instance.*/
             modelConfiguration* config;
 
+            /** Storage for the regression parameters beta*/
             double* beta;
+            /** Storage for the regression parameters betaP_RS*/
             double* betaPrs;
+            /** Storage for the spatial dependence parameter rho*/
             double* rho;
+            /** Storage for the external infection parameters gamma (DEPRICATED)*/
             double* gamma;
+            /** Storage for the linear predictor, eta*/
             double* eta;
+            /** Storage for the exposure probability matrix, p_se*/
             double* p_se;
+            /** Storage for cacheable portions of the p_se calculation*/
             double* p_se_components;
+            /** ComparmentalModelMatrix sized cache of doubles. */
             double* compartmentCache;
+            /** Transition probability p_ei*/
             double* p_ei;
+            /** Transition probability p_ir*/
             double* p_ir;
+            /** Transition probability p_rs*/
             double* p_rs;
+            /** Matrix of population sizes */
             int* N;
+            /** Indicator that ModelContext instance is ready for use.*/
             int* isPopulated;
+            /** Indicator that ModelContext is operating in the single location special case.*/
             int* singleLocation;
+            /** Number of MCMC samples so far.*/
             int* numIterations;
 
-
+            /** Indicator: use OpenCL for FC_S0?*/
             int* S0_OCL;
+            /** Indicator: use OpenCL for FC_I0?*/
             int* I0_OCL;
+            /** Indicator: use OpenCL for FC_S_Star?*/
             int* S_star_OCL;
+            /** Indicator: use OpenCL for FC_E_Star?*/
             int* E_star_OCL;
+            /** Indicator: use OpenCL for FC_R_Star?*/
             int* R_star_OCL;
+            /** Indicator: use OpenCL for FC_Rho?*/
             int* rho_OCL;
+            /** Indicator: use OpenCL for FC_Beta?*/
             int* beta_OCL;
+            /** Indicator: use OpenCL for FC_Beta_P_RS?*/
             int* beta_P_RS_OCL;
     };
 }
