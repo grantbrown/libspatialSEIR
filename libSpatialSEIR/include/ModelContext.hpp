@@ -278,17 +278,29 @@ namespace SpatialSEIR
             int getSamplingMode();
 
 
-            // Method: calculatePi
-            // Accesses: beta, I, N, distMat, rho
-            // Updates: p_se
+
+
+
+            /** cacheP_SE_Calculation places the pre-requisites for 
+             * calculating p_se in p_se_components. This is useful 
+             * when partial updates can be performed by calculateP_SE_CPU(int startLoc, int startTime)
+             */
             void cacheP_SE_Calculation();
+
+            /** The zero parameter overload of calculateP_SE_CPU calculates the exposure probability p_se. 
+             */
             void calculateP_SE_CPU();
+
+            /** The two parameter overload of calculateP_SE_CPU calculates the exposure probability starting 
+             * at startLoc and startTime. cacheP_SE_Calculation must be called first.
+             */
             void calculateP_SE_CPU(int startLoc, int startTime);
+
+            /** calculateP_SE_OCL works identically to calculateP_SE_CPU, while making calls to oclProvider
+                to perform calculations in parallel.*/
             void calculateP_SE_OCL();
 
-            // Method: calculateP_RS
-            // Accesses: betaPrs, R,S,S_star,R_star
-            // Updates: p_rs
+            /** calculateP_RS_CPU calculates the reinfection probability p_rs.*/
             void calculateP_RS_CPU();
 
             // Summary Functions:
