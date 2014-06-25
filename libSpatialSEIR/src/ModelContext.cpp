@@ -57,6 +57,7 @@ namespace SpatialSEIR
         rho_OCL = new int; *rho_OCL =0;
         beta_OCL = new int; *beta_OCL = 0;
         beta_P_RS_OCL = new int; *beta_P_RS_OCL = 0;
+        model = new std::vector<FullConditional*>;
 
     }
 
@@ -333,6 +334,11 @@ namespace SpatialSEIR
         this -> calculateP_SE_CPU();
 
         *isPopulated = 1;
+    }
+
+    void ModelContext::buildModel()
+    {
+        // build the model here. 
     }
 
     int ModelContext::checkCompartmentBounds()
@@ -1081,6 +1087,7 @@ namespace SpatialSEIR
         delete rho_OCL;
         delete beta_OCL;
         delete beta_P_RS_OCL;
+        delete[] model;
     }
 }
 

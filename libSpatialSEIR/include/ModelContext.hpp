@@ -15,6 +15,7 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    class FullConditional;
     class FC_S0;
     class FC_E0;
     class FC_I0;
@@ -120,6 +121,10 @@ namespace SpatialSEIR
                                                           the MCMC sampling mode. MCMC sampling modes are under very active development. */
                               );
 
+            /*buildModel is called at the end of the populate function to fill the ModelContext.model vector with the required 
+              full conditional distributions.*/
+            void buildModel();
+            
             /** The zero parameter overload of calculateS_CPU calculates the S compartment from A0, S_star, and E_star.*/
             void calculateS_CPU(); 
 
@@ -419,6 +424,10 @@ namespace SpatialSEIR
             CompartmentalModelMatrix* tmpContainer;
             /** Pointer to modelConfiguration instance.*/
             modelConfiguration* config;
+            /** A model in libspatialSEIR is a collection of full conditional distributions which must be sampled from. This collection 
+             * is assembled during ModelContext.populate based on the reinfection mode, data model (not yet implemented), and the detection
+             * of special cases such as the single location case. */
+            std::vector<FullConditional*>* model; 
 
             /** Storage for the regression parameters beta*/
             double* beta;
