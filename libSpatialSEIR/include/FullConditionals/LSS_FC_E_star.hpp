@@ -1,0 +1,67 @@
+#include <FullConditional.hpp>
+
+#ifndef FULL_CONDITIONAL_E_STAR_INC
+#define FULL_CONDITIONAL_E_STAR_INC
+
+namespace SpatialSEIR
+{
+    using std::cout;
+    using std::endl;
+
+    class ModelContext;
+    class CompartmentalModelMatrix;
+    class CovariateMatrix;
+    class OCLProvider;
+
+    /**
+     * FC_E_Star gives the full conditional distribution of E_star, the 
+     * transition matrix capturing individuals moving from the susceptible
+     * category to the exposed category. 
+     */
+    class FC_E_Star : public CompartmentFullConditional
+    {
+        public:
+            FC_E_Star(ModelContext *_context,
+                      CompartmentalModelMatrix *_E_star, 
+                      CompartmentalModelMatrix *_E, 
+                      CompartmentalModelMatrix *_S, 
+                      CompartmentalModelMatrix *_I_star,
+                      CovariateMatrix *_X,
+                      InitData *_A0,
+                      double *_p_se,
+                      double *_p_ei,
+                      double *_rho,
+                      double *_beta,
+                      double _steadyStateConstraintPrecision,
+                      double sliceWidth);
+            ~FC_E_Star();
+
+            virtual int evalCPU(int startLoc, int startTime);
+            virtual int evalCPU();
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual long double getValue();
+            virtual void setValue(long double val);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments_OCL();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
+            virtual void printDebugInfo(int loc, int tpt);
+            ModelContext **context;
+            CompartmentalModelMatrix **E_star; 
+            CompartmentalModelMatrix **E; 
+            CompartmentalModelMatrix **S; 
+            CompartmentalModelMatrix **I_star;
+            CovariateMatrix **X;
+            InitData **A0;
+            double **p_se;
+            double **p_ei;
+            double **rho;
+            double **beta;
+            long double* value;
+            double* steadyStateConstraintPrecision;
+    };
+
+}
+
+#endif

@@ -1,0 +1,69 @@
+#include <FullConditional.hpp>
+
+#ifndef FULL_CONDITIONAL_R_STAR_INC
+#define FULL_CONDITIONAL_R_STAR_INC
+
+namespace SpatialSEIR
+{
+    using std::cout;
+    using std::endl;
+
+    class ModelContext;
+    class CompartmentalModelMatrix;
+    class CovariateMatrix;
+    class OCLProvider;
+
+    /**
+     * FC_R_Star gives the full conditional distribution of R_star, the 
+     * transition matrix capturing individuals moving from the infectious
+     * category to the recovered/removed category. 
+     */
+    class FC_R_Star : public CompartmentFullConditional
+    {
+        public:
+            FC_R_Star(ModelContext *_context,
+                      CompartmentalModelMatrix *_R_star,
+                      CompartmentalModelMatrix *_R,
+                      CompartmentalModelMatrix *_I,
+                      CompartmentalModelMatrix *_S_star,
+                      CompartmentalModelMatrix *_E_star,
+                      CompartmentalModelMatrix *_I_star,
+                      CompartmentalModelMatrix *_S,
+                      InitData *_A0,
+                      double *_p_rs,
+                      double *_p_ir,
+                      double *_p_se,
+                      double _steadyStateConstraintPrecision,
+                      double sliceWidth);
+            ~FC_R_Star();
+
+            virtual int evalCPU(int startLoc, int startTime);
+            virtual int evalCPU();
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual long double getValue();
+            virtual void setValue(long double val);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments_OCL();
+            virtual int calculateRelevantCompartments(int startLoc, int startTime);
+            virtual void printDebugInfo(int loc, int tpt);
+            ModelContext **context;
+            CompartmentalModelMatrix **R_star;
+            CompartmentalModelMatrix **R;
+            CompartmentalModelMatrix **I;
+            CompartmentalModelMatrix **S_star;
+            CompartmentalModelMatrix **E_star;
+            CompartmentalModelMatrix **I_star;
+            CompartmentalModelMatrix **S;
+            InitData **A0;
+            double **p_rs;
+            double **p_ir;
+            double **p_se;
+            long double* value;
+            double* steadyStateConstraintPrecision;
+    };
+
+}
+
+#endif

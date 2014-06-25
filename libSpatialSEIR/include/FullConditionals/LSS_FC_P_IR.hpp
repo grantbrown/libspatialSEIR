@@ -1,0 +1,55 @@
+#include <FullConditional.hpp>
+
+#ifndef FULL_CONDITIONAL_P_IR_INC
+#define FULL_CONDITIONAL_P_IR_INC
+
+namespace SpatialSEIR
+{
+    using std::cout;
+    using std::endl;
+
+    class ModelContext;
+    class CompartmentalModelMatrix;
+    class CovariateMatrix;
+    class OCLProvider;
+
+    /**
+     * FC_P_IR gives the full conditional distribution of p_ir, the 
+     * probability that an infectious individual recovers/is removed at 
+     * a given time point.
+     */
+    class FC_P_IR : public ParameterFullConditional
+    {
+        
+        public:
+            FC_P_IR(ModelContext *_context,
+                    CompartmentalModelMatrix *_R_star,
+                    CompartmentalModelMatrix *_I, 
+                    InitData *_A0,
+                    double *_p_ir,
+                    double _priorAlpha,
+                    double _priorBeta);
+            ~FC_P_IR();
+            virtual int evalCPU();
+            virtual int evalOCL();
+            virtual int sampleCPU();
+            virtual int sampleOCL();
+            virtual long double getValue();
+            virtual void setValue(long double val);
+            virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments_OCL();
+
+            ModelContext **context;
+            CompartmentalModelMatrix **R_star;
+            CompartmentalModelMatrix **I;
+            InitData **A0;
+            double **p_ir;
+            long double* value;
+            double* priorAlpha;
+            double* priorBeta;
+    };
+
+
+}
+
+#endif
