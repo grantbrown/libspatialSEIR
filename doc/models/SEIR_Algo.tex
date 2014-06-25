@@ -92,6 +92,7 @@ Example code for each of these models is included in the \textit{scripts} direct
         Define the following components for each $s_i$ and $t_j$: \mbreak
 
         \begin{itemize}
+            \item {$y_{ij}$} is the observed data.
             \item {$\bf{N_{ij}}$} is the population size
             \item {$\bf{S_{ij}}$} is the count of susceptible individuals
             \item {$\bf{E_{ij}}$} is the count of exposed individuals
@@ -120,18 +121,30 @@ Example code for each of these models is included in the \textit{scripts} direct
 
     While models of this form are often fit using deterministic systems of differential equations, libspatialSEIR uses
     a heirarchical Bayesian framework in order to adequately capture the inherent variability in the model parameters.
-    Thus, we begin by specifying the following likelihood components:\\
+    An obvious first step is to specify the data model. 
 
+    \vspace{0.15in}
+
+    \begin{center}
+        $ \{y_{ij}\ | I^*_{ij}\} \sim\ (indep.)\ g(I^*_{ij}, \Theta)  $
+    \end{center}
+
+    Currently, libspatialSEIR only supports the identity data model, in which: 
+    \begin{center}
+        $g(I^*_{ij}) = I^*_{ij}$  
+    \end{center}
+    with probability one. This is under active development. \\
+
+    \vspace{0.15in}
+
+    Next, we formally specify the process model. 
     \vspace{0.15in}
 
         \noi
 
         $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\mbreak
-
         $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \sim (indep.)\ binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
-
         $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \sim\ (indep.)\ binom(E_{ij}, \pi^{(EI)})$\mbreak
-
         $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\mbreak
 
 
@@ -286,6 +299,8 @@ Bringing together the aforementioned spatio-temporal structures we can define th
 deterministic relationships among parameters, and thus construct the requisit posterior distribution. 
 
 \subsection{Summary of Distribution Components}
+\noi $\{y_{ij} | I^*_{ij}\} \sim\ (indep.)\ g(I^*_{ij}, \Theta)$\\
+
 \noi $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\\
 
 \noi $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \sim (indep.)\ binom(S_{ij}, \pi^{SE}_{ij})$ \\
@@ -336,7 +351,7 @@ deterministic relationships among parameters, and thus construct the requisit po
 \displaystyle
 log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[ 
     \sum_{i=1}^n \bigg\{ \sum_{j=1}^T
-        \Big\{
+        \Big\{ ln(g(y_{ij}|I^*_{ij})) + \\ 
             (S^*_{ij}log(\pi_j^{(RS)}) + (R_{ij} - S^*_{ij})log(1-\pi_j^{(RS)})) \\
             + (E^*_{ij}log(\pi_{ij}^{(SE)})) + (S_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)}) \\
             + (I^*_{ij}log(\pi^{(EI)})) + (E_{ij} - I^*_{ij})log(1-\pi^{(EI)}) \\
@@ -360,7 +375,8 @@ gives the following simplified posterior distribution:
 log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \\
 \Bigg[ \sum_{i=1}^n \bigg\{ \sum_{j=1}^T
         \Big\{
-            log\bigg(\dbinom{R_{ij}}{S^*_{ij}}\bigg) + (S^*_{ij}log(\pi_j^{(RS)}) + (R_{ij} - S^*_{ij})log(1-\pi_j^{(RS)})) \\
+            ln(g(y_{ij}|I^*_{ij})) \\ 
+            + log\bigg(\dbinom{R_{ij}}{S^*_{ij}}\bigg) + (S^*_{ij}log(\pi_j^{(RS)}) + (R_{ij} - S^*_{ij})log(1-\pi_j^{(RS)})) \\
             + log\bigg(\dbinom{S_{ij}}{E^*_{ij}}\bigg) + (E^*_{ij}log(\pi_{ij}^{(SE)})) + (S_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)}) \\
             + log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg) + (I^*_{ij}log(\pi^{(EI)})) + (E_{ij} - I^*_{ij})log(1-\pi^{(EI)}) \\
             + (log\bigg(\dbinom{I_{ij}}{R^*_{ij}}\bigg) + R^*_{ij}log(\pi^{(IR)})) + (I_{ij} - R^*_{ij})log(1-\pi^{(IR)}) \Big\}\bigg\} \\
@@ -387,7 +403,8 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
             +\sum_{i=1}^n \sum_{j=1}^T\bigg\{
             log\bigg(\dbinom{S_{ij}}{E^*_{ij}}\bigg) + (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\bigg\} \\
             %% I Piece
-            + \sum_{i=1}^n\sum_{j=1}^T\bigg\{ log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg)\bigg\} + log(\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\} 
+            + \sum_{i=1}^n\sum_{j=1}^T\bigg\{log(g(y_{ij}|I^*_{ij})) + log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg)\bigg\} 
+            + log(\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\} \\
             + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\\
             %% R Piece
             + \sum_{i=1}^n\sum_{j=1}^T\bigg\{ log\bigg(\dbinom{I_{ij}}{R^*_{ij}}\bigg)\bigg\} + log(\pi^{(IR)})\sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\} + 
@@ -431,6 +448,19 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
                 + log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg) + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij}\}\\
     \end{multline}
     \end{center}
+
+    \item{Full Conditional for $I^*$}
+%\subsubsection{$p(E^*|.)$}
+    \begin{center}
+    \begin{multline}
+        \displaystyle
+        log(p(I^*|.))\propto \sum_{i=1}^n \sum_{j=1}^T\bigg\{log(g(y_{ij}|I^*_{ij})) + log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg)\\
+                + (I^*_{ij}log(\pi^{(EI)})) + (f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})log(1-\pi^{(EI)})\bigg\} \\
+                + log\bigg(\dbinom{f_I(I^*, R^*, A_0)_{ij}}{R^*_{ij}}\bigg) + log(1-\pi^{(IR)})\sum_{i=1}^n\sum_{j=1}^T\{f_I(I^*, R^*, A_0)_{ij}\}\\
+    \end{multline}
+    \end{center}
+
+
 
     \item{Full Conditional for $R^*$}
 %\subsubsection{$p(R^*|.)$}
