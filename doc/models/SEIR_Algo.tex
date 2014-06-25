@@ -432,9 +432,9 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
         \begin{multline}
         \displaystyle
         log(p(S^*|.))\propto 
-            \sum_{j=1}^T\sum_{i=1}^n\Big\{log\bigg(\dbinom{R_{ij}}{S^*_{ij}}\bigg) + log(\pi_j^{(RS)})\{S^*_{ij}\} + 
+            \sum_{j=1}^T\sum_{i=1}^n\Big\{log\bigg(\dbinom{f_R(R^*, S^*, A_0)_{ij}}{S^*_{ij}}\bigg) \\ + log(\pi_j^{(RS)})\{S^*_{ij}\} + 
                 log(1-\pi_j^{(RS)})\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\\ 
-            + log\bigg(\dbinom{S_{ij}}{E^*_{ij}}\bigg) + f_S(S^*, E^*, A_0)_{ij}log(1-\pi_{ij}^{(SE)})\Big\}
+            + log\bigg(\dbinom{f_S(S^*, E^*, A_0)_{ij}}{E^*_{ij}}\bigg) + f_S(S^*, E^*, A_0)_{ij}log(1-\pi_{ij}^{(SE)})\Big\}
         \end{multline}
     \end{center}
 
@@ -443,9 +443,9 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
     \begin{center}
     \begin{multline}
         \displaystyle
-        log(p(E^*|.))\propto \sum_{i=1}^n \sum_{j=1}^T\bigg\{log\bigg(\dbinom{S_{ij}}{E^*_{ij}}\bigg) + 
-                (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\bigg\} \\
-                + log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg) + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij}\}\\
+        log(p(E^*|.))\propto \sum_{i=1}^n \sum_{j=1}^T\bigg\{log\bigg(\dbinom{f_S(S^*, E^*, A_0)_{ij}}{E^*_{ij}}\bigg) \\ 
+                + (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\bigg\} \\
+                + log\bigg(\dbinom{f_E(E^*, I^*, A_0)_{ij}}{I^*_{ij}}\bigg) + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{f_E(E^*, I^*, A_0)_{ij}\}\\
     \end{multline}
     \end{center}
 
@@ -454,7 +454,7 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
     \begin{center}
     \begin{multline}
         \displaystyle
-        log(p(I^*|.))\propto \sum_{i=1}^n \sum_{j=1}^T\bigg\{log(g(y_{ij}|I^*_{ij})) + log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg)\\
+        log(p(I^*|.))\propto \sum_{i=1}^n \sum_{j=1}^T\bigg\{log(g(y_{ij}|I^*_{ij})) + log\bigg(\dbinom{f_E(E^*, I^*, A_0)_{ij}}{I^*_{ij}}\bigg)\\
                 + (I^*_{ij}log(\pi^{(EI)})) + (f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})log(1-\pi^{(EI)})\bigg\} \\
                 + log\bigg(\dbinom{f_I(I^*, R^*, A_0)_{ij}}{R^*_{ij}}\bigg) + log(1-\pi^{(IR)})\sum_{i=1}^n\sum_{j=1}^T\{f_I(I^*, R^*, A_0)_{ij}\}\\
     \end{multline}
@@ -467,9 +467,9 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
     \begin{center}
     \begin{multline}
         \displaystyle
-        log(p(R^*|.)) \propto \sum_{i=1}^n\sum_{j=1}^T\bigg\{log\bigg(\dbinom{I_{ij}}{R^*_{ij}}\bigg) + log(\pi^{(IR)})\{R^*_{ij}\}
+        log(p(R^*|.)) \propto \sum_{i=1}^n\sum_{j=1}^T\bigg\{log\bigg(\dbinom{f_I(I^*, R^*, A_0)_{ij}}{R^*_{ij}}\bigg)\\ + log(\pi^{(IR)})\{R^*_{ij}\}
             + log(1-\pi^{IR})\{f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\\
-            + log\bigg(\dbinom{R_{ij}}{S^*_{ij}}\bigg) + log(1-\pi_j^{(RS)})\{f_R(R^*, S^*, A_0)_{ij}\}\\ 
+            + log\bigg(\dbinom{f_R(R^*, S^*, A_0)_{ij}}{S^*_{ij}}\bigg) + log(1-\pi_j^{(RS)})\{f_R(R^*, S^*, A_0)_{ij}\}\\ 
             + log(\pi_{ij}^{(SE)})\{E^*_{ij}\} + log(1-\pi_{ij}^{SE})\{f_S(S^*, E^*, A_0)_{ij} - E^*_{ij}\}\bigg\}\\ 
     \end{multline}
     \end{center}
