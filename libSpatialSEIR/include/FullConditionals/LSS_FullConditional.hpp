@@ -10,6 +10,30 @@
 #ifndef FULL_CONDITIONAL_INC
 #define FULL_CONDITIONAL_INC
 
+#include<LSS_S0_FC.hpp>
+#include<LSS_E0_FC.hpp>
+#include<LSS_I0_FC.hpp>
+#include<LSS_R0_FC.hpp>
+#include<LSS_S_star_FC.hpp>
+#include<LSS_E_star_FC.hpp>
+#include<LSS_R_star_FC.hpp>
+#include<LSS_Beta_FC.hpp>
+#include<LSS_Beta_P_RS_FC.hpp>
+#include<LSS_Rho_FC.hpp>
+#include<LSS_Gamma_FC.hpp>
+#include<LSS_P_EI_FC.hpp>
+#include<LSS_P_IR_FC.hpp>
+
+
+
+
+
+
+
+
+
+
+
 namespace SpatialSEIR
 {
     using std::cout;
