@@ -29,7 +29,6 @@ namespace SpatialSEIR
     class FC_Beta_P_RS;
     class FC_Rho;
     class InitData;
-    class TestClass;
 
     class CompartmentalModelMatrix;
     class CovariateMatrix;

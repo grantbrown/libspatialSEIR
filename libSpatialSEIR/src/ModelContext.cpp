@@ -333,12 +333,58 @@ namespace SpatialSEIR
         this -> calculateP_RS_CPU();
         this -> calculateP_SE_CPU();
 
+        this -> buildModel();
         *isPopulated = 1;
     }
 
     void ModelContext::buildModel()
     {
         // build the model here. 
+        if ((config -> reinfectionMode) == 1)
+        {
+            model -> push_back(S0_fc);
+            model -> push_back(I0_fc);
+            model -> push_back(S_star_fc);
+            model -> push_back(E_star_fc);
+            model -> push_back(R_star_fc);
+            model -> push_back(beta_fc);
+            model -> push_back(betaPrs_fc);
+            if (!(*singleLocation))
+            {
+                model -> push_back(rho_fc);
+            }
+            model -> push_back(p_ei_fc);
+            model -> push_back(p_ir_fc);
+        }
+        else if (config -> reinfectionMode == 2)
+        {
+            model -> push_back(S0_fc);
+            model -> push_back(I0_fc);
+            model -> push_back(S_star_fc);
+            model -> push_back(E_star_fc);
+            model -> push_back(R_star_fc);
+            model -> push_back(beta_fc);
+            if (!(*singleLocation))
+            {
+                model -> push_back(rho_fc);
+            }
+            model -> push_back(p_ei_fc);
+            model -> push_back(p_ir_fc);
+        }
+        else if (config -> reinfectionMode  == 3)
+        {
+            model -> push_back(S0_fc);
+            model -> push_back(I0_fc);
+            model -> push_back(E_star_fc);
+            model -> push_back(R_star_fc);
+            model -> push_back(beta_fc);
+            if (!(*singleLocation))
+            {
+                model -> push_back(rho_fc);
+            }
+            model -> push_back(p_ei_fc);
+            model -> push_back(p_ir_fc);
+        } 
     }
 
     int ModelContext::checkCompartmentBounds()
@@ -496,8 +542,6 @@ namespace SpatialSEIR
             std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
-        bool SampleS_star = (random -> uniform() < 0.5);
-
         if (verbose){std::cout << "Sampling S0\n";}
         if (!(*S0_OCL)){S0_fc -> sampleCPU();}
         else {S0_fc -> sampleOCL();}
@@ -518,23 +562,18 @@ namespace SpatialSEIR
         else {R0_fc -> sampleOCL();}
         */ 
 
-        if (SampleS_star)
-        {
         if ((config -> reinfectionMode) <= 2)
         {
             if (verbose){std::cout << "Sampling S_star\n";}
             if (!(*S_star_OCL)){S_star_fc -> sampleCPU();}
             else {S_star_fc -> sampleOCL();}
         }
-        }
-        else
-        {
+
         if ((config -> reinfectionMode) == 1)
         {
             if (verbose){std::cout << "Sampling betaPrs\n";}
             if (!(*beta_P_RS_OCL)){betaPrs_fc -> sampleCPU();}
             else {betaPrs_fc -> sampleOCL();}
-        }
         }
 
         if (verbose){std::cout << "Sampling E_star\n";}
@@ -545,13 +584,10 @@ namespace SpatialSEIR
         if (!(*R_star_OCL)){R_star_fc -> sampleCPU();}
         else {R_star_fc -> sampleOCL();}
 
-
         if (verbose){std::cout << "Sampling beta\n";}
         if (!(*beta_OCL)){beta_fc -> sampleCPU();}
         else {beta_fc -> sampleOCL();}
-
-        
-
+ 
         if (verbose){std::cout << "Sampling p_ei\n";}
         p_ei_fc -> sampleCPU();
 
