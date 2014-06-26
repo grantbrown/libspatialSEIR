@@ -215,8 +215,8 @@ sliceWidths = c(0.26,  # S_star
                 0.15, # I_star
                 0.22, # S0
                 0.24, # I0
-                0.8, # beta
-                0.2, # betaPrs
+                0.001, # beta
+                0.001, # betaPrs
                 0.015# rho
                 )
 
@@ -303,6 +303,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 
 
 #runSimulation(500000,1000)
+runSimulation(1000,25, printAR = TRUE)
 runSimulation(1000,50, printAR = TRUE)
 runSimulation(10000,100, printAR = TRUE)
 #runSimulation(100000,1000, printAR = TRUE)

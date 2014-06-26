@@ -4,5 +4,6 @@ export(spatialSEIRInterface)
 export(spatialSEIRModel)
 export(generateCompartmentProposal)
 export(generateSerialSEIRProposal)
+export(plotCompartment)
 
 
