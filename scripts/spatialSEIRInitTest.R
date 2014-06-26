@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(900,20)
+    control_code(200,10)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -97,13 +97,13 @@ outFileName = "./chainOutput_sim.txt"
 iterationStride = 10
 
 # S,E,R,S0,I0,beta,betaPrs,rho
-sliceWidths = c(0.26,  # S_star
-                0.1,  # E_star
-                0.15, # I_star
-                0.22, # S0
-                0.24, # I0
-                0.1, # beta
-                0.1, # betaPrs
+sliceWidths = c(0.13,  # S_star
+                0.123,  # E_star
+                0.123, # I_star
+                0.1818, # S0
+                0.1848, # I0
+                0.007, # beta
+                0.0133, # betaPrs
                 0.015# rho
                 )
 
@@ -126,7 +126,7 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
     stop("Invalid Compartment Values")
 }
 
-verbose = TRUE
+verbose = FALSE
 debug = FALSE
 
 priorAlpha_pEI = 1000;
@@ -180,14 +180,39 @@ res = spatialSEIRModel(compMatDim,
                       reinfectionMode)
 
 # Use OpenCL:
+res$samplingMode = 2
 res$oclPreferences = res$oclPreferences + 1 
 
 res$setRandomSeed(123123)
+
+
+Norder = order(N[1,])
+itrPrint = function(x, wd=8)
+{
+    formatC(x, width = wd, format = "d", flag = "0")
+}
+
+makePlot = function(imgNo)
+{
+    png(filename = paste("./imgOut/", itrPrint(imgNo), ".png", sep =""), 
+        width = 800, 
+        height = 600) 
+        
+        plotTwoCompartments((I/N)[,Norder], 
+                            (res$I/N)[,Norder], 
+                            main1 = "True Infectious Proportion", 
+                            main2 = "Fitted Infectious Proportion", zlim = c(0, max(I/N)*1.1))
+    dev.off()
+}
+
+imgNo = 0
 runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0.05, proportionChange = 0.01, printAR = FALSE)
 {
     tryCatch({
         for (i in 1:(N/batchSize))
         {
+            imgNo <<- imgNo + 1 
+            makePlot(imgNo)
             res$simulate(batchSize)
             if (printAR)
             {
@@ -197,6 +222,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
             cat(i*batchSize,"\n")
+
         }}, 
         interrupt = function(interrupt)
         {
@@ -206,6 +232,10 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 
 
 
-tm = system.time(runSimulation(10,1))
-#print(tm)
+runSimulation(1000,50, printAR=TRUE)
+runSimulation(10000,100, printAR=TRUE)
+
+
+
+
 
