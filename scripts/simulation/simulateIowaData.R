@@ -91,19 +91,21 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
     maxTpt = nTptPerYear*nyear
     # For simplicity just use intercept for now. 
     X = matrix(1, ncol = 1, nrow = nrow(dcm))
-    Z = cbind(seq(1,maxTpt), model.matrix(~as.factor(rep(1:12, nyear)))[,2:nTptPerYear])
+    Z = cbind(seq(1,nyear*nTptPerYear), sin(seq(1,nyear*nTptPerYear)/nTptPerYear*2*pi), 
+                cos(seq(1,nyear*nTptPerYear)/nTptPerYear*2*pi))
     Z = Z[rep(1:nrow(Z), each = nrow(dcm)),] # Same time varying covariates for all spatial locations 
 
     X_prs = cbind(1, 
                   sin((1:maxTpt)/nTptPerYear*2*pi),
                   cos((1:maxTpt)/nTptPerYear*2*pi))
 
-    trueBetaSEFixed = c(-0.2)
-    trueBetaSEVarying = c(0.0001, 0.02, 0.03, 0.05, 0.06, 
-                          0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1)*5
+    trueBetaSEFixed = c(0.1)
+    #trueBetaSEVarying = c(0.0001, 0.02, 0.03, 0.05, 0.06, 
+    #                      0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1)*5
+    trueBetaSEVarying = c(0.0001, 1.2, -0.3)
 
     trueGamma = rep(0.0, maxTpt)
-    trueRho = 0.05
+    trueRho = 0.1
     rho = trueRho
 
     true_fixed_eta = X %*% trueBetaSEFixed
@@ -116,7 +118,7 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
     p_se = matrix(0.0, nrow = maxTpt, ncol = ncol(dcm)) 
     p_ei = 0.9
     p_ir = 0.9
-    trueBetaRS = c(2.5, -1, 0.5)
+    trueBetaRS = c(3, -1, 2)
     eta_rs = X_prs %*% trueBetaRS    
     p_rs = exp(-eta_rs)
 

@@ -139,6 +139,17 @@ reinfectionMode = 1;
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3: no reinfection
 
+# forget true values
+
+true_beta = beta
+true_beta_prs = betaPrs
+true_rho = rho
+
+beta = true_beta*0; beta[1] = 0.1
+betaPrs = true_beta_prs*0; betaPrs[1] = 0.1
+rho = 0.00001
+
+
 steadyStateConstraintPrecision = 0.01
 
 proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
@@ -200,8 +211,8 @@ makePlot = function(imgNo)
         
         plotTwoCompartments((S/N)[,Norder], 
                             (res$S/N)[,Norder], 
-                            main1 = "True Infectious Proportion", 
-                            main2 = "Fitted Infectious Proportion", zlim = c(0, max(S/N)*1.1))
+                            main1 = "True Susceptible Proportion", 
+                            main2 = "Fitted Susceptible Proportion", zlim = c(0, max(S/N)*1.1))
     dev.off()
 }
 
@@ -234,12 +245,6 @@ runSimulation(5000,20, printAR=TRUE)
 runSimulation(10000,50, printAR=TRUE)
 runSimulation(10000,100, printAR=TRUE)
 runSimulation(10000000,1000, printAR=TRUE)
-
-
-
-
-#runSimulation(10000,100, printAR=TRUE)
-
 
 
 

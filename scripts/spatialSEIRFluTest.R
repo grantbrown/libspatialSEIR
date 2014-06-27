@@ -203,7 +203,7 @@ priorBeta_pEI = 100
 priorAlpha_pIR = 1000
 priorBeta_pIR = 100
 
-outFileName = "./chainOutput.txt"
+outFileName = "./chainOutput_flu.txt"
 
 
 
