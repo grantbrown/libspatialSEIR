@@ -2,7 +2,7 @@
 #include <ModelContext.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <CovariateMatrix.hpp>
-#include <FullConditional.hpp>
+#include <LSS_FullConditionalList.hpp>
 #include<time.h>
 
 

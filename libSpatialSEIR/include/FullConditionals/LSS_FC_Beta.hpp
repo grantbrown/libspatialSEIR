@@ -1,4 +1,4 @@
-#include <FullConditional.hpp>
+#include <LSS_FullConditional.hpp>
 
 #ifndef FULL_CONDITIONAL_BETA_INC
 #define FULL_CONDITIONAL_BETA_INC

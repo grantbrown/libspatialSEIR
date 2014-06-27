@@ -1,5 +1,5 @@
 #include <ModelContext.hpp>
-#include <FullConditional.hpp>
+#include <LSS_FullConditionalList.hpp>
 #include <OCLProvider.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <CovariateMatrix.hpp>

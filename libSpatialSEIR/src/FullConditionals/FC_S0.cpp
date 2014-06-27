@@ -6,7 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
-#include<FullConditional.hpp>
+#include<LSS_FC_S0.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
 #include<CompartmentalModelMatrix.hpp>

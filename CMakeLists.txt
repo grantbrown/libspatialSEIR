@@ -42,6 +42,7 @@ endif()
 
 
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
+                    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS"
                     "."
@@ -86,6 +87,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/OCLProvider.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/ModelContext.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FullConditional.hpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FullConditionalList.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_S0.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_E0.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_I0.hpp"
@@ -143,6 +145,7 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/ModelContext.hpp" 
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FullConditional.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FullConditionalList.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_S0.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_E0.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_I0.hpp"

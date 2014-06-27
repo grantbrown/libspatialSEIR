@@ -1,3 +1,4 @@
+#include <LSS_FullConditional.hpp>
 #ifndef SPATIALSEIR_INCLUDEFILES
 #define SPATIALSEIR_INCLUDEFILES
 
