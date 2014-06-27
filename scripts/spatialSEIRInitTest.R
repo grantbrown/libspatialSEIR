@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(200,10)
+    control_code(10,10)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -33,7 +33,7 @@ X  = sim_results$X # X is returned by the simulation as an NxP matrix, where N
                    # is the number of locations and P the number of predictors.
 Z = sim_results$Z 
                                        
-throwAwayTpts = 0
+throwAwayTpts = 7*12
                 
 # Create basis for p_rs
 
@@ -94,7 +94,7 @@ compMatDim = c(nrow(S), ncol(S))
 outFileName = "./chainOutput_sim.txt"
 
 
-iterationStride = 10
+iterationStride = 100
 
 # S,E,R,S0,I0,beta,betaPrs,rho
 sliceWidths = c(0.13,  # S_star
@@ -102,8 +102,8 @@ sliceWidths = c(0.13,  # S_star
                 0.123, # I_star
                 0.1818, # S0
                 0.1848, # I0
-                0.007, # beta
-                0.0133, # betaPrs
+                0.001, # beta
+                0.005, # betaPrs
                 0.015# rho
                 )
 
@@ -180,8 +180,8 @@ res = spatialSEIRModel(compMatDim,
                       reinfectionMode)
 
 # Use OpenCL:
-res$samplingMode = 2
-res$oclPreferences = res$oclPreferences + 1 
+res$samplingMode = 3
+#res$oclPreferences = res$oclPreferences + 1 
 
 res$setRandomSeed(123123)
 
@@ -198,10 +198,10 @@ makePlot = function(imgNo)
         width = 800, 
         height = 600) 
         
-        plotTwoCompartments((I/N)[,Norder], 
-                            (res$I/N)[,Norder], 
+        plotTwoCompartments((S/N)[,Norder], 
+                            (res$S/N)[,Norder], 
                             main1 = "True Infectious Proportion", 
-                            main2 = "Fitted Infectious Proportion", zlim = c(0, max(I/N)*1.1))
+                            main2 = "Fitted Infectious Proportion", zlim = c(0, max(S/N)*1.1))
     dev.off()
 }
 
@@ -230,10 +230,15 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
     })
 }
 
-
-
-runSimulation(1000,50, printAR=TRUE)
+runSimulation(5000,20, printAR=TRUE)
+runSimulation(10000,50, printAR=TRUE)
 runSimulation(10000,100, printAR=TRUE)
+runSimulation(10000000,1000, printAR=TRUE)
+
+
+
+
+#runSimulation(10000,100, printAR=TRUE)
 
 
 
