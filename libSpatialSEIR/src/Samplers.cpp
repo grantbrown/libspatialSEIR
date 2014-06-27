@@ -121,8 +121,11 @@ namespace SpatialSEIR
 
         double initProposal = 0.0;
         double newProposal = 0.0;
-        int i;
+        int i, j;
+        int compIdx;
         int x0, x1;
+        int nLoc = (*(starCompartment -> ncol));
+        int nTpt = (*(starCompartment -> nrow));
         int totalPoints = (*(starCompartment -> nrow))*(*(starCompartment -> ncol));
         // Backup Compartment
         memcpy(context -> tmpContainer -> data, starCompartment -> data, totalPoints*sizeof(int)); 
@@ -150,43 +153,57 @@ namespace SpatialSEIR
         {
             // Shift right by two or one
             shiftNo = (proposalType == 1 ? 2 : 1);
-            for (i = (totalPoints - 1); i >= shiftNo; i--)
+            for (j = 0; j < nLoc; j++)
             {
-                x0 = (starCompartment -> data)[i-shiftNo];
-                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
-                (starCompartment -> data)[i] = x1;
-                newProposal += (context -> random -> dnorm(x1, x0,width));
-                initProposal += (context -> random -> dnorm(x0, x1,width));
+                compIdx = (j + 1)*nTpt - 1;
+                for (i = nTpt-1; i >= shiftNo; i--)
+                {
+                    x0 = (starCompartment -> data)[compIdx-shiftNo];
+                    x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                    (starCompartment -> data)[compIdx] = x1;
+                    newProposal += (context -> random -> dnorm(x1, x0,width));
+                    initProposal += (context -> random -> dnorm(x0, x1,width));
+                    compIdx--;
+                }
+                compIdx = j*nTpt;
+                for (i = 0; i < shiftNo; i++)
+                {
+                    x0 = (starCompartment -> data)[compIdx];
+                    x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                    (starCompartment -> data)[compIdx] = x1;
+                    newProposal += (context -> random -> dnorm(x1, x0,width));
+                    initProposal += (context -> random -> dnorm(x0, x1,width));
+                    compIdx++;
+                } 
             }
-            for (i = 0; i < shiftNo; i++)
-            {
-                x0 = (starCompartment -> data)[i];
-                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
-                (starCompartment -> data)[i] = x1;
-                newProposal += (context -> random -> dnorm(x1, x0,width));
-                initProposal += (context -> random -> dnorm(x0, x1,width));
-            } 
         }
         else if (proposalType == 2 || proposalType == 4)
         {
             // Shift left by two or one  
             shiftNo = (proposalType == 2 ? 2 : 1);
-            for (i = 0; i < (totalPoints - shiftNo); i++)
+            for (j = 0; j < nLoc; j++)
             {
-                x0 = (starCompartment -> data)[i+shiftNo];
-                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
-                (starCompartment -> data)[i] = x1;
-                newProposal += (context -> random -> dnorm(x1, x0,width));
-                initProposal += (context -> random -> dnorm(x0, x1,width));
+                compIdx = j*nTpt;
+                for (i = 0; i < (nTpt - shiftNo); i++)
+                {
+                    x0 = (starCompartment -> data)[compIdx+shiftNo];
+                    x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                    (starCompartment -> data)[compIdx] = x1;
+                    newProposal += (context -> random -> dnorm(x1, x0,width));
+                    initProposal += (context -> random -> dnorm(x0, x1,width));
+                    compIdx++;
+                }
+                compIdx = (j+1)*nTpt - 1;
+                for (i = 0; i < shiftNo; i++)
+                {
+                    x0 = (starCompartment -> data)[compIdx];
+                    x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
+                    (starCompartment -> data)[compIdx] = x1;
+                    newProposal += (context -> random -> dnorm(x1, x0,width));
+                    initProposal += (context -> random -> dnorm(x0, x1,width));
+                    compIdx--;
+                } 
             }
-            for (i = 0; i < shiftNo; i++)
-            {
-                x0 = (starCompartment -> data)[totalPoints - i];
-                x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
-                (starCompartment -> data)[totalPoints - i] = x1;
-                newProposal += (context -> random -> dnorm(x1, x0,width));
-                initProposal += (context -> random -> dnorm(x0, x1,width));
-            } 
         }
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
