@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 #include <cmath>
 #include <ModelContext.hpp>
-#include <FullConditional.hpp>
+#include <LSS_FullConditionalList.hpp>
 #include <CovariateMatrix.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <DistanceMatrix.hpp>
