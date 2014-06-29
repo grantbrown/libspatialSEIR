@@ -78,6 +78,18 @@ namespace SpatialSEIR
         return((config -> samplingMode));
     }
 
+    void ModelContext::setHybridReinfection(int hybridReinfection)
+    {
+        if (hybridReinfection != 0 && hybridReinfection != 1)
+        {
+            std::cout << "Invalid Reinfection Mode" << "\n";
+            throw(-1);
+        }
+        (config -> hybridReinfection) = hybridReinfection; 
+        buildModel();
+    }
+
+
     void ModelContext::populate(InitData* _A0,
                                 covariateArgs* xArgs, 
                                 covariateArgs* xPrsArgs,
@@ -319,6 +331,26 @@ namespace SpatialSEIR
                              (priorValues -> P_IR_priorAlpha),
                              (priorValues -> P_IR_priorBeta));
 
+        hybridReinfect_fc = new FC_Hybrid_Reinfection(this,
+                                                      S_star,
+                                                      S,
+                                                      R,
+                                                      E_star,
+                                                      R_star,
+                                                      S_star_fc,
+                                                      betaPrs_fc,
+                                                      A0,
+                                                      X,
+                                                      X_pRS,
+                                                      p_se,
+                                                      p_rs,
+                                                      betaPrs,
+                                                      (priorValues->betaPrsPriorPrecision),
+                                                      beta,
+                                                      rho,
+                                                      (S_starArgs -> steadyStateConstraintPrecision)
+                                                      );
+
         // Calculate Compartments
         this -> calculateS_CPU();
         this -> calculateE_CPU();
@@ -339,16 +371,38 @@ namespace SpatialSEIR
 
     void ModelContext::buildModel()
     {
+        // clear the previous model
+        unsigned int i;
+        for (i = 0; i < (model -> size()); i++)
+        {
+            model -> pop_back();
+        }
+        if ((model -> size()) != 0)
+        {
+            std::cout << "Error clearing model.\n";
+            throw(-1);
+        }
+
         // build the model here. 
         if ((config -> reinfectionMode) == 1)
         {
             model -> push_back(S0_fc);
             model -> push_back(I0_fc);
-            model -> push_back(S_star_fc);
+            if (config -> hybridReinfection == 0)
+            {
+                model -> push_back(S_star_fc);
+            }
             model -> push_back(E_star_fc);
             model -> push_back(R_star_fc);
             model -> push_back(beta_fc);
-            model -> push_back(betaPrs_fc);
+            if (config -> hybridReinfection == 0)
+            {
+                model -> push_back(betaPrs_fc);
+            }
+            else
+            {
+                model -> push_back(hybridReinfect_fc);
+            }
             if (!(*singleLocation))
             {
                 model -> push_back(rho_fc);

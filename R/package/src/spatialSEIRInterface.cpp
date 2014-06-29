@@ -124,6 +124,8 @@ class spatialSEIRInterface
         virtual int getVerbose();
         virtual void setVerbose(int verbose_);
 
+        virtual int getHybridReinfection();
+        virtual void setHybridReinfection(int hybridReinfect);
  
         //Destructor
         ~spatialSEIRInterface();
@@ -648,6 +650,15 @@ void spatialSEIRInterface::setVerbose(int verbose_)
    *verbose = verbose_; 
 }
 
+int spatialSEIRInterface::getHybridReinfection()
+{
+    return(context -> config -> hybridReinfection); 
+}
+void spatialSEIRInterface::setHybridReinfection(int hybridReinfect)
+{
+    context -> setHybridReinfection(hybridReinfect);
+}
+
 spatialSEIRInterface::spatialSEIRInterface()
 {
     Rcpp::Rcout << "Creating Model Context\n";
@@ -880,6 +891,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     modelConfiguration modelConfig;
     modelConfig.reinfectionMode = reinfectMode[0];
     modelConfig.samplingMode = 1;
+    modelConfig.hybridReinfection = 0;
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];
@@ -1014,6 +1026,9 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
     .property("samplingMode", &spatialSEIRInterface::getSamplingMode, &spatialSEIRInterface::setSamplingMode, "Type of sampler")
+    .property("hybridReinfectionSampling", &spatialSEIRInterface::getHybridReinfection, 
+                    &spatialSEIRInterface::setHybridReinfection, "Joint sample beta_P_RS and S_star?")
+
     .property("oclPreferences", &spatialSEIRInterface::getOCLPreferences, &spatialSEIRInterface::setOCLPreferences, "Use OCL? Length 8:  S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho")
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")

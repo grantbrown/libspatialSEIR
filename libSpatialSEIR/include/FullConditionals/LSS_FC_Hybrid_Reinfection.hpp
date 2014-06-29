@@ -36,13 +36,10 @@ namespace SpatialSEIR
                                   double *_p_se,
                                   double *_p_rs,
                                   double *_beta_p_rs,
-                                  double *_tausq,
+                                  double _tausq,
                                   double *_beta,
                                   double *_rho,
-                                  double _steadyStateConstraintPrecision,
-                                  double _parameterSliceWidth,
-                                  double _compartmentSliceWidth);
-            virtual int evalCPU(int startLoc, int startTime);
+                                  double _steadyStateConstraintPrecision);
             virtual int evalCPU();
             virtual int evalOCL();
             virtual int sampleCPU();
@@ -51,8 +48,6 @@ namespace SpatialSEIR
             virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments_OCL();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
-            virtual void printDebugInfo(int loc, int tpt);
             virtual ~FC_Hybrid_Reinfection();
 
             ModelContext **context;
@@ -72,8 +67,6 @@ namespace SpatialSEIR
             double *tausq;
             double **beta; 
             double **rho;
-            double *parameterSliceWidth;
-            double *compartmentSliceWidth;
             double *steadyStateConstraintPrecision;
             long double* value;
     };

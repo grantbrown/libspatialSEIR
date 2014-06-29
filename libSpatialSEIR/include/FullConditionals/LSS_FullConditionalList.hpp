@@ -11,4 +11,5 @@
 #include<LSS_FC_Gamma.hpp>
 #include<LSS_FC_P_EI.hpp>
 #include<LSS_FC_P_IR.hpp>
+#include<LSS_FC_Hybrid_Reinfection.hpp>
 

@@ -32,12 +32,10 @@ namespace SpatialSEIR
                          double *_p_se,
                          double *_p_rs,
                          double *_beta_p_rs,
-                         double *_tausq,
+                         double _tausq,
                          double *_beta,
                          double *_rho,
-                         double _steadyStateConstraintPrecision,
-                         double _parameterSliceWidth,
-                         double _compartmentSliceWidth)
+                         double _steadyStateConstraintPrecision)
     {
        context = new ModelContext*;
        S_star = new CompartmentalModelMatrix*;
@@ -58,8 +56,6 @@ namespace SpatialSEIR
        rho = new double*;
        value = new long double;
        steadyStateConstraintPrecision = new double;
-       parameterSliceWidth = new double;
-       compartmentSliceWidth = new double;
 
        *context = _context;
        *S_star = _S_star;
@@ -67,9 +63,12 @@ namespace SpatialSEIR
        *R = _R;
        *E_star = _E_star;
        *R_star = _R_star;
+       *parameterFullConditional = _beta_p_rs_fc; 
+       *compartmentFullConditional = _S_star_fc;
        *A0 = _A0;
        *X = _X;
        *X_p_rs = _X_p_rs;
+       *tausq = _tausq;
        *beta_p_rs = _beta_p_rs;
        *p_se = _p_se;
        *p_rs = _p_rs;
@@ -77,8 +76,6 @@ namespace SpatialSEIR
        *rho = _rho;
        *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
        *value = -1.0;
-       *parameterSliceWidth = _parameterSliceWidth;
-       *compartmentSliceWidth = _compartmentSliceWidth;
     }    
 
     FC_Hybrid_Reinfection::~FC_Hybrid_Reinfection()
@@ -101,8 +98,6 @@ namespace SpatialSEIR
         delete rho;
         delete value;
         delete steadyStateConstraintPrecision;
-        delete parameterSliceWidth;
-        delete compartmentSliceWidth;
         delete context;
         delete samples;
         delete accepted;
