@@ -26,9 +26,11 @@ namespace SpatialSEIR
                     InitData *_A0,
                     double *_p_ei,
                     double _priorAlpha,
-                    double _priorBeta);
+                    double _priorBeta,
+                    int _useOCL);
             virtual int evalCPU();
             virtual int evalOCL();
+            virtual void sample(int verbose);
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();

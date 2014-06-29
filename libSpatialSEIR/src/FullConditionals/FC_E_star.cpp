@@ -36,7 +36,8 @@ namespace SpatialSEIR
                          double *_rho,
                          double *_beta,
                          double _steadyStateConstraintPrecision,
-                         double _sliceWidth) 
+                         double _sliceWidth,
+                         int _useOCL) 
     {
 
         context = new ModelContext*;
@@ -57,6 +58,7 @@ namespace SpatialSEIR
         accepted = new int; 
         *samples = 0;
         *accepted = 0;
+        useOCL = new int;
        
         *context = _context;
         *E_star = _E_star;
@@ -72,6 +74,7 @@ namespace SpatialSEIR
         *sliceWidth = _sliceWidth;
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
+        *useOCL = _useOCL;
     }
 
     FC_E_Star::~FC_E_Star()
@@ -92,6 +95,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
+        delete useOCL;
 
     }
 
@@ -311,6 +315,13 @@ namespace SpatialSEIR
         (*context) -> calculateE_CPU(startLoc, startTime);
         (*context) -> calculateS_givenE_CPU(startLoc, startTime);
         return(0);
+    }
+
+    void FC_E_Star::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling E_star\n";}
+        if (*useOCL){sampleOCL(); return;}
+        sampleCPU();
     }
 
     int FC_E_Star::sampleCPU()

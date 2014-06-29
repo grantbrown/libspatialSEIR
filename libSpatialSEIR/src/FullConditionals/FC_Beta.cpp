@@ -35,7 +35,8 @@ namespace SpatialSEIR
                      double *_beta, 
                      double *_rho,
                      double _sliceWidth,
-                     double _priorPrecision)
+                     double _priorPrecision,
+                     int _useOCL)
     {
 
         context = new ModelContext*;
@@ -51,6 +52,7 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
+        useOCL = new int;
         *samples = 0;
         *accepted = 0;
 
@@ -65,6 +67,7 @@ namespace SpatialSEIR
         *sliceWidth = _sliceWidth;
         *priorPrecision = _priorPrecision;
         *value = -1.0;
+        *useOCL = _useOCL;
     }
 
     FC_Beta::~FC_Beta()
@@ -82,6 +85,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
+        delete useOCL;
 
     }
 
@@ -137,6 +141,13 @@ namespace SpatialSEIR
         ((*context) -> calculateP_SE_OCL());
         return(0);
 
+    }
+
+    void FC_Beta::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling Beta\n";}
+        if (*useOCL){sampleOCL(); return;}
+        sampleCPU(); 
     }
 
 

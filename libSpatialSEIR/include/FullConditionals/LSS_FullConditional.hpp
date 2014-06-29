@@ -86,6 +86,7 @@ namespace SpatialSEIR
         public:
             //Template for shared methods
             virtual ~FullConditional(){}; 
+            virtual void sample(int verbose) = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
@@ -95,6 +96,7 @@ namespace SpatialSEIR
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
             double acceptanceRatio();
             double* sliceWidth;
+            int* useOCL;
             int* samples;
             int* accepted;
     };
@@ -115,6 +117,7 @@ namespace SpatialSEIR
             virtual int evalCPU() = 0;
             virtual int evalCPU(int startLoc, int startTime) = 0;
             virtual int evalOCL() = 0;
+            virtual void sample(int verbose) = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
@@ -172,6 +175,7 @@ namespace SpatialSEIR
             virtual ~ParameterFullConditional(){}; 
             virtual int evalCPU() = 0;
             virtual int evalOCL() = 0;
+            virtual void sample(int verbose) = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
@@ -221,6 +225,7 @@ namespace SpatialSEIR
             virtual int evalCPU() = 0;
             virtual int evalCPU(int startLoc) = 0;
             virtual int evalOCL() = 0;
+            virtual void sample(int verbose) = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
@@ -261,6 +266,7 @@ namespace SpatialSEIR
             virtual ~HybridFullConditional(){};
             virtual int evalCPU() = 0;
             virtual int evalOCL() = 0;
+            virtual void sample(int verbose) = 0;
             virtual int sampleCPU() = 0;
             virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;

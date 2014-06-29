@@ -619,6 +619,7 @@ void spatialSEIRInterface::setOCLPreferences(Rcpp::IntegerVector prefs)
         Rcpp::Rcout << "OCL Preferences must be length 8: S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho\n";
         throw(-1);
     }
+    // Consider moving this from Rcpp to core libspatialSEIR
     *(context -> S0_OCL) = prefs[0];
     *(context -> I0_OCL) = prefs[1];
     *(context -> S_star_OCL) = prefs[2];
@@ -627,6 +628,7 @@ void spatialSEIRInterface::setOCLPreferences(Rcpp::IntegerVector prefs)
     *(context -> beta_OCL) = prefs[5];
     *(context -> beta_P_RS_OCL) = prefs[6];
     *(context -> rho_OCL) = prefs[7];
+    *(context -> hybridReinfect_fc -> useOCL) = (prefs[6] != 0 || prefs[2] != 0);
 }
 
 int spatialSEIRInterface::getDebug()

@@ -33,7 +33,8 @@ namespace SpatialSEIR
                      double *_p_rs,
                      double *_beta_p_rs,
                      double _tausq,
-                     double _sliceWidth)
+                     double _sliceWidth,
+                     int _useOCL)
     {
 
         context = new ModelContext*;
@@ -48,6 +49,7 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int; *samples = 0;
         accepted = new int; *accepted = 0;
+        useOCL = new int;
 
         *context = _context;
         *S_star = _S_star;
@@ -59,6 +61,7 @@ namespace SpatialSEIR
         *tausq = _tausq;
         *sliceWidth = _sliceWidth;
         *value = -1.0;
+        *useOCL = _useOCL;
     }
     FC_Beta_P_RS::~FC_Beta_P_RS()
     {
@@ -74,7 +77,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
-
+        delete useOCL;
     }
 
     int FC_Beta_P_RS::evalCPU()
@@ -129,6 +132,14 @@ namespace SpatialSEIR
          ((*context) -> calculateP_RS_CPU());      
          return(0);
     }
+
+    void FC_Beta_P_RS::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling Beta_P_RS\n";}
+        if (*useOCL){sampleOCL(); return;}
+        sampleCPU(); 
+    }
+
     int FC_Beta_P_RS::sampleCPU()
     {
         int nbeta = *((*X) -> ncol_x);

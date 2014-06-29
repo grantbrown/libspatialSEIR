@@ -27,11 +27,13 @@ namespace SpatialSEIR
                    double *_p_se, 
                    double *_beta, 
                    double *_rho,
-                   double sliceWidth
+                   double sliceWidth,
+                   int _useOCL
                    );
             ~FC_Rho();
             virtual int evalCPU();
             virtual int evalOCL();
+            virtual void sample(int verbose);
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();

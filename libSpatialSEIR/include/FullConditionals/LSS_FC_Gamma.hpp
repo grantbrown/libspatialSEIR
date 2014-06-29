@@ -48,11 +48,13 @@ namespace SpatialSEIR
                    double *_gamma,
                    double *_priorAlpha,
                    double *_priorBeta,
-                   double sliceWidth
+                   double sliceWidth,
+                   int _useOCL
                    );
             ~FC_Gamma();
             virtual int evalCPU();
             virtual int evalOCL();
+            virtual void sample(int verbose);
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();

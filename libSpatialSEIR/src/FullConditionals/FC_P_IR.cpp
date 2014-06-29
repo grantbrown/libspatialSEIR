@@ -35,7 +35,8 @@ namespace SpatialSEIR
                      InitData *_A0,
                      double *_p_ir,
                      double _priorAlpha,
-                     double _priorBeta)
+                     double _priorBeta,
+                     int _useOCL)
     {
 
         context = new ModelContext*;
@@ -48,9 +49,10 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
+        useOCL = new int;
         *samples = 0;
         *accepted = 0;
-
+        *useOCL = _useOCL;
         *context = _context;
         *R_star = _R_star;
         *I = _I;
@@ -74,6 +76,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
+        delete useOCL;
     }
 
     int FC_P_IR::evalCPU()
@@ -101,6 +104,14 @@ namespace SpatialSEIR
         // Not used, Do nothing
         return(0);
     }
+
+    void FC_P_IR::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling P_IR\n";}
+        if (*useOCL){sampleOCL(); return;}
+        sampleCPU();
+    }
+
 
     int FC_P_IR::sampleCPU()
     {

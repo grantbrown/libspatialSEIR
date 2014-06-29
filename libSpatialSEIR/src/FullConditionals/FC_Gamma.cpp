@@ -29,7 +29,8 @@ namespace SpatialSEIR
                    double *_gamma,
                    double *_priorAlpha,
                    double *_priorBeta,
-                   double _sliceWidth)
+                   double _sliceWidth,
+                   int _useOCL)
     {
         context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
@@ -47,6 +48,7 @@ namespace SpatialSEIR
         accepted = new int; 
         *samples = 0;
         *accepted = 0;
+        useOCL = new int;
 
 
 
@@ -62,6 +64,7 @@ namespace SpatialSEIR
         *priorBeta = *_priorBeta;
         *sliceWidth = _sliceWidth;
         *value = -1.0;
+        *useOCL = _useOCL;
     }
     FC_Gamma::~FC_Gamma()
     {
@@ -79,6 +82,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
+        delete useOCL;
 
     }
 
@@ -132,6 +136,13 @@ namespace SpatialSEIR
     {
        (*context) -> calculateP_SE_OCL();
        return(0); 
+    }
+
+    void FC_Gamma::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling Gamma\n";}
+        if (*useOCL){sampleOCL(); return;}
+        sampleCPU();
     }
 
     int FC_Gamma::sampleCPU()

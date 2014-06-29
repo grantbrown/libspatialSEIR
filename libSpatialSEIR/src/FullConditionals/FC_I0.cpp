@@ -36,7 +36,8 @@ namespace SpatialSEIR
                  double *_p_ir,
                  double *_p_rs,
                  double *_p_se,
-                 double _sliceWidth)
+                 double _sliceWidth,
+                 int _useOCL)
     {
         context = new ModelContext*;
         S = new CompartmentalModelMatrix*;
@@ -53,7 +54,7 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int; *samples =0;
         accepted = new int; *accepted = 0;
-
+        useOCL = new int;
 
         *context = _context;
         *S = _S;
@@ -67,6 +68,7 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *p_rs = _p_rs;
         *sliceWidth = _sliceWidth;
+        *useOCL = _useOCL;
     }
     FC_I0::~FC_I0()
     {
@@ -85,7 +87,7 @@ namespace SpatialSEIR
         delete value;
         delete samples;
         delete accepted;
-
+        delete useOCL;
     }
     
     int FC_I0::evalCPU()
@@ -307,6 +309,14 @@ namespace SpatialSEIR
         // Not Implemented
         return(evalCPU());
     }
+
+    void FC_I0::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling I0\n";}
+        if (*useOCL){sampleOCL(); return;}
+        sampleCPU();
+    }
+
     int FC_I0::sampleCPU()
     {
         sampleEntireCompartment_CPU(*context, (*A0) -> I0, *sliceWidth);

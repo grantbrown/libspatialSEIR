@@ -32,12 +32,14 @@ namespace SpatialSEIR
                       double *_rho,
                       double *_beta,
                       double _steadyStateConstraintPrecision,
-                      double sliceWidth);
+                      double sliceWidth,
+                      int _useOCL);
             ~FC_E_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
             virtual int evalCPU();
             virtual int evalOCL();
+            virtual void sample(int verbose);
             virtual int sampleCPU();
             virtual int sampleOCL();
             virtual long double getValue();

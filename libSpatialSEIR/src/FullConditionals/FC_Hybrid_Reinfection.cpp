@@ -35,7 +35,8 @@ namespace SpatialSEIR
                          double _tausq,
                          double *_beta,
                          double *_rho,
-                         double _steadyStateConstraintPrecision)
+                         double _steadyStateConstraintPrecision,
+                         int _useOCL)
     {
        context = new ModelContext*;
        S_star = new CompartmentalModelMatrix*;
@@ -56,6 +57,7 @@ namespace SpatialSEIR
        rho = new double*;
        value = new long double;
        steadyStateConstraintPrecision = new double;
+       useOCL = new int;
 
        *context = _context;
        *S_star = _S_star;
@@ -76,6 +78,7 @@ namespace SpatialSEIR
        *rho = _rho;
        *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
        *value = -1.0;
+       *useOCL = _useOCL;
     }    
 
     FC_Hybrid_Reinfection::~FC_Hybrid_Reinfection()
@@ -101,6 +104,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
+        delete useOCL;
 
     }
 
@@ -184,6 +188,13 @@ namespace SpatialSEIR
         (*context) -> calculateS_CPU();
         (*context) -> calculateR_givenS_CPU();
         return(0);
+    }
+
+    void FC_Hybrid_Reinfection::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling Reinfection Parameters\n";}
+        if (*useOCL){sampleOCL(); return;}
+        sampleCPU();
     }
 
     int FC_Hybrid_Reinfection::sampleCPU()

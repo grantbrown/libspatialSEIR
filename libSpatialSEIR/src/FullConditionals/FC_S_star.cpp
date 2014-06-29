@@ -40,7 +40,8 @@ namespace SpatialSEIR
                          double *_beta,
                          double *_rho,
                          double _steadyStateConstraintPrecision,
-                         double _sliceWidth)
+                         double _sliceWidth,
+                         int _useOCL)
     {
        context = new ModelContext*;
        S_star = new CompartmentalModelMatrix*;
@@ -59,6 +60,7 @@ namespace SpatialSEIR
        sliceWidth = new double;
        samples = new int;
        accepted = new int; 
+       useOCL = new int;
        *samples = 0;
        *accepted = 0;
 
@@ -77,6 +79,7 @@ namespace SpatialSEIR
        *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
        *value = -1.0;
        *sliceWidth = _sliceWidth;
+       *useOCL = _useOCL;
     }    
     FC_S_Star::~FC_S_Star()
     {
@@ -97,7 +100,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
-
+        delete useOCL;
     }
 
     int FC_S_Star::evalCPU(int startLoc, int startTime)
@@ -307,6 +310,13 @@ namespace SpatialSEIR
         (*context) -> calculateS_CPU(startLoc, startTime);
         (*context) -> calculateR_givenS_CPU(startLoc, startTime);
         return(0);
+    }
+
+    void FC_S_Star::sample(int verbose)
+    {
+        if (verbose){std::cout << "Sampling S_star\n";}
+        if (*useOCL){sampleOCL();return;}
+        sampleCPU();
     }
 
     int FC_S_Star::sampleCPU()
