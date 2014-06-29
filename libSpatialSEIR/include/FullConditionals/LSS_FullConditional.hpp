@@ -247,6 +247,47 @@ namespace SpatialSEIR
                                           double width); 
 
     };
+
+
+    /**
+     * The HybridFullConditional class is designed to jointly sample a vector of
+     * double precision parameters alongside a compartment with which they are
+     * correlated. This is experimental.
+     */
+    class HybridFullConditional : public FullConditional 
+    {
+        public:
+
+            virtual ~HybridFullConditional(){};
+            virtual int evalCPU() = 0;
+            virtual int evalOCL() = 0;
+            virtual int sampleCPU() = 0;
+            virtual int sampleOCL() = 0;
+            virtual long double getValue() = 0;
+            virtual void setValue(long double value) = 0;
+            virtual int calculateRelevantCompartments() = 0;
+            virtual int calculateRelevantCompartments_OCL() = 0;
+            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+            ParameterFullConditional* parameterFullConditional;
+            CompartmentFullConditional* compartmentFullConditional;
+
+            int sampleHybrid_CPU(ModelContext* context,
+                                  double* variable,
+                                  int varLen,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double varWidth,
+                                  double compWidth); 
+
+            int sampleHybrid_OCL(ModelContext* context,
+                                  double* variable,
+                                  int varLen,
+                                  CompartmentalModelMatrix* destCompartment,
+                                  double varWidth,
+                                  double compWidth); 
+
+            double* steadyStateConstraintPrecision;
+    };
+
 }
 
 #endif

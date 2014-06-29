@@ -292,7 +292,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
             res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
-            png(filename = paste("./imgOut/", itrPrint(imgNo), ".png", sep =""), width = 600, height = 1200) 
+            png(filename = paste("./imgOut/single/", itrPrint(imgNo), ".png", sep =""), width = 600, height = 1200) 
                 plotEpidemic2()
             dev.off()
             cat(i*batchSize,"\n")
@@ -305,7 +305,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 
 
 print("Burn in 1 to adjust sampling widths.")
-res$samplingMode = 2
+res$samplingMode = 1
 runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
 runSimulation(10000000,1000, printAR = TRUE, targetRatio = 0.2)
 

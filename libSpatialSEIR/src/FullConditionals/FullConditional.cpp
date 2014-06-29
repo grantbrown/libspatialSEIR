@@ -137,6 +137,13 @@ namespace SpatialSEIR
         *samples = 0;
         *accepted = 0;
     }
+
+    void HybridFullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
+    {
+        this -> parameterFullConditional -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);
+        this -> compartmentFullConditional -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);
+    }
 }
+
 
 

@@ -105,7 +105,7 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
     trueBetaSEVarying = c(0.0001, 1.2, -0.3)
 
     trueGamma = rep(0.0, maxTpt)
-    trueRho = 0.1
+    trueRho = 0.2
     rho = trueRho
 
     true_fixed_eta = X %*% trueBetaSEFixed

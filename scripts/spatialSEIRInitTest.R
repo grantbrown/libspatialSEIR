@@ -104,7 +104,7 @@ sliceWidths = c(0.13,  # S_star
                 0.1848, # I0
                 0.001, # beta
                 0.005, # betaPrs
-                0.015# rho
+                0.01# rho
                 )
 
 
