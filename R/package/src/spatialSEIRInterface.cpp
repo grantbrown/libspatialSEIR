@@ -342,9 +342,12 @@ void spatialSEIRInterface::printAcceptanceRates()
     Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> accepted)*1.0)/ 
                                   (*(context -> I0_fc -> samples)) 
                           <<  "\n"; 
-    Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
-                                      (*(context -> S_star_fc -> samples)) 
-                              << "\n"; 
+    if ((context -> config -> hybridReinfection) == 0)
+    {
+        Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
+                                          (*(context -> S_star_fc -> samples)) 
+                                  << "\n"; 
+    }
     Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> accepted)*1.0)/
                                       (*(context -> E_star_fc -> samples)) 
                               << "\n"; 
@@ -360,9 +363,18 @@ void spatialSEIRInterface::printAcceptanceRates()
                                           (*(context -> rho_fc -> samples)) 
                                   << "\n"; 
     }
-    Rcpp::Rcout << "betaP_RS: " << (*(context -> betaPrs_fc -> accepted)*1.0)/
-                                      (*(context -> betaPrs_fc -> samples)) 
+    if ((context -> config -> hybridReinfection) == 0)
+    {
+        Rcpp::Rcout << "betaP_RS: " << (*(context -> betaPrs_fc -> accepted)*1.0)/
+                                          (*(context -> betaPrs_fc -> samples)) 
                               << "\n"; 
+    }
+    else
+    {
+        Rcpp::Rcout << "Reinfection terms: " << (*(context -> hybridReinfect_fc -> accepted)*1.0)/
+                                          (*(context -> hybridReinfect_fc -> samples)) 
+                              << "\n"; 
+    }
     Rcpp::Rcout << "p_ei:      conjugate\n";
     Rcpp::Rcout << "p_ir:      conjugate\n"; 
 }

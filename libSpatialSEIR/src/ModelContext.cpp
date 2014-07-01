@@ -372,12 +372,6 @@ namespace SpatialSEIR
         this -> calculateR_CPU();
         this -> calculateP_RS_CPU();
         this -> calculateP_SE_CPU();
-        this -> calculateS_CPU();
-        this -> calculateE_CPU();
-        this -> calculateI_CPU();
-        this -> calculateR_CPU();
-        this -> calculateP_RS_CPU();
-        this -> calculateP_SE_CPU();
 
         this -> buildModel();
         *isPopulated = 1;
@@ -387,7 +381,8 @@ namespace SpatialSEIR
     {
         // clear the previous model
         unsigned int i;
-        for (i = 0; i < (model -> size()); i++)
+        unsigned int modelSize = model -> size();
+        for (i = 0; i < modelSize; i++)
         {
             model -> pop_back();
         }
@@ -581,11 +576,19 @@ namespace SpatialSEIR
     {
         S0_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);     
         I0_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);  
-        S_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);  
+       
         E_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
         R_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
         beta_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
-        betaPrs_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        if (config -> hybridReinfection == 0)
+        {
+            S_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);  
+            betaPrs_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+        }
+        else
+        {
+            hybridReinfect_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);
+        }
         if (!(*singleLocation))
         {
             rho_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
@@ -615,68 +618,6 @@ namespace SpatialSEIR
         for (i = 0; i < model->size(); i++)
         {
            (*model)[i] -> sample(verbose);
-        }
-        return;
-
-        if (verbose){std::cout << "Sampling S0\n";}
-        if (!(*S0_OCL)){S0_fc -> sampleCPU();}
-        else {S0_fc -> sampleOCL();}
-
-        /*
-        if (verbose){std::cout << "Sampling E0\n";}
-        if (!(*S0_OCL)){E0_fc -> sampleCPU();}
-        else {E0_fc -> sampleOCL();}
-        */
-
-        if (verbose){std::cout << "Sampling I0\n";}
-        if (!(*I0_OCL)){I0_fc -> sampleCPU();}
-        else {I0_fc -> sampleOCL();}
-
-        /*
-        if (verbose){std::cout << "Sampling R0\n";}
-        if (!(*I0_OCL)){R0_fc -> sampleCPU();}
-        else {R0_fc -> sampleOCL();}
-        */ 
-
-        if ((config -> reinfectionMode) <= 2)
-        {
-            if (verbose){std::cout << "Sampling S_star\n";}
-            if (!(*S_star_OCL)){S_star_fc -> sampleCPU();}
-            else {S_star_fc -> sampleOCL();}
-        }
-
-        if ((config -> reinfectionMode) == 1)
-        {
-            if (verbose){std::cout << "Sampling betaPrs\n";}
-            if (!(*beta_P_RS_OCL)){betaPrs_fc -> sampleCPU();}
-            else {betaPrs_fc -> sampleOCL();}
-        }
-
-        if (verbose){std::cout << "Sampling E_star\n";}
-        if (!(*E_star_OCL)){E_star_fc -> sampleCPU();}
-        else {E_star_fc -> sampleOCL();}
-
-        if (verbose){std::cout << "Sampling R_star\n";}
-        if (!(*R_star_OCL)){R_star_fc -> sampleCPU();}
-        else {R_star_fc -> sampleOCL();}
-
-        if (verbose){std::cout << "Sampling beta\n";}
-        if (!(*beta_OCL)){beta_fc -> sampleCPU();}
-        else {beta_fc -> sampleOCL();}
- 
-        if (verbose){std::cout << "Sampling p_ei\n";}
-        p_ei_fc -> sampleCPU();
-
-
-        if (verbose){std::cout << "Sampling p_ir\n";}
-        p_ir_fc -> sampleCPU();
-
-        if (!(*singleLocation))
-        {
-            // Spatial dependence doesn't apply to single spatial unit. 
-            if (verbose){std::cout << "Sampling rho\n";}
-            if (!(*rho_OCL)){rho_fc -> sampleCPU();}
-            else {rho_fc -> sampleOCL();}
         }
     }
 

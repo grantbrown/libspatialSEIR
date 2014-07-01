@@ -58,6 +58,8 @@ namespace SpatialSEIR
        value = new long double;
        steadyStateConstraintPrecision = new double;
        useOCL = new int;
+       samples = new int;
+       accepted = new int;
 
        *context = _context;
        *S_star = _S_star;
@@ -79,6 +81,8 @@ namespace SpatialSEIR
        *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
        *value = -1.0;
        *useOCL = _useOCL;
+       *samples = 0;
+       *accepted = 0;
     }    
 
     FC_Hybrid_Reinfection::~FC_Hybrid_Reinfection()

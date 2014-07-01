@@ -43,10 +43,7 @@ namespace SpatialSEIR
                                          double varWidth,
                                          double compWidth)
     {
-        *((parameterFullConditional) -> samples) += 1;
-        *((compartmentFullConditional) -> samples) += 1;
-
-
+        *samples += 1;
         double initProposal = 0.0;
         double newProposal = 0.0;
         int i;
@@ -56,6 +53,7 @@ namespace SpatialSEIR
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
         double initVal = (this -> getValue());
+
         if (! std::isfinite(initVal))
         {
             std::cerr << "Double sampler starting from value of zero probability!\n";
@@ -86,6 +84,7 @@ namespace SpatialSEIR
             newProposal += (context -> random -> dnorm(x1, x0,compWidth));
             initProposal += (context -> random -> dnorm(x0, x1,compWidth));
         }
+
         // Evaluate results. 
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
@@ -105,7 +104,6 @@ namespace SpatialSEIR
             this -> calculateRelevantCompartments();
             this -> setValue(initVal); 
         }                
-
         if (!std::isfinite(this -> getValue()))
         {
             std::cout << "Impossible value selected.\n";

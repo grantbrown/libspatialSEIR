@@ -274,8 +274,8 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
-            ParameterFullConditional* parameterFullConditional;
-            CompartmentFullConditional* compartmentFullConditional;
+            ParameterFullConditional** parameterFullConditional;
+            CompartmentFullConditional** compartmentFullConditional;
 
             int sampleHybrid_CPU(ModelContext* context,
                                   double* variable,

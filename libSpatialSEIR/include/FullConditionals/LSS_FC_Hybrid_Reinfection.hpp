@@ -58,8 +58,6 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **R;
             CompartmentalModelMatrix **E_star;
             CompartmentalModelMatrix **R_star;
-            ParameterFullConditional **parameterFullConditional;
-            CompartmentFullConditional **compartmentFullConditional;
             InitData **A0;
             CovariateMatrix **X;
             CovariateMatrix **X_p_rs;
