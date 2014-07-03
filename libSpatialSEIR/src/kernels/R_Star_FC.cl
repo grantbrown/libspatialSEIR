@@ -36,7 +36,7 @@ inline double dbinom(int x, int n, double p)
     {
         return(x==n ? 0.0 : -INFINITY);
     }   
-
+    return(-INFINITY);
 }
 
 __kernel void FC_R_Star_Part1(int nTpt,

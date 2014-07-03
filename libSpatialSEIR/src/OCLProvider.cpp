@@ -271,10 +271,12 @@ cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFil
     int err = 1;
     std::vector<cl::Device> devices; devices.push_back(**(device -> device));
     std::string log;
+
     // LKD is set at compile time, intall directory of OpenCL kernels. 
     std::string LKD(LSS_KERNEL_DIRECTORY);
     LKD = LKD.append(kernelFile);
     const char* progName = LKD.c_str();
+
 
     std::ifstream programFile(progName);
     std::string programString(std::istreambuf_iterator<char>(programFile), 
@@ -282,12 +284,22 @@ cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFil
     cl::Program::Sources source(1, std::make_pair(programString.c_str(), 
                                 programString.length() + 1));
 
+
+
     cl::Program program(**currentContext, source);
     std::vector<cl::Kernel> kernels;
+
+
     try
     {
         err = program.build(devices);
+
         log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
+        if (log.find("warning") != std::string::npos)
+        {
+            std::cout << "Warnings generated while building kernel.\n";
+            std::cout << "CL_PROGRAM_BUILD_LOG: \n" << log << "\n";
+        }
         program.createKernels(&kernels);
     }
     catch(cl::Error e)
@@ -297,6 +309,8 @@ cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFil
         log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
         err = e.err();
     }
+
+
     if (err != 0)
     {
         std::cerr << "Error building OpenCL Kernel, code: " << err << "\n"; 
@@ -305,6 +319,8 @@ cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFil
         std::cerr << "Kernel Source: \n" << programString.c_str() << "\n";
         throw(-1);
     }
+
+
 
     return(kernels[0]);
 }
