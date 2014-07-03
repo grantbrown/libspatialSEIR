@@ -24,15 +24,15 @@ inline double dbinom(int x, int n, double p)
     {
         return(logChoose(n,x) + x*log(p) + (n-x)*log(1-p));
     }
-    if (n == 0)
+    else if (n == 0)
     {
         return(x==0 ? 0.0 : -INFINITY);
     }
-    if (p == 0.0)
+    else if (p == 0.0)
     {
         return(x == 0 ? 0.0 : -INFINITY);
     }
-    if (p == 1.0)
+    else if (p == 1.0)
     {
         return(x==n ? 0.0 : -INFINITY);
     }   

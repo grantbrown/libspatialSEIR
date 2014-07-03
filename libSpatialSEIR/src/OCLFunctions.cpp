@@ -56,8 +56,9 @@ namespace SpatialSEIR
         size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
         int deviceMaxSize = (device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
         int localSizeMultiple = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
+        int reportedMaxSize = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device));
         int maxLocalSize = localMemPerCore/(2*4 + 1*8);
-        maxLocalSize = std::min(maxLocalSize, deviceMaxSize);
+        maxLocalSize = std::min(std::min(maxLocalSize, deviceMaxSize), reportedMaxSize);
         int i=-1;
         int workGroupSize = 0;
         while(workGroupSize < maxLocalSize && workGroupSize < totalWorkUnits)
@@ -65,7 +66,7 @@ namespace SpatialSEIR
             i++;
             workGroupSize = pow(2,i)*localSizeMultiple;
         }
-        if (workGroupSize < totalWorkUnits)
+        if (workGroupSize >= maxLocalSize)
         {
             workGroupSize = pow(2,i-1)*localSizeMultiple;
         }
@@ -299,8 +300,11 @@ namespace SpatialSEIR
             size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
             int deviceMaxSize = (device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
             int localSizeMultiple = (R_Star_kernel -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
+            int reportedMaxSize = (R_Star_kernel -> getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device));
+
+
             int maxLocalSize = localMemPerCore/(4*6 + 2*8);
-            maxLocalSize = std::min(maxLocalSize, deviceMaxSize);
+            maxLocalSize = std::min(std::min(maxLocalSize, deviceMaxSize), reportedMaxSize);
             i=-1;
             int workGroupSize = 0;
             while(workGroupSize <= maxLocalSize && workGroupSize < (R_star_args -> totalWorkUnits))
@@ -308,7 +312,7 @@ namespace SpatialSEIR
                 i++;
                 workGroupSize = pow(2,i)*localSizeMultiple;
             }
-            if (workGroupSize < (R_star_args -> totalWorkUnits))
+            if (workGroupSize >= maxLocalSize)
             {
                 workGroupSize = pow(2,i-1)*localSizeMultiple;
             }
