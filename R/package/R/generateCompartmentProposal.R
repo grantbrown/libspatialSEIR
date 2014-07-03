@@ -1,4 +1,4 @@
-generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, reinfection = TRUE)
+generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, reinfection = TRUE, p_ir=0.9, p_rs = 0.05)
 {
     if (dim(I_star)[1] <= 1)
     {
@@ -27,6 +27,7 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
     }
     if (any(is.na(I0)))
     {
+        print("NA I0")
         I0 = floor(I_star[1,]/2)
     }
    
@@ -47,10 +48,10 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
 
             if (reinfection)
             {
-                S_star[1,] = rbinom(rep(1, length(S0)), R[1,], 0.05)
+                S_star[1,] = rbinom(rep(1, length(S0)), R[1,], p_rs)
             }
             E_star[1,] = rbinom(rep(1, length(S0)), I_star[2,], 1)
-            R_star[1,] = rbinom(rep(1, length(S0)), I[1,], 0.8)
+            R_star[1,] = rbinom(rep(1, length(S0)), I[1,], p_ir)
         }
         else
         {
@@ -61,7 +62,7 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
 
             if (reinfection)
             {
-                S_star[tpt,] = rbinom(rep(1, length(S0)), R[tpt,], 0.9)
+                S_star[tpt,] = rbinom(rep(1, length(S0)), R[tpt,], p_rs)
             }
             if (tpt != nrow(R))
             {
@@ -71,7 +72,7 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
             {
                 E_star[tpt,] = E_star[tpt-1,]
             }
-            R_star[tpt,] = rbinom(rep(1,length(S0)), I[tpt,],0.8)
+            R_star[tpt,] = rbinom(rep(1,length(S0)), I[tpt,],p_ir)
         }
     }
     return(list(S0=S0,
