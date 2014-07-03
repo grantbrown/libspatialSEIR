@@ -133,6 +133,9 @@ SpatialSEIR::OCLProvider::OCLProvider()
         R_star_args = new FC_R_Star_KernelData(); 
         R_star_args -> totalWorkUnits = -1;
 
+        p_se_args = new P_SE_Calculation_KernelData();
+        p_se_args -> totalWorkUnits = -1;
+
         // Allocate space for kernels
         test_kernel = new cl::Kernel();
         R_Star_kernel = new cl::Kernel();
@@ -228,6 +231,7 @@ SpatialSEIR::OCLProvider::~OCLProvider()
     delete currentDevice;
     delete platforms;
     delete R_star_args;
+    delete p_se_args;
     delete test_kernel;
     delete R_Star_kernel;
     delete p_se_kernel1;
@@ -258,6 +262,7 @@ void SpatialSEIR::OCLProvider::setDevice(int platformId, int deviceId)
 
     // Make sure R_star local size is re-calculated
     R_star_args -> totalWorkUnits = -1;
+    p_se_args -> totalWorkUnits = -1;
 
     *currentPlatform = (*((*platforms)[pID] -> platform));
     *currentContext = (*platforms)[pID] -> context;

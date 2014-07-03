@@ -22,6 +22,14 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    struct P_SE_Calculation_KernelData
+    {
+        int workGroupSize;
+        int numWorkGroups;
+        int totalWorkUnits;
+        int globalSize;
+    };
+
     struct FC_R_Star_KernelData
     {
         int workGroupSize;
@@ -76,6 +84,7 @@ namespace SpatialSEIR
                     DeviceContainer *device);
             std::vector<cl::Program> *programs;
             FC_R_Star_KernelData* R_star_args;
+            P_SE_Calculation_KernelData* p_se_args;
 
             // FC Methods
             int test(); 

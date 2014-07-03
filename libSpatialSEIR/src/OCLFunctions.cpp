@@ -50,40 +50,59 @@ namespace SpatialSEIR
         //    N (TxP)
         // 2. Doubles (8 bytes)
         //    eta (not exponentiated) (TxP)
+        int workGroupSize;
+        int numWorkGroups;
+        int totalWorkUnits;
+        int globalSize;
 
-        // Calculate work size for kernel 1 (todo: cache this)
-        int totalWorkUnits = nLoc*nTpt;
-        size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
-        int deviceMaxSize = (device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
-        int localSizeMultiple = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
-        int reportedMaxSize = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device));
-        int maxLocalSize = localMemPerCore/(2*4 + 1*8);
-        maxLocalSize = std::min(std::min(maxLocalSize, deviceMaxSize), reportedMaxSize);
-        int i=-1;
-        int workGroupSize = 0;
-        while(workGroupSize < maxLocalSize && workGroupSize < totalWorkUnits)
+        if (R_star_args -> totalWorkUnits == -1)
         {
-            i++;
-            workGroupSize = pow(2,i)*localSizeMultiple;
+            // Not populated, need to calculate kernel parameters. 
+            totalWorkUnits = nLoc*nTpt;
+            size_t localMemPerCore = device.getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+            int deviceMaxSize = (device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>());
+            int localSizeMultiple = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE>(device));
+            int reportedMaxSize = (p_se_kernel1 -> getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(device));
+            int maxLocalSize = localMemPerCore/(2*4 + 1*8);
+            maxLocalSize = std::min(std::min(maxLocalSize, deviceMaxSize), reportedMaxSize);
+            int i=-1;
+            workGroupSize = 0;
+            while(workGroupSize < maxLocalSize && workGroupSize < totalWorkUnits)
+            {
+                i++;
+                workGroupSize = pow(2,i)*localSizeMultiple;
+            }
+            if (workGroupSize >= maxLocalSize)
+            {
+                workGroupSize = pow(2,i-1)*localSizeMultiple;
+            }
+
+            numWorkGroups = (totalWorkUnits/workGroupSize); 
+                numWorkGroups += (numWorkGroups*workGroupSize < totalWorkUnits);
+            globalSize = numWorkGroups*workGroupSize;
+
+            (p_se_args -> workGroupSize) = workGroupSize; 
+            (p_se_args -> numWorkGroups) = numWorkGroups; 
+            (p_se_args -> totalWorkUnits) = totalWorkUnits; 
+            (p_se_args -> globalSize) = globalSize; 
+
+            /*
+            std::cout << "Total Work Units: " << totalWorkUnits << "\n";
+            std::cout << "Local Mem Per Core: " << localMemPerCore << "\n";
+            std::cout << "Local Size Multiple: " << localSizeMultiple << "\n";
+            std::cout << "Reported Maximum Size: " << deviceMaxSize << "\n";
+            std::cout << "Max Local Size: " << maxLocalSize << "\n";
+            std::cout << "Work Group Size: " << workGroupSize << "\n";
+            std::cout << "Global Size: " << globalSize << "\n";
+            */
         }
-        if (workGroupSize >= maxLocalSize)
+        else
         {
-            workGroupSize = pow(2,i-1)*localSizeMultiple;
+            workGroupSize = (p_se_args -> workGroupSize); 
+            numWorkGroups = (p_se_args -> numWorkGroups); 
+            totalWorkUnits = (p_se_args -> totalWorkUnits); 
+            globalSize = (p_se_args -> globalSize); 
         }
-
-        int numWorkGroups = (totalWorkUnits/workGroupSize); 
-            numWorkGroups += (numWorkGroups*workGroupSize < totalWorkUnits);
-        int globalSize = numWorkGroups*workGroupSize;
-
-        /*
-        std::cout << "Total Work Units: " << totalWorkUnits << "\n";
-        std::cout << "Local Mem Per Core: " << localMemPerCore << "\n";
-        std::cout << "Local Size Multiple: " << localSizeMultiple << "\n";
-        std::cout << "Reported Maximum Size: " << deviceMaxSize << "\n";
-        std::cout << "Max Local Size: " << maxLocalSize << "\n";
-        std::cout << "Work Group Size: " << workGroupSize << "\n";
-        std::cout << "Global Size: " << globalSize << "\n";
-        */
 
         int err;
 
