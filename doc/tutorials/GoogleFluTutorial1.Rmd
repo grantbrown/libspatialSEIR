@@ -1,0 +1,407 @@
+---
+title: "Google Flu Example SEIRS Model"
+author: "Grant Brown"
+date: "07/03/2014"
+output: html_document
+---
+
+Part 0: Introduction
+============================
+
+Google Flu Trends provides estimates of influenza like activity for the United States, among other places. 
+More information is available at <http://www.google.org/flutrends/>. Most importantly for this writing, Google Flu trends provides an easily 
+accessible data set to test epidmic models using libspatialSEIR.  
+
+The spatialSEIR R library is a rapidly developing tool for fitting spatial SEIRS models, as well as several important spatial and non-spatial special cases:
+
+* spatial and non-spatial SEIR models
+* spatial and non-spatial serial SEIR models (re-start process between each epidemic)
+* fixed immunity loss SEIRS models
+
+Here we're going to fit a general, non-spatial, SEIRS model using data from Google Flu.
+
+```{r tidy=FALSE}
+library(spatialSEIR)
+```
+
+
+Part 1: Data Processing
+=========================
+
+
+The first step is to read in and process the data. For this tutorial, we're going to consider just states which are
+part of Health and Human Services region 5. These are:
+
+* Illinois: population 12,830,632 (2010)
+* Indiana: population 6,483,802 (2010)
+* Ohio: population 11,536,504 (2010)  
+* Michigan: population 9,883,640 (2010)
+* Minnesota: population 5,303,925 (2010)
+* Wisconsin: population 5,686,986 (2010)
+
+Population estimates were obtained from the Census Bureau: <http://quickfacts.census.gov/qfd/states/>.
+Let's consider data between 2007 and 2011.
+
+
+```{r, tidy=FALSE}
+fluDat = read.table("http://www.google.org/flutrends/us/data.txt", 
+                    sep = ",", skip = 11, head=TRUE)
+dat.keep = ((as.Date(fluDat$Date) < as.Date("2011-01-01")) & 
+              (as.Date(fluDat$Date) >= as.Date("2007-01-01")))
+fluDat = fluDat[dat.keep,]
+region5 = fluDat$HHS.Region.5..IL..IN..MI..MN..OH..WI.
+```
+
+Let's take a look at the raw data. 
+
+```{r, echo=TRUE, tidy=FALSE}
+par(xaxt="n") # Suppress plotting the X axis
+plot(region5, type = "l", 
+     main = "ILI Per 100k Physician Visits\n HHS Region 5", 
+     xlab = "Year", ylab = "#Visits/100k")
+abline(h=seq(0, 10000,1000), lty = 2, col = "lightgrey")
+lines(region5, col = "blue", lwd = 1.5)
+par(xaxt="s") # Enable plotting of the X axis
+years = as.numeric(format(as.Date(fluDat$Date), "%Y"))
+yearIdx = which(!duplicated(years))
+yearIdx = yearIdx[2:length(yearIdx)] # make sure evenly spaced
+# We're going to make several axes, so put it in a function
+xAxis = function()
+{
+  par(xaxt="s")  
+  axis(side=1,at=yearIdx, labels = years[yearIdx])
+}
+xAxis()
+```
+
+
+This data is presented on the "proportion of physiscian visits" scale, but we're interested in the number of new cases in the *population*. The formal approach to this dilemma is to formulate an explicit *data model* linking the observed data and the rest of the *process model*. At the time of this writing, however, libspatialSEIR does not support any but the simplest (identity) data model. Therefore we need to come up with a reasonable estimate of the number of new infectious cases. 
+
+
+If we assume that the proportion of physician visits reflecting ILI is representative of the proportion of the population becoming newly infected (a questionable assumption that is nevertheless reflected in many more formal data models), we can use the population size to estimate the newly infectious counts. 
+
+
+```{r, tidy=FALSE}
+
+TotalPop =(12830632
+          + 6483802
+          + 11536504 
+          + 9883640
+          + 5303925 
+          + 5686986)
+FluCountEst = (region5/100000)*TotalPop
+
+```
+
+
+Part 2: SEIRS Preparation
+==========================
+
+Now that we have data on a reasonable scale for a SEIRS model, we need to make some decisions about what the infection and reinfection linear models looks like. 
+
+From this point onward things are going to be formatted for libspatialSEIR. There remains a good deal of API cleanup and model component abstraction to be done, so be warned that the following structure is not particularly streamlined. 
+
+2a: Infection Structure
+-------------------------
+The infection intensity is a function of both the infectivity of the current influenza strain and the aggregate effect of population behaviors. We could introduce variabels reflecting the introduction of public health campaigns, measures of public awareness of particular influenza outbreaks, or any number of other things (so long as we're careful not to introduce collinearity problems). 
+
+Here we'll keep things simple, and include (in addition to an intercept) a linear term for time to capture average increases or decreases in infection intensity along with a trigonometric basis with a period of one year to capture basic epidemic behavior. 
+
+```{r, tidy=FALSE}
+# Fixed Co-variates
+X = matrix(1)
+# Time Varying co-variates
+daysSince2000 = as.numeric(as.Date(fluDat$Date) - as.Date("2000-01-01"))
+trigBasis = daysSince2000/365*2*pi
+Z = cbind(daysSince2000/365,            # linear term for time
+          sin(trigBasis),               # trig basis function 1
+          cos(trigBasis),               # trig basis function 2
+          sin(trigBasis)*cos(trigBasis) # trig basis function 3
+  )
+```
+
+Let's look at our infection process basis (minus the intercept).
+
+```{r, tidy=FALSE, echo=TRUE}
+
+par(mfrow = c(2,2))
+for (i in 1:4)
+{
+  par(xaxt = "n")
+  plot(Z[,i], type = "l", main = paste("Time Varying Co-variate", i),
+       xlab = "Year", ylab = "Value")
+  xAxis()
+}
+```
+
+
+
+2b: Immunity Loss Process
+---------------------------
+The same basis used for the infection process may serve well for the reintroduction of recovered individuals to the susceptible category. In addition, we may wish to evaluate to what degree individuals were more greatly susceptible to the H1N1 pandemic in 2009. We therefore introduce a time varying H1N1 term, which is zero before April 2009, jumps to one on April first, and then decays. 
+
+
+```{r, tidy=FALSE, echo=TRUE}
+h1n1_term = (as.Date(fluDat$Date) >= as.Date("2009-04-01"))
+h1n1_idx = which(h1n1_term)
+h1n1_term[h1n1_idx] = h1n1_term[h1n1_idx]/sqrt(seq(1,length(h1n1_idx)))
+
+X_p_rs = cbind(as.numeric(X), Z, h1n1_term)
+
+par(xaxt="n")
+plot(h1n1_term, type = "l", lwd = 2, 
+     main = "H1N1 Susceptibility Co-variate",
+     xlab = "Year", ylab= "Value")
+xAxis()
+```
+
+
+2c: Parameter Starting Values
+------------------------------
+
+
+```{r, tidy=FALSE}
+
+I_star = matrix(round(FluCountEst), ncol = 1)
+N = matrix(TotalPop, nrow = nrow(fluDat), ncol = 1)
+
+p_ei = 0.9
+p_ir = 0.9
+beta = rep(0, ncol(X) + ncol(Z))
+beta[1] = 2.5
+
+beta_p_rs = rep(0, ncol(X_p_rs))
+beta_p_rs[1] = 2.5
+
+
+# Dummy values for spatial components, as this is a non spatial model.
+rho = -1 # spatial dependence parameter
+DM = c(0)
+
+
+# Starting tuning parameters for MCMC sampling
+mcmcTuningParams = c(1, # S_star
+                     1, # E_star
+                     1,  # R_star
+                     1,  # S_0
+                     1,  # I_0
+                     0.82,  # beta
+                     0.2,  # beta_p_rs
+                     0.0)  # rho
+
+
+# Prior parameters. 
+priorAlpha_pEI = 10000;
+priorBeta_pEI = 1000;
+priorAlpha_pIR = 10000;
+priorBeta_pIR = 1000;
+betaPrsPriorPrecision = 0.5
+betaPriorPrecision = 0.1
+
+# reinfection mode is 1, because this is a general SEIRS model. 
+reinfectionMode = 1
+# steadyStateConstraintPrecision is a loose constraint on net flows
+# between compartments. Setting it to a very small value eliminates
+# the constraint, but it helps with identifiability. 
+steadyStateConstraintPrecision = 0.1
+
+# iterationStride determines the delay between saving samples to the output file
+iterationStride = 1000
+outFileName = "./chain_output.txt"
+
+# Make a crude guess as to the true compartments:
+# S_star, E_star, R_star, and thus S,E,I and R
+proposal = generateCompartmentProposal(I_star, N, 
+                                       I0 = 100000, p_ir = 0.9, p_rs = 0.05)
+
+# Turn off verbose and debug output.
+verbose = FALSE
+debug = FALSE
+
+
+# Get object dimensions. This will be done automatically in the future
+compMatDim = dim(I_star)
+xDim = dim(X)
+zDim = dim(Z)
+xPrsDim = dim(X_p_rs)
+```
+
+We're ready to build the model. 
+
+```{r, tidy=FALSE}
+# Create model object. This giant constructor is going to be replaced with something friendlier 
+# in the future. 
+SEIRmodel = spatialSEIRModel(compMatDim,
+                      xDim,
+                      zDim,
+                      xPrsDim,
+                      proposal$S0,
+                      proposal$E0,
+                      proposal$I0,
+                      proposal$R0,
+                      proposal$S_star,
+                      proposal$E_star,
+                      proposal$I_star,
+                      proposal$R_star,
+                      X,
+                      Z,
+                      X_p_rs,
+                      DM,
+                      rho,
+                      priorAlpha_pEI,
+                      priorBeta_pEI,
+                      priorAlpha_pIR,
+                      priorBeta_pIR,
+                      beta,
+                      betaPriorPrecision,
+                      beta_p_rs,
+                      betaPrsPriorPrecision,
+                      p_ei,
+                      p_ir,
+                      N,
+                      outFileName,
+                      iterationStride,
+                      steadyStateConstraintPrecision,
+                      verbose,
+                      debug,
+                      mcmcTuningParams,
+                      reinfectionMode)
+
+
+# Set the sampling mode to 2, block sampling, for speed. 
+
+SEIRmodel$samplingMode = 2
+
+
+```
+
+Now we're ready to start sampling. On the other hand, we're not particularly confident that we've used reasonable tuning parameters. Let's add a function to help choose these. 
+
+
+```{r tidy=FALSE}
+
+burnInSamplingParams = function(modelObject,
+                               numBatches=500, 
+                               batchSize=20, 
+                               targetAcceptanceRatio=0.2,
+                               tolerance=0.05,
+                               proportionChange = 0.1
+                              )
+{
+    for (batch in 1:numBatches)
+    {
+        modelObject$simulate(batchSize)
+        modelObject$updateSamplingParameters(targetAcceptanceRatio, tolerance, proportionChange)
+    }
+}
+
+```
+
+Before we adjust these, however, we may be interested whether using the OpenCL capabilities is any faster for this particular data size. Let's take a look at what devices we have available:
+
+```{r tidy=FALSE}
+
+SEIRmodel$printOCLSummary()
+
+```
+
+There is only one device on this laptop, the (0,0) device. It is already, therefore, the current device. If there were more present, they could be selected with the following syntax:
+
+```{r tidy=FALSE}
+SEIRmodel$setDevice(0,0)
+```
+
+Let's take a look at how long 1000 iterations take in CPU mode (the default):
+
+```{r tidy=FALSE}
+system.time(SEIRmodel$simulate(1000))
+```
+Note that the "elapsed" number is the important one as far as we're concerned. 
+Now let's tell spatialSEIR that we want to use OpenCL and try again.
+
+```{r tidy=FALSE}
+SEIRmodel$oclPreferences = SEIRmodel$oclPreferences + 1
+system.time(SEIRmodel$simulate(1000))
+```
+
+Looks like CPU mode wins handily for this small data set, so let's switch our preferences back. 
+
+```{r tidy=FALSE}
+SEIRmodel$oclPreferences = SEIRmodel$oclPreferences-1
+```
+
+Now we can worry about our tuning parameters. Let's run the sampler for a bit, and then look at our acceptance rates. 
+
+```{r tidy=FALSE}
+
+# Adjust the sampling parameters
+burnInSamplingParams(SEIRmodel)
+#Check the current acceptance rates. First simulate, as the counters are cleared each time the parameters 
+# are updated:
+SEIRmodel$simulate(1000)
+SEIRmodel$printAcceptanceRates()
+SEIRmodel$printSamplingParameters()
+
+```
+
+These look reasonable, so let's launch the main simulation. As currently implemented, the MCMC samplers encounter distressingly high autocorrelation. This is an active target of optimization, but in the meantime we need to be prepared to run inconveniently many samples. 
+
+
+```{r tidy = FALSE}
+tm = 0
+for (i in 1:10)
+{
+  tm = tm + system.time(SEIRmodel$simulate(100000))[3]
+  SEIRmodel$updateSamplingParameters(0.2, 
+                                     0.05, 
+                                     0.1)
+  cat(paste(i, "of 100,", 
+            round((tm/(i)*(10-i)/60), 2), 
+            " minutes remaining.\n"))
+}
+
+```
+
+Let's take a look at the estimated epidemic. 
+
+
+```{r tidy = FALSE}
+  S_frac = SEIRmodel$S/N
+  E_frac = SEIRmodel$E/N
+  I_frac = SEIRmodel$I/N
+  R_frac = SEIRmodel$R/N
+
+  maxProp = max(c(S_frac, E_frac, I_frac, R_frac))
+  par(xaxt="n")
+  plot.new()
+  layout(matrix(c(1,2), nrow = 1),
+        widths = c(8,2), heights = c(4,4))
+  par(bty = "o")
+  plot(0,0, xlim = c(0, nrow(S_frac)), 
+       ylim = c(0, min(maxProp*1.1, 1.0)), type = "n",
+       main = "Estimated Epidemic Fractions",
+       xlab = "Year", ylab = "Proportion")
+  xAxis()
+
+  lines(S_frac, col = "blue", lty = 1, lwd = 1.5)
+  lines(E_frac, col = "red", lty = 2, lwd = 1.5)
+  lines(I_frac, col = "green", lty = 3, lwd = 1.5)
+  lines(R_frac, col = "black", lty = 4, lwd = 1.5)
+  par(bty = "n")
+  par(xaxt="n"); par(yaxt="n")
+  plot(c(0,10), c(0,10), type = "n",xlab="",ylab="")
+  par(xpd=TRUE)
+  legend(x=-130,y=10,legend=c("Susceptible", "Exposed", "Infectious", "Removed"),
+         lty = 1:4, col = c("blue", "red", "green", "black"), lwd = 1.5, cex = 0.7)
+ par(xpd=FALSE)
+```
+
+We could also use color to indicate epidemic intensity (more useful with multiple locations).
+
+```{r tidy=FALSE
+  plotCompartment(SEIRmodel$I/N)
+```
+
+Let's examine the parameters chains. 
+
+
