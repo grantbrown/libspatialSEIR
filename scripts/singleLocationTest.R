@@ -25,10 +25,9 @@
     p_ei = 0.9
     p_ir = 0.9
 
-#trueBetaRS = c(2.5, -1, 0.5) 
-    trueBetaRS = c(2.5, -1, 0.25) 
+    trueBetaRS = c(-2.5, 1, -0.25) 
     eta_rs = X_prs %*% trueBetaRS
-    p_rs = exp(-eta_rs)
+    p_rs = exp(eta_rs)
 
     N = 100000
     E0 = 0
@@ -229,7 +228,7 @@ debug = FALSE
 #proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
 proposal = generateCompartmentProposal(I_star, N, S0 = N[1]-100, I0 = 100, E0 = 0)
 beta = c(5, rep(0, (length(beta)-1)))
-betaPrs = c(4, rep(0,(length(betaPrs)-1)))
+betaPrs = -c(4, rep(0,(length(betaPrs)-1)))
 p_ei = 0.8
 p_ir = 0.8
 

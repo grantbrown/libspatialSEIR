@@ -961,7 +961,7 @@ namespace SpatialSEIR
         X_pRS -> calculate_fixed_eta_CPU(p_rs, betaPrs);
         for (i = 0; i < neta; i++)
         {
-            p_rs[i] = exp(-p_rs[i]);
+            p_rs[i] = exp(p_rs[i]);
         }
     }
 

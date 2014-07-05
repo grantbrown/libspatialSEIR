@@ -118,9 +118,9 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
     p_se = matrix(0.0, nrow = maxTpt, ncol = ncol(dcm)) 
     p_ei = 0.9
     p_ir = 0.9
-    trueBetaRS = c(3, -1, 2)
+    trueBetaRS = c(-3, 1, -2)
     eta_rs = X_prs %*% trueBetaRS    
-    p_rs = exp(-eta_rs)
+    p_rs = exp(eta_rs)
 
     cat("Running main simulation...\n")
 

@@ -177,7 +177,7 @@ X_betaPrs = cbind(1,
               sin((1:maxTpt)/(maxTpt)*2*pi),
               cos((1:maxTpt)/(maxTpt)*2*pi)
               )
-betaPrs = c(3,0,0,0,0)
+betaPrs = c(-3,0,0,0,0)
 betaPrsPriorPrecision = 0.5
 
 xDim = dim(X)

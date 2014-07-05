@@ -1,7 +1,7 @@
 ---
 title: "Google Flu Example SEIRS Model"
 author: "Grant Brown"
-date: "07/03/2014"
+date: "07/05/2014"
 output: html_document
 ---
 
@@ -10,13 +10,13 @@ Part 0: Introduction
 
 Google Flu Trends provides estimates of influenza like activity for the United States, among other places. 
 More information is available at <http://www.google.org/flutrends/>. Most importantly for this writing, Google Flu trends provides an easily 
-accessible data set to test epidmic models using libspatialSEIR.  
+accessible data set to test epidmic models using the spatialSEIR R library.  
 
 The spatialSEIR R library is a rapidly developing tool for fitting spatial SEIRS models, as well as several important spatial and non-spatial special cases:
 
 * spatial and non-spatial SEIR models
 * spatial and non-spatial serial SEIR models (re-start process between each epidemic)
-* fixed immunity loss SEIRS models
+* spatial and non-spatial fixed rate immunity loss SEIRS models
 
 Here we're going to fit a general, non-spatial, SEIRS model using data from Google Flu.
 
@@ -28,9 +28,7 @@ library(spatialSEIR)
 Part 1: Data Processing
 =========================
 
-
-The first step is to read in and process the data. For this tutorial, we're going to consider just states which are
-part of Health and Human Services region 5. These are:
+The first step is to read in and process the data. For this tutorial, we're going to consider just states which are part of Health and Human Services region 5. These are:
 
 * Illinois: population 12,830,632 (2010)
 * Indiana: population 6,483,802 (2010)
@@ -42,14 +40,13 @@ part of Health and Human Services region 5. These are:
 Population estimates were obtained from the Census Bureau: <http://quickfacts.census.gov/qfd/states/>.
 Let's consider data between 2007 and 2011.
 
-
 ```{r, tidy=FALSE}
 fluDat = read.table("http://www.google.org/flutrends/us/data.txt", 
                     sep = ",", skip = 11, head=TRUE)
 dat.keep = ((as.Date(fluDat$Date) < as.Date("2011-01-01")) & 
               (as.Date(fluDat$Date) >= as.Date("2007-01-01")))
-fluDat = fluDat[dat.keep,]
-region5 = fluDat$HHS.Region.5..IL..IN..MI..MN..OH..WI.
+fluDat.sub = fluDat[dat.keep,]
+region5 = fluDat.sub$HHS.Region.5..IL..IN..MI..MN..OH..WI.
 ```
 
 Let's take a look at the raw data. 
@@ -62,9 +59,8 @@ plot(region5, type = "l",
 abline(h=seq(0, 10000,1000), lty = 2, col = "lightgrey")
 lines(region5, col = "blue", lwd = 1.5)
 par(xaxt="s") # Enable plotting of the X axis
-years = as.numeric(format(as.Date(fluDat$Date), "%Y"))
+years = as.numeric(format(as.Date(fluDat.sub$Date), "%Y"))
 yearIdx = which(!duplicated(years))
-yearIdx = yearIdx[2:length(yearIdx)] # make sure evenly spaced
 # We're going to make several axes, so put it in a function
 xAxis = function()
 {
@@ -74,9 +70,7 @@ xAxis = function()
 xAxis()
 ```
 
-
 This data is presented on the "proportion of physiscian visits" scale, but we're interested in the number of new cases in the *population*. The formal approach to this dilemma is to formulate an explicit *data model* linking the observed data and the rest of the *process model*. At the time of this writing, however, libspatialSEIR does not support any but the simplest (identity) data model. Therefore we need to come up with a reasonable estimate of the number of new infectious cases. 
-
 
 If we assume that the proportion of physician visits reflecting ILI is representative of the proportion of the population becoming newly infected (a questionable assumption that is nevertheless reflected in many more formal data models), we can use the population size to estimate the newly infectious counts. 
 
@@ -111,12 +105,11 @@ Here we'll keep things simple, and include (in addition to an intercept) a linea
 # Fixed Co-variates
 X = matrix(1)
 # Time Varying co-variates
-daysSince2000 = as.numeric(as.Date(fluDat$Date) - as.Date("2000-01-01"))
+daysSince2000 = as.numeric(as.Date(fluDat.sub$Date) - as.Date("2000-01-01"))
 trigBasis = daysSince2000/365*2*pi
 Z = cbind(daysSince2000/365,            # linear term for time
           sin(trigBasis),               # trig basis function 1
-          cos(trigBasis),               # trig basis function 2
-          sin(trigBasis)*cos(trigBasis) # trig basis function 3
+          cos(trigBasis)               # trig basis function 2
   )
 ```
 
@@ -125,7 +118,7 @@ Let's look at our infection process basis (minus the intercept).
 ```{r, tidy=FALSE, echo=TRUE}
 
 par(mfrow = c(2,2))
-for (i in 1:4)
+for (i in 1:3)
 {
   par(xaxt = "n")
   plot(Z[,i], type = "l", main = paste("Time Varying Co-variate", i),
@@ -138,11 +131,11 @@ for (i in 1:4)
 
 2b: Immunity Loss Process
 ---------------------------
-The same basis used for the infection process may serve well for the reintroduction of recovered individuals to the susceptible category. In addition, we may wish to evaluate to what degree individuals were more greatly susceptible to the H1N1 pandemic in 2009. We therefore introduce a time varying H1N1 term, which is zero before April 2009, jumps to one on April first, and then decays. 
+The same basis used for the infection process may serve well for the reintroduction of recovered individuals to the susceptible category. In addition, we may wish to evaluate to what degree individuals were more susceptible to the H1N1 pandemic in 2009. We therefore introduce a time varying H1N1 term, which is zero before April 2009, jumps to one on April first, and then decays. 
 
 
 ```{r, tidy=FALSE, echo=TRUE}
-h1n1_term = (as.Date(fluDat$Date) >= as.Date("2009-04-01"))
+h1n1_term = (as.Date(fluDat.sub$Date) >= as.Date("2009-04-01"))
 h1n1_idx = which(h1n1_term)
 h1n1_term[h1n1_idx] = h1n1_term[h1n1_idx]/sqrt(seq(1,length(h1n1_idx)))
 
@@ -163,7 +156,7 @@ xAxis()
 ```{r, tidy=FALSE}
 
 I_star = matrix(round(FluCountEst), ncol = 1)
-N = matrix(TotalPop, nrow = nrow(fluDat), ncol = 1)
+N = matrix(TotalPop, nrow = nrow(fluDat.sub), ncol = 1)
 
 p_ei = 0.9
 p_ir = 0.9
@@ -171,7 +164,7 @@ beta = rep(0, ncol(X) + ncol(Z))
 beta[1] = 2.5
 
 beta_p_rs = rep(0, ncol(X_p_rs))
-beta_p_rs[1] = 2.5
+beta_p_rs[1] = -2.5
 
 
 # Dummy values for spatial components, as this is a non spatial model.
@@ -212,7 +205,9 @@ outFileName = "./chain_output.txt"
 # Make a crude guess as to the true compartments:
 # S_star, E_star, R_star, and thus S,E,I and R
 proposal = generateCompartmentProposal(I_star, N, 
-                                       I0 = 100000, p_ir = 0.9, p_rs = 0.05)
+                                       I0 = 100000, 
+                                       p_ir = 0.9, 
+                                       p_rs = 0.05)
 
 # Turn off verbose and debug output.
 verbose = FALSE
@@ -226,7 +221,11 @@ zDim = dim(Z)
 xPrsDim = dim(X_p_rs)
 ```
 
-We're ready to build the model. 
+Part 3: Model Fitting
+=======================
+
+We're ready to build the model. It would be preferable to build more than one model to assess chain convergence, but for illustrative purposes this tutorial takes the simpler approach of using one chain. 
+
 
 ```{r, tidy=FALSE}
 # Create model object. This giant constructor is going to be replaced with something friendlier 
@@ -275,6 +274,17 @@ SEIRmodel$samplingMode = 2
 
 ```
 
+Before we do any sampling, let's tell spatialSEIR to keep track of the sampling behavior of the last time point so that we can do prediction later. 
+
+```{r, tidy=FALSE}
+
+SEIRmodel$setTrace(0, (nrow(SEIRmodel$S) - 1))
+
+```
+
+3a: Tuning Parameters
+-------------------------
+
 Now we're ready to start sampling. On the other hand, we're not particularly confident that we've used reasonable tuning parameters. Let's add a function to help choose these. 
 
 
@@ -283,7 +293,7 @@ Now we're ready to start sampling. On the other hand, we're not particularly con
 burnInSamplingParams = function(modelObject,
                                numBatches=500, 
                                batchSize=20, 
-                               targetAcceptanceRatio=0.2,
+                               targetAcceptanceRatio=0.1,
                                tolerance=0.05,
                                proportionChange = 0.1
                               )
@@ -344,26 +354,28 @@ SEIRmodel$printSamplingParameters()
 
 ```
 
-These look reasonable, so let's launch the main simulation. As currently implemented, the MCMC samplers encounter distressingly high autocorrelation. This is an active target of optimization, but in the meantime we need to be prepared to run inconveniently many samples. 
+These look reasonable, so let's launch the main simulation. As currently implemented, the MCMC samplers encounter distressingly high autocorrelation. This is an active target of optimization, but in the meantime we need to be prepared to run inconveniently many samples. A bit of timekeeping code helps keep track of how long this might take. 
 
 
 ```{r tidy = FALSE}
 tm = 0
-for (i in 1:10)
+for (i in 1:100)
 {
   tm = tm + system.time(SEIRmodel$simulate(100000))[3]
-  SEIRmodel$updateSamplingParameters(0.2, 
-                                     0.05, 
-                                     0.1)
+  SEIRmodel$updateSamplingParameters(0.1, 
+                                     0.025, 
+                                     0.05)
   cat(paste(i, "of 100,", 
-            round((tm/(i)*(10-i)/60), 2), 
+            round((tm/(i)*(100-i)/60), 2), 
             " minutes remaining.\n"))
 }
 
 ```
 
-Let's take a look at the estimated epidemic. 
+3b: Initial Results
+-----------------------------
 
+Let's take a look at the estimated epidemic. 
 
 ```{r tidy = FALSE}
   S_frac = SEIRmodel$S/N
@@ -391,17 +403,236 @@ Let's take a look at the estimated epidemic.
   par(xaxt="n"); par(yaxt="n")
   plot(c(0,10), c(0,10), type = "n",xlab="",ylab="")
   par(xpd=TRUE)
-  legend(x=-130,y=10,legend=c("Susceptible", "Exposed", "Infectious", "Removed"),
+  legend(x=-55,y=10,legend=c("Susceptible", "Exposed", "Infectious", "Removed"),
          lty = 1:4, col = c("blue", "red", "green", "black"), lwd = 1.5, cex = 0.7)
- par(xpd=FALSE)
+par(xpd=FALSE)
 ```
 
 We could also use color to indicate epidemic intensity (more useful with multiple locations).
 
-```{r tidy=FALSE
+```{r tidy=FALSE, fig.width=6,fig.height=4}
+  {
   plotCompartment(SEIRmodel$I/N)
+  }
 ```
 
-Let's examine the parameters chains. 
+Let's examine the parameter chains. Again, these should be started from multiple points in the 
+parameter space and assessed for convergence in a real analysis. 
+
+```{r tidy=FALSE}
+chainDat = read.csv("./chain_output.txt")
+names(chainDat)
+
+plotChain = function(chain, main)
+{
+  chainIdx = floor(length(chain)/2):length(chain)
+  plot(chainDat$Iteration[chainIdx],chain[chainIdx],
+       main = main, xlab = "Iteration", ylab = "Value", type = "l")
+  abline(h = mean(chain[chainIdx]), lty = 2, col = "grey")
+}
+```
+
+```{r, tidy=FALSE,echo=TRUE, fig.width=4, fig.height=8}
+par(mfrow = c(5,2))
+plotChain(chainDat$BetaP_SE_0, "Exposure Intercept")
+plotChain(chainDat$BetaP_RS_0, "Reinfection Intercept")
+
+plotChain(chainDat$BetaP_SE_1, "Exposure Linear Time Component")
+plotChain(chainDat$BetaP_RS_1, "Reinfection Linear Component")
+
+plotChain(chainDat$BetaP_SE_2, "Exposure Sin Component")
+plotChain(chainDat$BetaP_RS_2, "Reinfection Sin Component")
+
+plotChain(chainDat$BetaP_SE_3, "Exposure Cos Component")
+plotChain(chainDat$BetaP_RS_3, "Reinfection Cos Component")
+
+plot.new()
+plotChain(chainDat$BetaP_RS_4, "Reinfection H1N1 Component")
+```
+```{r, tidy=FALSE, echo=TRUE, fig.width=4, fig.height=4}
+par(mfrow = c(2,1))
+plotChain(chainDat$p_ei, "E to I Transition Probability")
+plotChain(chainDat$p_ir, "I to R Transition Probability")
+```
+
+
+Clearly, autocorrelation is a major issue. Simulations do, however, indicate that the sampler will converge eventually to a stable posterior encompasing the true values of the parameters. 
+
+
+3c: Basic Reproductive Number
+--------------------------------
+An additional task we will often want to do is to calculate the basic reproductive number over time. This is partially implemented in the spatialSEIR library, and can be completed easily in R. 
+
+
+```{r, tidy =FALSE}
+  getR0 = function(t)
+  {
+    max(eigen(SEIRmodel$getGenerationMatrix(t))$values)  
+  }
+  
+  R0_vec = sapply(1:(nrow(SEIRmodel$I)-1), getR0)
+
+  par(xaxt = "n")
+  plot(R0_vec, type = "l", xlab = "Year",ylab = "R0",
+       main = "Estimated Basic Reproductive Number")
+  abline(h=seq(0, 2, 0.1), lty=2, col="lightgrey")
+  abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
+  lines(R0_vec, lwd = 1.5)
+  xAxis()
+```
+
+This could be easily done periodically during sampling to obtain posterior R0 distribution estimates. 
+
+3d: Prediction
+----------------
+
+Prediction is not built into the spatialSEIR library as of yet, but we can still make predictions manually. Let's try to predict the 2011 epidemic season. The following is just a crude estimate based on the parameter means. It would be preferable to take a sample of 
+the parameter values and predict the epidemic for each. 
+
+
+```{r tidy=FALSE}
+
+  predictEpidemic = function(beta.pred, 
+                             beta.prs.pred, 
+                             X.pred,
+                             X.prs.pred,
+                             p.ei,
+                             p.ir,
+                             S0,
+                             E0,
+                             I0,
+                             R0)
+  {
+      N = (S0+E0+I0+R0)
+      p_se_components = exp(X.pred %*% beta.pred)
+      p_se = matrix(0, ncol = 1, nrow = nrow(X.pred))
+      p_rs = exp(-X.prs.pred %*% beta.prs.pred)
+      S_star = matrix(0, ncol=1,nrow = nrow(X.pred))
+      E_star = matrix(0, ncol=1,nrow = nrow(X.pred))
+      I_star = matrix(0, ncol=1,nrow = nrow(X.pred))
+      R_star = matrix(0, ncol=1,nrow = nrow(X.pred))
+      S = matrix(0, ncol=1,nrow = nrow(X.pred))
+      E = matrix(0, ncol=1,nrow = nrow(X.pred))
+      I = matrix(0, ncol=1,nrow = nrow(X.pred))
+      R = matrix(0, ncol=1,nrow = nrow(X.pred))
+      S[1,] = S0
+      E[1,] = E0
+      I[1,] = I0
+      R[1,] = R0
+      S_star[1,] = rbinom(1, R0, p_rs[1])
+      p_se[1,] = 1-exp(-(I0/N*p_se_components[1]))
+      E_star[1,] = rbinom(1, S0, p_se[1,])
+      I_star[1,] = rbinom(1, E0, p_ei)
+      R_star[1,] = rbinom(1, I0, p_ir)
+      
+      for (i in 2:nrow(S))
+      {
+      
+        S[i,] = S[i-1,] + S_star[i-1,] - E_star[i-1,]
+        E[i,] = E[i-1,] + E_star[i-1,] - I_star[i-1,]
+        I[i,] = I[i-1,] + I_star[i-1,] - R_star[i-1,]
+        R[i,] = R[i-1,] + R_star[i-1,] - S_star[i-1,]
+        
+        p_se[i,] = 1-exp(-(I[i,]/N*p_se_components[i]))
+        S_star[i,] = rbinom(1, R[i,], p_rs[i])
+        E_star[i,] = rbinom(1, S[i,], p_se[i,])
+        I_star[i,] = rbinom(1, E[i,], p_ei)
+        R_star[i,] = rbinom(1, I[i,], p_ir)
+      }
+      return(list(S=S,E=E,I=I,R=R,
+                  S_star=S_star,E_star=E_star,
+                  I_star=I_star,R_star=R_star,
+                  p_se=p_se,
+                  p_rs=p_rs))
+  }
+
+  dat.pred = ((as.Date(fluDat$Date) >= as.Date("2011-01-01")) & 
+              (as.Date(fluDat$Date) < as.Date("2012-01-01")))
+  fluDat.pred = fluDat[dat.pred,]
+
+  daysSince2000.pred = as.numeric(as.Date(fluDat.pred$Date) - as.Date("2000-01-01"))
+  trigBasis.pred = daysSince2000.pred/365*2*pi
+  Z.pred = cbind(daysSince2000.pred/365,            # linear term for time
+            sin(trigBasis.pred),               # trig basis function 1
+            cos(trigBasis.pred))               # trig basis function 2
+  X.pred = cbind(1,Z.pred)
+  # re-infection prediction co-variates
+  h1n1_term.pred = (as.Date(fluDat.pred$Date) >= as.Date("2009-04-01"))
+  h1n1_idx.pred = which(h1n1_term.pred)
+  h1n1_term.pred[h1n1_idx.pred] = h1n1_term.pred[h1n1_idx.pred]/sqrt(seq(1,length(h1n1_idx.pred)))
+
+  X.prs.pred = cbind(1, Z.pred, h1n1_term.pred)
+
+
+  predict.i = function(i)
+  {
+    dataRow = chainDat[i,]
+    beta = c(dataRow$BetaP_SE_0,
+             dataRow$BetaP_SE_1,
+             dataRow$BetaP_SE_2,
+             dataRow$BetaP_SE_3)
+    beta.prs = c(dataRow$BetaP_RS_0,
+                 dataRow$BetaP_RS_1,
+                 dataRow$BetaP_RS_2,
+                 dataRow$BetaP_RS_3,
+                 dataRow$BetaP_RS_4)
+    return(predictEpidemic(beta, 
+                           beta.prs, 
+                           X.pred,
+                           X.prs.pred,
+                           dataRow$p.ei,
+                           dataRow$p.ir,
+                           dataRow$S_0_207,
+                           dataRow$E_0_207,
+                           dataRow$E_0_207,
+                           dataRow$R_0_207)) # These values are made available by setTrace, 
+                                             # and are named like: Comp_loc#_time#
+  }
+  
+  preds = lapply((nrow(chainDat) - floor(nrow(chainDat)/4)):
+                   nrow(chainDat), predict.i)
+
+
+  FluCountEst.pred = (fluDat.pred$HHS.Region.5..IL..IN..MI..MN..OH..WI./100000)*TotalPop
+```
+
+There's a lot going on with the predictions - let's focus on the infection size for simplicity. 
+
+```{r, tidy=FALSE}
+par(xaxt="n") # Suppress plotting the X axis
+# Plot the data with room for the prediction
+plot(SEIRmodel$I_star, type = "l", 
+     main = "ILI Per 100k Physician Visits\n HHS Region 5", 
+     xlab = "Year", ylab = "#Visits/100k",
+     xlim = c(0, length(region5) + nrow(X.pred)))
+# Add horizontal reference lines
+abline(h=seq(0, 10000000,500000), lty = 2, col = "lightgrey")
+# Prepare expanded x axis plotting function
+lines(region5, col = "blue", lwd = 1.5)
+years.pred = as.numeric(format(c(as.Date(fluDat.sub$Date), as.Date(fluDat.pred$Date)), "%Y"))
+yearIdx.pred = which(!duplicated(years.pred))
+xAxis.pred = function()
+{
+  par(xaxt="s")  
+  axis(side=1,at=yearIdx.pred, labels = years.pred[yearIdx.pred])
+}
+xAxis.pred()
+# Prepare to plot predictions
+pred.color = rgb(0.1,0.1,0.1,0.1)
+pred.idx = c((nrow(SEIRmodel$S)+1):(nrow(SEIRmodel$S)+nrow(X.pred)))
+# Plot MCMC predictions
+for (pred in preds)
+{
+  lines(pred.idx,pred$I_star, 
+        lty=2, col = pred.color)
+}
+# Plot true, unobserved data in red. 
+lines(c((nrow(SEIRmodel$S)+1):(nrow(SEIRmodel$S)+nrow(X.pred))),
+      FluCountEst.pred, lty=3, col = "red", lwd = 2)
+
+```
+
+
+That wraps it up for now - the next tutorial will describe the spatial features of spatialSEIR. The library is under active development, so much of the previous work which was done with R code will be provided by the model object. In addition, sampling efficiency is an important goal which is being explored, so the library will hopefully require less sampling time in the near future. 
 
 

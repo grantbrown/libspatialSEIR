@@ -25,9 +25,9 @@ p_ei = 0.9
 p_ir = 0.9
 
 #trueBetaRS = c(2.5, -1, 0.5) 
-trueBetaRS = c(2.5, -1, 0.0) 
+trueBetaRS = c(-2.5, 1, 0.0) 
 eta_rs = X_prs %*% trueBetaRS
-p_rs = exp(-eta_rs)
+p_rs = exp(eta_rs)
 
 N = 100000
 E0 = 0
