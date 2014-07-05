@@ -10,7 +10,7 @@ else
     wd = getwd()
     setwd("./simulation")
     source("./simulateIowaData.R")
-    control_code(10,10)
+    control_code(20,10)
     load("./SimulationObjects.robj")
     setwd(wd)
 }}
@@ -97,11 +97,11 @@ outFileName = "./chainOutput_sim.txt"
 iterationStride = 100
 
 # S,E,R,S0,I0,beta,betaPrs,rho
-sliceWidths = c(0.13,  # S_star
-                0.123,  # E_star
-                0.123, # I_star
-                0.1818, # S0
-                0.1848, # I0
+sliceWidths = c(0.2,  # S_star
+                0.2,  # E_star
+                0.2, # I_star
+                0.2, # S0
+                0.2, # I0
                 0.001, # beta
                 0.005, # betaPrs
                 0.01# rho
@@ -209,10 +209,10 @@ makePlot = function(imgNo)
         width = 800, 
         height = 600) 
         
-        plotTwoCompartments((S/N)[,Norder], 
-                            (res$S/N)[,Norder], 
-                            main1 = "True Susceptible Proportion", 
-                            main2 = "Fitted Susceptible Proportion", zlim = c(0, max(S/N)*1.1))
+        plotTwoCompartments((I/N)[,Norder], 
+                            (res$I/N)[,Norder], 
+                            main1 = "True Infectious Proportion", 
+                            main2 = "Fitted Infectious Proportion", zlim = c(0, min(max((I/N))*1.01, 1)))
     dev.off()
 }
 
@@ -241,11 +241,28 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
     })
 }
 
-runSimulation(5000,20, printAR=TRUE)
-runSimulation(10000,50, printAR=TRUE)
-runSimulation(10000,100, printAR=TRUE)
-runSimulation(10000000,1000, printAR=TRUE)
+#{
+#targetRatio = 0.2
+#targetWidth = 0.05
+#proportionChange = 0.01
+#for (j in 1:100)
+#{
+#    runSimulation(20, 1)
+#    res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
+#}
+#for (j in 1:10)
+#{
+#    runSimulation(1000, 1)
+#    res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
+#}
+#}
 
+runSimulation(1000,10, printAR=TRUE)
+runSimulation(50000,100, printAR=TRUE)
+#runSimulation(10000,1, printAR=TRUE)
+#runSimulation(10000,100, printAR=TRUE)
+#runSimulation(10000000,1000, printAR=TRUE)
 
+#
 
 

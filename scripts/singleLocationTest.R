@@ -13,7 +13,7 @@
 
     X_prs = cbind(1, 
                   sin((1:MaxTpt)/TptPerYear*2*pi), 
-                  cos((1:MaxTpt)/TptPerYear*2*pi))
+                  cos((6+1:MaxTpt)/TptPerYear*2*pi))
 
 
     trueBetaSEFixed = c(0.5)
@@ -304,13 +304,14 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 }
 
 
-print("Burn in 1 to adjust sampling widths.")
-res$samplingMode = 2
-runSimulation(20000,100, printAR = FALSE, targetRatio = 0.3)
-runSimulation(1000,200, printAR = FALSE, targetRatio = 0.3)
-print("Switching to joint reinfection sampling.")
-res$hybridReinfectionSampling = 1
-runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.3, targetWidth = 0.05)
+#print("Burn in 1 to adjust sampling widths.")
+#res$samplingMode = 2
+#runSimulation(20000,100, printAR = FALSE, targetRatio = 0.3)
+#runSimulation(1000,200, printAR = FALSE, targetRatio = 0.3)
+#print("Switching to joint reinfection sampling.")
+#res$hybridReinfectionSampling = 1
+#runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.3, targetWidth = 0.05)
+#res$oclPreferences = res$oclPreferences + 1
 
 
 
