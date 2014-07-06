@@ -129,6 +129,8 @@ namespace SpatialSEIR
         A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> numLocations);
         X -> genFromDataStream(xArgs -> inData_x, 
                                xArgs -> inData_z,
+                               xArgs -> offset,
+                               xArgs -> offsetLength,
                                xArgs -> inRow_x,
                                xArgs -> inCol_x,
                                xArgs -> inRow_z,
@@ -136,6 +138,8 @@ namespace SpatialSEIR
 
         X_pRS -> genFromDataStream(xPrsArgs -> inData_x, 
                                    xPrsArgs -> inData_z,
+                                   xPrsArgs -> offset,
+                                   xPrsArgs -> offsetLength,
                                    xPrsArgs -> inRow_x,
                                    xPrsArgs -> inCol_x,
                                    xPrsArgs -> inRow_z,

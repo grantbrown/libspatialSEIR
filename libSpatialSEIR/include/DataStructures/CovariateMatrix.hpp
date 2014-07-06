@@ -22,6 +22,8 @@ namespace SpatialSEIR
     {
         double* inData_x;
         double* inData_z;
+        double* offset;
+        int offsetLength;
         int* inRow_x;
         int* inCol_x;
         int* inRow_z;
@@ -34,6 +36,7 @@ namespace SpatialSEIR
             // Methods
         
             int genFromDataStream(double *indata_x, double *indata_z, 
+                                  double *offset, int offsetLength,
                                   int *inrow_x, int *incol_x,
                                   int *inrow_z, int *incol_z);
 
@@ -50,11 +53,14 @@ namespace SpatialSEIR
             // Attributes
             double *X; // Time invariant covariates
             double *Z; // Time varying covariates
+            double *offset;
+            int *offsetLength;
             std::vector<std::string>* varnames;
             int *nrow_x;
             int *ncol_x;
             int *nrow_z;
             int *ncol_z;
+            
     };
 }
 

@@ -36,6 +36,7 @@ class spatialSEIRInterface
                      SEXP Estar, 
                      SEXP Istar, 
                      SEXP Rstar, 
+                     SEXP offset,
                      SEXP X_,
                      SEXP Z_,
                      SEXP X_pRS_,
@@ -696,6 +697,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP Estar, 
                      SEXP Istar, 
                      SEXP Rstar, 
+                     SEXP offset_,
                      SEXP X_,
                      SEXP Z_,
                      SEXP X_pRS_,
@@ -737,6 +739,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::IntegerVector I_star(Istar);
     Rcpp::IntegerVector R_star(Rstar);
 
+    Rcpp::NumericVector offset(offset_);
+
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
     Rcpp::NumericVector X_pRS(X_pRS_);
@@ -775,97 +779,112 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::IntegerVector chainStride(iterationStride);
     
 
-    // Sanity check the input data. 
-    if (compartmentDimensions.size() != 2)
+    try
     {
-        Rcpp::Rcout << "Compartments must be two dimensional.\n";
-        throw(-1);
-    }
-    if (covariateDimensions_x.size() != 2 || covariateDimensions_z.size() != 2)
-    {
-        Rcpp::Rcout << "Covariates must be two dimensional.\n";
-        throw(-1);
-    }
-    if (vFlag.size() != 1 || dFlag.size() != 1)
-    {
-        Rcpp::Rcout << "Verbose and debug flags must be length 1\n";
-    }
-    if (chainStride.size() != 1)
-    {
-        Rcpp::Rcout << "Chain stride must be length 1\n";
-    }
 
-    int compartmentSize = (compartmentDimensions[0]*compartmentDimensions[1]);
-    if (S0.size() != compartmentDimensions[1])
-    {
-        Rcpp::Rcout << "Invalid S0 Compartment Size!\n";
-        throw(-1);
-    }
-    if (E0.size() != compartmentDimensions[1])
-    {
-        Rcpp::Rcout << "Invalid E_star0 Compartment Size!\n";
-        throw(-1);
-    }
-    if (I0.size() != compartmentDimensions[1])
-    {
-        Rcpp::Rcout << "Invalid I_star0 Compartment Size!\n";
-        throw(-1);
-    }
-    if (R0.size() != compartmentDimensions[1])
-    {
-        Rcpp::Rcout << "Invalid R_star0 Compartment Size!\n";
-        throw(-1);
-    }
-
-
-    if (S_star.size() != compartmentSize)
-    {
-        Rcpp::Rcout << "Invalid S_star Compartment Size!\n";
-        throw(-1);
-    }
-    if (E_star.size() != compartmentSize)
-    {
-        Rcpp::Rcout << "Invalid E_star Compartment Size!\n";
-        throw(-1);
-    }
-    if (I_star.size() != compartmentSize)
-    {
-        Rcpp::Rcout << "Invalid I_star Compartment Size!\n";
-        throw(-1);
-    }
-    if (R_star.size() != compartmentSize)
-    {
-        Rcpp::Rcout << "Invalid R_star Compartment Size!\n";
-        throw(-1);
-    }
-    if (N.size() != compartmentSize)
-    {
-        Rcpp::Rcout << "Invalid N Compartment Size!\n";
-        throw(-1);
-    }
-    if ((X_pRS.size() % compartmentDimensions[0]) != 0)
-    {
-        Rcpp::Rcout << "Invalid X_pRS size.\n";
-        Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
-    }
-
-    if (sliceParams.size() != 8)
-    {
-        Rcpp::Rcout << "Slice sampling parameters must be of length 9: S*,E*,R*,S0,I0,beta,betaPrs,rho\n";
-        throw(-1);
-    }
-    if (reinfectMode[0] > 2)
-    {
-        int maxItr = (compartmentDimensions[0]*compartmentDimensions[1]); 
-        int i;
-        for (i = 0; i < maxItr; i++)
+        // Sanity check the input data. 
+        if (compartmentDimensions.size() != 2)
         {
-            if (S_star[i] != 0)
+            Rcpp::Rcout << "Compartments must be two dimensional.\n";
+            throw(-1);
+        }
+        if (covariateDimensions_x.size() != 2 || covariateDimensions_z.size() != 2)
+        {
+            Rcpp::Rcout << "Covariates must be two dimensional.\n";
+            throw(-1);
+        }
+        if (vFlag.size() != 1 || dFlag.size() != 1)
+        {
+            Rcpp::Rcout << "Verbose and debug flags must be length 1\n";
+        }
+        if (chainStride.size() != 1)
+        {
+            Rcpp::Rcout << "Chain stride must be length 1\n";
+        }
+
+        int compartmentSize = (compartmentDimensions[0]*compartmentDimensions[1]);
+        if (S0.size() != compartmentDimensions[1])
+        {
+            Rcpp::Rcout << "Invalid S0 Compartment Size!\n";
+            throw(-1);
+        }
+        if (E0.size() != compartmentDimensions[1])
+        {
+            Rcpp::Rcout << "Invalid E_star0 Compartment Size!\n";
+            throw(-1);
+        }
+        if (I0.size() != compartmentDimensions[1])
+        {
+            Rcpp::Rcout << "Invalid I_star0 Compartment Size!\n";
+            throw(-1);
+        }
+        if (R0.size() != compartmentDimensions[1])
+        {
+            Rcpp::Rcout << "Invalid R_star0 Compartment Size!\n";
+            throw(-1);
+        }
+
+
+        if (S_star.size() != compartmentSize)
+        {
+            Rcpp::Rcout << "Invalid S_star Compartment Size!\n";
+            throw(-1);
+        }
+        if (E_star.size() != compartmentSize)
+        {
+            Rcpp::Rcout << "Invalid E_star Compartment Size!\n";
+            throw(-1);
+        }
+        if (I_star.size() != compartmentSize)
+        {
+            Rcpp::Rcout << "Invalid I_star Compartment Size!\n";
+            throw(-1);
+        }
+        if (R_star.size() != compartmentSize)
+        {
+            Rcpp::Rcout << "Invalid R_star Compartment Size!\n";
+            throw(-1);
+        }
+        if (offset.size() != compartmentDimensions[0])
+        {
+            Rcpp::Rcout << "Invalid Offset Size: " << offset.size() << "\n";
+            throw(-1);
+        }
+        if (N.size() != compartmentSize)
+        {
+            Rcpp::Rcout << "Invalid N Compartment Size!\n";
+            throw(-1);
+        }
+        if ((X_pRS.size() % compartmentDimensions[0]) != 0)
+        {
+            Rcpp::Rcout << "Invalid X_pRS size.\n";
+            Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
+        }
+
+        if (sliceParams.size() != 8)
+        {
+            Rcpp::Rcout << "Slice sampling parameters must be of length 9: S*,E*,R*,S0,I0,beta,betaPrs,rho\n";
+            throw(-1);
+        }
+        if (reinfectMode[0] > 2)
+        {
+            int maxItr = (compartmentDimensions[0]*compartmentDimensions[1]); 
+            int i;
+            for (i = 0; i < maxItr; i++)
             {
-                Rcpp::Rcout << "Error: reinfectionMode indicates that no reinfection shoul occur, but nonzero S_star provided\n";
-                throw(-1);
+                if (S_star[i] != 0)
+                {
+                    Rcpp::Rcout << "Error: reinfectionMode indicates that no reinfection shoul occur, but nonzero S_star provided\n";
+                    throw(-1);
+                }
             }
         }
+    }
+    catch(int e)
+    {
+        Rcpp::Rcout << "Errors Encountered, exiting.";
+        delete chainOutputFile;
+        return -1;
     }
 
 
@@ -882,6 +901,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     covariateArgs xArgs;
     xArgs.inData_x = X.begin();
     xArgs.inData_z = Z.begin();
+    xArgs.offset = offset.begin();
+    xArgs.offsetLength = offset.size(); 
     xArgs.inRow_x = &covariateDimensions_x[0];
     xArgs.inCol_x = &covariateDimensions_x[1];
     xArgs.inRow_z = &covariateDimensions_z[0];
@@ -890,6 +911,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     covariateArgs xPrsArgs; 
     xPrsArgs.inData_x = X_pRS.begin();
     xPrsArgs.inData_z = NULL;
+    xArgs.offset = offset.begin();
+    xArgs.offsetLength = offset.size(); 
     xPrsArgs.inRow_x = &covariateDimension_pRS_x[0];
     xPrsArgs.inCol_x = &covariateDimension_pRS_x[1];
     // Clean this up, pass values instead. 

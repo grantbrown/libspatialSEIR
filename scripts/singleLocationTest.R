@@ -231,6 +231,7 @@ beta = c(5, rep(0, (length(beta)-1)))
 betaPrs = -c(4, rep(0,(length(betaPrs)-1)))
 p_ei = 0.8
 p_ir = 0.8
+offset = rep(1, nrow(S_star))
 
 res = spatialSEIRModel(compMatDim,
                       xDim,
@@ -244,6 +245,7 @@ res = spatialSEIRModel(compMatDim,
                       proposal$E_star,
                       proposal$I_star,
                       proposal$R_star,
+                      offset,
                       X,
                       Z,
                       X_prs,
