@@ -219,6 +219,9 @@ compMatDim = dim(I_star)
 xDim = dim(X)
 zDim = dim(Z)
 xPrsDim = dim(X_p_rs)
+
+# Create the offset. All time points are evenly spaced, so this is just a vector of ones. 
+offset = rep(1, nrow(S))
 ```
 
 Part 3: Model Fitting
@@ -242,6 +245,7 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       proposal$E_star,
                       proposal$I_star,
                       proposal$R_star,
+                      offset,
                       X,
                       Z,
                       X_p_rs,

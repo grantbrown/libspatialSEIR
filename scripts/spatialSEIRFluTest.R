@@ -235,7 +235,7 @@ reinfectionMode = 1
 # Mode 3+: No reinfection
 
 steadyStateConstraintPrecision = 0.05
-
+offset = rep(1, nrow(S))
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
@@ -248,6 +248,7 @@ res = spatialSEIRModel(compMatDim,
                       E_star,
                       I_star,
                       R_star,
+                      offset,
                       X,
                       Z,
                       X_betaPrs,

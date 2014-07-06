@@ -235,6 +235,8 @@ betaPrs = 10000
 #p_ei = 0.8
 #p_ir = 0.8
 
+offset = rep(1, nrow(S))
+
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
@@ -247,6 +249,7 @@ res = spatialSEIRModel(compMatDim,
                       proposal$E_star,
                       proposal$I_star,
                       proposal$R_star,
+                      offset,
                       X,
                       Z,
                       X_prs,
