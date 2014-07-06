@@ -116,7 +116,7 @@ namespace SpatialSEIR
     {
         if (*samples == 0)
         {
-            std::cout << "No sampling data. \n";
+            // Do nothing
             return;
         }
         if (proportionChange <= 0 || proportionChange >= 1)

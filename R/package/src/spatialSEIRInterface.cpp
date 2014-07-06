@@ -36,7 +36,7 @@ class spatialSEIRInterface
                      SEXP Estar, 
                      SEXP Istar, 
                      SEXP Rstar, 
-                     SEXP offset,
+                     SEXP offset_,
                      SEXP X_,
                      SEXP Z_,
                      SEXP X_pRS_,
@@ -911,8 +911,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     covariateArgs xPrsArgs; 
     xPrsArgs.inData_x = X_pRS.begin();
     xPrsArgs.inData_z = NULL;
-    xArgs.offset = offset.begin();
-    xArgs.offsetLength = offset.size(); 
+    xPrsArgs.offset = offset.begin();
+    xPrsArgs.offsetLength = offset.size(); 
     xPrsArgs.inRow_x = &covariateDimension_pRS_x[0];
     xPrsArgs.inCol_x = &covariateDimension_pRS_x[1];
     // Clean this up, pass values instead. 

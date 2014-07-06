@@ -13,15 +13,219 @@ A mirror of the WHO case reports is compiled on wikipedia - let's
 read it in with the xml library. 
   
 ```{r}
+library(spatialSEIR)
 library(XML)
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
 dat = tbls[[2]]
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
-Guinea = as.numeric(as.character(dat$V4[2:nrow(dat)]))
-Liberia = as.numeric(as.character(dat$V6[2:nrow(dat)]))
-Sierra.Leone = as.numeric(as.character(dat$V7[2:nrow(dat)]))
-Sierra.Leone = ifelse
+ascendingOrder = order(rptDate)
+rptDate = rptDate[ascendingOrder]
+Guinea = as.numeric(as.character(dat$V4[2:nrow(dat)]))[ascendingOrder]
+Liberia = as.numeric(as.character(dat$V6[2:nrow(dat)]))[ascendingOrder]
+Sierra.Leone = as.numeric(as.character(dat$V8[2:nrow(dat)]))[ascendingOrder]
+Sierra.Leone = ifelse(is.na(Sierra.Leone), 0,Sierra.Leone)
+I_star = cbind(Guinea, Liberia, Sierra.Leone)
+
+```
+
+
+
+The ebola outbreak started in February, though the exact date is difficult to pin down. Let's assume that the cases reflected in the report originated in the time since the end of February. This allows us to calculate the ammount of time corresponding to each report. 
+
+
+```{r tidy=FALSE}
+  offsets = rptDate- c(as.Date("2014-03-01"), rptDate[1:(length(rptDate)-1)])
+```
+
+All three of these countries share borders, so without more research on population flows we're restricted 
+to a fairly simple neighborhood distance structure. 
+
+```{r tidy = FALSE}
+DM = 1-diag(3)
+```
+
+
+
+Now let's record the population sizes, densities, and GDP per capita as covariates. This information was obtained from wikipedia. 
+
+```{r tidy=FALSE}
+# Guinea, Liberia, Sierra Leone
+N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, byrow=TRUE)
+
+pop.dens.km2 = c(40.9, 35.5, 79.4)
+area.km2 = c(245857, 111369, 71740)
+GDP.pc = c(1082 , 672, 1344)
+# Fixed Co-variates
+X = cbind(1, pop.dens.km2, area.km2, GDP.pc)
+# Time Varying co-variates
+daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
+Z = cbind(daysSinceJan/365,            # linear term for time
+          daysSinceJan^2,               # quadratic term for time
+          daysSinceJan^3)               # cubic term for time
+
+# No reinfection, so dummy matrix for X_prs
+
+X_p_rs = matrix(0)
+
+```
+
+
+
+Parameter Starting Values
+------------------------------
+
+```{r, tidy=FALSE}
+
+p_ei = 0.5
+p_ir = 0.5
+beta = rep(0, ncol(X) + ncol(Z))
+beta[1] = 2.5
+
+beta_p_rs = rep(0, ncol(X_p_rs))
+
+rho = 0.1 # spatial dependence parameter
+
+# Starting tuning parameters for MCMC sampling
+mcmcTuningParams = c(1, # S_star
+                     1, # E_star
+                     1,  # R_star
+                     1,  # S_0
+                     1,  # I_0
+                     0.82,  # beta
+                     0.0,  # beta_p_rs, fixed in this case
+                     0.01)  # rho
+
+
+# Prior parameters. 
+priorAlpha_pEI = 100;
+priorBeta_pEI = 10;
+priorAlpha_pIR = 100;
+priorBeta_pIR = 10;
+betaPrsPriorPrecision = 0.5
+betaPriorPrecision = 0.1
+
+# reinfection mode is 3, because there is no reinfection. 
+reinfectionMode = 3
+# steadyStateConstraintPrecision is a loose constraint on net flows
+# between compartments. Setting it to a very small value eliminates
+# the constraint, but it helps with identifiability. 
+steadyStateConstraintPrecision = 0.000001
+
+# iterationStride determines the delay between saving samples to the output file
+iterationStride = 1000
+outFileName = "./chain_output_ebola.txt"
+
+# Make a crude guess as to the true compartments:
+# S_star, E_star, R_star, and thus S,E,I and R
+proposal = generateCompartmentProposal(I_star, N, 
+                                       I0 = c(10,0,0), 
+                                       p_ir = 0.9, 
+                                       p_rs = 0.00)
+
+# Turn off verbose and debug output.
+verbose = FALSE
+debug = FALSE
+
+
+# Get object dimensions. This will be done automatically in the future
+compMatDim = dim(I_star)
+xDim = dim(X)
+zDim = dim(Z)
+xPrsDim = dim(X_p_rs)
+```
+
+
+
+```{r, tidy=FALSE}
+# Create model object. This giant constructor is going to be replaced with something friendlier 
+# in the future. 
+SEIRmodel = spatialSEIRModel(compMatDim,
+                      xDim,
+                      zDim,
+                      xPrsDim,
+                      proposal$S0,
+                      proposal$E0,
+                      proposal$I0,
+                      proposal$R0,
+                      proposal$S_star,
+                      proposal$E_star,
+                      proposal$I_star,
+                      proposal$R_star,
+                      offsets,
+                      X,
+                      Z,
+                      X_p_rs,
+                      DM,
+                      rho,
+                      priorAlpha_pEI,
+                      priorBeta_pEI,
+                      priorAlpha_pIR,
+                      priorBeta_pIR,
+                      beta,
+                      betaPriorPrecision,
+                      beta_p_rs,
+                      betaPrsPriorPrecision,
+                      p_ei,
+                      p_ir,
+                      N,
+                      outFileName,
+                      iterationStride,
+                      steadyStateConstraintPrecision,
+                      verbose,
+                      debug,
+                      mcmcTuningParams,
+                      reinfectionMode)
+
+
+# Set the sampling mode to 2, block sampling, for speed. 
+
+SEIRmodel$samplingMode = 2
+
+
+```
+
+
+Now we're ready to burn in and run the model. 
+
+
+```{r tidy=FALSE}
+
+burnInSamplingParams = function(modelObject,
+                               numBatches=500, 
+                               batchSize=20, 
+                               targetAcceptanceRatio=0.1,
+                               tolerance=0.05,
+                               proportionChange = 0.1
+                              )
+{
+    for (batch in 1:numBatches)
+    {
+        modelObject$simulate(batchSize)
+        modelObject$updateSamplingParameters(targetAcceptanceRatio, tolerance, proportionChange)
+    }
+}
+
+burnInSamplingParams(SEIRmodel)
+
+SEIRmodel$simulate(1000)
+SEIRmodel$printAcceptanceRates()
+SEIRmodel$printSamplingParameters()
+
+tm = 0
+for (i in 1:10)
+{
+  tm = tm + system.time(SEIRmodel$simulate(1000000))[3]
+  SEIRmodel$updateSamplingParameters(0.1, 
+                                     0.025, 
+                                     0.05)
+  cat(paste(i, "of 10,", 
+            round((tm/(i)*(10-i)/60), 2), 
+            " minutes remaining.\n"))
+}
+
+
+
 
 ```

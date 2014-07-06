@@ -578,24 +578,10 @@ namespace SpatialSEIR
 
     void ModelContext::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
     {
-        S0_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);     
-        I0_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);  
-       
-        E_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
-        R_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
-        beta_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
-        if (config -> hybridReinfection == 0)
+        unsigned int i;
+        for (i = 0; i < model -> size(); i++)
         {
-            S_star_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);  
-            betaPrs_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
-        }
-        else
-        {
-            hybridReinfect_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);
-        }
-        if (!(*singleLocation))
-        {
-            rho_fc -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange); 
+            (*model)[i] -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange);
         }
     }
 
