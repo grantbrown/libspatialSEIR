@@ -362,7 +362,7 @@ tm = 0
 for (i in 1:100)
 {
   tm = tm + system.time(SEIRmodel$simulate(100000))[3]
-  SEIRmodel$updateSamplingParameters(0.1, 
+  SEIRmodel$updateSamplingParameters(0.3, 
                                      0.025, 
                                      0.05)
   cat(paste(i, "of 100,", 
@@ -432,7 +432,7 @@ plotChain = function(chain, main)
 }
 ```
 
-```{r, tidy=FALSE,echo=TRUE, fig.width=4, fig.height=8}
+```{r, tidy=FALSE,echo=TRUE, fig.width=4, fig.height=12}
 par(mfrow = c(5,2))
 plotChain(chainDat$BetaP_SE_0, "Exposure Intercept")
 plotChain(chainDat$BetaP_RS_0, "Reinfection Intercept")
@@ -449,7 +449,7 @@ plotChain(chainDat$BetaP_RS_3, "Reinfection Cos Component")
 plot.new()
 plotChain(chainDat$BetaP_RS_4, "Reinfection H1N1 Component")
 ```
-```{r, tidy=FALSE, echo=TRUE, fig.width=4, fig.height=4}
+```{r, tidy=FALSE, echo=TRUE, fig.width=4, fig.height=8}
 par(mfrow = c(2,1))
 plotChain(chainDat$p_ei, "E to I Transition Probability")
 plotChain(chainDat$p_ir, "I to R Transition Probability")
@@ -506,7 +506,7 @@ the parameter values and predict the epidemic for each.
       N = (S0+E0+I0+R0)
       p_se_components = exp(X.pred %*% beta.pred)
       p_se = matrix(0, ncol = 1, nrow = nrow(X.pred))
-      p_rs = exp(-X.prs.pred %*% beta.prs.pred)
+      p_rs = exp(X.prs.pred %*% beta.prs.pred)
       S_star = matrix(0, ncol=1,nrow = nrow(X.pred))
       E_star = matrix(0, ncol=1,nrow = nrow(X.pred))
       I_star = matrix(0, ncol=1,nrow = nrow(X.pred))
@@ -591,8 +591,6 @@ the parameter values and predict the epidemic for each.
   
   preds = lapply((nrow(chainDat) - floor(nrow(chainDat)/4)):
                    nrow(chainDat), predict.i)
-
-
   FluCountEst.pred = (fluDat.pred$HHS.Region.5..IL..IN..MI..MN..OH..WI./100000)*TotalPop
 ```
 
