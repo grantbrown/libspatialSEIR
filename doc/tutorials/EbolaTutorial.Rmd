@@ -57,17 +57,22 @@ N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, byrow=TR
 pop.dens.km2 = c(40.9, 35.5, 79.4)
 area.km2 = c(245857, 111369, 71740)
 GDP.pc = c(1082 , 672, 1344)
+standard = function(x)
+{
+  (x-mean(x))/sd(x)  
+}
 # Fixed Co-variates
-X = cbind(1, pop.dens.km2, area.km2, GDP.pc)
+X = cbind(1, standard(pop.dens.km2), standard(area.km2), standard(GDP.pc))
 # Time Varying co-variates
 daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
-Z = cbind(daysSinceJan/365,            # linear term for time
-          daysSinceJan^2,               # quadratic term for time
-          daysSinceJan^3)               # cubic term for time
+Z = cbind(standard(daysSinceJan/365),            # linear term for time
+          standard(daysSinceJan^2),               # quadratic term for time
+          standard(daysSinceJan^3))               # cubic term for time
 
 # No reinfection, so dummy matrix for X_prs
 
 X_p_rs = matrix(0)
+
 
 ```
 
@@ -93,25 +98,25 @@ mcmcTuningParams = c(1, # S_star
                      1,  # R_star
                      1,  # S_0
                      1,  # I_0
-                     0.82,  # beta
+                     0.05,  # beta
                      0.0,  # beta_p_rs, fixed in this case
                      0.01)  # rho
 
 
 # Prior parameters. 
-priorAlpha_pEI = 100;
-priorBeta_pEI = 10;
-priorAlpha_pIR = 100;
-priorBeta_pIR = 10;
+priorAlpha_pEI = 15;
+priorBeta_pEI = 85;
+priorAlpha_pIR = 1;
+priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.5
-betaPriorPrecision = 0.1
+betaPriorPrecision = 0.01
 
 # reinfection mode is 3, because there is no reinfection. 
 reinfectionMode = 3
 # steadyStateConstraintPrecision is a loose constraint on net flows
 # between compartments. Setting it to a very small value eliminates
 # the constraint, but it helps with identifiability. 
-steadyStateConstraintPrecision = 0.000001
+steadyStateConstraintPrecision = 0.00000001
 
 # iterationStride determines the delay between saving samples to the output file
 iterationStride = 1000
@@ -214,14 +219,15 @@ SEIRmodel$printAcceptanceRates()
 SEIRmodel$printSamplingParameters()
 
 tm = 0
-for (i in 1:10)
+batches = 100
+for (i in 1:batches)
 {
-  tm = tm + system.time(SEIRmodel$simulate(1000000))[3]
-  SEIRmodel$updateSamplingParameters(0.1, 
+  tm = tm + system.time(SEIRmodel$simulate(100000))[3]
+  SEIRmodel$updateSamplingParameters(0.25, 
                                      0.025, 
                                      0.05)
-  cat(paste(i, "of 10,", 
-            round((tm/(i)*(10-i)/60), 2), 
+  cat(paste(i, "of", batches, ":", 
+            round((tm/(i)*(batches-i)/60), 2), 
             " minutes remaining.\n"))
 }
 

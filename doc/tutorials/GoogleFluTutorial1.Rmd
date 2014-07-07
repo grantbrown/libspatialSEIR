@@ -221,7 +221,7 @@ zDim = dim(Z)
 xPrsDim = dim(X_p_rs)
 
 # Create the offset. All time points are evenly spaced, so this is just a vector of ones. 
-offset = rep(1, nrow(S))
+offset = rep(1, nrow(I_star))
 ```
 
 Part 3: Model Fitting
