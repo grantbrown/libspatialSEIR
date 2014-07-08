@@ -75,20 +75,20 @@ effects on population mixing, and anything else that can be expressed as a linea
 distributed parameters.\\ 
 
 
-Example code for each of these models is included in the \textit{scripts} directory.
-
-{\bf{to do: Make a knitr walkthrough of one of the more interesting models (Google flu?)}}
-
+Example code for each of these models is included in the \textit{scripts} directory, and several full tutorials are available in the 
+tutorial subdirectory of \textit{doc} folder. 
 
 \subsection{SEIRS Model Family - Formal Development}
         Developed below is the most general member of the SEIRS family which can be fit with libspatialSEIR, 
-        namely the spatial SEIRS model. Important special cases are discussed in \{ \textit{{\bf{to do:}} Add discussion of special cases.} \}
+        namely the spatial SEIRS model. Important special cases are discussed in the following section.
 
     \subsubsection{Compartments and Notation}
         Denote the spatial locations of interest $\left\{s_i : i = 1, ...,n \right\}$ \mbreak
         Let $d(s_i, s_l) = d_{il}$ define a measure of distance between 
         spatial locations. Note that $s_i$ and $s_l$. $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$ \mbreak
         Let time (in units appropriate to the data and disease process) be denoted ${t_j : j = 1, ...,T}$ \mbreak
+        For now, assume that all time points are equally spaced - the library allows the inclusion of an offset term 
+        to relax this assumption, but for illustrative purposes we'll keep the notation simple here. 
         Define the following components for each $s_i$ and $t_j$: \mbreak
 
         \begin{itemize}
@@ -137,9 +137,8 @@ Example code for each of these models is included in the \textit{scripts} direct
 
     \vspace{0.15in}
 
-    Next, we formally specify the process model. 
+    Next, we specify the temporal process model. 
     \vspace{0.15in}
-
         \noi
 
         $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\mbreak
@@ -252,20 +251,15 @@ To model the $\pi_j^{RS}$, some structure of lower than $T$ dimensions is desire
 identifiability issues. A covariate structure constructed to capture natural variation in this quantity,
 a set of trigonometric basis functions with appropriate period, for example, will do nicely. Let $X(\pi_j^{RS})$ and $\beta_{\pi^{RS}}$ 
 denote the covariate vector and corresponding regression parameter estimates 
-for the j'th R to S transition probability respectively. Any number of link functions would be appropriate here.
+for the j'th R to S transition probability respectively. Any number of link functions might be appropriate here, 
+however due the the ease with which it can be generalized to inconsistent temporal indices the following (generalized from
+Lekone and Finkenst{\"a}dt (2006)) 
+is used:
+
+\begin{center}
+    $\pi_j&{RS} = 1-e^{-exp(X(\pi_j^{RS}) \beta_{\pi^{RS}})}$
+\end{center}
  
-\begin{enumerate}
-    \item Log Link \\
-    $log(\pi_j^{RS}) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
-    \item Complimentary Log-Log Link \\
-    $log(-log(\pi_j^{RS})) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
-    \item Logit Link \\
-    $log(\frac{\pi_j^{RS}}{1-\pi_j^{RS}}) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
-\end{enumerate}
-
-For simplicity, and to parallel the covariate scale used for $\left\{\pi_{ij}^{SE} \right\}$, the log link is used by default, 
-though in the future this is to be modifiable. 
-
 \section{Basic Reproductive Number}
 
 The basic reproductive number, $\mathcal{R}_0$, is an important quantity in epidemiology. While the interepretation must be adapted to 
@@ -309,9 +303,9 @@ deterministic relationships among parameters, and thus construct the requisit po
 
 \noi $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\\
 
-\noi $\left\{\pi_{IR}  \right\} \sim\ beta(0.5, 0.5)$\\ 
+\noi $\gamma^{(IR)} \sim\ gamma(\alpha^{(IR), \beta^{(IR)}})$\\ 
 
-\noi $\left\{\pi^{EI}  \right\} \sim beta(0.5, 0.5)$\\ 
+\noi $\gamma^{(EI)} \sim\ gamma(\alpha^{(EI), \beta^{(EI)}})$\\ 
 
 \noi $\left\{ \theta_{ij}\right\} \sim \mathcal{N}(\eta_{ij}, \sigma^2_{\theta})$ \\
 
@@ -335,6 +329,10 @@ deterministic relationships among parameters, and thus construct the requisit po
 \noi $R = f_R(R_0, S^*_0, R^*_0, R^*, S^*)$ \\
 
 \noi $\displaystyle log(\pi^{(SE)}_{ij}) = -\delta_{ij}e^{\theta_{ij}} - \sum_{\left\{ l \ne i \right\}}d_{il}\delta_{il}e^{\theta_{il}}$\\
+
+\noi $\left\{\pi_{EI}  \right\} = 1-exp{-\gamma^{(EI)}}$
+
+\noi $\left\{\pi_{IR}  \right\} = 1-exp{-\gamma^{(IR)}}$
 
 \noi $log(\pi_j^{RS}) = -X(\pi_j^{RS}) \beta_{\pi^{RS}}$\\
 
