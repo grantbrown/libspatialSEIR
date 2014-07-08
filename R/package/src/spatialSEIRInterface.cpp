@@ -136,8 +136,13 @@ class spatialSEIRInterface
 
 int spatialSEIRInterface::setRandomSeed(int seedVal)
 {
-    context -> setRandomSeed(seedVal);
-    return(0);
+    if (*(context -> isPopulated))
+    {
+        context -> setRandomSeed(seedVal);
+        return(0);
+    }
+    std::cout << "Context not populated\n";
+    return(-1);
 }
 int spatialSEIRInterface::simulate(int iters)
 {
@@ -158,12 +163,20 @@ void spatialSEIRInterface::setDevice(int platformId, int deviceId)
 
 void spatialSEIRInterface::setSamplingMode(int mode)
 {
-    context -> setSamplingMode(mode);
+    if (*(context -> isPopulated))
+    {
+        context -> setSamplingMode(mode);
+    }
+    std::cout << "Context not populated\n";
 }
 
 int spatialSEIRInterface::getSamplingMode()
 {
-    return((context -> getSamplingMode()));
+    if (*(context -> isPopulated))
+    {
+        return((context -> getSamplingMode()));
+    }
+    return(-1);
 }
 
 void spatialSEIRInterface::standardizeDistanceMatrix()
