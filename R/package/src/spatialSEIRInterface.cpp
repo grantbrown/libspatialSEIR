@@ -893,9 +893,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
             Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
         }
 
-        if (sliceParams.size() != 8)
+        if (sliceParams.size() != 10)
         {
-            Rcpp::Rcout << "Slice sampling parameters must be of length 9: S*,E*,R*,S0,I0,beta,betaPrs,rho\n";
+            Rcpp::Rcout << "Slice sampling parameters must be of length 10: S*,E*,R*,S0,I0,beta,betaPrs,rho,gamma_ei,gamma_ir\n";
             throw(-1);
         }
         if (reinfectMode[0] > 2)
@@ -970,6 +970,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     sliceParamStruct.betaWidth = &sliceParams[5];
     sliceParamStruct.betaPrsWidth = &sliceParams[6];
     sliceParamStruct.rhoWidth = &sliceParams[7];
+    sliceParamStruct.gammaEiWidth = &sliceParams[8];
+    sliceParamStruct.gammaIrWidth = &sliceParams[9];
 
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];

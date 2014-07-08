@@ -63,8 +63,8 @@ namespace SpatialSEIR
         *A0 = _A0;
         *p_ir = _p_ir;
         *gamma_ir = _gamma_ir;
-        *priorAlpha = _priorAlpha + 1;
-        *priorBeta = _priorBeta + 1;
+        *priorAlpha = _priorAlpha;
+        *priorBeta = _priorBeta;
         *value = -1.0;
         *sliceWidth = _sliceWidth;
 
@@ -140,7 +140,7 @@ namespace SpatialSEIR
 
     int FC_Gamma_IR::sampleCPU()
     {
-        sampleDoubleMetropolis(*context, *gamma_ir, 1, *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *gamma_ir, 1, *sliceWidth); 
         return(0);
     }
 

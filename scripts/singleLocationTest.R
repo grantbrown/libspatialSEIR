@@ -22,8 +22,11 @@
 
     eta_se = as.numeric((X %*% trueBetaSEFixed)) + (Z %*% trueBetaSEVarying)
     p_se = numeric(MaxTpt)
-    p_ei = 0.9
-    p_ir = 0.9
+    gamma_ei = 2.3
+    gamma_ir = 2.3
+
+    p_ei = 1-exp(-gamma_ei)
+    p_ir = 1-exp(-gamma_ir)
 
     trueBetaRS = c(-2.5, 1, -0.25) 
     eta_rs = X_prs %*% trueBetaRS
@@ -201,14 +204,16 @@ sliceWidths = c(0.26,  # S_star
                 0.24, # I0
                 0.8, # beta
                 0.2, # betaPrs
-                0.015# rho
+                0.015, # rho
+                0.01, # gamma_ei
+                0.01 # gamma_ir
                 )
 
 
-priorAlpha_pEI = 10000;
-priorBeta_pEI = 1000;
-priorAlpha_pIR = 10000;
-priorBeta_pIR = 1000;
+priorAlpha_pEI = 1;
+priorBeta_pEI = 1;
+priorAlpha_pIR = 1;
+priorBeta_pIR = 1;
 betaPrsPriorPrecision = 0.5
 betaPriorPrecision = 0.1
 
@@ -229,8 +234,8 @@ debug = FALSE
 proposal = generateCompartmentProposal(I_star, N, S0 = N[1]-100, I0 = 100, E0 = 0)
 beta = c(5, rep(0, (length(beta)-1)))
 betaPrs = -c(4, rep(0,(length(betaPrs)-1)))
-p_ei = 0.8
-p_ir = 0.8
+gamma_ei = 2
+gamma_ir = 2
 offset = rep(1, nrow(S_star))
 
 res = spatialSEIRModel(compMatDim,
@@ -259,8 +264,8 @@ res = spatialSEIRModel(compMatDim,
                       betaPriorPrecision,
                       betaPrs,
                       betaPrsPriorPrecision,
-                      p_ei,
-                      p_ir,
+                      gamma_ei,
+                      gamma_ir,
                       N,
                       outFileName, 
                       iterationStride,
