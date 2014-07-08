@@ -141,13 +141,18 @@ int spatialSEIRInterface::setRandomSeed(int seedVal)
         context -> setRandomSeed(seedVal);
         return(0);
     }
-    std::cout << "Context not populated\n";
+    Rcpp::Rcout << "Context Not populated\n";
     return(-1);
 }
 int spatialSEIRInterface::simulate(int iters)
 {
-    context -> runSimulation(iters,*(verbose),*(debug));
-    return(0);
+    if (*(context -> isPopulated))
+    {
+        context -> runSimulation(iters,*(verbose),*(debug));
+        return(0);
+    }
+    Rcpp::Rcout << "Context Not populated\n";
+
 }
 
 void spatialSEIRInterface::setDevice(int platformId, int deviceId)
@@ -167,7 +172,7 @@ void spatialSEIRInterface::setSamplingMode(int mode)
     {
         context -> setSamplingMode(mode);
     }
-    std::cout << "Context not populated\n";
+    Rcpp::Rcout << "Context Not populated\n";
 }
 
 int spatialSEIRInterface::getSamplingMode()
@@ -927,7 +932,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     }
     catch(int e)
     {
-        Rcpp::Rcout << "Errors Encountered, exiting.";
+        Rcpp::Rcout << "Errors Encountered, exiting.\n";
         delete chainOutputFile;
         return -1;
     }
@@ -1054,10 +1059,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 spatialSEIRInterface::~spatialSEIRInterface()
 {   
     // Context handles the complicated cleanup
-    delete chainOutputFile;
-    delete context;
     delete verbose;
     delete debug;
+    delete context;
 }
 
 
@@ -1117,5 +1121,6 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")
     ;
+
 }
 

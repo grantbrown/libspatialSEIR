@@ -21,13 +21,15 @@ trueGamma = rep(0.0, MaxTpt)
 
 eta_se = as.numeric((X %*% trueBetaSEFixed)) + (Z %*% trueBetaSEVarying)
 p_se = numeric(MaxTpt)
-p_ei = 0.9
-p_ir = 0.9
+gamma_ei = 2.3
+gamma_ir = 2.3
+p_ei = 1-exp(-gamma_ei)
+p_ir = 1-exp(-gamma_ir)
 
 #trueBetaRS = c(2.5, -1, 0.5) 
 trueBetaRS = c(-2.5, 1, 0.0) 
 eta_rs = X_prs %*% trueBetaRS
-p_rs = exp(eta_rs)
+p_rs = 1-exp(-exp(eta_rs))
 
 N = 100000
 E0 = 0
@@ -203,10 +205,10 @@ sliceWidths = c(0.26,  # S_star
                 0.015# rho
                 )
 
-priorAlpha_pEI = 10000;
-priorBeta_pEI = 1000;
-priorAlpha_pIR = 10000;
-priorBeta_pIR = 1000;
+priorAlpha_gammaEI = 2300;
+priorBeta_gammaEI = 1000;
+priorAlpha_gammaIR = 2300;
+priorBeta_gammaIR = 1000;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
@@ -216,7 +218,7 @@ reinfectionMode = 4
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
 
-steadyStateConstraintPrecision = 0.01
+steadyStateConstraintPrecision = -1
 
 verbose = FALSE 
 debug = FALSE
@@ -228,6 +230,8 @@ proposal = generateCompartmentProposal(I_star, N, S0, E0, I0, reinfection = FALS
 #betaPrs = c(3, rep(0,(length(betaPrs)-1)))
 #p_ei = 0.8
 #p_ir = 0.8
+gamma_ei = 2.3
+gamma_ir = 2.3
 
 offset = rep(1, nrow(S))
 res = spatialSEIRModel(compMatDim,
@@ -248,16 +252,16 @@ res = spatialSEIRModel(compMatDim,
                       X_prs,
                       DM,
                       rho,
-                      priorAlpha_pEI,
-                      priorBeta_pEI,
-                      priorAlpha_pIR,
-                      priorBeta_pIR,
+                      priorAlpha_gammaEI,
+                      priorBeta_gammaEI,
+                      priorAlpha_gammaIR,
+                      priorBeta_gammaIR,
                       beta,
                       betaPriorPrecision,
                       betaPrs,
                       betaPrsPriorPrecision,
-                      p_ei,
-                      p_ir,
+                      gamma_ei,
+                      gamma_ir,
                       N,
                       outFileName, 
                       iterationStride,
@@ -296,7 +300,7 @@ runSimulation = function(N, batchSize = 1000)
     })
 }
 
-runSimulation(10000000)
+#runSimulation(10000000)
 
 
 

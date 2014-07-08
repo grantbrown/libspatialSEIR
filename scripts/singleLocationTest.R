@@ -30,7 +30,7 @@
 
     trueBetaRS = c(-2.5, 1, -0.25) 
     eta_rs = X_prs %*% trueBetaRS
-    p_rs = exp(eta_rs)
+    p_rs = 1-exp(-exp(eta_rs))
 
     N = 100000
     E0 = 0

@@ -24,32 +24,8 @@ namespace SpatialSEIR
     ModelContext::ModelContext()
     {
         //random = new RandomNumberProvider(static_cast<unsigned int>(std::time(0)));
-        random = new RandomNumberProvider(12312415);
-        S_star = new CompartmentalModelMatrix();
-        E_star = new CompartmentalModelMatrix();
-        I_star = new CompartmentalModelMatrix();
-        R_star = new CompartmentalModelMatrix();
-        S = new CompartmentalModelMatrix();
-        E = new CompartmentalModelMatrix();
-        I = new CompartmentalModelMatrix();
-        R = new CompartmentalModelMatrix();
-        A0 = new InitData();
-        X = new CovariateMatrix();
-        X_pRS = new CovariateMatrix();
-        rawDistMat = new DistanceMatrix();
-        scaledDistMat = new DistanceMatrix();
-        N = new int; *N = -1;
-        beta = new double; *beta = -1.0;
-        betaPrs = new double; *betaPrs = -1;
-        eta = new double; *eta = -1.0;
-        rho = new double; *rho = 0.25;
-        gamma = new double; *gamma = 1.0;
-        fileProvider = new IOProvider();
         isPopulated = new int; *isPopulated = 0;
-        singleLocation = new int; *singleLocation = -1;
         numIterations = new int; *numIterations = 0;
-        oclProvider = new OCLProvider();
-        model = new std::vector<FullConditional*>;
     }
 
     void ModelContext::setRandomSeed(unsigned int seedValue)
@@ -96,10 +72,27 @@ namespace SpatialSEIR
                                 priorControl* priorValues,
                                 modelConfiguration config_)
     {
-        // Delete stuff that needs to be resized
-        delete N; delete beta; delete eta; delete gamma; delete betaPrs;
 
-        // Allocate space for the transition probabilities
+        // Allocate Objects
+        random = new RandomNumberProvider(12312415);
+        S_star = new CompartmentalModelMatrix();
+        E_star = new CompartmentalModelMatrix();
+        I_star = new CompartmentalModelMatrix();
+        R_star = new CompartmentalModelMatrix();
+        S = new CompartmentalModelMatrix();
+        E = new CompartmentalModelMatrix();
+        I = new CompartmentalModelMatrix();
+        R = new CompartmentalModelMatrix();
+        A0 = new InitData();
+        X = new CovariateMatrix();
+        X_pRS = new CovariateMatrix();
+        rawDistMat = new DistanceMatrix();
+        scaledDistMat = new DistanceMatrix();
+        rho = new double; *rho = 0.25;
+        fileProvider = new IOProvider();
+        singleLocation = new int; *singleLocation = -1;
+        oclProvider = new OCLProvider();
+        model = new std::vector<FullConditional*>;
         config = new modelConfiguration();
         *config = config_;
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
@@ -1117,60 +1110,65 @@ namespace SpatialSEIR
 
     ModelContext::~ModelContext()
     {
-        delete offset;
-        delete isPopulated;
-        delete singleLocation;
         delete numIterations;
-        delete fileProvider;
-        delete random;
-        delete S0_fc;
-        delete E0_fc;
-        delete I0_fc;
-        delete R0_fc;
-        delete S_star_fc;
-        delete E_star_fc;
-        delete R_star_fc;
-        delete beta_fc;
-        delete rho_fc;
-        delete betaPrs_fc;
-        delete gamma_ei_fc;
-        delete gamma_ir_fc;
-        delete S_star;
-        delete E_star;
-        delete I_star;
-        delete R_star;
-        delete S;
-        delete E;
-        delete I;
-        delete R;
-        delete A0;
-        delete X;
-        delete X_pRS;
-        delete betaPrs;
-        delete tmpContainer;
-        delete rawDistMat;
-        delete scaledDistMat;
-        delete[] beta;
-        delete[] gamma;
-        delete[] eta;
-        delete[] p_se;
-        delete[] p_se_components;
-        delete[] compartmentCache;
-        delete p_ei;
-        delete p_ir;
-        delete[] p_rs;
-        delete rho;
-        delete config;
-        delete oclProvider;
-        delete S0_OCL;
-        delete I0_OCL;
-        delete S_star_OCL;
-        delete E_star_OCL;
-        delete R_star_OCL;
-        delete rho_OCL;
-        delete beta_OCL;
-        delete beta_P_RS_OCL;
-        delete[] model;
+        if (*isPopulated)
+        {
+            delete offset;
+            delete isPopulated; 
+            delete S0_fc;
+            delete E0_fc;
+            delete I0_fc;
+            delete R0_fc;
+            delete S_star_fc;
+            delete E_star_fc;
+            delete R_star_fc;
+            delete beta_fc;
+            delete rho_fc;
+            delete betaPrs_fc;
+            delete gamma_ei_fc;
+            delete gamma_ir_fc;
+            delete tmpContainer;
+            delete[] p_se;
+            delete[] p_se_components;
+            delete[] compartmentCache;
+            delete[] p_ei;
+            delete[] p_ir;
+            delete[] p_rs;
+            delete config;
+            delete S0_OCL;
+            delete I0_OCL;
+            delete S_star_OCL;
+            delete E_star_OCL;
+            delete R_star_OCL;
+            delete rho_OCL;
+            delete beta_OCL;
+            delete beta_P_RS_OCL;
+            delete fileProvider;
+            delete random;
+            delete S_star;
+            delete E_star;
+            delete I_star;
+            delete R_star;
+            delete S;
+            delete E;
+            delete I;
+            delete R;
+            delete A0;
+            delete X;
+            delete X_pRS;
+            delete[] betaPrs;
+            delete rawDistMat;
+            delete scaledDistMat;
+            delete[] N;
+            delete[] beta;
+            delete[] eta;
+            delete rho;
+            delete[] gamma;
+            delete singleLocation;
+            delete[] model;
+            delete oclProvider;
+        }
+        delete isPopulated;
     }
 }
 
