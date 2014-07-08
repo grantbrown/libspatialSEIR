@@ -154,21 +154,21 @@ rho = 0.00001
 
 steadyStateConstraintPrecision = -1 
 
-proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
+proposal = generateCompartmentProposal(I_star, N, S0, E0, I0,p_ir=0.2)
 
 offset = rep(1, nrow(S))
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       X_betaPrsDim,
-                      S0,
-                      E0,
-                      I0,
-                      R0,
-                      S_star,
-                      E_star,
-                      I_star,
-                      R_star,
+                      proposal$S0,
+                      proposal$E0,
+                      proposal$I0,
+                      proposal$R0,
+                      proposal$S_star,
+                      proposal$E_star,
+                      proposal$I_star,
+                      proposal$R_star,
                       offset,
                       X,
                       Z,
