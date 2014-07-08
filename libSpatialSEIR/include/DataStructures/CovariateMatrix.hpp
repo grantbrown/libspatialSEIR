@@ -22,8 +22,6 @@ namespace SpatialSEIR
     {
         double* inData_x;
         double* inData_z;
-        double* offset;
-        int offsetLength;
         int* inRow_x;
         int* inCol_x;
         int* inRow_z;
@@ -36,7 +34,6 @@ namespace SpatialSEIR
             // Methods
         
             int genFromDataStream(double *indata_x, double *indata_z, 
-                                  double *offset, int offsetLength,
                                   int *inrow_x, int *incol_x,
                                   int *inrow_z, int *incol_z);
 

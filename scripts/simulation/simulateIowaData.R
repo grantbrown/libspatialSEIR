@@ -116,11 +116,13 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
                      nrow = maxTpt, ncol = ncol(dcm), byrow = TRUE)
 
     p_se = matrix(0.0, nrow = maxTpt, ncol = ncol(dcm)) 
-    p_ei = 0.9
-    p_ir = 0.9
+    gamma_ei = 2.3
+    gamma_ir = 2.3
+    p_ei = 1-exp(-gamma_ei)
+    p_ir = 1-exp(-gamma_ir)
     trueBetaRS = c(-3, 1, -2)
     eta_rs = X_prs %*% trueBetaRS    
-    p_rs = exp(eta_rs)
+    p_rs = 1-exp(-exp(eta_rs))
 
     cat("Running main simulation...\n")
 
@@ -207,9 +209,10 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
                 "X" = X,
                 "Z" = Z,
                 "X_prs" = X_prs,
-                "p_ei" = p_ei,
-                "p_ir" = p_ir,
-                "p_se" = p_se
+                "gamma_ei" = gamma_ei,
+                "gamma_ir" = gamma_ir,
+                "p_se" = p_se,
+                "p_rs" = p_rs
                 ))
 }
 

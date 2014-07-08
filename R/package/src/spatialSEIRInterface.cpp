@@ -952,8 +952,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     covariateArgs xArgs;
     xArgs.inData_x = X.begin();
     xArgs.inData_z = Z.begin();
-    xArgs.offset = offset.begin();
-    xArgs.offsetLength = offset.size(); 
     xArgs.inRow_x = &covariateDimensions_x[0];
     xArgs.inCol_x = &covariateDimensions_x[1];
     xArgs.inRow_z = &covariateDimensions_z[0];
@@ -962,8 +960,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     covariateArgs xPrsArgs; 
     xPrsArgs.inData_x = X_pRS.begin();
     xPrsArgs.inData_z = NULL;
-    xPrsArgs.offset = offset.begin();
-    xPrsArgs.offsetLength = offset.size(); 
     xPrsArgs.inRow_x = &covariateDimension_pRS_x[0];
     xPrsArgs.inCol_x = &covariateDimension_pRS_x[1];
     // Clean this up, pass values instead. 
@@ -1042,7 +1038,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::Rcout << "Populating Model Context\n";
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
-    context -> populate(&A0, &xArgs, &xPrsArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
+    context -> populate(&A0, &xArgs, &xPrsArgs, offset.begin(), &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs,
                         rho.begin(),beta.begin(),gamma_ei.begin(), gamma_ir.begin(),
                         betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,
@@ -1053,6 +1049,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
             (int*) chainStride.begin());
 
     Rcpp::Rcout << "Context setup complete.\n";
+
+
     return(err);
 }
 

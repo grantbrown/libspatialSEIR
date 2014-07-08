@@ -80,8 +80,8 @@ DM = as.numeric(data_list$dcm)
 
 rho = 0.05
 
-p_ei = 0.9
-p_ir = 0.9
+gamma_ei = 2.3
+gamma_ir = 2.3
 
 beta = c(sim_results$true_fixed_beta, sim_results$true_time_varying_beta)
 betaPriorPrecision = 1
@@ -94,7 +94,7 @@ compMatDim = c(nrow(S), ncol(S))
 outFileName = "./chainOutput_sim.txt"
 
 
-iterationStride = 100
+iterationStride = 1000
 
 # S,E,R,S0,I0,beta,betaPrs,rho
 sliceWidths = c(0.2,  # S_star
@@ -104,7 +104,9 @@ sliceWidths = c(0.2,  # S_star
                 0.2, # I0
                 0.001, # beta
                 0.005, # betaPrs
-                0.01# rho
+                0.01,# rho
+                0.01, # gamma_ei
+                0.01 # gamma_ir
                 )
 
 
@@ -114,7 +116,7 @@ sliceWidths = c(0.2,  # S_star
 
 if (nrow(S) != nrow(E) || nrow(E) != nrow(I) || nrow(I) != nrow(R) || nrow(R) != nrow(S) || 
     ncol(S) != ncol(E) || ncol(E) != ncol(I) || ncol(I) != ncol(R) || ncol(R) != ncol(S) || 
-    length(p_ei) != 1 || length(p_ir) != 1
+    length(gamma_ei) != 1 || length(gamma_ir) != 1
     || nrow(Z) != nrow(S)*ncol(S))
 {
     stop("Invalid Starting Dimensions")
@@ -129,10 +131,10 @@ if (!all((S+E+I+R) == N) || any(S<0) || any(E<0) || any(I<0) ||
 verbose = FALSE
 debug = FALSE
 
-priorAlpha_pEI = 1000;
-priorBeta_pEI = 100;
-priorAlpha_pIR = 1000;
-priorBeta_pIR = 100;
+priorAlpha_gammaEI = 2300;
+priorBeta_gammaEI = 1000;
+priorAlpha_gammaIR = 2300;
+priorBeta_gammaIR = 1000;
 
 reinfectionMode = 1;
 # Mode 1: estimate betaP_RS, S_star
@@ -145,12 +147,12 @@ true_beta = beta
 true_beta_prs = betaPrs
 true_rho = rho
 
-beta = true_beta*0; beta[1] = 0.1
-betaPrs = true_beta_prs*0; betaPrs[1] = 0.1
+beta = true_beta
+betaPrs = true_beta_prs*0; betaPrs[1] = -2 
 rho = 0.00001
 
 
-steadyStateConstraintPrecision = 0.01
+steadyStateConstraintPrecision = -1 
 
 proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
 
@@ -159,30 +161,30 @@ res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       X_betaPrsDim,
-                      proposal$S0,
-                      proposal$E0,
-                      proposal$I0,
-                      proposal$R0,
-                      proposal$S_star,
-                      proposal$E_star,
-                      proposal$I_star,
-                      proposal$R_star,
+                      S0,
+                      E0,
+                      I0,
+                      R0,
+                      S_star,
+                      E_star,
+                      I_star,
+                      R_star,
                       offset,
                       X,
                       Z,
                       X_betaPrs,
                       DM,
                       rho,
-                      priorAlpha_pEI,
-                      priorBeta_pEI,
-                      priorAlpha_pIR,
-                      priorBeta_pIR,
+                      priorAlpha_gammaEI,
+                      priorBeta_gammaEI,
+                      priorAlpha_gammaIR,
+                      priorBeta_gammaIR,
                       beta,
                       betaPriorPrecision,
                       betaPrs,
                       betaPrsPriorPrecision,
-                      p_ei,
-                      p_ir,
+                      gamma_ei,
+                      gamma_ir,
                       N,
                       outFileName, 
                       iterationStride,
@@ -193,7 +195,7 @@ res = spatialSEIRModel(compMatDim,
                       reinfectionMode)
 
 # Use OpenCL:
-res$samplingMode = 3
+res$samplingMode = 2
 #res$oclPreferences = res$oclPreferences + 1 
 
 res$setRandomSeed(123123)
@@ -259,12 +261,11 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 #}
 #}
 
-runSimulation(1000,10, printAR=TRUE)
+#runSimulation(1000,10, printAR=TRUE)
 runSimulation(50000,100, printAR=TRUE)
 #runSimulation(10000,1, printAR=TRUE)
 #runSimulation(10000,100, printAR=TRUE)
-#runSimulation(10000000,1000, printAR=TRUE)
+runSimulation(10000000,1000, printAR=TRUE)
 
-#
 
 

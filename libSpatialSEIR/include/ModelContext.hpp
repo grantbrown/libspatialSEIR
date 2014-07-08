@@ -84,6 +84,8 @@ namespace SpatialSEIR
                                                      the dimensions of the fixed and time varying covariate 
                                                      matrices driving the reinfection process. 
                                                     */
+                          double* offset, /**< Offset allows irregular spacing between time points.*/
+
                           compartmentArgs* S_starArgs, /**< S_starArgs is an instance of compartmentArgs
                                                             containing the dimensions and data for S_star,
                                                             along with the steadyStateConstraintPrecision

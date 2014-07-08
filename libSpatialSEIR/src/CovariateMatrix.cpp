@@ -11,9 +11,7 @@ namespace SpatialSEIR
     using std::endl;
 
     int CovariateMatrix::genFromDataStream(double *indata_x,
-                                           double *indata_z,
-                                           double *offset_,
-                                           int offsetLength_,
+                                           double *indata_z, 
                                            int *inrow_x, 
                                            int *incol_x,
                                            int *inrow_z,
@@ -24,8 +22,6 @@ namespace SpatialSEIR
 
         X = new double[numToAlloc_x];
         Z = new double[numToAlloc_z];
-        offset = new double[offsetLength_];
-        offsetLength = new int;
 
         nrow_x = new int;
         ncol_x = new int;
@@ -36,16 +32,8 @@ namespace SpatialSEIR
         (*ncol_x) = (*incol_x);
         (*nrow_z) = (*inrow_z);
         (*ncol_z) = (*incol_z);
-        
-        
-        *offsetLength = offsetLength_;
-
-        int i; 
-        for (i = 0; i < *offsetLength; i++)
-        {
-            offset[i] = std::log(offset_[i]);
-        }
-
+        int i;
+         
         for (i = 0; i < numToAlloc_x; i++)
         {
             X[i] = indata_x[i];
@@ -67,7 +55,7 @@ namespace SpatialSEIR
             // Initialize eta 
             for (i = 0; i < (*nrow_x); i++)
             {
-                eta[i] = offset[i];
+                eta[i] = 0.0;
             }
             for (j = 0; j < (*nrow_x); j++)
             {
@@ -96,7 +84,7 @@ namespace SpatialSEIR
             // Initialize eta 
             for (i = 0; i < (*nrow_z); i++)
             {
-                eta[i] = offset[i];
+                eta[i] = 0.0;
             }
             for (j = 0; j < (*nrow_z); j++)
             {
@@ -129,7 +117,7 @@ namespace SpatialSEIR
             // Initialize eta 
             for (i = 0; i < (*nrow_z); i++)
             {
-                eta[i] = offset[i];
+                eta[i] = 0.0;
             }
             for (j = 0; j < (*nrow_z); j++)
             {
@@ -164,8 +152,6 @@ namespace SpatialSEIR
         std::cout << "Covariate Matrix Destroyed" << std::endl;
         delete[] X;
         delete[] Z;
-        delete[] offset;
-        delete offsetLength;
         delete[] nrow_x;
         delete[] ncol_x;
         delete[] nrow_z;

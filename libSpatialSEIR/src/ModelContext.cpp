@@ -60,6 +60,7 @@ namespace SpatialSEIR
     void ModelContext::populate(InitData* _A0,
                                 covariateArgs* xArgs, 
                                 covariateArgs* xPrsArgs,
+                                double *offset_,
                                 compartmentArgs* S_starArgs,
                                 compartmentArgs* E_starArgs,
                                 compartmentArgs* I_starArgs,
@@ -72,7 +73,6 @@ namespace SpatialSEIR
                                 priorControl* priorValues,
                                 modelConfiguration config_)
     {
-
         // Allocate Objects
         random = new RandomNumberProvider(12312415);
         S_star = new CompartmentalModelMatrix();
@@ -125,8 +125,6 @@ namespace SpatialSEIR
         A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> numLocations);
         X -> genFromDataStream(xArgs -> inData_x, 
                                xArgs -> inData_z,
-                               xArgs -> offset,
-                               xArgs -> offsetLength,
                                xArgs -> inRow_x,
                                xArgs -> inCol_x,
                                xArgs -> inRow_z,
@@ -134,8 +132,6 @@ namespace SpatialSEIR
 
         X_pRS -> genFromDataStream(xPrsArgs -> inData_x, 
                                    xPrsArgs -> inData_z,
-                                   xPrsArgs -> offset,
-                                   xPrsArgs -> offsetLength,
                                    xPrsArgs -> inRow_x,
                                    xPrsArgs -> inCol_x,
                                    xPrsArgs -> inRow_z,
@@ -179,17 +175,18 @@ namespace SpatialSEIR
 
         scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
 
-
         // Initialize Data
         int i;
-        for (i = 0; i < xArgs -> offsetLength; i++)
+        for (i = 0; i < *(S_star -> nrow); i++)
         {
-            offset[i] = xArgs -> offset[i]; 
+            offset[i] = offset_[i]; 
         }
+
         for (i = 0; i < nbeta; i++)
         {
             beta[i] = beta_[i];
         }
+
         for (i = 0; i < neta; i++)
         {
             eta[i] = 0.0;
@@ -575,12 +572,18 @@ namespace SpatialSEIR
         gamma_ei_fc -> evalCPU();
         gamma_ir_fc -> evalCPU();
         rho_fc -> evalCPU();
+        S_star_fc -> evalCPU();
+        E_star_fc -> evalCPU();
+        R_star_fc -> evalCPU();
         std::cout << "  FC Values:\n";
         std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
         std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
         std::cout << "    p_ei: " << gamma_ei_fc ->getValue() << "\n";
         std::cout << "    p_ir: " << gamma_ir_fc ->getValue() << "\n";
         std::cout << "    rho: " << rho_fc ->getValue() << "\n";
+        std::cout << "    S_star: " << S_star_fc -> getValue() << "\n";
+        std::cout << "    E_star: " << E_star_fc -> getValue() << "\n";
+        std::cout << "    R_star: " << R_star_fc -> getValue() << "\n";
     }
 
     void ModelContext::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
@@ -979,10 +982,9 @@ namespace SpatialSEIR
         int i;
         int neta = *(X_pRS -> nrow_x);
         X_pRS -> calculate_fixed_eta_CPU(p_rs, betaPrs);
-        // Offset is taken care of by calculate_fixed_eta_CPU
         for (i = 0; i < neta; i++)
         {
-            p_rs[i] = 1-exp(-exp(p_rs[i]));
+            p_rs[i] = 1-exp(-offset[i]*exp(p_rs[i]));
         }
     }
 
@@ -997,7 +999,6 @@ namespace SpatialSEIR
         // Calculate dmu: I/N * exp(eta)
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
-
 
         memset(p_se, 0, nLoc*nTpt*sizeof(double));
         // Calculate rho*sqrt(idmat)
@@ -1014,13 +1015,12 @@ namespace SpatialSEIR
                 *(scaledDistMat -> numLocations),
                 *(I->nrow));
 
-        // Offset is taken care of by cacheP_SE_Calculation
         for (i = 0; i < nLoc; i++) 
         {
             index = i*nTpt;
             for (j = 0; j < nTpt; j++)
             {
-                p_se[index] = 1-exp(-gamma[j] - p_se_components[index] - (*rho)*p_se[index]);
+                p_se[index] = 1-exp(-offset[j]*(gamma[j] + p_se_components[index] + (*rho)*p_se[index]));
                 index++;
             }
         }        
@@ -1066,7 +1066,7 @@ namespace SpatialSEIR
             index = i*nTpt + startTime;
             for (j = startTime; j < nTpt; j++)
             {
-                p_se[index] = 1-exp(-gamma[j] - p_se_components[index] - (*rho)*p_se[index]);
+                p_se[index] = 1-exp(-offset[j]*(gamma[j] + p_se_components[index] + (*rho)*p_se[index]));
                 index++;
             }
         }        
