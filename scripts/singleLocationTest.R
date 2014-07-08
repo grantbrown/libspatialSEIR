@@ -210,10 +210,10 @@ sliceWidths = c(0.26,  # S_star
                 )
 
 
-priorAlpha_pEI = 1;
-priorBeta_pEI = 1;
-priorAlpha_pIR = 1;
-priorBeta_pIR = 1;
+priorAlpha_gammaEI = 2300;
+priorBeta_gammaEI = 1000;
+priorAlpha_gammaIR = 2300;
+priorBeta_gammaIR = 1000;
 betaPrsPriorPrecision = 0.5
 betaPriorPrecision = 0.1
 
@@ -223,7 +223,7 @@ reinfectionMode = 1
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
 
-steadyStateConstraintPrecision = 0.001
+steadyStateConstraintPrecision = -1
 
 verbose = FALSE 
 debug = FALSE
@@ -256,10 +256,10 @@ res = spatialSEIRModel(compMatDim,
                       X_prs,
                       DM,
                       rho,
-                      priorAlpha_pEI,
-                      priorBeta_pEI,
-                      priorAlpha_pIR,
-                      priorBeta_pIR,
+                      priorAlpha_gammaEI,
+                      priorBeta_gammaEI,
+                      priorAlpha_gammaIR,
+                      priorBeta_gammaIR,
                       beta,
                       betaPriorPrecision,
                       betaPrs,
@@ -313,11 +313,11 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 
 #print("Burn in 1 to adjust sampling widths.")
 res$samplingMode = 2
-runSimulation(20000,100, printAR = FALSE, targetRatio = 0.3)
-runSimulation(1000,200, printAR = FALSE, targetRatio = 0.3)
+runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
+runSimulation(1000,200, printAR = FALSE, targetRatio = 0.2)
 #print("Switching to joint reinfection sampling.")
 #res$hybridReinfectionSampling = 1
-runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.3, targetWidth = 0.05)
+runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
 #res$oclPreferences = res$oclPreferences + 1
 
 

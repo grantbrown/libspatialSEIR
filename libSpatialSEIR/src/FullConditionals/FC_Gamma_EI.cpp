@@ -104,7 +104,7 @@ namespace SpatialSEIR
                 compIdx++;
             }
         } 
-        *value += (*context) -> random -> dgamma(**gamma_ei, *priorAlpha, *priorBeta);
+        *value += (*context) -> random -> dgamma(**gamma_ei, *priorAlpha, 1/(*priorBeta));
 
         // Catch invalid values, nans etc. 
         if (!std::isfinite(*value))
