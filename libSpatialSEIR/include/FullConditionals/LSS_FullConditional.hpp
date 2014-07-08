@@ -43,6 +43,8 @@ namespace SpatialSEIR
         double* betaPrsWidth;
         double* rhoWidth;
         double* gammaWidth;
+        double* gammaEiWidth;
+        double* gammaIrWidth;
     };
 
     //! Wrapper for cblas::dgemm

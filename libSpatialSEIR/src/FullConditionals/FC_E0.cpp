@@ -96,8 +96,6 @@ namespace SpatialSEIR
         int nTpts = *((*E)->nrow);
         long double output = 0.0;
 
-        p_ei_val = **p_ei;
-        p_ir_val = **p_ir;
         for (i = 0; i < nLoc; i++)
         {
             if (((*A0) -> E0)[i] < 0 || 
@@ -110,6 +108,9 @@ namespace SpatialSEIR
             compIdx = i*nTpts;
             for (j = 0; j < nTpts; j++)
             {
+
+                p_ei_val = (*p_ei)[j];
+                p_ir_val = (*p_ir)[j];
                 Rstar_val = ((*R_star)->data)[compIdx]; 
                 Estar_val = ((*E_star) -> data)[compIdx];
                 Istar_val = ((*I_star)->data)[compIdx];

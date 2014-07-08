@@ -58,6 +58,7 @@ namespace SpatialSEIR
             double dpois(int x, double mu);
             double dnorm(double x, double mu, double sd);
             double dbinom(int x, int n, double p);
+            double dgamma(double x, double a, double b);
 
             // Utility Functions
             double choose(int n,int k);

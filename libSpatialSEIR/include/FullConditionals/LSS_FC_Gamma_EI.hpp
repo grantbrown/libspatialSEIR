@@ -1,6 +1,6 @@
 #include <LSS_FullConditional.hpp>
-#ifndef FULL_CONDITIONAL_P_IR_INC
-#define FULL_CONDITIONAL_P_IR_INC
+#ifndef FULL_CONDITIONAL_P_EI_INC
+#define FULL_CONDITIONAL_P_EI_INC
 
 namespace SpatialSEIR
 {
@@ -13,23 +13,23 @@ namespace SpatialSEIR
     class OCLProvider;
 
     /**
-     * FC_P_IR gives the full conditional distribution of p_ir, the 
-     * probability that an infectious individual recovers/is removed at 
-     * a given time point.
+     * FC_Gamma_EI gives the full conditional distribution of gamma_ei, 
+     * the parameter driving the probability that an exposed individual
+     * becomes infectious at a given time point, p_ei. 
      */
-    class FC_P_IR : public ParameterFullConditional
+    class FC_Gamma_EI : public ParameterFullConditional
     {
-        
         public:
-            FC_P_IR(ModelContext *_context,
-                    CompartmentalModelMatrix *_R_star,
-                    CompartmentalModelMatrix *_I, 
+            FC_Gamma_EI(ModelContext *_context,
+                    CompartmentalModelMatrix *_I_star,
+                    CompartmentalModelMatrix *_E,
                     InitData *_A0,
-                    double *_p_ir,
+                    double *_p_ei,
+                    double *_gamma_ei,
                     double _priorAlpha,
                     double _priorBeta,
-                    int _useOCL);
-            ~FC_P_IR();
+                    int _useOCL,
+                    double sliceWidth);
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);
@@ -40,15 +40,18 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments_OCL();
 
-            ModelContext **context;
-            CompartmentalModelMatrix **R_star;
-            CompartmentalModelMatrix **I;
+            ~FC_Gamma_EI();
+            ModelContext** context;
+            CompartmentalModelMatrix **I_star;
+            CompartmentalModelMatrix **E;
             InitData **A0;
-            double **p_ir;
+            double **p_ei;
+            double **gamma_ei;
             long double* value;
             double* priorAlpha;
             double* priorBeta;
     };
+
 
 
 }

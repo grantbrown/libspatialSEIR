@@ -91,7 +91,7 @@ namespace SpatialSEIR
                                 distanceArgs* rawDistArgs,
                                 scaledDistanceArgs* scaledDistArgs,
                                 double* rho_, double* beta_, 
-                                double* p_ei_, double* p_ir_, double* betaPrs_, 
+                                double* gamma_ei_, double* gamma_ir_, double* betaPrs_, 
                                 int* N_, sliceParameters* sliceWidths,
                                 priorControl* priorValues,
                                 modelConfiguration config_)
@@ -105,9 +105,12 @@ namespace SpatialSEIR
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         p_se_components = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
-        p_ei = new double;
-        p_ir = new double;
+        p_ei = new double[*(S_starArgs -> inRow)];
+        p_ir = new double[*(S_starArgs -> inRow)];
         p_rs = new double[*(S_starArgs -> inRow)];
+        gamma_ei = new double;
+        gamma_ir = new double;
+        offset = new double[*(S_starArgs -> inRow)];
         N = new int[(*(S_starArgs -> inRow))*(*(S_starArgs -> inCol))];                                          
         int nbeta = (*(xArgs -> inCol_x) + (*(xArgs -> inCol_z)));
         int neta = (*(xArgs -> inRow_z));
@@ -186,6 +189,10 @@ namespace SpatialSEIR
 
         // Initialize Data
         int i;
+        for (i = 0; i < xArgs -> offsetLength; i++)
+        {
+            offset[i] = xArgs -> offset[i]; 
+        }
         for (i = 0; i < nbeta; i++)
         {
             beta[i] = beta_[i];
@@ -205,8 +212,8 @@ namespace SpatialSEIR
         } 
 
         *rho = *rho_;
-        *p_ei = *p_ei_;
-        *p_ir = *p_ir_;
+        *gamma_ei = *gamma_ei_;
+        *gamma_ir = *gamma_ir_;
 
         // Wire up the full conditional classes
         
@@ -322,21 +329,26 @@ namespace SpatialSEIR
                                       *(sliceWidths -> betaPrsWidth),
                                       0);
 
-        p_ei_fc = new FC_P_EI(this,
+        gamma_ei_fc = new FC_Gamma_EI(this,
                               I_star,
                               E,
                               A0,p_ei,
+                              gamma_ei,
                               (priorValues -> P_EI_priorAlpha),
                               (priorValues -> P_EI_priorBeta),
-                              0);
+                              0,
+                              *(sliceWidths -> gammaEiWidth)
+                              );
 
-        p_ir_fc =  new FC_P_IR(this,
+        gamma_ir_fc =  new FC_Gamma_IR(this,
                              R_star,
                              I,
                              A0,p_ir,
+                             gamma_ir,
                              (priorValues -> P_IR_priorAlpha),
                              (priorValues -> P_IR_priorBeta),
-                             0);
+                             0,
+                             *(sliceWidths -> gammaIrWidth));
 
         hybridReinfect_fc = new FC_Hybrid_Reinfection(this,
                                                       S_star,
@@ -376,6 +388,8 @@ namespace SpatialSEIR
         this -> calculateR_CPU();
         this -> calculateP_RS_CPU();
         this -> calculateP_SE_CPU();
+        this -> calculateP_EI_CPU();
+        this -> calculateP_IR_CPU();
 
         this -> buildModel();
         *isPopulated = 1;
@@ -420,8 +434,8 @@ namespace SpatialSEIR
             {
                 model -> push_back(rho_fc);
             }
-            model -> push_back(p_ei_fc);
-            model -> push_back(p_ir_fc);
+            model -> push_back(gamma_ei_fc);
+            model -> push_back(gamma_ir_fc);
         }
         else if (config -> reinfectionMode == 2)
         {
@@ -435,8 +449,8 @@ namespace SpatialSEIR
             {
                 model -> push_back(rho_fc);
             }
-            model -> push_back(p_ei_fc);
-            model -> push_back(p_ir_fc);
+            model -> push_back(gamma_ei_fc);
+            model -> push_back(gamma_ir_fc);
         }
         else if (config -> reinfectionMode  == 3)
         {
@@ -449,8 +463,8 @@ namespace SpatialSEIR
             {
                 model -> push_back(rho_fc);
             }
-            model -> push_back(p_ei_fc);
-            model -> push_back(p_ir_fc);
+            model -> push_back(gamma_ei_fc);
+            model -> push_back(gamma_ir_fc);
         } 
     }
 
@@ -565,14 +579,14 @@ namespace SpatialSEIR
     {
         beta_fc -> evalCPU();
         betaPrs_fc -> evalCPU();
-        p_ei_fc -> evalCPU();
-        p_ir_fc -> evalCPU();
+        gamma_ei_fc -> evalCPU();
+        gamma_ir_fc -> evalCPU();
         rho_fc -> evalCPU();
         std::cout << "  FC Values:\n";
         std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
         std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
-        std::cout << "    p_ei: " << p_ei_fc ->getValue() << "\n";
-        std::cout << "    p_ir: " << p_ir_fc ->getValue() << "\n";
+        std::cout << "    p_ei: " << gamma_ei_fc ->getValue() << "\n";
+        std::cout << "    p_ir: " << gamma_ir_fc ->getValue() << "\n";
         std::cout << "    rho: " << rho_fc ->getValue() << "\n";
     }
 
@@ -941,6 +955,29 @@ namespace SpatialSEIR
         throw(-1);
     }
 
+
+    void ModelContext::calculateP_EI_CPU()
+    {
+        int i;
+        int nTpt = *(S -> nrow);
+        double gammaVal = *gamma_ei;
+        for (i = 0; i < nTpt; i++)
+        {
+            p_ei[i] = 1-exp(-offset[i]*gammaVal); 
+        }
+    }
+
+    void ModelContext::calculateP_IR_CPU()
+    {
+        int i;
+        int nTpt = *(S -> nrow);
+        double gammaVal = *gamma_ir;
+        for (i = 0; i < nTpt; i++)
+        {
+            p_ir[i] = 1-exp(-offset[i]*gammaVal); 
+        }
+    }
+
     // Method: calculateP_RS
     // Accesses: betaPrs, X_pRS
     // Updates: p_rs
@@ -949,9 +986,10 @@ namespace SpatialSEIR
         int i;
         int neta = *(X_pRS -> nrow_x);
         X_pRS -> calculate_fixed_eta_CPU(p_rs, betaPrs);
+        // Offset is taken care of by calculate_fixed_eta_CPU
         for (i = 0; i < neta; i++)
         {
-            p_rs[i] = exp(p_rs[i]);
+            p_rs[i] = 1-exp(-exp(p_rs[i]));
         }
     }
 
@@ -983,6 +1021,7 @@ namespace SpatialSEIR
                 *(scaledDistMat -> numLocations),
                 *(I->nrow));
 
+        // Offset is taken care of by cacheP_SE_Calculation
         for (i = 0; i < nLoc; i++) 
         {
             index = i*nTpt;
@@ -1078,6 +1117,7 @@ namespace SpatialSEIR
 
     ModelContext::~ModelContext()
     {
+        delete offset;
         delete isPopulated;
         delete singleLocation;
         delete numIterations;
@@ -1093,8 +1133,8 @@ namespace SpatialSEIR
         delete beta_fc;
         delete rho_fc;
         delete betaPrs_fc;
-        delete p_ei_fc;
-        delete p_ir_fc;
+        delete gamma_ei_fc;
+        delete gamma_ir_fc;
         delete S_star;
         delete E_star;
         delete I_star;

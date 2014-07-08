@@ -49,6 +49,9 @@ namespace SpatialSEIR
             int scaledInvFunc_CPU(double phi);
             int scaledInvFunc_OCL(double phi);
 
+            // Make rows sum to one. 
+            void makeRowStochastic();
+
             // Scaled options for unallocated distance matrix
             int scaledInvFunc_CPU(double phi, double *indata, int *dim);
             int scaledInvFunc_OCL(double phi, double *indata, int *dim);

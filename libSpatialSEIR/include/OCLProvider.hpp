@@ -98,7 +98,7 @@ namespace SpatialSEIR
                              int* R,
                              double* p_se,
                              double* p_rs,
-                             double p_ir);
+                             double* p_ir);
 
             void calculateP_SE(ModelContext* ctx);
 

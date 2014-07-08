@@ -50,8 +50,8 @@ class spatialSEIRInterface
                      SEXP betaPriorPrecision_,
                      SEXP betaPrs_,
                      SEXP betaPrsPriorPrecision_,
-                     SEXP p_ei_,
-                     SEXP p_ir_,
+                     SEXP gamma_ei_,
+                     SEXP gamma_ir_,
                      SEXP N_,
                      SEXP outFile,
                      SEXP iterationStride,
@@ -127,6 +127,8 @@ class spatialSEIRInterface
 
         virtual int getHybridReinfection();
         virtual void setHybridReinfection(int hybridReinfect);
+
+        virtual void standardizeDistanceMatrix();
  
         //Destructor
         ~spatialSEIRInterface();
@@ -163,6 +165,21 @@ int spatialSEIRInterface::getSamplingMode()
 {
     return((context -> getSamplingMode()));
 }
+
+void spatialSEIRInterface::standardizeDistanceMatrix()
+{
+    if (*(context -> isPopulated))
+    {
+       if (*(context -> numIterations) != 0)
+       {
+           Rcpp::Rcout << "Can't change distance matrix once sampling has begun.\n";
+           return;
+       }
+       (context -> scaledDistMat -> makeRowStochastic()); 
+    }
+    Rcpp::Rcout << "No distance matrix to standardize.\n";
+}
+
 
 int spatialSEIRInterface::setTrace(int locationIndex)
 {
@@ -325,8 +342,9 @@ void spatialSEIRInterface::printSamplingParameters()
         Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> sliceWidth)) << "\n"; 
     }
     Rcpp::Rcout << "betaP_RS: " << (*(context -> betaPrs_fc -> sliceWidth)) << "\n"; 
-    Rcpp::Rcout << "p_ei:      conjugate\n";
-    Rcpp::Rcout << "p_ir:      conjugate\n"; 
+    Rcpp::Rcout << "gamma_ei: " << (*(context -> gamma_ei_fc -> sliceWidth)) << "\n"; 
+    Rcpp::Rcout << "gamma_ir: " <<  (*(context -> gamma_ir_fc -> sliceWidth)) << "\n"; 
+
 }
 
 void spatialSEIRInterface::printAcceptanceRates()
@@ -376,8 +394,14 @@ void spatialSEIRInterface::printAcceptanceRates()
                                           (*(context -> hybridReinfect_fc -> samples)) 
                               << "\n"; 
     }
-    Rcpp::Rcout << "p_ei:      conjugate\n";
-    Rcpp::Rcout << "p_ir:      conjugate\n"; 
+    Rcpp::Rcout << "gamma_ei:     " << (*(context -> gamma_ei_fc -> accepted)*1.0)/
+                                      (*(context -> gamma_ei_fc -> samples)) 
+                              << "\n"; 
+
+    Rcpp::Rcout << "gamma_ir:     " << (*(context -> gamma_ir_fc -> accepted)*1.0)/
+                                      (*(context -> gamma_ir_fc -> samples))
+                              << "\n"; 
+
 }
 
 Rcpp::IntegerVector spatialSEIRInterface::getS0()
@@ -591,16 +615,24 @@ Rcpp::NumericVector spatialSEIRInterface::getBetaP_RS()
 }
 Rcpp::NumericVector spatialSEIRInterface::getP_EI()
 {
-    Rcpp::NumericVector output(1);
-    output[0] = *(context->p_ei); 
+    int i;
+    int numVals = (*(context -> S -> nrow));
+    Rcpp::NumericVector output(numVals);
+    for (i = 0; i < numVals; i ++) 
+    {
+        output[i] = (context->p_ei)[i]; 
+    }
     return(output);
 }
-
-
 Rcpp::NumericVector spatialSEIRInterface::getP_IR()
 {
-    Rcpp::NumericVector output(1);
-    output[0] = *(context->p_ir); 
+    int i;
+    int numVals = (*(context -> S -> nrow));
+    Rcpp::NumericVector output(numVals);
+    for (i = 0; i < numVals; i ++) 
+    {
+        output[i] = (context->p_ir)[i]; 
+    }
     return(output);
 }
 
@@ -711,8 +743,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP betaPriorPrecision_,
                      SEXP betaPrs_,
                      SEXP betaPrsPriorPrecision_,
-                     SEXP p_ei_,
-                     SEXP p_ir_,
+                     SEXP gamma_ei_,
+                     SEXP gamma_ir_,
                      SEXP N_,
                      SEXP outFile,
                      SEXP iterationStride,
@@ -759,8 +791,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::NumericVector betaPriorPrecision(betaPriorPrecision_);
     Rcpp::NumericVector betaPrs(betaPrs_);
     Rcpp::NumericVector betaPrsPriorPrecision(betaPrsPriorPrecision_);
-    Rcpp::NumericVector p_ei(p_ei_);
-    Rcpp::NumericVector p_ir(p_ir_);
+    Rcpp::NumericVector gamma_ei(gamma_ei_);
+    Rcpp::NumericVector gamma_ir(gamma_ir_);
     Rcpp::IntegerVector N(N_);
 
     Rcpp::NumericVector steadyStateConstraintPrecision(steadyStateConstraintPrecision_);
@@ -991,7 +1023,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
     context -> populate(&A0, &xArgs, &xPrsArgs, &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs,
-                        rho.begin(),beta.begin(),p_ei.begin(), p_ir.begin(),
+                        rho.begin(),beta.begin(),gamma_ei.begin(), gamma_ir.begin(),
                         betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,
                         modelConfig);
 
