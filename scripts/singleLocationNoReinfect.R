@@ -202,7 +202,9 @@ sliceWidths = c(0.26,  # S_star
                 0.24, # I0
                 0.8, # beta
                 0.2, # betaPrs
-                0.015# rho
+                0.015,# rho
+                0.01, #gamma_ei
+                0.01 # gamma_ir
                 )
 
 priorAlpha_gammaEI = 2300;

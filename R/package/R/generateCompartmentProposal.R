@@ -27,7 +27,6 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
     }
     if (any(is.na(I0)))
     {
-        print("NA I0")
         I0 = floor(I_star[1,]/2)
     }
    
@@ -75,6 +74,13 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
             R_star[tpt,] = rbinom(rep(1,length(S0)), I[tpt,],p_ir)
         }
     }
+    if (any(S < 0) || any(E < 0) || any(I < 0) || any(R < 0)
+        || any(E_star > S) || any(I_star > E) || any(R_star > I) || any(S_star > R))
+    {
+        print("Warning: Invalid Compartment Proposal Generated. Try Different Parameters.")
+        stop(-1);
+    }
+
     return(list(S0=S0,
                 E0=E0,
                 I0=I0,

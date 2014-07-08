@@ -171,6 +171,7 @@ void spatialSEIRInterface::setSamplingMode(int mode)
     if (*(context -> isPopulated))
     {
         context -> setSamplingMode(mode);
+        return;
     }
     Rcpp::Rcout << "Context Not populated\n";
 }
