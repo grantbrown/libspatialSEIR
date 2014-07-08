@@ -75,22 +75,26 @@ effects on population mixing, and anything else that can be expressed as a linea
 distributed parameters.\\ 
 
 
-Example code for each of these models is included in the \textit{scripts} directory.
-
-{\bf{to do: Make a knitr walkthrough of one of the more interesting models (Google flu?)}}
-
+Example code for each of these models is included in the \textit{scripts} directory, and several full tutorials are available in the 
+tutorial subdirectory of \textit{doc} folder. 
 
 \subsection{SEIRS Model Family - Formal Development}
         Developed below is the most general member of the SEIRS family which can be fit with libspatialSEIR, 
-        namely the spatial SEIRS model. Important special cases are discussed in \{ \textit{{\bf{to do:}} Add discussion of special cases.} \}
+        namely the spatial SEIRS model. Important special cases are discussed in the following section.
 
     \subsubsection{Compartments and Notation}
-        Denote the spatial locations of interest $\left\{s_i : i = 1, ...,n \right\}$ \mbreak
+    {
+        \itx
+        Denote the spatial locations of interest $\left\{s_i : i = 1, ...,n \right\}$ \\
         Let $d(s_i, s_l) = d_{il}$ define a measure of distance between 
-        spatial locations. Note that $s_i$ and $s_l$. $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$ \mbreak
-        Let time (in units appropriate to the data and disease process) be denoted ${t_j : j = 1, ...,T}$ \mbreak
+        spatial locations. Note that $s_i$ and $s_l$. $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$ \\
+        
+        
+        Let time (in units appropriate to the data and disease process) be denoted ${t_j : j = 1, ...,T}$ \\
+        For now, assume that all time points are equally spaced - the library allows the inclusion of an offset term 
+        to relax this assumption, but for illustrative purposes we'll keep the notation simple here. 
         Define the following components for each $s_i$ and $t_j$: \mbreak
-
+    }
         \begin{itemize}
             \item {$y_{ij}$} is the observed data.
             \item {$\bf{N_{ij}}$} is the population size
@@ -108,19 +112,7 @@ Example code for each of these models is included in the \textit{scripts} direct
         start of the modeling period. 
         
 
-    \subsubsection{Disease Evolution Process Model}
-    Given the values of the aforementioned parameters, the disease process evolves forward in time 
-    as one would expect based on the definitions.  
-    \begin{center}
-        $\bf{S_{j+1}} = \bf{S_j} - \bf{E_j^*} + \bf{S_j^*}$\mbreak
-        $\bf{E_{j+1}} = \bf{E_j} - \bf{I_j^*} + \bf{E_j^*}$\mbreak
-        $\bf{I_{j+1}} = \bf{I_j} - \bf{R_j^*} + \bf{I_j^*}$\mbreak
-        $\bf{R_{j+1}} = \bf{R_j} - \bf{S_j^*} + \bf{R_j^*}$\mbreak
-    \end{center}
-    \vspace{0.15in}
-
-    While models of this form are often fit using deterministic systems of differential equations, libspatialSEIR uses
-    a heirarchical Bayesian framework in order to adequately capture the inherent variability in the model parameters.
+    \subsection{Data Model}
     An obvious first step is to specify the data model. 
 
     \vspace{0.15in}
@@ -137,23 +129,39 @@ Example code for each of these models is included in the \textit{scripts} direct
 
     \vspace{0.15in}
 
-    Next, we formally specify the process model. 
+    \subsubsection{Disease Evolution Process Model}
+    Given the values of the aforementioned parameters, the disease process evolves forward in time 
+    as one would expect based on the definitions.  
+    \begin{center}
+        $\bf{S_{j+1}} = \bf{S_j} - \bf{E_j^*} + \bf{S_j^*}$\mbreak
+        $\bf{E_{j+1}} = \bf{E_j} - \bf{I_j^*} + \bf{E_j^*}$\mbreak
+        $\bf{I_{j+1}} = \bf{I_j} - \bf{R_j^*} + \bf{I_j^*}$\mbreak
+        $\bf{R_{j+1}} = \bf{R_j} - \bf{S_j^*} + \bf{R_j^*}$\mbreak
+    \end{center}
     \vspace{0.15in}
 
-        \noi
+    While models of this form are often fit using deterministic systems of differential equations, libspatialSEIR uses
+    a heirarchical Bayesian framework in order to adequately capture the inherent variability in the model parameters.
+    To complete the temporal process model, specify the following chain binomial relationship: 
+    \vspace{0.15in}
+    {
 
         $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\mbreak
+
         $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \sim (indep.)\ binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
+
         $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \sim\ (indep.)\ binom(E_{ij}, \pi^{(EI)})$\mbreak
+
         $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\mbreak
+    }
+\subsection{Transition Probability Model}
 
-
-        Moving on to the next level of the model, we must specify distribution for the probability terms. $\pi^{EI}$, and $\pi^{IR}$ are easily modeled with standard prior distributions (indeed, beta prior distributions are both flexible and conjugate to the binomial likelihood).  
-More care must be given to the development of a model for the $\left\{\pi^{SE}_{ij} \right\}$ and $\left\{\pi^{RS}_j \right\}$. The first of
-these describes the actual infection process and must account for predictor variables as well as the 
-spatial structure of $\left\{ s_i \right\}$. The second drives the reinfection process, which captures the effects of diminishing temporary immunity, 
-disease strain mutation, and the introduction of new infectious agents. These important components are examined in the following sections. 
-
+        While $\pi^{EI}$, and $\pi^{IR}$ can be easily parameterized, more care must be given to the development 
+        of a model for the $\left\{\pi^{SE}_{ij} \right\}$ and $\left\{\pi^{RS}_j \right\}$. The first of these 
+        describes the actual infection process and must account for predictor variables as well as the 
+        spatial structure of $\left\{ s_i \right\}$. The second drives the reinfection process, which captures the
+        effects of diminishing temporary immunity, disease strain mutation, and the introduction of new infectious 
+        agents. These important components are examined in the following sections. 
 
 \subsection{Infection Process - CAR Model Motivation}
 
@@ -221,6 +229,9 @@ Currently, libspatialSEIR supports distance functions of the form:
     $f(d_{il}) = \rho \cdot (d_{il})^{-\frac{1}{2}}$
 \end{center}
 
+While not required, the option to re-scale this distance matrix to be row stochastic is available to ensure a 
+proper posterior distribution. 
+
 Support for other distance functions, such as the gravity model, is planned. \mbreak
 
 
@@ -235,6 +246,7 @@ A few miscellaneous notes:
         This is easy to neglect and hard to debug.  \\
         
 \end{enumerate}
+
 This spatial probability structure belongs to the CAR, or Conditionally Auto-Regressive, class
 of spatial dependence structures, and can accommodate several different data types. For example, 
 in the case where spatial data is indexed by discrete areal units, a neighborhood matrix may define
@@ -252,20 +264,15 @@ To model the $\pi_j^{RS}$, some structure of lower than $T$ dimensions is desire
 identifiability issues. A covariate structure constructed to capture natural variation in this quantity,
 a set of trigonometric basis functions with appropriate period, for example, will do nicely. Let $X(\pi_j^{RS})$ and $\beta_{\pi^{RS}}$ 
 denote the covariate vector and corresponding regression parameter estimates 
-for the j'th R to S transition probability respectively. Any number of link functions would be appropriate here.
+for the j'th R to S transition probability respectively. Any number of link functions might be appropriate here, 
+however due the the ease with which it can be generalized to inconsistent temporal indices the following (generalized from
+Lekone and Finkenst{\"a}dt (2006)) 
+is used:
+
+\begin{center}
+    $\pi_j^{RS} = 1-e^{-exp(X(\pi_j^{RS}) \beta_{\pi^{RS}})}$
+\end{center}
  
-\begin{enumerate}
-    \item Log Link \\
-    $log(\pi_j^{RS}) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
-    \item Complimentary Log-Log Link \\
-    $log(-log(\pi_j^{RS})) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
-    \item Logit Link \\
-    $log(\frac{\pi_j^{RS}}{1-\pi_j^{RS}}) = X(\pi_j^{RS}) \beta_{\pi^{RS}}$
-\end{enumerate}
-
-For simplicity, and to parallel the covariate scale used for $\left\{\pi_{ij}^{SE} \right\}$, the log link is used by default, 
-though in the future this is to be modifiable. 
-
 \section{Basic Reproductive Number}
 
 The basic reproductive number, $\mathcal{R}_0$, is an important quantity in epidemiology. While the interepretation must be adapted to 
@@ -309,9 +316,9 @@ deterministic relationships among parameters, and thus construct the requisit po
 
 \noi $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\\
 
-\noi $\left\{\pi_{IR}  \right\} \sim\ beta(0.5, 0.5)$\\ 
+\noi $\gamma^{(IR)} \sim\ gamma(\alpha^{(IR)}, \beta^{(IR)})$\\ 
 
-\noi $\left\{\pi^{EI}  \right\} \sim beta(0.5, 0.5)$\\ 
+\noi $\gamma^{(EI)} \sim\ gamma(\alpha^{(EI)}, \beta^{(EI)})$\\ 
 
 \noi $\left\{ \theta_{ij}\right\} \sim \mathcal{N}(\eta_{ij}, \sigma^2_{\theta})$ \\
 
@@ -335,6 +342,10 @@ deterministic relationships among parameters, and thus construct the requisit po
 \noi $R = f_R(R_0, S^*_0, R^*_0, R^*, S^*)$ \\
 
 \noi $\displaystyle log(\pi^{(SE)}_{ij}) = -\delta_{ij}e^{\theta_{ij}} - \sum_{\left\{ l \ne i \right\}}d_{il}\delta_{il}e^{\theta_{il}}$\\
+
+\noi $\left\{\pi_{EI}  \right\} = 1-exp{-\gamma^{(EI)}}$\\
+
+\noi $\left\{\pi_{IR}  \right\} = 1-exp{-\gamma^{(IR)}}$\\
 
 \noi $log(\pi_j^{RS}) = -X(\pi_j^{RS}) \beta_{\pi^{RS}}$\\
 
@@ -361,8 +372,7 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \Bigg[
             + (log(\pi(\sigma^2_{\theta})))
             + (log(\pi(\rho)))\\
             + \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
-            + (\frac{1}{2}log(\pi^{(EI)}) + \frac{1}{2}log(1-\pi^{(EI)})) \\
-            + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)})) \Bigg]\\
+        + log(\pi(\gamma^{(EI)})) + log(\pi(\gamma^{(IR)}))\Bigg]\\
 \end{multline}
 \end{center}
 
@@ -383,45 +393,10 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto \\
     + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
             + (log(\pi(\rho)))\\
             +  \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
-            + (\frac{1}{2}log(\pi^{(EI)}) + \frac{1}{2}log(1-\pi^{(EI)})) \\
-            + (\frac{1}{2}log(\pi^{(IR)}) + \frac{1}{2}log(1-\pi^{(IR)}))\Bigg]\\
-\end{multline}
-\end{center}
-
-Now define the fixed set $A_0 = \{S_0, E_0, I_0, R_0, S^*_0, E^*_0, I^*_0, R^*_0\}$,
-and reparameterize $S, E, I, R$ as explicit functions of the transition matrices. 
-
-
-\begin{center}
-\begin{multline}
-\displaystyle
-log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[ 
-            %% S Piece
-    \sum_{j=1}^T \sum_{i=1}^n\Big\{log\bigg(\dbinom{R_{ij}}{S^*_{ij}}\bigg) + log(\pi_j^{(RS)})\{S^*_{ij}\} + 
-            log(1-\pi_j^{(RS)})\{f_R(R^*, S^*, A_0)_{ij} - S^*_{ij}\}\Big\} \\ 
-            %% E Piece
-            +\sum_{i=1}^n \sum_{j=1}^T\bigg\{
-            log\bigg(\dbinom{S_{ij}}{E^*_{ij}}\bigg) + (E^*_{ij}log(\pi_{ij}^{(SE)})) + (f_S(S^*, E^*, A_0)_{ij} - E^*_{ij})log(1-\pi_{ij}^{(SE)})\bigg\} \\
-            %% I Piece
-            + \sum_{i=1}^n\sum_{j=1}^T\bigg\{log(g(y_{ij}|I^*_{ij})) + log\bigg(\dbinom{E_{ij}}{I^*_{ij}}\bigg)\bigg\} 
-            + log(\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\} \\
-            + log(1-\pi^{(EI)})\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\\
-            %% R Piece
-            + \sum_{i=1}^n\sum_{j=1}^T\bigg\{ log\bigg(\dbinom{I_{ij}}{R^*_{ij}}\bigg)\bigg\} + log(\pi^{(IR)})\sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\} + 
-            log(1-\pi^{IR})\sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\\
-            %% Beta
-            + \sum_{k = 1}^K\bigg\{-\frac{\beta^2_k}{10}\bigg\}
-            %% Rho prior
-            + (log(\pi(\rho)))\\
-            %% \beta_{\pi_j^{RS}}
             + \bigg\{ -\frac{\tau^2_{RS}}{2}\|\beta_{\pi_j^{RS}}\|  \bigg\} \\ 
-            %% \pi^{EI}
-            + (\frac{1}{2}log(\pi^{(EI)} + \frac{1}{2}log(1-\pi^{(EI)}))) \\
-            %% \pi^{IR}
-            + (\frac{1}{2}log(\pi^{(IR)} + \frac{1}{2}log(1-\pi^{(IR)})))  \Bigg]\\
+            + log(\pi(\gamma^{(EI)})) + log(\pi(\gamma^{(IR)}))\Bigg]\\
 \end{multline}
 \end{center}
-
 
 \subsection{Full Conditional Distributions}
 
@@ -517,24 +492,20 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
     \end{multline}
 \end{center}
 
-\item{Full Conditional for $\pi^{(EI)}$} 
+\item{Full Conditional for $\gamma^{(EI)}$} 
     \begin{center}
         \begin{multline}
             \displaystyle
-            log(p(\pi^{(EI)})) \propto log(\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\}\Big] 
-            \\+ log(1-\pi^{(EI)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\Big]\\
-            \Rightarrow \pi^{(EI)} \sim beta(\frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{I^*_{ij}\}, 
-            \frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{f_E(E^*, I^*, A_0)_{ij}\} - \sum_{j=1}^T\sum_{i=1}^n\{I^*_{ij}\}) 
+            log(p(\gamma^{(EI)})) \propto log(\pi^{(EI)})\Big[\sum_{i=1}^n\sum_{j=1}^T\{I^*_{ij}\}\Big]  
+            \\+ log(1-\pi^{(EI)})\Big[\sum_{i=1}^n\sum_{j=1}^T\{(f_E(E^*, I^*, A_0)_{ij} - I^*_{ij})\}\Big] + log(\pi(\gamma^{(IR)}))\\
         \end{multline}
     \end{center}
-\item{Full Conditional for $\pi^{(IR)}$} 
+\item{Full Conditional for $\gamma^{(IR)}$} 
     \begin{center}
         \begin{multline}
             \displaystyle
-            log(p(\pi^{(IR)})) \propto log(\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\}\Big] + 
-            log(1-\pi^{(IR)})\Big[\frac{1}{2} + \sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\}\Big]\\
-            \Rightarrow \pi^{(IR)} \sim beta(\frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{R^*_{ij}\}, 
-            \frac{3}{2} + \sum_{j=1}^T\sum_{i=1}^n\{f_I(I^*, R^*, A_0)_{ij}\} - \sum_{j=1}^T\sum_{i=1}^n\{R^*_{ij}\})
+            log(p(\gamma^{(IR)})) \propto log(\pi^{(IR)})\Big[\sum_{i=1}^n\sum_{j=1}^T\{R^*_{ij}\}\Big] \\ + 
+            log(1-\pi^{(IR)})\Big[\sum_{i=1}^n\sum_{j=1}^T\{ f_I(I^*, R^*, A_0)_{ij} - R^*_{ij}\} \Big] + log(\pi(\gamma^{(IR)}))\\
         \end{multline}
     \end{center}
 
@@ -545,8 +516,30 @@ log(p(\theta,\beta,\rho,S^*,E^*,R^*|.)) \propto\\ \Bigg[
 
 \section{MCMC Samplers: Current and Future Work}
 
+While various combinations of slice and Metropolis-Hastings sampling have been explored, the current recommendation is to 
+use blocked Metropolis-Hastings for all parameters. As implemented here, each of the full conditional distributions is sampled
+by proposing a new value centered on the current value for the entire parameter. Coupled with using the auto-tuning functions to 
+maintain a reasonable acceptance rate, this has different effects for compartments and other parameters. For compartments (because
+they are integers), such an approach has the effect of choosing a random sample of time-locations to update, moving up or down by 
+a small ammount (1 or 2). For other parameters, the entire parameter vector is either updated or not at each step.  
+
+More development is planned to deal with the considerable autocorrelation issues experienced so far. 
+
+See the tutorial documents for the most current implementation details. 
+
 \section{OpenCL: Performance Tradeoffs}
 
+OpenCL is a useful way to introduce parallelism to computationally intensive problems, and can target multi-core CPU's as well as
+GPU's. Indeed, initial results suggest that for moderately large problems (20-30k time/location values) OpenCL can speed up the 
+work of libspatialSEIR by around \%20. This number is expected to increase as more of the library is parallelized. 
+
+On the other hand, for small problems OpenCL has enough overhead to significantly slow down run times. The Google Flu tutorial document 
+gives some example code which is useful for checking whether parallelism is the best option for your particular problem. You can easily 
+switch between OpenCL devices and single core CPU mode at any time during sampling. 
+
 \section{R Level API Summary}
+
+Once the R level API is complete, this section will include proper documentation and example code. For now, development is moving too fast
+to keep a current summary. All example code and tutorial documents are kept up to date, so that's probably the best resource for now. 
 
 \end{document}

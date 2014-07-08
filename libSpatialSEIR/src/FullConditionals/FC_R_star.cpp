@@ -110,12 +110,21 @@ namespace SpatialSEIR
         
         double p_se_val;
         double p_rs_val;
-        double ln_p_ir = std::log(**p_ir);
-        double ln_1m_p_ir = std::log(1-(**p_ir));
+        double ln_p_ir;
+        double ln_1m_p_ir;
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
         long unsigned int I_star_sum;
         long unsigned int R_star_sum;
         int64_t aDiff; 
+        // Cache ln_p_ir, ln_1m_p_ir to avoid duplication.
+        // Must restore p_ir afterwards. 
+        for (j = 0; j < nTpts; j++)
+        {
+            // Variable names are re-used here for convenience. 
+            ln_p_ir = (*p_ir)[j]; 
+            (*p_ir)[j] = std::log(ln_p_ir);
+            ((*context) -> compartmentCache)[j] = std::log(1-ln_p_ir);
+        }
 
         compIdx = startLoc*nTpts + startTime;
         // Is p_rs meaningful?
@@ -123,6 +132,8 @@ namespace SpatialSEIR
         {
             for (j = startTime; j < nTpts; j++)
             {
+                ln_p_ir = (*p_ir)[j];
+                ln_1m_p_ir = ((*context) -> compartmentCache)[j];
                 Rstar_val = ((*R_star) -> data)[compIdx];
                 Sstar_val = ((*S_star)->data)[compIdx];
                 R_val = ((*R) ->data)[compIdx];
@@ -133,6 +144,7 @@ namespace SpatialSEIR
                         Sstar_val > R_val)
                 {
                     *value = -INFINITY;
+                    (*context) -> calculateP_IR_CPU();
                     return(-1);
                 }
                 else
@@ -149,6 +161,8 @@ namespace SpatialSEIR
         {
             for (j = startTime; j < nTpts; j++)
             {
+                ln_p_ir = (*p_ir)[j];
+                ln_1m_p_ir = ((*context) -> compartmentCache)[j];
                 Rstar_val = ((*R_star) -> data)[compIdx];
                 R_val = ((*R) ->data)[compIdx];
                 I_val = ((*I) ->data)[compIdx];
@@ -156,6 +170,7 @@ namespace SpatialSEIR
                 if (Rstar_val < 0 || Rstar_val > I_val)
                 {
                     *value = -INFINITY;
+                    (*context) -> calculateP_IR_CPU();
                     return(-1);
                 }
                 else
@@ -191,10 +206,15 @@ namespace SpatialSEIR
             }
         }
 
-        I_star_sum = (*I_star)->marginSum(2,startLoc);
-        R_star_sum = (*R_star)->marginSum(2,startLoc);
-        aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/nTpts;
-        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            I_star_sum = (*I_star)->marginSum(2,startLoc);
+            R_star_sum = (*R_star)->marginSum(2,startLoc);
+            aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
+        (*context) -> calculateP_IR_CPU();
 
         if (!std::isfinite(output))
         {
@@ -219,12 +239,22 @@ namespace SpatialSEIR
         
         double p_se_val;
         double p_rs_val;
-        double ln_p_ir = std::log(**p_ir);
-        double ln_1m_p_ir = std::log(1-(**p_ir));
+        double ln_p_ir;
+        double ln_1m_p_ir;
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
         long unsigned int I_star_sum;
         long unsigned int R_star_sum;
         int64_t aDiff; 
+
+        // Cache ln_p_ir, ln_1m_p_ir to avoid duplication.
+        // Must restore p_ir afterwards. 
+        for (j = 0; j < nTpts; j++)
+        {
+            // Variable names are re-used here for convenience. 
+            ln_p_ir = (*p_ir)[j]; 
+            (*p_ir)[j] = std::log (ln_p_ir);
+            ((*context) -> compartmentCache)[j] = std::log(1-ln_p_ir);
+        }
 
 
         // Is p_rs meaningful?
@@ -235,6 +265,8 @@ namespace SpatialSEIR
                 compIdx = i*nTpts;
                 for (j = 0; j < nTpts; j++)
                 {
+                    ln_p_ir = (*p_ir)[j];
+                    ln_1m_p_ir = ((*context) -> compartmentCache)[j];
                     Rstar_val = ((*R_star) -> data)[compIdx];
                     Sstar_val = ((*S_star)->data)[compIdx];
                     R_val = ((*R) ->data)[compIdx];
@@ -245,6 +277,7 @@ namespace SpatialSEIR
                             Sstar_val > R_val)
                     {
                         *value = -INFINITY;
+                        (*context) -> calculateP_IR_CPU();
                         return(-1);
                     }
                     else
@@ -265,6 +298,8 @@ namespace SpatialSEIR
                 compIdx = i*nTpts;
                 for (j = 0; j < nTpts; j++)
                 {
+                    ln_p_ir = (*p_ir)[j];
+                    ln_1m_p_ir = ((*context) -> compartmentCache)[j];
                     Rstar_val = ((*R_star) -> data)[compIdx];
                     R_val = ((*R) ->data)[compIdx];
                     I_val = ((*I) ->data)[compIdx];
@@ -272,6 +307,7 @@ namespace SpatialSEIR
                     if (Rstar_val < 0 || Rstar_val > I_val)
                     {
                         *value = -INFINITY;
+                        (*context) -> calculateP_IR_CPU();
                         return(-1);
                     }
                     else
@@ -308,11 +344,15 @@ namespace SpatialSEIR
             }
         }
 
-        I_star_sum = (*I_star)->marginSum(3,-1);
-        R_star_sum = (*R_star)->marginSum(3,-1);
-        aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/(nTpts*nLoc);
-        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            I_star_sum = (*I_star)->marginSum(3,-1);
+            R_star_sum = (*R_star)->marginSum(3,-1);
+            aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/(nTpts*nLoc);
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
 
+        (*context) -> calculateP_IR_CPU();
         if (!std::isfinite(output))
         {
             *value = -INFINITY;   
@@ -340,8 +380,8 @@ namespace SpatialSEIR
         
         double p_se_val;
         double p_rs_val;
-        double ln_p_ir = std::log(**p_ir);
-        double ln_1m_p_ir = std::log(1-(**p_ir));
+        double ln_p_ir;
+        double ln_1m_p_ir;
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
         long unsigned int I_star_sum;
         long unsigned int R_star_sum;
@@ -359,6 +399,8 @@ namespace SpatialSEIR
                 I_val = ((*I) ->data)[compIdx];
                 S_val = ((*S)->data)[compIdx];
                 p_rs_val = (*p_rs)[j];
+                ln_p_ir = std::log((*p_ir)[j]);
+                ln_1m_p_ir = std::log(1-(*p_ir)[j]);
 
                 if (Rstar_val < 0 || Rstar_val > I_val || 
                         Sstar_val > R_val)
@@ -400,6 +442,8 @@ namespace SpatialSEIR
                 R_val = ((*R) ->data)[compIdx];
                 I_val = ((*I) ->data)[compIdx];
                 S_val = ((*S)->data)[compIdx];
+                ln_p_ir = std::log((*p_ir)[j]);
+                ln_1m_p_ir = std::log(1-(*p_ir)[j]);
 
                 if (Rstar_val < 0 || Rstar_val > I_val)
                 {
@@ -471,10 +515,13 @@ namespace SpatialSEIR
             }
         }
 
-        I_star_sum = (*I_star)->marginSum(2,startLoc);
-        R_star_sum = (*R_star)->marginSum(2,startLoc);
-        aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/nTpts;
-        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            I_star_sum = (*I_star)->marginSum(2,startLoc);
+            R_star_sum = (*R_star)->marginSum(2,startLoc);
+            aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
 
         if (!std::isfinite(output))
         {
@@ -509,7 +556,7 @@ namespace SpatialSEIR
                           ((*R) -> data),
                           (*p_se),
                           (*p_rs),
-                          **p_ir
+                          (*p_ir)
                           ));
         if (!std::isfinite(output))
         {

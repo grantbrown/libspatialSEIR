@@ -49,7 +49,7 @@ __kernel void FC_R_Star_Part1(int nTpt,
                               __global int* R,
                               __global double* p_se,
                               __global double* p_rs,
-                                       double p_ir,
+                              __global double* p_ir,
                               __global double* output,
                               __local int* S_star_loc,
                               __local int* E_star_loc,
@@ -58,7 +58,8 @@ __kernel void FC_R_Star_Part1(int nTpt,
                               __local int* I_loc,
                               __local int* R_loc,
                               __local double* p_se_loc,
-                              __local double* p_rs_loc)
+                              __local double* p_rs_loc,
+                              __local double* p_ir_loc)
 {
     size_t globalId = get_global_id(0);
     int i;
@@ -70,10 +71,6 @@ __kernel void FC_R_Star_Part1(int nTpt,
 
     if (globalId < totalSize)
     {
-        double p_ir_val = p_ir;
-        double ln_p_ir = log(p_ir_val);
-        double ln_1m_p_ir = log(1-p_ir_val);
-
         S_star_loc[localId] = S_star[globalId];
         E_star_loc[localId] = E_star[globalId];
         R_star_loc[localId] = R_star[globalId];
@@ -82,13 +79,15 @@ __kernel void FC_R_Star_Part1(int nTpt,
         R_loc[localId] = R[globalId];
         p_se_loc[localId] = p_se[globalId];
         p_rs_loc[localId] = p_rs[globalId % nTpt];
+        p_ir_loc[localId] = p_ir[globalId % nTpt];
+
 
         if ((R_star_loc[localId] >= 0) && (R_star_loc[localId] <= I_loc[localId]) && 
                       (S_star_loc[localId] <= R_loc[localId]))
         {
             partialResult = ((logChoose(I_loc[localId], R_star_loc[localId]) 
-                              + R_star_loc[localId]*ln_p_ir 
-                              + (I_loc[localId] - R_star_loc[localId])*ln_1m_p_ir) 
+                              + R_star_loc[localId]*log(p_ir_loc[localId])
+                              + (I_loc[localId] - R_star_loc[localId])*log(1-p_ir_loc[localId])) 
                               + dbinom(S_star_loc[localId], R_loc[localId], p_rs_loc[localId]) 
                               + dbinom(E_star_loc[localId], S_loc[localId], p_se_loc[localId]) 
                              );

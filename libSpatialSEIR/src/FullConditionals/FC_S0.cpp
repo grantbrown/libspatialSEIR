@@ -89,7 +89,6 @@ namespace SpatialSEIR
         double p_se_val, p_ei_val;
         int S_val, E_val, Istar_val, Estar_val;
         long double output = 0.0;
-        p_ei_val = **p_ei;       
         for (i = 0; i<nLoc; i++)
         {
             if (((*A0) -> S0)[i] < 0 || 
@@ -102,6 +101,8 @@ namespace SpatialSEIR
             compIdx = i*nTpts;
             for (j = 0; j < nTpts; j++)
             {
+
+                p_ei_val = (*p_ei)[j];       
                 S_val = ((*S) -> data)[compIdx];
                 E_val = ((*E) -> data)[compIdx];
                 Istar_val = ((*I_star)-> data)[compIdx];
@@ -152,9 +153,9 @@ namespace SpatialSEIR
         }
 
         compIdx = startLoc*nTpts;
-        p_ei_val = **p_ei;
         for (j = 0; j < nTpts; j++)
         {
+            p_ei_val = (*p_ei)[j];
             S_val = ((*S) -> data)[compIdx];
             E_val = ((*E) -> data)[compIdx];
             Istar_val = ((*I_star)-> data)[compIdx];
@@ -263,9 +264,9 @@ namespace SpatialSEIR
         }
 
         compIdx = startLoc*nTpts;
-        p_ei_val = **p_ei;
         for (j = 0; j < nTpts; j++)
         {
+            p_ei_val = (*p_ei)[j];
             S_val = ((*S) -> data)[compIdx];
             E_val = ((*E) -> data)[compIdx];
             Istar_val = ((*I_star)-> data)[compIdx];

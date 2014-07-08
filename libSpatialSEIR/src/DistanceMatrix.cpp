@@ -69,6 +69,29 @@ namespace SpatialSEIR
         return(0);
     }
 
+    void DistanceMatrix::makeRowStochastic()
+    {
+        if (*hasAlloc!=1)
+        {
+            std::cout << "Distance Matrix: no data to standardize.\n";
+            throw(-1);
+        }
+        int i,j;
+        double rowTotal;
+        for (i = 0; i < *numLocations; i++)
+        {
+            rowTotal = 0.0;
+            for(j = 0; j< *numLocations; j++)
+            {
+                rowTotal += data[i + j*(*numLocations)];
+            }
+            for(j = 0; j< *numLocations; j++)
+            {
+                data[i + j*(*numLocations)] /=  rowTotal;
+            }
+        }
+    }
+
     DistanceMatrix::~DistanceMatrix()
     {
         if ((*hasAlloc) == 1)

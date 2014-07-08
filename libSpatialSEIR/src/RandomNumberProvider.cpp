@@ -1,5 +1,5 @@
 #include <RandomNumberProvider.hpp>
-
+#include <boost/math/distributions/gamma.hpp>
 
 namespace SpatialSEIR
 {
@@ -121,6 +121,12 @@ namespace SpatialSEIR
         }
         return(choose(n,x) + std::log(p)*x + (std::log(1-p))*(n-x)); 
     }
+    double RandomNumberProvider::dgamma(double x, double a, double b)
+    {
+        boost::math::gamma_distribution<> gammadist(a,b); 
+        return(std::log(pdf(gammadist, x)));
+    }
+
     double* RandomNumberProvider::uniform(int n)
     {
         double* output = new double[n];

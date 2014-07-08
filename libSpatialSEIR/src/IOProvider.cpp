@@ -112,8 +112,8 @@ namespace SpatialSEIR
         // Beta
         // Beta_P_RS
         // rho
-        // p_ei
-        // p_ir
+        // gamma_ei
+        // gamma_ir
         // Trace: for time j, loc i
         //      S0
         //      E0
@@ -128,7 +128,7 @@ namespace SpatialSEIR
         //      I
         //      R
 
-        // New behavior: assume we want beta, beta_P_RS, rho, p_ei, p_ir, iteration, time
+        // New behavior: assume we want beta, beta_P_RS, rho, gamma_ei, gamma_ir, iteration, time
         // Additional data must be requested via setTrace. This should simplify the R function calls somewhat. 
 
         // Write Beta header
@@ -149,11 +149,11 @@ namespace SpatialSEIR
         // Write rho header
         (*outFileStream) << "rho,";        
 
-        // Write p_ei header
-        (*outFileStream) << "p_ei" << ",";
+        // Write gamma_ei header
+        (*outFileStream) << "gamma_ei" << ",";
 
-        // Write p_ir header
-        (*outFileStream) << "p_ir" << ",";
+        // Write gamma_ir header
+        (*outFileStream) << "gamma_ir" << ",";
 
         // Write header for any time-location traces 
        
@@ -216,11 +216,11 @@ namespace SpatialSEIR
         // Write rho
         (*outFileStream) << *((*context) -> rho) << ",";        
 
-        // Write p_ei
-        (*outFileStream) << *((*context) -> p_ei) << ",";        
+        // Write gamma_ei
+        (*outFileStream) << *((*context) -> gamma_ei) << ",";        
 
-        // Write p_ir
-        (*outFileStream) << *((*context) -> p_ir) << ",";        
+        // Write gamma_ir
+        (*outFileStream) << *((*context) -> gamma_ir) << ",";        
 
         // Write any time-location traces 
        

@@ -138,10 +138,13 @@ namespace SpatialSEIR
                 compIdx ++; 
         }
 
-        S_star_sum = (*S_star)->marginSum(2,startLoc);
-        R_star_sum = (*R_star)->marginSum(2,startLoc);
-        aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum)/nTpts;
-        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            S_star_sum = (*S_star)->marginSum(2,startLoc);
+            R_star_sum = (*R_star)->marginSum(2,startLoc);
+            aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
 
         if (!std::isfinite(output))
         {
@@ -194,10 +197,13 @@ namespace SpatialSEIR
                     compIdx ++; 
             }
 
-            S_star_sum = (*S_star)->marginSum(2,i);
-            R_star_sum = (*R_star)->marginSum(2,i);
-            aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum)/nTpts;
-            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+            if (*steadyStateConstraintPrecision > 0)
+            {
+                S_star_sum = (*S_star)->marginSum(2,i);
+                R_star_sum = (*R_star)->marginSum(2,i);
+                aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum)/nTpts;
+                output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+            }
         }
 
         if (!std::isfinite(output))
@@ -263,11 +269,13 @@ namespace SpatialSEIR
                 }
                 compIdx ++; 
         }
-
-        S_star_sum = (*S_star)->marginSum(2,startLoc);
-        R_star_sum = (*R_star)->marginSum(2,startLoc);
-        aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum)/nTpts;
-        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            S_star_sum = (*S_star)->marginSum(2,startLoc);
+            R_star_sum = (*R_star)->marginSum(2,startLoc);
+            aDiff = (S_star_sum > R_star_sum ? S_star_sum - R_star_sum : R_star_sum - S_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
 
         if (!std::isfinite(output))
         {

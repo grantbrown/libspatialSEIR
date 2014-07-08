@@ -6,7 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
-#include<LSS_FC_P_IR.hpp>
+#include<LSS_FC_Gamma_IR.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
 #include<CompartmentalModelMatrix.hpp>
@@ -29,14 +29,16 @@ namespace SpatialSEIR
 
 
 
-    FC_P_IR::FC_P_IR(ModelContext *_context,
+    FC_Gamma_IR::FC_Gamma_IR(ModelContext *_context,
                      CompartmentalModelMatrix *_R_star,
                      CompartmentalModelMatrix *_I,
                      InitData *_A0,
                      double *_p_ir,
+                     double *_gamma_ir,
                      double _priorAlpha,
                      double _priorBeta,
-                     int _useOCL)
+                     int _useOCL,
+                     double _sliceWidth)
     {
 
         context = new ModelContext*;
@@ -44,12 +46,14 @@ namespace SpatialSEIR
         I = new CompartmentalModelMatrix*;
         A0 = new InitData*;
         p_ir = new double*;
+        gamma_ir = new double*;
         priorAlpha = new double;
         priorBeta = new double;
         value = new long double;
         samples = new int;
         accepted = new int; 
         useOCL = new int;
+        sliceWidth = new double;
         *samples = 0;
         *accepted = 0;
         *useOCL = _useOCL;
@@ -58,14 +62,18 @@ namespace SpatialSEIR
         *I = _I;
         *A0 = _A0;
         *p_ir = _p_ir;
-        *priorAlpha = _priorAlpha + 1;
-        *priorBeta = _priorBeta + 1;
+        *gamma_ir = _gamma_ir;
+        *priorAlpha = _priorAlpha;
+        *priorBeta = _priorBeta;
         *value = -1.0;
+        *sliceWidth = _sliceWidth;
 
     }
 
-    FC_P_IR::~FC_P_IR()
+    FC_Gamma_IR::~FC_Gamma_IR()
     {
+        delete sliceWidth;
+        delete gamma_ir;
         delete R_star;
         delete I;
         delete A0;
@@ -79,33 +87,50 @@ namespace SpatialSEIR
         delete useOCL;
     }
 
-    int FC_P_IR::evalCPU()
+    int FC_Gamma_IR::evalCPU()
     {
         *value = 0.0;
-        int r_star_sum = (*R_star) -> marginSum(3,-1);
-        int i_sum = (*I) -> marginSum(3,1);
-        *value = dbeta(**p_ir, *priorAlpha + r_star_sum, *priorBeta - r_star_sum + i_sum); 
-        return 0;
+        int i, j, compIdx;
+        int nLoc = *((*I) -> ncol);
+        int nTpts = *((*I) -> nrow);
+        for (i = 0; i < nLoc; i++)    
+        {
+            compIdx = i*nTpts;
+            for (j = 0; j < nTpts; j++)     
+            {
+                *value += (*context) -> random -> dbinom(((*R_star) -> data)[compIdx],
+                                                         ((*I) -> data)[compIdx],
+                                                         (*p_ir)[j]);  
+                compIdx++;
+            }
+        } 
+        *value += (*context) -> random -> dgamma(**gamma_ir, *priorAlpha, 1/(*priorBeta));
+
+        // Catch invalid values, nans etc. 
+        if (!std::isfinite(*value))
+        {
+            *value = -INFINITY;
+        }
+        return(0);
     }
 
-    int FC_P_IR::evalOCL()
+    int FC_Gamma_IR::evalOCL()
     {
         //NOT IMPLEMENTED
         return -1;
     }
 
-    int FC_P_IR::calculateRelevantCompartments()
+    int FC_Gamma_IR::calculateRelevantCompartments()
     {
-        // not used, do nothing. 
+        (*context) -> calculateP_IR_CPU();
         return(0);
     }
-    int FC_P_IR::calculateRelevantCompartments_OCL()
+    int FC_Gamma_IR::calculateRelevantCompartments_OCL()
     {
-        // Not used, Do nothing
-        return(0);
+        return(calculateRelevantCompartments());
     }
 
-    void FC_P_IR::sample(int verbose)
+    void FC_Gamma_IR::sample(int verbose)
     {
         if (verbose){std::cout << "Sampling P_IR\n";}
         if (*useOCL){sampleOCL(); return;}
@@ -113,26 +138,23 @@ namespace SpatialSEIR
     }
 
 
-    int FC_P_IR::sampleCPU()
+    int FC_Gamma_IR::sampleCPU()
     {
-        double a,b;
-        a = (*R_star) -> marginSum(3,-1);
-        b = ((*I) -> marginSum(3,-1)) - a;
-        (**p_ir) = ((*context)->random->beta(a+(*priorAlpha), b+(*priorBeta)));
+        sampleEntireDouble_CPU(*context, *gamma_ir, 1, *sliceWidth); 
         return(0);
     }
 
-    int FC_P_IR::sampleOCL()
+    int FC_Gamma_IR::sampleOCL()
     {
         //NOT IMPLEMENTED
         return(sampleCPU());
     }
 
-    long double FC_P_IR::getValue()
+    long double FC_Gamma_IR::getValue()
     {
         return(*(this -> value));
     }
-    void FC_P_IR::setValue(long double val)
+    void FC_Gamma_IR::setValue(long double val)
     {
         *(this -> value) = val;
     }

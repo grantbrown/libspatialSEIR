@@ -24,8 +24,8 @@ namespace SpatialSEIR
     class FC_E_Star;
     class FC_R_Star;
     class FC_Beta;
-    class FC_P_EI;
-    class FC_P_IR;
+    class FC_Gamma_EI;
+    class FC_Gamma_IR;
     class FC_Beta_P_RS;
     class FC_Rho;
     class FC_Hybrid_Reinfection;
@@ -110,8 +110,8 @@ namespace SpatialSEIR
                                                                */
                           double* rho, /**< rho gives the starting value of the spatial dependence parameter*/
                           double* beta,/**< beta gives the starting vector of regression parameters driving the exposure process.*/ 
-                          double* p_ei,/**< p_ei is the starting value of the exposed to infectious transition probability. */
-                          double* p_ir,/**< p_ir is the starting value of the infectious to removed/recovered transition probability.*/ 
+                          double* gamma_ei,/**< p_ei is the starting value of the parameter driving the exposed to infectious transition probability. */
+                          double* gamma_ir,/**< p_ir is the starting value of the parameter driving the infectious to removed/recovered transition probability.*/ 
                           double* betaPrs,/**< betaPrs is the starting vector of regression parameters driving the reinfection process.*/ 
                           int* N,/**< N is the matrix of population sizes, corresponding in dimension to the CompartmentalModelMatrix instances.*/ 
                           sliceParameters* sliceWidths, /**< sliceWidths is an instance of sliceParameters which gives the slice sampling widths/
@@ -312,6 +312,12 @@ namespace SpatialSEIR
                 to perform calculations in parallel.*/
             void calculateP_SE_OCL();
 
+            /** calculateP_EI_CPU calculates the E to I transition probability vector p_ei */
+            void calculateP_EI_CPU();
+
+            /** calculateP_IR_CPU calculates the I to R transition probability vector p_ir */
+            void calculateP_IR_CPU();
+
             /** calculateP_RS_CPU calculates the reinfection probability p_rs.*/
             void calculateP_RS_CPU();
 
@@ -395,10 +401,10 @@ namespace SpatialSEIR
             FC_Rho *rho_fc;
             /** Pointer to FullConditional distribution for the regression parameters betaP_RS*/
             FC_Beta_P_RS *betaPrs_fc;
-            /** Pointer to FullConditional distribution for the transition probability p_ei*/
-            FC_P_EI *p_ei_fc;
-            /** Pointer to FullConditional distribution for the transition probability p_ir*/
-            FC_P_IR *p_ir_fc;
+            /** Pointer to FullConditional distribution for the parameter transition probability p_ei*/
+            FC_Gamma_EI *gamma_ei_fc;
+            /** Pointer to FullConditional distribution for the parameter controlling transition probability p_ir*/
+            FC_Gamma_IR *gamma_ir_fc;
             /** Pointer to FullConditional distribution for the combined reinfection parameters betaP_RS and S_star*/
             FC_Hybrid_Reinfection *hybridReinfect_fc;
 
@@ -448,17 +454,23 @@ namespace SpatialSEIR
             double* gamma;
             /** Storage for the linear predictor, eta*/
             double* eta;
+            /** Storage for the vector of offsets.*/
+            double* offset;
             /** Storage for the exposure probability matrix, p_se*/
             double* p_se;
             /** Storage for cacheable portions of the p_se calculation*/
             double* p_se_components;
             /** ComparmentalModelMatrix sized cache of doubles. */
             double* compartmentCache;
-            /** Transition probability p_ei*/
+            /** Parameter controlling transition probability vector p_ei*/
+            double* gamma_ei;
+            /** Transition probability vector p_ei*/
             double* p_ei;
-            /** Transition probability p_ir*/
+            /** Parameter controlling transition probability vector p_ir*/
+            double* gamma_ir;
+            /** Transition probability vector p_ir*/
             double* p_ir;
-            /** Transition probability p_rs*/
+            /** Transition probability vector p_rs*/
             double* p_rs;
             /** Matrix of population sizes */
             int* N;

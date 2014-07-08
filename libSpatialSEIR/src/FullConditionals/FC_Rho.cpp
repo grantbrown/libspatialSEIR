@@ -137,7 +137,7 @@ namespace SpatialSEIR
 
     int FC_Rho::sampleCPU()
     {
-        sampleDoubleMetropolis(*context, *rho, 1, *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *rho, 1, *sliceWidth); 
         return(0);
     }
     int FC_Rho::sampleOCL()
