@@ -223,7 +223,7 @@ reinfectionMode = 1
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
 
-steadyStateConstraintPrecision = 0.1
+steadyStateConstraintPrecision = 0.001
 
 verbose = FALSE 
 debug = FALSE
@@ -234,8 +234,8 @@ debug = FALSE
 proposal = generateCompartmentProposal(I_star, N, S0 = N[1]-100, I0 = 100, E0 = 0)
 beta = c(5, rep(0, (length(beta)-1)))
 betaPrs = -c(4, rep(0,(length(betaPrs)-1)))
-gamma_ei = 2
-gamma_ir = 2
+gamma_ei = 2.3
+gamma_ir = 2.3
 offset = rep(1, nrow(S_star))
 
 res = spatialSEIRModel(compMatDim,
@@ -275,7 +275,8 @@ res = spatialSEIRModel(compMatDim,
                       sliceWidths,
                       reinfectionMode)
 
-res$setTrace(0)
+
+#res$setTrace(0)
 res$setRandomSeed(123123)
 itrPrint = function(x, wd=8)
 {
@@ -311,12 +312,12 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 
 
 #print("Burn in 1 to adjust sampling widths.")
-#res$samplingMode = 2
-#runSimulation(20000,100, printAR = FALSE, targetRatio = 0.3)
-#runSimulation(1000,200, printAR = FALSE, targetRatio = 0.3)
+res$samplingMode = 2
+runSimulation(20000,100, printAR = FALSE, targetRatio = 0.3)
+runSimulation(1000,200, printAR = FALSE, targetRatio = 0.3)
 #print("Switching to joint reinfection sampling.")
 #res$hybridReinfectionSampling = 1
-#runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.3, targetWidth = 0.05)
+runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.3, targetWidth = 0.05)
 #res$oclPreferences = res$oclPreferences + 1
 
 

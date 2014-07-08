@@ -122,8 +122,8 @@ namespace SpatialSEIR
         {
             // Variable names are re-used here for convenience. 
             ln_p_ir = (*p_ir)[j]; 
-            (*p_ir)[j] = std::log (ln_p_ir);
-            ((*context) -> compartmentCache)[j] = std::log(1-(*p_ir)[j]);
+            (*p_ir)[j] = std::log(ln_p_ir);
+            ((*context) -> compartmentCache)[j] = std::log(1-ln_p_ir);
         }
 
         compIdx = startLoc*nTpts + startTime;
@@ -253,7 +253,7 @@ namespace SpatialSEIR
             // Variable names are re-used here for convenience. 
             ln_p_ir = (*p_ir)[j]; 
             (*p_ir)[j] = std::log (ln_p_ir);
-            ((*context) -> compartmentCache)[j] = std::log(1-(*p_ir)[j]);
+            ((*context) -> compartmentCache)[j] = std::log(1-ln_p_ir);
         }
 
 
