@@ -95,7 +95,7 @@ namespace SpatialSEIR
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
-            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+            virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange) = 0;
             double acceptanceRatio();
             double* sliceWidth;
             int* useOCL;
@@ -128,6 +128,7 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
             virtual void printDebugInfo(int loc, int tpt) = 0;
+            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
             int sampleCompartment_CPU(ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
@@ -184,6 +185,7 @@ namespace SpatialSEIR
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
+            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
             int sampleDouble(ModelContext* context, 
                              double* variable,
                              int varLen,
@@ -235,6 +237,7 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual int calculateRelevantCompartments(int startLoc) = 0;
+            void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
             virtual void printDebugInfo(int loc) = 0;
 
             int sampleCompartment_CPU(ModelContext* context,

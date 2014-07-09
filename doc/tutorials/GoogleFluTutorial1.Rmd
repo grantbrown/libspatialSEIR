@@ -1,7 +1,7 @@
 ---
 title: "Google Flu Example SEIRS Model"
 author: "Grant Brown"
-date: "07/05/2014"
+date: "07/08/2014"
 output: html_document
 ---
 
@@ -158,8 +158,11 @@ xAxis()
 I_star = matrix(round(FluCountEst), ncol = 1)
 N = matrix(TotalPop, nrow = nrow(fluDat.sub), ncol = 1)
 
-p_ei = 0.9
-p_ir = 0.9
+# The following parameters determine p_ei and p_ir
+# if the offset is all ones, p_ei = 1-exp(-gamma_ei) etc.
+gamma_ei = 2.3
+gamma_ir = 2.3
+
 beta = rep(0, ncol(X) + ncol(Z))
 beta[1] = 2.5
 
@@ -180,26 +183,29 @@ mcmcTuningParams = c(1, # S_star
                      1,  # I_0
                      0.82,  # beta
                      0.2,  # beta_p_rs
-                     0.0)  # rho
+                     0.0, # rho
+                     0.01, # gamma_ei
+                     0.01  # gamma_ir
+                     )  
 
 
 # Prior parameters. 
-priorAlpha_pEI = 10000;
-priorBeta_pEI = 1000;
-priorAlpha_pIR = 10000;
-priorBeta_pIR = 1000;
-betaPrsPriorPrecision = 0.5
+priorAlpha_gammaEI = 23000;
+priorBeta_gammaEI = 10000;
+priorAlpha_gammaIR = 23000;
+priorBeta_gammaIR = 10000;
+betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
 # reinfection mode is 1, because this is a general SEIRS model. 
 reinfectionMode = 1
 # steadyStateConstraintPrecision is a loose constraint on net flows
-# between compartments. Setting it to a very small value eliminates
-# the constraint, but it helps with identifiability. 
-steadyStateConstraintPrecision = 0.1
+# between compartments. Setting it to a negative value eliminates
+# the constraint, but it can help with identifiability in some cases. 
+steadyStateConstraintPrecision = -1
 
 # iterationStride determines the delay between saving samples to the output file
-iterationStride = 1000
+iterationStride = 10000
 outFileName = "./chain_output.txt"
 
 # Make a crude guess as to the true compartments:
@@ -251,16 +257,16 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       X_p_rs,
                       DM,
                       rho,
-                      priorAlpha_pEI,
-                      priorBeta_pEI,
-                      priorAlpha_pIR,
-                      priorBeta_pIR,
+                      priorAlpha_gammaEI,
+                      priorBeta_gammaEI,
+                      priorAlpha_gammaIR,
+                      priorBeta_gammaIR,
                       beta,
                       betaPriorPrecision,
                       beta_p_rs,
                       betaPrsPriorPrecision,
-                      p_ei,
-                      p_ir,
+                      gamma_ei,
+                      gamma_ir,
                       N,
                       outFileName,
                       iterationStride,
@@ -360,13 +366,20 @@ SEIRmodel$printSamplingParameters()
 
 These look reasonable, so let's launch the main simulation. As currently implemented, the MCMC samplers encounter distressingly high autocorrelation. This is an active target of optimization, but in the meantime we need to be prepared to run inconveniently many samples. A bit of timekeeping code helps keep track of how long this might take. 
 
+One potential approach to reducing autocorrelation is to sample correlated paramters together in a block. Let's tell libspatialSEIR to do this for the 
+R to S transition parameters and transition matrix. 
+
+```{r tidy=FALSE}
+SEIRmodel$hybridReinfectionSampling=1
+```
+
 
 ```{r tidy = FALSE}
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(100000))[3]
-  SEIRmodel$updateSamplingParameters(0.3, 
+  tm = tm + system.time(SEIRmodel$simulate(1000))[3]
+  SEIRmodel$updateSamplingParameters(0.1, 
                                      0.025, 
                                      0.05)
   cat(paste(i, "of 100,", 
@@ -455,8 +468,8 @@ plotChain(chainDat$BetaP_RS_4, "Reinfection H1N1 Component")
 ```
 ```{r, tidy=FALSE, echo=TRUE, fig.width=4, fig.height=8}
 par(mfrow = c(2,1))
-plotChain(chainDat$p_ei, "E to I Transition Probability")
-plotChain(chainDat$p_ir, "I to R Transition Probability")
+plotChain(1-exp(-chainDat$gamma_ei), "E to I Transition Probability")
+plotChain(1-exp(-chainDat$gamma_ir), "I to R Transition Probability")
 ```
 
 
@@ -500,8 +513,8 @@ the parameter values and predict the epidemic for each.
                              beta.prs.pred, 
                              X.pred,
                              X.prs.pred,
-                             p.ei,
-                             p.ir,
+                             gamma.ei,
+                             gamma.ir,
                              S0,
                              E0,
                              I0,
@@ -511,6 +524,8 @@ the parameter values and predict the epidemic for each.
       p_se_components = exp(X.pred %*% beta.pred)
       p_se = matrix(0, ncol = 1, nrow = nrow(X.pred))
       p_rs = exp(X.prs.pred %*% beta.prs.pred)
+      p_ei = 1-exp(-gamma.ei)
+      p_ir = 1-exp(-gamma.ir)
       S_star = matrix(0, ncol=1,nrow = nrow(X.pred))
       E_star = matrix(0, ncol=1,nrow = nrow(X.pred))
       I_star = matrix(0, ncol=1,nrow = nrow(X.pred))
@@ -584,8 +599,8 @@ the parameter values and predict the epidemic for each.
                            beta.prs, 
                            X.pred,
                            X.prs.pred,
-                           dataRow$p.ei,
-                           dataRow$p.ir,
+                           dataRow$gamma_ei,
+                           dataRow$gamma_ir,
                            dataRow$S_0_207,
                            dataRow$E_0_207,
                            dataRow$E_0_207,

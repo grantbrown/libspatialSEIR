@@ -112,7 +112,59 @@ namespace SpatialSEIR
      *
      */
 
-    void FullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
+    void ParameterFullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
+    {
+        if (*samples == 0)
+        {
+            // Do nothing
+            return;
+        }
+        if (proportionChange <= 0 || proportionChange >= 1)
+        {
+            std::cerr << "Invalid Proportion: " << proportionChange << "\n";
+            throw(-1);
+        }
+        double currentRatio = (this -> acceptanceRatio());
+        if ((currentRatio > desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
+        {
+            (*sliceWidth)*=(1+proportionChange); 
+        }
+        else if ((currentRatio < desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
+        {
+            (*sliceWidth)*=(1-proportionChange);           
+        }
+
+        *samples = 0;
+        *accepted = 0;
+    }
+
+    void CompartmentFullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
+    {
+        if (*samples == 0)
+        {
+            // Do nothing
+            return;
+        }
+        if (proportionChange <= 0 || proportionChange >= 1)
+        {
+            std::cerr << "Invalid Proportion: " << proportionChange << "\n";
+            throw(-1);
+        }
+        double currentRatio = (this -> acceptanceRatio());
+        if ((currentRatio > desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
+        {
+            (*sliceWidth)*=(1+proportionChange); 
+        }
+        else if ((currentRatio < desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
+        {
+            (*sliceWidth)*=(1-proportionChange);           
+        }
+
+        *samples = 0;
+        *accepted = 0;
+    }
+
+    void InitCompartmentFullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
     {
         if (*samples == 0)
         {
@@ -162,7 +214,6 @@ namespace SpatialSEIR
             (*((*parameterFullConditional) -> sliceWidth))*=(1-proportionChange); 
             (*((*compartmentFullConditional) -> sliceWidth))*=(1-proportionChange); 
         }
-    
         *samples = 0;
         *accepted = 0;
     }

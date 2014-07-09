@@ -314,7 +314,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 #print("Burn in 1 to adjust sampling widths.")
 res$samplingMode = 2
 runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
-runSimulation(1000,200, printAR = FALSE, targetRatio = 0.2)
+#runSimulation(1000,200, printAR = FALSE, targetRatio = 0.2)
 #print("Switching to joint reinfection sampling.")
 #res$hybridReinfectionSampling = 1
 runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
