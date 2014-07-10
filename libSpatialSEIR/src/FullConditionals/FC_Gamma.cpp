@@ -147,12 +147,12 @@ namespace SpatialSEIR
 
     int FC_Gamma::sampleCPU()
     {
-        sampleEntireDouble_CPU(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *gamma, *((*A0) -> numLocations), sliceWidth); 
         return(0);
     }
     int FC_Gamma::sampleOCL()
     {
-        sampleEntireDouble_OCL(*context, *gamma, *((*A0) -> numLocations), *sliceWidth); 
+        sampleEntireDouble_OCL(*context, *gamma, *((*A0) -> numLocations), sliceWidth); 
         return(0);
     }
 

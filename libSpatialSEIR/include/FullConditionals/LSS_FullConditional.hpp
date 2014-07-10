@@ -199,6 +199,7 @@ namespace SpatialSEIR
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
+            virtual double acceptanceRatio(int i);
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
             int *varLen;
@@ -206,37 +207,38 @@ namespace SpatialSEIR
             /** Standard Metropolis proposal, centered at current value. */
             void proposeUpdate(double* variable,
                                        int varLen,
-                                       double width);
+                                       double* width);
 
             /** Decorrelation proposal */
             void proposeUpdate(double* variable,
-                                       int varLen,
-                                       CovariateMatrix* priorMatrix);
+                               int varLen,
+                               CovariateMatrix* priorMatrix,
+                               double* width);
 
             int sampleDouble(ModelContext* context, 
                              double* variable,
                              int varLen,
-                             double width);
+                             double* width);
 
             int sampleEntireDouble_CPU(ModelContext* context, 
                              double* variable,
                              int varLen,
-                             double width);
+                             double* width);
 
             int sampleEntireDouble_OCL(ModelContext* context, 
                              double* variable,
                              int varLen,
-                             double width);
+                             double* width);
 
             int sampleDouble_OCL(ModelContext* context, 
                              double* variable,
                              int varLen,
-                             double width);
+                             double* width);
 
             int sampleDoubleMetropolis(ModelContext* context, 
                                        double* variable,
                                        int varLen,
-                                       double width);
+                                       double* width);
     };
 
 
@@ -325,14 +327,14 @@ namespace SpatialSEIR
             void proposeUpdate(double* variable,
                                int varLen,
                                int* destCompartment,
-                               double varWidth, 
+                               double* varWidth, 
                                double compWidth);
 
             /** Decorrelation proposal for parameter, standard metropolis proposal for compartment. */
             void proposeUpdate(double* variable,
                                int varLen,
                                int* destCompartment,
-                               double varWidth, 
+                               double* varWidth, 
                                double compWidth,
                                CovariateMatrix* priorMatrix);
 
@@ -340,7 +342,7 @@ namespace SpatialSEIR
             void proposeUpdate(double* variable,
                                int varLen,
                                int* destCompartment,
-                               double varWidth, 
+                               double* varWidth, 
                                double compWidth,
                                CovariateMatrix* priorMatrix,
                                int * indexList,
@@ -350,14 +352,14 @@ namespace SpatialSEIR
                                   double* variable,
                                   int varLen,
                                   CompartmentalModelMatrix* destCompartment,
-                                  double varWidth,
+                                  double* varWidth,
                                   double compWidth); 
 
             int sampleHybrid_OCL(ModelContext* context,
                                   double* variable,
                                   int varLen,
                                   CompartmentalModelMatrix* destCompartment,
-                                  double varWidth,
+                                  double* varWidth,
                                   double compWidth); 
 
             double* steadyStateConstraintPrecision;

@@ -18,11 +18,6 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-    
-
-
-
-
 
     int CompartmentFullConditional::sampleCompartment_CPU(ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,
@@ -45,7 +40,7 @@ namespace SpatialSEIR
                                          double* variable,
                                          int varLen,
                                          CompartmentalModelMatrix* starCompartment,
-                                         double varWidth,
+                                         double* varWidth,
                                          double compWidth)
     {
         *samples += 1;
@@ -74,10 +69,10 @@ namespace SpatialSEIR
         {
 
             x0 = (variable)[i];
-            x1 = ((context -> random -> normal(x0, varWidth))); 
+            x1 = ((context -> random -> normal(x0, varWidth[i]))); 
             (variable)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,varWidth));
-            initProposal += (context -> random -> dnorm(x0, x1,varWidth));
+            newProposal += (context -> random -> dnorm(x1, x0,varWidth[i]));
+            initProposal += (context -> random -> dnorm(x0, x1,varWidth[i]));
         }
 
         // Propose compartment
@@ -793,7 +788,7 @@ namespace SpatialSEIR
     int ParameterFullConditional::sampleDouble(ModelContext* context,
                                        double* variable, 
                                        int varLen, 
-                                       double width)
+                                       double* width)
     {
         // Declare required variables
         int i;
@@ -812,8 +807,8 @@ namespace SpatialSEIR
             this -> calculateRelevantCompartments(); 
             this -> evalCPU();
             y = (this->getValue()) - (context -> random -> gamma());
-            l = x - ((context -> random -> uniform())*width);
-            r = l + width;
+            l = x - ((context -> random -> uniform())*width[i]);
+            r = l + width[i];
 
             if (! std::isfinite(y))
             {
@@ -839,7 +834,7 @@ namespace SpatialSEIR
     int ParameterFullConditional::sampleDoubleMetropolis(ModelContext* context,
                                                          double* variable, 
                                                          int varLen, 
-                                                         double width)
+                                                         double* width)
     {
         // Declare required variables
         int i;
@@ -861,13 +856,13 @@ namespace SpatialSEIR
             this -> evalCPU();
             initVal = (this->getValue());
 
-            x1 = (context -> random -> normal(x0, width));
+            x1 = (context -> random -> normal(x0, width[i]));
             variable[i] = x1;
             this -> calculateRelevantCompartments();
             this -> evalCPU();
             newVal = (this->getValue());
-            initProposal = (context->random->dnorm(x0, x1, width));
-            newProposal = (context->random->dnorm(x1, x0, width)); 
+            initProposal = (context->random->dnorm(x0, x1, width[i]));
+            newProposal = (context->random->dnorm(x1, x0, width[i])); 
 
             if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
             {
@@ -889,7 +884,7 @@ namespace SpatialSEIR
     int ParameterFullConditional::sampleEntireDouble_CPU(ModelContext* context,
                                                          double* variable, 
                                                          int varLen, 
-                                                         double width)
+                                                         double* width)
     {
 
         ((*samples)) += 1;
@@ -913,10 +908,10 @@ namespace SpatialSEIR
         {
 
             x0 = (variable)[i];
-            x1 = ((context -> random -> normal(x0, width))); 
+            x1 = ((context -> random -> normal(x0, width[i]))); 
             (variable)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width));
-            initProposal += (context -> random -> dnorm(x0, x1,width));
+            newProposal += (context -> random -> dnorm(x1, x0,width[i]));
+            initProposal += (context -> random -> dnorm(x0, x1,width[i]));
         }
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
@@ -948,7 +943,7 @@ namespace SpatialSEIR
     int ParameterFullConditional::sampleEntireDouble_OCL(ModelContext* context,
                                                          double* variable, 
                                                          int varLen, 
-                                                         double width)
+                                                         double* width)
     {
 
         ((*samples)) += 1;
@@ -969,10 +964,10 @@ namespace SpatialSEIR
         for (i = 0; i < varLen; i++)
         {
             x0 = (variable)[i];
-            x1 = ((context -> random -> normal(x0, width))); 
+            x1 = ((context -> random -> normal(x0, width[i]))); 
             (variable)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width));
-            initProposal += (context -> random -> dnorm(x0, x1,width));
+            newProposal += (context -> random -> dnorm(x1, x0,width[i]));
+            initProposal += (context -> random -> dnorm(x0, x1,width[i]));
         }
         this -> calculateRelevantCompartments_OCL(); 
         this -> evalOCL();
@@ -1004,7 +999,7 @@ namespace SpatialSEIR
     int ParameterFullConditional::sampleDouble_OCL(ModelContext* context,
                                                          double* variable, 
                                                          int varLen, 
-                                                         double width)
+                                                         double* width)
     {
         // Declare required variables
         int i;
@@ -1026,13 +1021,13 @@ namespace SpatialSEIR
             this -> evalOCL();
             initVal = (this->getValue());
 
-            x1 = (context -> random -> normal(x0, width));
+            x1 = (context -> random -> normal(x0, width[i]));
             variable[i] = x1;
             this -> calculateRelevantCompartments_OCL();
             this -> evalOCL();
             newVal = (this->getValue());
-            initProposal = (context->random->dnorm(x0, x1, width));
-            newProposal = (context->random->dnorm(x1, x0, width)); 
+            initProposal = (context->random->dnorm(x0, x1, width[i]));
+            newProposal = (context->random->dnorm(x1, x0, width[i])); 
 
             if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
             {

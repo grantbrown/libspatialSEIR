@@ -106,6 +106,11 @@ namespace SpatialSEIR
         return((*accepted*1.0)/(*samples));
     }
 
+    double ParameterFullConditional::acceptanceRatio(int i)
+    {
+        return((accepted[i]*1.0)/(*samples));
+    }
+
     /*
      *
      * Auto-tuning logic
@@ -124,18 +129,22 @@ namespace SpatialSEIR
             std::cerr << "Invalid Proportion: " << proportionChange << "\n";
             throw(-1);
         }
-        double currentRatio = (this -> acceptanceRatio());
-        if ((currentRatio > desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
+        int i;
+        for (i = 0; i < *varLen; i++)
         {
-            (*sliceWidth)*=(1+proportionChange); 
-        }
-        else if ((currentRatio < desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
-        {
-            (*sliceWidth)*=(1-proportionChange);           
+            double currentRatio = (this -> acceptanceRatio(i));
+            if ((currentRatio > desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
+            {
+                (sliceWidth[i])*=(1+proportionChange); 
+            }
+            else if ((currentRatio < desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
+            {
+                (sliceWidth[i])*=(1-proportionChange);           
+            }
         }
 
         *samples = 0;
-        *accepted = 0;
+        memset(accepted, 0, *varLen);
     }
 
     void CompartmentFullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
@@ -203,16 +212,23 @@ namespace SpatialSEIR
             throw(-1);
         }
         double currentRatio = (this -> acceptanceRatio());
-
+        int i; 
+        int varLen = *((*parameterFullConditional) -> varLen);
         if ((currentRatio > desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
         {
-            (*((*parameterFullConditional) -> sliceWidth))*=(1+proportionChange); 
             (*((*compartmentFullConditional) -> sliceWidth))*=(1+proportionChange); 
+            for (i = 0; i < varLen; i++)
+            {
+                (((*parameterFullConditional)) -> sliceWidth[i])*=(1+proportionChange); 
+            }
         }
         else if ((currentRatio < desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
         {
-            (*((*parameterFullConditional) -> sliceWidth))*=(1-proportionChange); 
             (*((*compartmentFullConditional) -> sliceWidth))*=(1-proportionChange); 
+            for (i = 0; i < varLen; i++)
+            {
+                (((*parameterFullConditional)) -> sliceWidth[i])*=(1-proportionChange); 
+            } 
         }
         *samples = 0;
         *accepted = 0;

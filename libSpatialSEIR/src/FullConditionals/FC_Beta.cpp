@@ -161,18 +161,18 @@ namespace SpatialSEIR
         int mode = (*context) -> getSamplingMode();
         if (mode == 1)
         {
-            sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+            sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
         }
         else
         {
-            sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+            sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
         }
 
         return(0);
     }
     int FC_Beta::sampleOCL()
     {
-        sampleEntireDouble_OCL(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), *sliceWidth); 
+        sampleEntireDouble_OCL(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
         return(0);
     }
 

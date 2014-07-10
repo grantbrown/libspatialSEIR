@@ -210,7 +210,7 @@ namespace SpatialSEIR
                                  *beta_p_rs,
                                  *((*X_p_rs) -> ncol_x), 
                                  *S_star,
-                                 *((*parameterFullConditional) -> sliceWidth),
+                                 ((*parameterFullConditional) -> sliceWidth),
                                  *((*compartmentFullConditional) -> sliceWidth));
         return 0;
     }

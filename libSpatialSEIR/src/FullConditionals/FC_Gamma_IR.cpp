@@ -143,7 +143,7 @@ namespace SpatialSEIR
 
     int FC_Gamma_IR::sampleCPU()
     {
-        sampleEntireDouble_CPU(*context, *gamma_ir, 1, *sliceWidth); 
+        sampleEntireDouble_CPU(*context, *gamma_ir, 1, sliceWidth); 
         return(0);
     }
 

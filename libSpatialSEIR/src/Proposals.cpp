@@ -37,14 +37,15 @@ namespace SpatialSEIR
 
     void ParameterFullConditional::proposeUpdate(double* variable,
                                                  int varLen,
-                                                 double width)
+                                                 double* width)
     {
         // Not Implemented
     }
 
     void ParameterFullConditional::proposeUpdate(double* variable,
                                                  int varLen,
-                                                 CovariateMatrix* priorMatrix)
+                                                 CovariateMatrix* priorMatrix,
+                                                 double* width)
     {
         // Not Implemented
     }
@@ -69,7 +70,7 @@ namespace SpatialSEIR
     void HybridFullConditional::proposeUpdate(double* variable,
                                               int varLen,
                                               int* destCompartment,
-                                              double varWidth,
+                                              double* varWidth,
                                               double compWidth)
     {
         // Not Implemented
@@ -78,7 +79,7 @@ namespace SpatialSEIR
     void HybridFullConditional::proposeUpdate(double* variable,
                                               int varLen,
                                               int* destCompartment,
-                                              double varWidth,
+                                              double* varWidth,
                                               double compWidth,
                                               CovariateMatrix* priorMatrix)
     {
@@ -88,7 +89,7 @@ namespace SpatialSEIR
     void HybridFullConditional::proposeUpdate(double* variable,
                                               int varLen,
                                               int* destCompartment,
-                                              double varWidth,
+                                              double* varWidth,
                                               double compWidth,
                                               CovariateMatrix* priorMatrix,
                                               int *indexList,

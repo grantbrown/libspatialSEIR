@@ -156,11 +156,11 @@ namespace SpatialSEIR
 
         if (mode == 1)
         {
-            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
+            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, sliceWidth); 
         }
         else
         {
-            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, *sliceWidth); 
+            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, sliceWidth); 
         }
         return(0);
     }
@@ -168,7 +168,7 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::sampleOCL()
     {
         int nbeta = *((*X) -> ncol_x);
-        sampleEntireDouble_OCL(*context, *beta_p_rs, nbeta, *sliceWidth); 
+        sampleEntireDouble_OCL(*context, *beta_p_rs, nbeta, sliceWidth); 
         return(0);
     }
 
