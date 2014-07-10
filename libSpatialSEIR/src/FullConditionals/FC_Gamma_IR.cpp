@@ -54,6 +54,8 @@ namespace SpatialSEIR
         accepted = new int; 
         useOCL = new int;
         sliceWidth = new double;
+        varLen = new int;
+        *varLen = 1;
         *samples = 0;
         *accepted = 0;
         *useOCL = _useOCL;
@@ -72,6 +74,7 @@ namespace SpatialSEIR
 
     FC_Gamma_IR::~FC_Gamma_IR()
     {
+        delete varLen;
         delete sliceWidth;
         delete gamma_ir;
         delete R_star;

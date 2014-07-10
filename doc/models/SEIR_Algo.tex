@@ -10,6 +10,9 @@
 \usepackage{alltt}
 \usepackage{float}
 \usepackage{amsmath}
+\newcommand{\widesim}[2][1.5]{
+      \mathrel{\overset{#2}{\scalebox{#1}[1]{$\sim$}}}
+  }
 
 \newcommand \noi {\noindent}
 \newcommand \itx {\indent \indent \indent}
@@ -47,16 +50,16 @@ can be categorized by disease state. The most common terms used to describe thes
 Persons in a population are assumed to move through these disease categories sequentially according to the 
 disease process, though in practice these disease states are combined in different ways. For example, a simple epidemic model
 might use an S-I-R structure in which individuals become immediately infectious (ie, there is no latent period), and 
-are subsequently removed from the population (ie, assuming permanent immunity). For a disease which conferrs only 
+are subsequently removed from the population (ie, assuming permanent immunity). For a disease which confers only 
 temporary immunity, such as influenza, many
 researchers have employed S-I-R-S models, which include a potential for previously recovered individuals to be reintroduced
 to the susceptible population. Similarly, SEIR and SEIRS models introduce a latent period during which exposed individuals
-are not yet, but will become, infectious. In cases where the reintroduction process is either complicated, or data is sparse, 
+are not yet, but will become, infectious. In cases where the reintroduction process is either complicated, or data are sparse, 
 researchers can employ a "Serial SEIR" model, which simply re-sets the susceptible population at regular intervals.\\ 
 
 This diverse family temporal structures has been generalized to allow epidemics to be modeled over space, as well as time.  
 
-\subsection{TL;DR - What is libsaptialSEIR for?}
+\subsection{TL;DR - What is libspatialSEIR for?}
 
 libspatialSEIR was designed to provide a computationally efficient and user friendly method to fit several important epidemic 
 models in the Bayesian spatial SEIRS family. In particular, spatial and single location models are allowed to evolve through 
@@ -75,50 +78,53 @@ effects on population mixing, and anything else that can be expressed as a linea
 distributed parameters.\\ 
 
 
-Example code for each of these models is included in the \textit{scripts} directory, and several full tutorials are available in the 
-tutorial subdirectory of \textit{doc} folder. 
+Example code for each of these models is included with the library, and several full tutorials are available.
 
-\subsection{SEIRS Model Family - Formal Development}
+\section{SEIRS Model Family - Formal Development}
         Developed below is the most general member of the SEIRS family which can be fit with libspatialSEIR, 
         namely the spatial SEIRS model. Important special cases are discussed in the following section.
 
-    \subsubsection{Compartments and Notation}
+    \subsection{Compartments and Notation}
     {
         \itx
         Denote the spatial locations of interest $\left\{s_i : i = 1, ...,n \right\}$ \\
         Let $d(s_i, s_l) = d_{il}$ define a measure of distance between 
-        spatial locations. Note that $s_i$ and $s_l$. $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$ \\
+        spatial locations. Note that $d(s_i, s_i) = 0$, and $d(s_i, s_l) = d(s_l, s_i)$. \\
         
         
         Let time (in units appropriate to the data and disease process) be denoted ${t_j : j = 1, ...,T}$ \\
         For now, assume that all time points are equally spaced - the library allows the inclusion of an offset term 
         to relax this assumption, but for illustrative purposes we'll keep the notation simple here. 
         Define the following components for each $s_i$ and $t_j$: \mbreak
+
+        All components indexed by time and space in libspatialSEIR are layed out as arrays of double precision elements
+        in column major order with T rows and n columns. 
     }
         \begin{itemize}
             \item {$y_{ij}$} is the observed data.
-            \item {$\bf{N_{ij}}$} is the population size
-            \item {$\bf{S_{ij}}$} is the count of susceptible individuals
-            \item {$\bf{E_{ij}}$} is the count of exposed individuals
-            \item {$\bf{I_{ij}}$} is the count of infectious individuals
-            \item {$\bf{R_{ij}}$} is the count of recovered/removed individuals
-            \item {$\bf{S^*_{ij}}$} is the number of newly susceptible individuals
-            \item {$\bf{E^*_{ij}}$} is the number of newly exposed individuals
-            \item {$\bf{I^*_{ij}}$} is the number of newly infectious individuals
-            \item {$\bf{R^*_{ij}}$} is the number of newly recovered/removed individuals
+            \item {${N_{ij}}$} is the population size
+            \item {${S_{ij}}$} is the count of susceptible individuals
+            \item {${E_{ij}}$} is the count of exposed individuals
+            \item {${I_{ij}}$} is the count of infectious individuals
+            \item {${R_{ij}}$} is the count of recovered/removed individuals
+            \item {${S^*_{ij}}$} is the number of newly susceptible individuals
+            \item {${E^*_{ij}}$} is the number of newly exposed individuals
+            \item {${I^*_{ij}}$} is the number of newly infectious individuals
+            \item {${R^*_{ij}}$} is the number of newly recovered/removed individuals
         \end{itemize}
-        Let {$\bf{N_j} = \bf{S_j + E_j + I_j + R_j}$} for all $j$\\
+        
+        Let {$\bf{N_j} = \bf{S_j + E_j + I_j + R_j}$} for all $j$ rows of the disease process compartments. 
         In addition let ${\bf{S_0, E_0, I_0,}}$ and ${\bf{R_0}}$ denote the $n$-vectors of unknown compartment sizes at the 
         start of the modeling period. 
         
 
     \subsection{Data Model}
-    An obvious first step is to specify the data model. 
+    An obvious first step is to specify the data model, given below: 
 
     \vspace{0.15in}
 
     \begin{center}
-        $ \{y_{ij}\ | I^*_{ij}\} \sim\ (indep.)\ g(I^*_{ij}, \Theta)  $
+        $ \{y_{ij}\ | I^*_{ij}\} \widesim{ind}\ g(I^*_{ij}, \Theta)  $
     \end{center}
 
     Currently, libspatialSEIR only supports the identity data model, in which: 
@@ -129,7 +135,7 @@ tutorial subdirectory of \textit{doc} folder.
 
     \vspace{0.15in}
 
-    \subsubsection{Disease Evolution Process Model}
+    \subsection{Disease Evolution Process Model}
     Given the values of the aforementioned parameters, the disease process evolves forward in time 
     as one would expect based on the definitions.  
     \begin{center}
@@ -140,23 +146,23 @@ tutorial subdirectory of \textit{doc} folder.
     \end{center}
     \vspace{0.15in}
 
-    While models of this form are often fit using deterministic systems of differential equations, libspatialSEIR uses
-    a heirarchical Bayesian framework in order to adequately capture the inherent variability in the model parameters.
+    While models of this form are often fit using deterministic systems of ordinary or partial differential equations, 
+    libspatialSEIR uses a heirarchical Bayesian framework in order to adequately capture the inherent variability in the model parameters.
     To complete the temporal process model, specify the following chain binomial relationship: 
     \vspace{0.15in}
     {
 
-        $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\mbreak
+        $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \widesim{ind}\ binom(R_{ij}, \pi_j^{(RS)})$\mbreak
 
-        $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \sim (indep.)\ binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
+        $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \widesim{ind}\ binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
 
-        $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \sim\ (indep.)\ binom(E_{ij}, \pi^{(EI)})$\mbreak
+        $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \widesim{ind}\ binom(E_{ij}, \pi^{(EI)})$\mbreak
 
-        $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\mbreak
+        $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \widesim{ind}\ binom(I_{ij}, \pi^{(IR)})$\mbreak
     }
 \subsection{Transition Probability Model}
 
-        While $\pi^{EI}$, and $\pi^{IR}$ can be easily parameterized, more care must be given to the development 
+        While $\pi^{EI}$ and $\pi^{IR}$ can be easily parameterized, more care must be given to the development 
         of a model for the $\left\{\pi^{SE}_{ij} \right\}$ and $\left\{\pi^{RS}_j \right\}$. The first of these 
         describes the actual infection process and must account for predictor variables as well as the 
         spatial structure of $\left\{ s_i \right\}$. The second drives the reinfection process, which captures the
@@ -174,7 +180,7 @@ let $q=1-p$. Now we introduce a number of assumptions:
 \begin{itemize}
 
     \item Assume that the number of `contacts' $K_i$ between a person of interest 
-    and other individuals within a spatial unit $s_i$ at a given time point follows a poisson 
+    and other individuals within a spatial unit $s_i$ at a given time point follows a Poisson 
     distribution:\\
     \begin{center}
         $K_j \sim Po(\lambda_i)$
@@ -187,7 +193,8 @@ let $q=1-p$. Now we introduce a number of assumptions:
 
 Define $\delta_{ij}$ to be the proportion of persons who are infectious in spatial unit $s_i$ 
 at time $t_j$. Then, letting $Inf(s_i, t_j)$ denote the event that a person becomes 
-infected from contact within spatial unit $s_i$ at time $t_j$, we can derive:
+infected from contact within spatial unit $s_i$ at time $t_j$ and $!Inf(s_i, t_j)$ denote it's compliment
+, we can derive:
 
 \begin{center}
 
@@ -230,9 +237,7 @@ Currently, libspatialSEIR supports distance functions of the form:
 \end{center}
 
 While not required, the option to re-scale this distance matrix to be row stochastic is available to ensure a 
-proper posterior distribution. 
-
-Support for other distance functions, such as the gravity model, is planned. \mbreak
+proper posterior distribution. Support for other distance functions, such as the gravity model, is planned. \mbreak
 
 
 A few miscellaneous notes: 
@@ -240,7 +245,7 @@ A few miscellaneous notes:
     \item By defining $f(d_{ii})$ to be equal to $1$ for all $i$, the above expression has a simple 
         matrix form. 
     \item WLOG, we can make the mixing parameters dependent on space and time, defining $\lambda_{v_1, v_2}$,
-        and correspondingly $\theta_{v_1,v_2}$
+        and correspondingly $\theta_{v_1,v_2}$.
     \item When constructing full conditional distributions, it is important to keep in mind the constraint:
         $S+E+I+R=N$, as well as the fact that $p_{i,j}^{(SE)}$ does, in fact, depend on the value of $I$.
         This is easy to neglect and hard to debug.  \\
@@ -249,7 +254,7 @@ A few miscellaneous notes:
 
 This spatial probability structure encompases the usual CAR, or Conditionally Auto-Regressive, class
 of spatial dependence structures, and can accommodate several different data types. For example, 
-in the case where spatial data is indexed by discrete areal units, a neighborhood matrix may define
+in the case where spatial data are indexed by discrete areal units, a neighborhood matrix may define
 the requisite `distance' between spatial locations. On the opposite end of the spectrum, spatial locations 
 may occur on a continuum (ie, latitude and longitude). In this case, a more usual distance definition of 
 distance can be employed (with or without an explicit spatial range). libspatialSEIR is optimized for the 
@@ -275,7 +280,7 @@ is used:
  
 \section{Basic Reproductive Number}
 
-The basic reproductive number, $\mathcal{R}_0$, is an important quantity in epidemiology. While the interepretation must be adapted to 
+The basic reproductive number, $\mathcal{R}_0$, is an important quantity in epidemiology. While the interpretation must be adapted to 
 the problem of interest, in general terms the basic reproductive number captures the expected number of secondary 
 infections produced by a single infected individual in an entirely susceptible population. 
 
@@ -289,11 +294,23 @@ infections is:
 \begin{center}
     $\displaystyle E\big[ \sum_{k=0}^{N_{i,j}}(I_k(s_i, s_l, t_j)) \big]$ \mbreak
     $\displaystyle = \sum_{k=0}^{N_{i,j}}\cdot P(I_k(s_i, s_l, t_j)) = N_{i,j}\cdot P(I_k(s_i, s_l, t_j)) $ \mbreak 
+\end{center}
+
     Where, as before: \mbreak
+
+\begin{center}
     $ P(I_k(s_i, s_l, t_j)) = 1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}$ \mbreak
+\end{center}
+
     This gives: \mbreak
+
+\begin{center}
     $G_{i,l}(t_j) = \frac{N_{i,j}}{I_{l,j}}\cdot \left[1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}\right]$ \mbreak
+\end{center}
+
     Additionally recall the diagonal case, where $d_{ii} = 0$ and $f(0) = 1$:\mbreak 
+
+\begin{center}
     $G_{i,i}(t_j) = \frac{N_{i,j}}{I_{i,j}}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
     $ = \delta_{ij}^{-1}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
 \end{center}
@@ -306,15 +323,16 @@ Bringing together the aforementioned spatio-temporal structures we can define th
 deterministic relationships among parameters, and thus construct the requisit posterior distribution. 
 
 \subsection{Summary of Distribution Components}
-\noi $\{y_{ij} | I^*_{ij}\} \sim\ (indep.)\ g(I^*_{ij}, \Theta)$\\
 
-\noi $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \sim\ (indep.)\  binom(R_{ij}, \pi_j^{(RS)})$\\
+\noi $\{y_{ij} | I^*_{ij}\} \widesim{ind}\ g(I^*_{ij}, \Theta)$\\
 
-\noi $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \sim (indep.)\ binom(S_{ij}, \pi^{SE}_{ij})$ \\
+\noi $\{S_{ij}^* | \pi_j^{(RS)}, R_{ij}\} \widesim{ind}\ binom(R_{ij}, \pi_j^{(RS)})$\\
 
-\noi $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \sim\ (indep.)\ binom(E_{ij}, \pi^{(EI)})$\\
+\noi $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \widesim{ind}\ binom(S_{ij}, \pi^{SE}_{ij})$ \\
 
-\noi $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \sim\ (indep.)\ binom(I_{ij}, \pi^{(IR)})$\\
+\noi $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \widesim{ind}\ binom(E_{ij}, \pi^{(EI)})$\\
+
+\noi $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \widesim{ind}\ binom(I_{ij}, \pi^{(IR)})$\\
 
 \noi $\gamma^{(IR)} \sim\ gamma(\alpha^{(IR)}, \beta^{(IR)})$\\ 
 
@@ -343,9 +361,9 @@ deterministic relationships among parameters, and thus construct the requisit po
 
 \noi $\displaystyle log(\pi^{(SE)}_{ij}) = -\delta_{ij}e^{\theta_{ij}} - \sum_{\left\{ l \ne i \right\}}d_{il}\delta_{il}e^{\theta_{il}}$\\
 
-\noi $\left\{\pi_{EI}  \right\} = 1-exp{-\gamma^{(EI)}}$\\
+\noi $\left\{\pi_{EI}  \right\} = 1-exp({-\gamma^{(EI)}})$\\
 
-\noi $\left\{\pi_{IR}  \right\} = 1-exp{-\gamma^{(IR)}}$\\
+\noi $\left\{\pi_{IR}  \right\} = 1-exp({-\gamma^{(IR)}})$\\
 
 \noi $log(\pi_j^{RS}) = -X(\pi_j^{RS}) \beta_{\pi^{RS}}$\\
 
@@ -531,15 +549,16 @@ See the tutorial documents for the most current implementation details.
 
 OpenCL is a useful way to introduce parallelism to computationally intensive problems, and can target multi-core CPU's as well as
 GPU's. Indeed, initial results suggest that for moderately large problems (20-30k time/location values) OpenCL can speed up the 
-work of libspatialSEIR by around \%20. This number is expected to increase as more of the library is parallelized. 
+work of libspatialSEIR by around 20\%. This number is expected to increase as more of the library is parallelized. 
 
 On the other hand, for small problems OpenCL has enough overhead to significantly slow down run times. The Google Flu tutorial document 
-gives some example code which is useful for checking whether parallelism is the best option for your particular problem. You can easily 
+gives some example code which is useful for checking whether parallelism is the best option for your particular problem. One can easily 
 switch between OpenCL devices and single core CPU mode at any time during sampling. 
 
 \section{R Level API Summary}
 
-Once the R level API is complete, this section will include proper documentation and example code. For now, development is moving too fast
-to keep a current summary. All example code and tutorial documents are kept up to date, so that's probably the best resource for now. 
+Once the R level API is complete, this section will include proper documentation and example code. Development is currently moving too fast
+to keep a current summary. All example code and tutorial documents are kept up to date, and so provide the best resource for practical use of 
+libspatialSEIR. 
 
 \end{document}

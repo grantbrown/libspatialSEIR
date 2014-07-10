@@ -201,6 +201,8 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments_OCL() = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
+            int *varLen;
+
             /** Standard Metropolis proposal, centered at current value. */
             void proposeUpdate(double* variable,
                                        int varLen,

@@ -43,6 +43,8 @@ namespace SpatialSEIR
         samples = new int;
         accepted = new int; 
         useOCL = new int;
+        varLen = new int;
+        *varLen = 1;
         *samples = 0;
         *accepted = 0;
 
@@ -61,6 +63,7 @@ namespace SpatialSEIR
     }
     FC_Rho::~FC_Rho()
     {
+        delete varLen;
         delete E_star;
         delete S;
         delete A0;

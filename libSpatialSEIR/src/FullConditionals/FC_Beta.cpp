@@ -50,14 +50,16 @@ namespace SpatialSEIR
         sliceWidth = new double[nBeta];
         priorPrecision = new double;
         value = new long double;
-        samples = new int[nBeta];
+        samples = new int;
         accepted = new int[nBeta]; 
         useOCL = new int;
+        varLen = new int;
+        *varLen = (nBeta);
         *samples = 0;
         *accepted = 0;
 
         memset(sliceWidth, _sliceWidth, nBeta); 
-        memset(samples, 0, nBeta); 
+        *samples = 0;
         memset(accepted, 0, nBeta); 
 
         *context = _context;
@@ -83,10 +85,11 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
+        delete varLen;
         delete[] sliceWidth;
         delete priorPrecision;
         delete context;
-        delete[] samples;
+        delete samples;
         delete[] accepted;
         delete useOCL;
     }

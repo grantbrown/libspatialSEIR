@@ -49,12 +49,14 @@ namespace SpatialSEIR
         tausq = new double;
         sliceWidth = new double[nBeta];
         value = new long double;
-        samples = new int[nBeta]; 
+        samples = new int; 
         accepted = new int[nBeta];
         useOCL = new int;
+        varLen = new int;
 
+        *varLen = nBeta;
         memset(sliceWidth, _sliceWidth, nBeta); 
-        memset(samples, 0, nBeta); 
+        *samples = 0;
         memset(accepted, 0, nBeta); 
 
         *context = _context;
@@ -72,6 +74,7 @@ namespace SpatialSEIR
     FC_Beta_P_RS::~FC_Beta_P_RS()
     {
         delete S_star;
+        delete varLen;
         delete R;
         delete X;
         delete beta_p_rs;
@@ -81,7 +84,7 @@ namespace SpatialSEIR
         delete value;
         delete[] sliceWidth;
         delete context;
-        delete[] samples;
+        delete samples;
         delete[] accepted;
         delete useOCL;
     }
