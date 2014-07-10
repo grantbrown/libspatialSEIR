@@ -18,7 +18,7 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-
+    // Depricated: to be removed
     FC_Gamma::FC_Gamma(ModelContext *_context,
                    CompartmentalModelMatrix *_E_star,  
                    CompartmentalModelMatrix *_S,

@@ -37,6 +37,8 @@ namespace SpatialSEIR
                      int _useOCL)
     {
 
+        int nBeta = (*((_X) -> ncol_x));
+
         context = new ModelContext*;
         S_star = new CompartmentalModelMatrix*;
         R = new CompartmentalModelMatrix*;
@@ -45,11 +47,15 @@ namespace SpatialSEIR
         p_rs = new double*;
         beta_p_rs = new double*;
         tausq = new double;
-        sliceWidth = new double;
+        sliceWidth = new double[nBeta];
         value = new long double;
-        samples = new int; *samples = 0;
-        accepted = new int; *accepted = 0;
+        samples = new int[nBeta]; 
+        accepted = new int[nBeta];
         useOCL = new int;
+
+        memset(sliceWidth, _sliceWidth, nBeta); 
+        memset(samples, 0, nBeta); 
+        memset(accepted, 0, nBeta); 
 
         *context = _context;
         *S_star = _S_star;
@@ -73,10 +79,10 @@ namespace SpatialSEIR
         delete A0;
         delete p_rs;
         delete value;
-        delete sliceWidth;
+        delete[] sliceWidth;
         delete context;
-        delete samples;
-        delete accepted;
+        delete[] samples;
+        delete[] accepted;
         delete useOCL;
     }
 

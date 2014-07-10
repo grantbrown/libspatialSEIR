@@ -38,7 +38,7 @@ namespace SpatialSEIR
                      double _priorPrecision,
                      int _useOCL)
     {
-
+        int nBeta = (*((_X) -> ncol_x) + *((_X) -> ncol_z));
         context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
         S = new CompartmentalModelMatrix*;
@@ -47,14 +47,18 @@ namespace SpatialSEIR
         p_se = new double*;
         beta = new double*;
         rho = new double*;
-        sliceWidth = new double;
+        sliceWidth = new double[nBeta];
         priorPrecision = new double;
         value = new long double;
-        samples = new int;
-        accepted = new int; 
+        samples = new int[nBeta];
+        accepted = new int[nBeta]; 
         useOCL = new int;
         *samples = 0;
         *accepted = 0;
+
+        memset(sliceWidth, _sliceWidth, nBeta); 
+        memset(samples, 0, nBeta); 
+        memset(accepted, 0, nBeta); 
 
         *context = _context;
         *E_star = _E_star;
@@ -64,7 +68,6 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *beta = _beta;
         *rho = _rho;
-        *sliceWidth = _sliceWidth;
         *priorPrecision = _priorPrecision;
         *value = -1.0;
         *useOCL = _useOCL;
@@ -80,13 +83,12 @@ namespace SpatialSEIR
         delete beta;
         delete rho;
         delete value;
-        delete sliceWidth;
+        delete[] sliceWidth;
         delete priorPrecision;
         delete context;
-        delete samples;
-        delete accepted;
+        delete[] samples;
+        delete[] accepted;
         delete useOCL;
-
     }
 
     int FC_Beta::evalCPU()

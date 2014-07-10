@@ -378,10 +378,10 @@ SEIRmodel$hybridReinfectionSampling=1
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(1000))[3]
-  SEIRmodel$updateSamplingParameters(0.1, 
-                                     0.025, 
-                                     0.05)
+  tm = tm + system.time(SEIRmodel$simulate(150000))[3]
+  SEIRmodel$updateSamplingParameters(0.05, 
+                                     0.0025, 
+                                     0.005)
   cat(paste(i, "of 100,", 
             round((tm/(i)*(100-i)/60), 2), 
             " minutes remaining.\n"))
@@ -442,7 +442,7 @@ names(chainDat)
 
 plotChain = function(chain, main)
 {
-  chainIdx = floor(length(chain)/2):length(chain)
+  chainIdx = floor(length(chain) - length(chain)/2):length(chain)
   plot(chainDat$Iteration[chainIdx],chain[chainIdx],
        main = main, xlab = "Iteration", ylab = "Value", type = "l")
   abline(h = mean(chain[chainIdx]), lty = 2, col = "grey")
@@ -608,7 +608,7 @@ the parameter values and predict the epidemic for each.
                                              # and are named like: Comp_loc#_time#
   }
   
-  preds = lapply((nrow(chainDat) - floor(nrow(chainDat)/4)):
+  preds = lapply((nrow(chainDat) - floor(nrow(chainDat)/2)):
                    nrow(chainDat), predict.i)
   FluCountEst.pred = (fluDat.pred$HHS.Region.5..IL..IN..MI..MN..OH..WI./100000)*TotalPop
 ```
@@ -649,6 +649,7 @@ lines(c((nrow(SEIRmodel$S)+1):(nrow(SEIRmodel$S)+nrow(X.pred))),
 
 ```
 
+It looks like the prediction does fairly well until the next peak, but then doesn't decrease quickly enough. This may have to do with the relatively simple basis used to drive the exposure process. Clearly theres a lot of work to do!
 
 That wraps it up for now - the next tutorial will describe the spatial features of spatialSEIR. The library is under active development, so much of the previous work which was done with R code will be provided by the model object. In addition, sampling efficiency is an important goal which is being explored, so the library will hopefully require less sampling time in the near future. 
 

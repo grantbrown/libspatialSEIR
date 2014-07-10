@@ -77,6 +77,7 @@ namespace SpatialSEIR
     };
 
 
+
     /**
      * The FullConditional class serves as the grandparent class for the various
      * full conditional distributions. This structure is helpful, because we can 
@@ -95,6 +96,7 @@ namespace SpatialSEIR
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
+            virtual void proposeUpdate();
             virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange) = 0;
             double acceptanceRatio();
             double* sliceWidth;
@@ -128,7 +130,19 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
             virtual void printDebugInfo(int loc, int tpt) = 0;
+            virtual void proposeUpdate();
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+
+            /** Standard Metropolis proposal, centered at current value. */
+            void proposeUpdate(int* initCompartment,
+                               int initCompartmentLength,
+                               double width);
+
+            /** Partial Metropolis proposal, for indices in indexList. */
+            void proposeUpdate(int* initCompartment,
+                               int* indexList,
+                               int indexListLength,
+                               double width);
 
             int sampleCompartment_CPU(ModelContext* context,
                                   CompartmentalModelMatrix* destCompartment,
@@ -186,6 +200,17 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+
+            /** Standard Metropolis proposal, centered at current value. */
+            void proposeUpdate(double* variable,
+                                       int varLen,
+                                       double width);
+
+            /** Decorrelation proposal */
+            void proposeUpdate(double* variable,
+                                       int varLen,
+                                       CovariateMatrix* priorMatrix);
+
             int sampleDouble(ModelContext* context, 
                              double* variable,
                              int varLen,
@@ -237,8 +262,20 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual int calculateRelevantCompartments(int startLoc) = 0;
+            virtual void proposeUpdate();
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
             virtual void printDebugInfo(int loc) = 0;
+
+            /** Standard Metropolis proposal, centered at current value. */
+            void proposeUpdate(int* initCompartment,
+                               int initCompartmentLength,
+                               double width);
+
+            /** Partial Metropolis proposal, for indices in indexList. */
+            void proposeUpdate(int* initCompartment,
+                               int* indexList,
+                               int indexListLength,
+                               double width);
 
             int sampleCompartment_CPU(ModelContext* context,
                                       int* initCompartment, 
@@ -281,6 +318,31 @@ namespace SpatialSEIR
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
             ParameterFullConditional** parameterFullConditional;
             CompartmentFullConditional** compartmentFullConditional;
+
+            /** Standard Metropolis proposal, centered at current value of parameter and compartment. */
+            void proposeUpdate(double* variable,
+                               int varLen,
+                               int* destCompartment,
+                               double varWidth, 
+                               double compWidth);
+
+            /** Decorrelation proposal for parameter, standard metropolis proposal for compartment. */
+            void proposeUpdate(double* variable,
+                               int varLen,
+                               int* destCompartment,
+                               double varWidth, 
+                               double compWidth,
+                               CovariateMatrix* priorMatrix);
+
+            /** Decorrelation proposal for parameter, partial metropolis proposal for compartment. */
+            void proposeUpdate(double* variable,
+                               int varLen,
+                               int* destCompartment,
+                               double varWidth, 
+                               double compWidth,
+                               CovariateMatrix* priorMatrix,
+                               int * indexList,
+                               int indexListLength);
 
             int sampleHybrid_CPU(ModelContext* context,
                                   double* variable,
