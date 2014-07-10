@@ -18,6 +18,11 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
+    
+
+
+
+
 
     int CompartmentFullConditional::sampleCompartment_CPU(ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,

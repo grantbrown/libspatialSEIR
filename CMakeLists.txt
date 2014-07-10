@@ -74,6 +74,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Hybrid_Reinfection.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Proposals.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS.h"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS-complex.h"
