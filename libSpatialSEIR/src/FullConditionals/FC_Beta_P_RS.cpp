@@ -157,7 +157,6 @@ namespace SpatialSEIR
     {
         int nbeta = *((*X) -> ncol_x);
         int mode = (*context) -> getParameterSamplingMode();
-
         if (mode == 1)
         {
             sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, sliceWidth); 

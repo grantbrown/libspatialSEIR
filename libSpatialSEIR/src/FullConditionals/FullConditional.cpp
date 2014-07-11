@@ -141,10 +141,10 @@ namespace SpatialSEIR
             {
                 (sliceWidth[i])*=(1-proportionChange);           
             }
+            accepted[i] = 0;
         }
-
+        
         *samples = 0;
-        memset(accepted, 0, *varLen);
     }
 
     void CompartmentFullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)

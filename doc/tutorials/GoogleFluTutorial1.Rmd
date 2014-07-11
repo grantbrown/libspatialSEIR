@@ -372,7 +372,7 @@ SEIRmodel$hybridReinfectionSampling=1
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(150000))[3]
+  tm = tm + system.time(SEIRmodel$simulate(10000))[3]
   SEIRmodel$updateSamplingParameters(0.05, 
                                      0.0025, 
                                      0.005)
