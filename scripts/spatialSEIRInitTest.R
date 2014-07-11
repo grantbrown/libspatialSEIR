@@ -195,7 +195,6 @@ res = spatialSEIRModel(compMatDim,
                       reinfectionMode)
 
 # Use OpenCL:
-res$samplingMode = 2
 #res$oclPreferences = res$oclPreferences + 1 
 
 res$setRandomSeed(123123)

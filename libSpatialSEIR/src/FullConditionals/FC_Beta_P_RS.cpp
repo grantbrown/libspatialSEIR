@@ -156,15 +156,24 @@ namespace SpatialSEIR
     int FC_Beta_P_RS::sampleCPU()
     {
         int nbeta = *((*X) -> ncol_x);
-        int mode = (*context) -> getSamplingMode();
+        int mode = (*context) -> getParameterSamplingMode();
 
         if (mode == 1)
         {
             sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, sliceWidth); 
         }
+        else if (mode == 2)
+        {
+            sampleDouble(*context, *beta_p_rs, nbeta, sliceWidth); 
+        }
+        else if (mode == 3)
+        {
+            sampleEntireDouble_CPU(*context, *beta_p_rs, nbeta, sliceWidth);
+        }
         else
         {
-            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, sliceWidth); 
+            std::cout << "Invalid sampling mode: falling back to 3\n";
+            sampleEntireDouble_CPU(*context, *beta_p_rs, nbeta, sliceWidth);
         }
         return(0);
     }

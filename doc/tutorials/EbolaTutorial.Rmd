@@ -83,8 +83,11 @@ Parameter Starting Values
 
 ```{r, tidy=FALSE}
 
-p_ei = 0.5
-p_ir = 0.5
+p_ei = 0.25 # 2 to 21 day incubation period according to who
+p_ir = 0.14  # Up to 7 weeks even after recovery
+gamma_ei=-log(1-p_ei)
+gamma_ir=-log(1-p_ir)
+  
 beta = rep(0, ncol(X) + ncol(Z))
 beta[1] = 2.5
 
@@ -104,10 +107,10 @@ mcmcTuningParams = c(1, # S_star
 
 
 # Prior parameters. 
-priorAlpha_pEI = 15;
-priorBeta_pEI = 85;
-priorAlpha_pIR = 1;
-priorBeta_pIR = 1;
+priorAlpha_gammaEI = 250;
+priorBeta_gammaEI = 1000;
+priorAlpha_gammaIR = 140;
+priorBeta_gammaIR = 1000;
 betaPrsPriorPrecision = 0.5
 betaPriorPrecision = 0.01
 
@@ -164,16 +167,16 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       X_p_rs,
                       DM,
                       rho,
-                      priorAlpha_pEI,
-                      priorBeta_pEI,
-                      priorAlpha_pIR,
-                      priorBeta_pIR,
+                      priorAlpha_gammaEI,
+                      priorBeta_gammaEI,
+                      priorAlpha_gammaIR,
+                      priorBeta_gammaIR,
                       beta,
                       betaPriorPrecision,
                       beta_p_rs,
                       betaPrsPriorPrecision,
-                      p_ei,
-                      p_ir,
+                      gamma_ei,
+                      gamma_ir,
                       N,
                       outFileName,
                       iterationStride,
@@ -182,13 +185,6 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       debug,
                       mcmcTuningParams,
                       reinfectionMode)
-
-
-# Set the sampling mode to 2, block sampling, for speed. 
-
-SEIRmodel$samplingMode = 2
-
-
 ```
 
 

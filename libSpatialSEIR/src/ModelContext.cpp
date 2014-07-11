@@ -35,14 +35,24 @@ namespace SpatialSEIR
         random = new RandomNumberProvider(seedValue);
     }
 
-    void ModelContext::setSamplingMode(int mode)
+    void ModelContext::setCompartmentSamplingMode(int mode)
     {
-        (config -> samplingMode) = mode;
+        (config -> compartmentSamplingMode) = mode;
     }
 
-    int ModelContext::getSamplingMode()
+    int ModelContext::getCompartmentSamplingMode()
     {
-        return((config -> samplingMode));
+        return((config -> compartmentSamplingMode));
+    }
+
+    void ModelContext::setParameterSamplingMode(int mode)
+    {
+        (config -> parameterSamplingMode) = mode;
+    }
+
+    int ModelContext::getParameterSamplingMode()
+    {
+        return((config -> parameterSamplingMode));
     }
 
     void ModelContext::setHybridReinfection(int hybridReinfection)

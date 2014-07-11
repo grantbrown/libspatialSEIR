@@ -600,7 +600,7 @@ namespace SpatialSEIR
 
     int FC_R_Star::sampleCPU()
     {
-        int mode = (*context) -> getSamplingMode();
+        int mode = (*context) -> getCompartmentSamplingMode();
         if (mode == 1)
         {
             this -> sampleCompartment_CPU(*context,

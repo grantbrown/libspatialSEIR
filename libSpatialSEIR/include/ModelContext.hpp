@@ -53,7 +53,8 @@ namespace SpatialSEIR
     {
         int hybridReinfection;
         int reinfectionMode;
-        int samplingMode; 
+        int compartmentSamplingMode; 
+        int parameterSamplingMode; 
     };
 
 
@@ -284,12 +285,19 @@ namespace SpatialSEIR
                                           double proportionChange /**< proportion to change the sampling parameters by*/
                                           );
 
-            /** setSamplingMode sets... the sampling mode. This part of the API is in flux. 
+            /** setCompartmentSamplingMode sets the sampling mode for the disease compartments. This part of the API is in flux. 
              */
-            void setSamplingMode(int mode);
+            void setCompartmentSamplingMode(int mode);
 
-            /** getSamplingMode returns the current sampling mode as an integer */
-            int getSamplingMode();
+            /** getCompartmentSamplingMode returns the current sampling mode as an integer */
+            int getCompartmentSamplingMode();
+
+            /** setParameterSamplingMode sets the sampling mode for non compartment parameters. This part of the API is in flux. 
+             */
+            void setParameterSamplingMode(int mode);
+
+            /** getParameterSamplingMode returns the current sampling mode for non-compartment parameters as an integer */
+            int getParameterSamplingMode();
 
 
 

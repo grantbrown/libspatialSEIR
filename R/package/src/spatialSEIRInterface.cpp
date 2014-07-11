@@ -66,8 +66,11 @@ class spatialSEIRInterface
         virtual int setTrace(int locationIndex);
         virtual int setTrace2(int locationIndex, int timeIndex);
         virtual void setDevice(int platformId, int deviceId);
-        virtual void setSamplingMode(int mode);
-        virtual int getSamplingMode();
+        virtual void setCompartmentSamplingMode(int mode);
+        virtual int getCompartmentSamplingMode();
+        virtual void setParameterSamplingMode(int mode);
+        virtual int getParameterSamplingMode();
+
 
 
         // Calculation Functions
@@ -166,24 +169,45 @@ void spatialSEIRInterface::setDevice(int platformId, int deviceId)
     return;
 }
 
-void spatialSEIRInterface::setSamplingMode(int mode)
+void spatialSEIRInterface::setCompartmentSamplingMode(int mode)
 {
     if (*(context -> isPopulated))
     {
-        context -> setSamplingMode(mode);
+        context -> setCompartmentSamplingMode(mode);
         return;
     }
     Rcpp::Rcout << "Context Not populated\n";
 }
 
-int spatialSEIRInterface::getSamplingMode()
+int spatialSEIRInterface::getCompartmentSamplingMode()
 {
     if (*(context -> isPopulated))
     {
-        return((context -> getSamplingMode()));
+        return((context -> getCompartmentSamplingMode()));
     }
     return(-1);
 }
+
+void spatialSEIRInterface::setParameterSamplingMode(int mode)
+{
+    if (*(context -> isPopulated))
+    {
+        context -> setParameterSamplingMode(mode);
+        return;
+    }
+    Rcpp::Rcout << "Context Not populated\n";
+}
+
+int spatialSEIRInterface::getParameterSamplingMode()
+{
+    if (*(context -> isPopulated))
+    {
+        return((context -> getParameterSamplingMode()));
+    }
+    return(-1);
+}
+
+
 
 void spatialSEIRInterface::standardizeDistanceMatrix()
 {
@@ -974,7 +998,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     sliceParameters sliceParamStruct;
     modelConfiguration modelConfig;
     modelConfig.reinfectionMode = reinfectMode[0];
-    modelConfig.samplingMode = 1;
+    modelConfig.compartmentSamplingMode = 2;
+    modelConfig.parameterSamplingMode = 3;
     modelConfig.hybridReinfection = 0;
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
@@ -1112,7 +1137,10 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
-    .property("samplingMode", &spatialSEIRInterface::getSamplingMode, &spatialSEIRInterface::setSamplingMode, "Type of sampler")
+    .property("parameterSamplingMode", &spatialSEIRInterface::getParameterSamplingMode, 
+            &spatialSEIRInterface::setParameterSamplingMode, "Type of sampler used for non-compartment parameters.")
+    .property("compartmentSamplingMode", &spatialSEIRInterface::getCompartmentSamplingMode, 
+            &spatialSEIRInterface::setCompartmentSamplingMode, "Type of sampler used for disease compartments.")
     .property("hybridReinfectionSampling", &spatialSEIRInterface::getHybridReinfection, 
                     &spatialSEIRInterface::setHybridReinfection, "Joint sample beta_P_RS and S_star?")
 

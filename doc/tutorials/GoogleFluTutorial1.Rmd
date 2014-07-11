@@ -276,12 +276,6 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       mcmcTuningParams,
                       reinfectionMode)
 
-
-# Set the sampling mode to 2, block sampling, for speed. 
-
-SEIRmodel$samplingMode = 2
-
-
 ```
 
 Before we do any sampling, let's tell spatialSEIR to keep track of the sampling behavior of the last time point so that we can do prediction later. 
