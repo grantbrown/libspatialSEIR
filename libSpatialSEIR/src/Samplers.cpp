@@ -793,7 +793,7 @@ namespace SpatialSEIR
         // Declare required variables
         int i;
         double l,r,y,x,x0;
-
+        (*samples) += 1;
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments();
 
@@ -818,7 +818,6 @@ namespace SpatialSEIR
 
             do
             {
-                (*samples) += 1;
                 x0 = ((context -> random -> uniform())*(r-l) + l);
                 variable[i] = x0;
                 this -> calculateRelevantCompartments();
@@ -826,7 +825,7 @@ namespace SpatialSEIR
                 l = (x0 >= x ? l : x0);
                 r = (x0 < x ? r : x0);  
             } while (y >= (this -> getValue()));
-            (*accepted)++;
+            (accepted[i])++;
         }
         return 0;
     }
@@ -841,6 +840,7 @@ namespace SpatialSEIR
         double x0,x1;
         double initVal, newVal, initProposal, newProposal;
 
+        (*samples) += 1;
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments();
 
@@ -850,7 +850,6 @@ namespace SpatialSEIR
         // Main loop: 
         for (i = 0; i < varLen; i++)
         { 
-            (*samples) += 1;
             x0 = variable[i];
             this -> calculateRelevantCompartments(); 
             this -> evalCPU();
@@ -867,7 +866,7 @@ namespace SpatialSEIR
             if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
             {
                 // Accept the new value. 
-                (*accepted)+=1;
+                (accepted[i])+=1;
 
             }
             else
@@ -922,7 +921,10 @@ namespace SpatialSEIR
         if (std::log((context -> random -> uniform())) < criterion)
         {
             // Accept new values
-            (*accepted) += 1;
+            for (i = 0; i < varLen; i++)
+            {
+                (accepted[i]) += 1;
+            }
         }
         else
         {
@@ -977,7 +979,10 @@ namespace SpatialSEIR
         if (std::log((context -> random -> uniform())) < criterion)
         {
             // Accept new values
-            (*accepted) += 1;
+            for (i = 0; i < varLen; i++)
+            {
+                (accepted[i]) += 1;
+            }
         }
         else
         {
@@ -1001,6 +1006,7 @@ namespace SpatialSEIR
                                                          int varLen, 
                                                          double* width)
     {
+        (*samples) += 1;
         // Declare required variables
         int i;
         double x0,x1;
@@ -1015,7 +1021,6 @@ namespace SpatialSEIR
         // Main loop: 
         for (i = 0; i < varLen; i++)
         { 
-            (*samples) += 1;
             x0 = variable[i];
             this -> calculateRelevantCompartments_OCL(); 
             this -> evalOCL();
@@ -1032,7 +1037,7 @@ namespace SpatialSEIR
             if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
             {
                 // Accept the new value. 
-                (*accepted)+=1;
+                (accepted[i])+=1;
 
             }
             else
