@@ -55,9 +55,13 @@ namespace SpatialSEIR
         varLen = new int;
 
         *varLen = nBeta;
-        memset(sliceWidth, _sliceWidth, nBeta); 
+        int i;
+        for (i = 0; i < nBeta; i++)
+        {
+            sliceWidth[i] = _sliceWidth;       
+        }
         *samples = 0;
-        memset(accepted, 0, nBeta); 
+        memset(accepted, 0, nBeta*sizeof(int)); 
 
         *context = _context;
         *S_star = _S_star;

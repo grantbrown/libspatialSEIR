@@ -22,22 +22,28 @@ namespace SpatialSEIR
     
     void CompartmentFullConditional::proposeUpdate(int* initCompartment,
                                                    int initCompartmentLength,
-                                                   double width)
-    {
+                                                   double width,
+                                                   double* metropolisComponent1,
+                                                   double* metropolisComponent2)
+    {        
         // Not implemented
     }
 
     void CompartmentFullConditional::proposeUpdate(int* initCompartment,
                                                    int* indexList,
                                                    int indexListLength,
-                                                   double width)
+                                                   double width,
+                                                   double* metropolisComponent1,
+                                                   double* metropolisComponent2)
     {
         // Not implemented
     }
 
     void ParameterFullConditional::proposeUpdate(double* variable,
                                                  int varLen,
-                                                 double* width)
+                                                 double* width,
+                                                 double* metropolisComponent1,
+                                                 double* metropolisComponent2)
     {
         // Not Implemented
     }
@@ -45,7 +51,9 @@ namespace SpatialSEIR
     void ParameterFullConditional::proposeUpdate(double* variable,
                                                  int varLen,
                                                  CovariateMatrix* priorMatrix,
-                                                 double* width)
+                                                 double* width,
+                                                 double* metropolisComponent1,
+                                                 double* metropolisComponent2)
     {
         // Not Implemented
     }
@@ -53,7 +61,9 @@ namespace SpatialSEIR
     
     void InitCompartmentFullConditional::proposeUpdate(int* initCompartment,
                                                        int initCompartmentLength,
-                                                       double width)
+                                                       double width,
+                                                       double* metropolisComponent1,
+                                                       double* metropolisComponent2)
     {
         // Not implemented
     }
@@ -61,7 +71,9 @@ namespace SpatialSEIR
     void InitCompartmentFullConditional::proposeUpdate(int* initCompartment,
                                                        int* indexList,
                                                        int indexListLength,
-                                                       double width)
+                                                       double width,
+                                                       double* metropolisComponent1,
+                                                       double* metropolisComponent2)
     {
         // Not implemented
     }
@@ -71,7 +83,9 @@ namespace SpatialSEIR
                                               int varLen,
                                               int* destCompartment,
                                               double* varWidth,
-                                              double compWidth)
+                                              double compWidth,
+                                              double* metropolisComponent1,
+                                              double* metropolisComponent2)
     {
         // Not Implemented
     }
@@ -81,7 +95,9 @@ namespace SpatialSEIR
                                               int* destCompartment,
                                               double* varWidth,
                                               double compWidth,
-                                              CovariateMatrix* priorMatrix)
+                                              CovariateMatrix* priorMatrix,
+                                              double* metropolisComponent1,
+                                              double* metropolisComponent2)
     {
         // Not Implemented
     }
@@ -93,7 +109,9 @@ namespace SpatialSEIR
                                               double compWidth,
                                               CovariateMatrix* priorMatrix,
                                               int *indexList,
-                                              int indexListLength)
+                                              int indexListLength,
+                                              double* metropolisComponent1,
+                                              double* metropolisComponent2)
     {
         // Not Implemented
     }
