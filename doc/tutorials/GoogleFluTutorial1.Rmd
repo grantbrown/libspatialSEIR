@@ -111,6 +111,11 @@ Z = cbind(daysSince2000/365,            # linear term for time
           sin(trigBasis),               # trig basis function 1
           cos(trigBasis)               # trig basis function 2
   )
+
+# There is only one spatial location here, so we don't need to do anything 
+# else to Z. If there were, and the time varying co-variates were the same 
+# in each location, we could just duplicate Z row-wise:
+# Z = Z[rep(1:nrow(Z), each = nrow(X)),]
 ```
 
 Let's look at our infection process basis (minus the intercept).

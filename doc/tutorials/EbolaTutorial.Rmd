@@ -68,6 +68,8 @@ daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
 Z = cbind(standard(daysSinceJan/365),            # linear term for time
           standard(daysSinceJan^2),               # quadratic term for time
           standard(daysSinceJan^3))               # cubic term for time
+# These co-variates are the same for each spatial location, so duplicate them row-wise. 
+Z = Z[rep(1:nrow(Z), each = nrow(X)),]
 
 # No reinfection, so dummy matrix for X_prs
 
@@ -130,6 +132,7 @@ outFileName = "./chain_output_ebola.txt"
 # Make a crude guess as to the true compartments:
 # S_star, E_star, R_star, and thus S,E,I and R
 proposal = generateCompartmentProposal(I_star, N, 
+                                       S0 = N[1,]-I_star[1,] - c(10,0,0),
                                        I0 = c(10,0,0), 
                                        p_ir = 0.5, 
                                        p_rs = 0.00)
@@ -221,7 +224,7 @@ tm = 0
 batches = 100
 for (i in 1:batches)
 {
-  tm = tm + system.time(SEIRmodel$simulate(100000))[3]
+  tm = tm + system.time(SEIRmodel$simulate(10000))[3]
   SEIRmodel$updateSamplingParameters(0.25, 
                                      0.025, 
                                      0.05)
@@ -231,6 +234,41 @@ for (i in 1:batches)
 }
 
 
+```
 
+Let's take a look at the estimated epidemic. 
+
+```{r tidy = FALSE}
+par(mfrow=c(2,1))
+# Plot number of infectious
+maxI = floor(max(SEIRmodel$I)*1.2)
+plot(rptDate, SEIRmodel$I[,1], type = "l", ylim=c(0,maxI), lwd = 2, 
+     xlim = c(min(rptDate), max(rptDate + 30)), 
+     main = "Estimated Number of Infectious Individuals")
+lines(rptDate, SEIRmodel$I[,2], col = "blue", lty = 2, lwd = 2)
+lines(rptDate, SEIRmodel$I[,3], col = "red", lty = 3, lwd = 2)
+legend(x = min(rptDate), y = maxI*0.95, 
+       legend = c("Guinea", "Liberia", "Sierra Leone"),
+       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2)
+# Plot Removed
+maxR = floor(max(SEIRmodel$R)*1.2)
+plot(rptDate, SEIRmodel$R[,1], type = "l", ylim=c(0,maxI), lwd = 2, 
+     xlim = c(min(rptDate), max(rptDate + 30)), 
+     main = "Estimated Number of Recovered/Deceased Individuals")
+lines(rptDate, SEIRmodel$R[,2], col = "blue", lty = 2, lwd = 2)
+lines(rptDate, SEIRmodel$R[,3], col = "red", lty = 3, lwd = 2)
+legend(x = min(rptDate), y = maxR*0.95, 
+       legend = c("Guinea", "Liberia", "Sierra Leone"),
+       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2)
+
+
+
+
+```
+
+
+```{r tidy = FALSE}
+
+chainDat = read.csv("./chain_output_ebola.txt")
 
 ```
