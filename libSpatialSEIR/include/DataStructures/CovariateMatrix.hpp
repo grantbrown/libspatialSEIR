@@ -43,9 +43,6 @@ namespace SpatialSEIR
             int calculate_eta_CPU(double *eta, double *beta);
             int calculate_eta_OCL(double *eta, double *beta); 
 
-            // Eta functions for separate (beta), (gamma) vectors. 
-            int calculate_eta_CPU(double *eta, double *beta, double *gamma);
-            int calculate_eta_OCL(double *eta, double *beta, double *gamma); 
             ~CovariateMatrix();
             // Attributes
             double *X; // Time invariant covariates

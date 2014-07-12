@@ -48,28 +48,27 @@ DM = 0.5*(1-diag(3))
 
 
 
-Now let's record the population sizes, densities, and GDP per capita as covariates. This information was obtained from wikipedia. 
+With so few spatial locations, we're limited in how many location specific variables we can entertain. While some demographic variables are easily obtained, for now let's just fit a separate intercept for each spatial location. 
 
 ```{r tidy=FALSE}
 # Guinea, Liberia, Sierra Leone
 N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, byrow=TRUE)
 
 pop.dens.km2 = c(40.9, 35.5, 79.4)
-area.km2 = c(245857, 111369, 71740)
 GDP.pc = c(1082 , 672, 1344)
 standard = function(x)
 {
   (x-mean(x))/sd(x)  
 }
 # Fixed Co-variates
-X = cbind(1, standard(pop.dens.km2), standard(area.km2), standard(GDP.pc))
+X = cbind(diag(3))
 # Time Varying co-variates
 daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
-Z = cbind(standard(daysSinceJan/365),            # linear term for time
-          standard(daysSinceJan^2),               # quadratic term for time
-          standard(daysSinceJan^3))               # cubic term for time
+# Use orthogonal polynomials for time basis
+
+Z = poly(daysSinceJan, degree=3)
 # These co-variates are the same for each spatial location, so duplicate them row-wise. 
-Z = Z[rep(1:nrow(Z), each = nrow(X)),]
+Z = Z[rep(1:nrow(Z), nrow(X)),]
 
 # No reinfection, so dummy matrix for X_prs
 

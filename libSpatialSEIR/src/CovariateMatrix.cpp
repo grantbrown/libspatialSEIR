@@ -106,47 +106,6 @@ namespace SpatialSEIR
         return(0);
     }
 
-    int CovariateMatrix::calculate_eta_CPU(double *eta, double *beta, double *gamma)
-    {
-        // This is a naiive, but hopefully correct implementation. 
-        // TODO: do this in LAPACK
-        try
-        {
-            int i; int j;
-
-            // Initialize eta 
-            for (i = 0; i < (*nrow_z); i++)
-            {
-                eta[i] = 0.0;
-            }
-            for (j = 0; j < (*nrow_z); j++)
-            {
-               for (i = 0; i < (*ncol_x); i++) 
-               {
-                   eta[j] += X[j%(*nrow_x) + i*(*ncol_x)]*beta[i];
-               }
-               for (i = 0; i < (*ncol_z); i++)
-               {
-                   eta[j] += Z[j + i*(*nrow_z)]*gamma[i];
-               }
-            }
-        }
-        catch(int e)
-        {
-            std::cout << "Error calculating eta, code: " << e << std::endl;
-            return(-1);
-        }
-        return(0);
-    }
-
-    int CovariateMatrix::calculate_eta_OCL(double *eta, double *beta, double *gamma)
-    {
-        //Not implemented
-        return(-1);
-    }
-
-
-
     CovariateMatrix::~CovariateMatrix()
     {
         std::cout << "Covariate Matrix Destroyed" << std::endl;
