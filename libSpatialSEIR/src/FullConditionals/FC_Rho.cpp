@@ -83,29 +83,25 @@ namespace SpatialSEIR
     int FC_Rho::evalCPU()
     {
         *value = 0.0;
-        int i, j, Es, compIdx;
-        double pse;
+        int i, j, Estar_val, S_val, compIdx;
+        double p_se_val;
         int nLoc = *((*S) -> ncol);
         int nTpts = *((*S) -> nrow);
-        double term1, term2, term3;
-        term1 = 0.0; term2 = 0.0; term3 = 0.0;
 
         for (i = 0; i < nLoc; i++)    
         {
             compIdx = i*nTpts;
             for (j = 0; j < nTpts; j++)     
             {
-                // todo: use dbinom
-                Es = ((*E_star) -> data)[compIdx];
-                pse = (*p_se)[compIdx];
-                term1 += std::log(pse)*Es; 
-                term2 += std::log(1-pse)*(((*S) -> data)[compIdx] - Es);
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S) -> data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+                *value += ((*context) -> random -> dbinom(Estar_val, S_val, p_se_val));
                 compIdx++;
             }
         } 
-        term3 += (**rho > 0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
+        *value += (**rho > 0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
                                                         // Prior specification in this area needs work. 
-        *value = term1 + term2 + term3;
         // Catch invalid values, nans etc. 
         if (!std::isfinite(*value))
         {

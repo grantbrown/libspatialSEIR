@@ -563,12 +563,15 @@ namespace SpatialSEIR
             }
         }
         int nPrs = *(I_star -> nrow);
-        for (i = 0; i < nPrs;i++)
+        if (config -> reinfectionMode <= 2)
         {
-            if (p_rs[i] <= 0 || p_rs[i] >= 1)
+            for (i = 0; i < nPrs;i++)
             {
-                std::cout << "Invalid P_RS Value at Index" << i << "\n";
-                err = 1;
+                if (p_rs[i] <= 0 || p_rs[i] >= 1)
+                {
+                    std::cout << "Invalid P_RS Value at Index" << i << "\n";
+                    err = 1;
+                }
             }
         }
 
@@ -578,20 +581,35 @@ namespace SpatialSEIR
     void ModelContext::printFCValues()
     {
         beta_fc -> evalCPU();
-        betaPrs_fc -> evalCPU();
+        if (config -> reinfectionMode == 1)
+        {
+            betaPrs_fc -> evalCPU();
+        }
         gamma_ei_fc -> evalCPU();
         gamma_ir_fc -> evalCPU();
         rho_fc -> evalCPU();
-        S_star_fc -> evalCPU();
+        if (config -> reinfectionMode <= 2)
+        {
+            S_star_fc -> evalCPU();
+        }
         E_star_fc -> evalCPU();
         R_star_fc -> evalCPU();
         std::cout << "  FC Values:\n";
         std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
-        std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
+        if (config -> reinfectionMode == 1)
+        {
+            std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
+        }
         std::cout << "    p_ei: " << gamma_ei_fc ->getValue() << "\n";
         std::cout << "    p_ir: " << gamma_ir_fc ->getValue() << "\n";
-        std::cout << "    rho: " << rho_fc ->getValue() << "\n";
-        std::cout << "    S_star: " << S_star_fc -> getValue() << "\n";
+        if (!(*singleLocation))
+        {
+            std::cout << "    rho: " << rho_fc ->getValue() << "\n";
+        }
+        if (config -> reinfectionMode <= 2)
+        {
+            std::cout << "    S_star: " << S_star_fc -> getValue() << "\n";
+        }
         std::cout << "    E_star: " << E_star_fc -> getValue() << "\n";
         std::cout << "    R_star: " << R_star_fc -> getValue() << "\n";
     }

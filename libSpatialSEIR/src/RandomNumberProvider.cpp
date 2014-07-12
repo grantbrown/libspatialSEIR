@@ -123,6 +123,7 @@ namespace SpatialSEIR
     }
     double RandomNumberProvider::dgamma(double x, double a, double b)
     {
+        if (x <= 0){return(-INFINITY);}
         boost::math::gamma_distribution<> gammadist(a,b); 
         return(std::log(pdf(gammadist, x)));
     }
