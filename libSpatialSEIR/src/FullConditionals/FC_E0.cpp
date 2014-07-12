@@ -168,10 +168,11 @@ namespace SpatialSEIR
         }
 
         compIdx = startLoc*nTpts;
-        p_ei_val = **p_ei;
-        p_ir_val = **p_ir;
         for (i = 0; i < nTpts; i++)
         {
+
+                p_ei_val = (*p_ei)[i];
+                p_ir_val = (*p_ir)[i];
                 Rstar_val = ((*R_star)->data)[compIdx]; 
                 Istar_val = ((*I_star)->data)[compIdx];
                 E_val = ((*E)->data)[compIdx];

@@ -193,7 +193,7 @@ betaPrs = trueBetaRS
 N = matrix(N, nrow = nrow(S), ncol = ncol(S))
 outFileName = "./chainOutput_single.txt"
 
-iterationStride = 10000
+iterationStride = 100
 
 
 # S,E,R,S0,I0,beta,betaPrs,rho

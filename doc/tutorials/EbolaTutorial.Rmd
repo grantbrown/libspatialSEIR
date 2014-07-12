@@ -43,7 +43,7 @@ All three of these countries share borders, so without more research on populati
 to a fairly simple neighborhood distance structure. 
 
 ```{r tidy = FALSE}
-DM = 1-diag(3)
+DM = 0.5*(1-diag(3))
 ```
 
 
@@ -103,23 +103,25 @@ mcmcTuningParams = c(1, # S_star
                      1,  # I_0
                      0.05,  # beta
                      0.0,  # beta_p_rs, fixed in this case
-                     0.01)  # rho
+                     0.01, # rho
+                     0.01, # gamma_ei
+                     0.01) # gamma_ir
 
 
 # Prior parameters. 
-priorAlpha_gammaEI = 250;
-priorBeta_gammaEI = 1000;
-priorAlpha_gammaIR = 140;
-priorBeta_gammaIR = 1000;
+priorAlpha_gammaEI = 25;
+priorBeta_gammaEI = 100;
+priorAlpha_gammaIR = 14;
+priorBeta_gammaIR = 100;
 betaPrsPriorPrecision = 0.5
 betaPriorPrecision = 0.01
 
 # reinfection mode is 3, because there is no reinfection. 
 reinfectionMode = 3
 # steadyStateConstraintPrecision is a loose constraint on net flows
-# between compartments. Setting it to a very small value eliminates
-# the constraint, but it helps with identifiability. 
-steadyStateConstraintPrecision = 0.00000001
+# between compartments. Setting it to a negative value eliminates
+# the constraint, but it can help with identifiability. 
+steadyStateConstraintPrecision = -1
 
 # iterationStride determines the delay between saving samples to the output file
 iterationStride = 1000
@@ -129,7 +131,7 @@ outFileName = "./chain_output_ebola.txt"
 # S_star, E_star, R_star, and thus S,E,I and R
 proposal = generateCompartmentProposal(I_star, N, 
                                        I0 = c(10,0,0), 
-                                       p_ir = 0.9, 
+                                       p_ir = 0.5, 
                                        p_rs = 0.00)
 
 # Turn off verbose and debug output.
@@ -185,6 +187,7 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       debug,
                       mcmcTuningParams,
                       reinfectionMode)
+#SEIRmodel$standardizeDistanceMatrix()
 ```
 
 

@@ -1,7 +1,7 @@
 ---
 title: "Google Flu Example SEIRS Model"
 author: "Grant Brown"
-date: "07/08/2014"
+date: "07/11/2014"
 output: html_document
 ---
 
@@ -276,6 +276,9 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       mcmcTuningParams,
                       reinfectionMode)
 
+# Sample regression parameters individually.
+SEIRmodel$parameterSamplingMode=1
+
 ```
 
 Before we do any sampling, let's tell spatialSEIR to keep track of the sampling behavior of the last time point so that we can do prediction later. 
@@ -293,6 +296,10 @@ Now we're ready to start sampling. On the other hand, we're not particularly con
 
 
 ```{r tidy=FALSE}
+# Burn in double precision parameters individually, to scale their sampling
+# parameters appropriately.
+
+SEIRmodel$parameterSamplingMode = 1
 
 burnInSamplingParams = function(modelObject,
                                numBatches=500, 
@@ -309,6 +316,7 @@ burnInSamplingParams = function(modelObject,
     }
 }
 
+SEIRmodel$parameterSamplingMode = 3
 ```
 
 Before we adjust these, however, we may be interested whether using the OpenCL capabilities is any faster for this particular data size. Let's take a look at what devices we have available:
@@ -349,7 +357,9 @@ Now we can worry about our tuning parameters. Let's run the sampler for a bit, a
 ```{r tidy=FALSE}
 
 # Adjust the sampling parameters
+
 burnInSamplingParams(SEIRmodel)
+
 #Check the current acceptance rates. First simulate, as the counters are cleared each time the parameters 
 # are updated:
 SEIRmodel$simulate(1000)
@@ -372,7 +382,7 @@ SEIRmodel$hybridReinfectionSampling=1
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(10000))[3]
+  tm = tm + system.time(SEIRmodel$simulate(50000))[3]
   SEIRmodel$updateSamplingParameters(0.05, 
                                      0.0025, 
                                      0.005)

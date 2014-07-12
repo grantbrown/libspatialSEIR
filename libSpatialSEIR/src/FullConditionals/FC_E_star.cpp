@@ -103,7 +103,7 @@ namespace SpatialSEIR
     {
         int j, compIdx;
         int nTpts = *((*S) -> nrow); 
-        double ln_1m_p_ei;
+        double p_ei_val;
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;
         long double output = 0.0;
@@ -114,7 +114,7 @@ namespace SpatialSEIR
         compIdx = startLoc*nTpts + startTime;
         for (j = startTime; j < nTpts; j++)
         {
-            ln_1m_p_ei = std::log(1-((*p_ei)[j]));    
+            p_ei_val = ((*p_ei)[j]);    
             Estar_val = ((*E_star) -> data)[compIdx];
             S_val = ((*S) -> data)[compIdx];
             E_val = ((*E) -> data)[compIdx];
@@ -131,16 +131,18 @@ namespace SpatialSEIR
             else
             {
                 output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
-                             ln_1m_p_ei*E_val + 
-                             ((*context) -> random -> choosePartial(E_val, Istar_val)));
+                           ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)));
             }
             compIdx++;
         }
 
-        E_star_sum = (*E_star)->marginSum(2,startLoc);
-        I_star_sum = (*I_star)->marginSum(2,startLoc);
-        aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum)/nTpts;
-        output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            E_star_sum = (*E_star)->marginSum(2,startLoc);
+            I_star_sum = (*I_star)->marginSum(2,startLoc);
+            aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
 
         if (!std::isfinite(output))
         {
@@ -160,19 +162,13 @@ namespace SpatialSEIR
         int i,j, compIdx;
         int nTpts = *((*S) -> nrow); 
         int nLoc = *((*S) -> ncol); 
-        double ln_1m_p_ei; 
+        double p_ei_val; 
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;
         long double output = 0.0;
         long unsigned int E_star_sum;
         long unsigned int I_star_sum;
         int64_t aDiff; 
-
-        // Cache log values to avoid repeating work at each location
-        for (j = 0; j < nTpts; j++)
-        {
-            (*p_ei)[j] = log(1-(*p_ei)[j]);
-        }
 
         for (i = 0; i<nLoc; i++)
         {
@@ -184,22 +180,19 @@ namespace SpatialSEIR
                 E_val = ((*E) -> data)[compIdx];
                 Istar_val = ((*I_star) -> data)[compIdx];
                 p_se_val = (*p_se)[compIdx];
-                ln_1m_p_ei = (*p_ei)[j]; 
+                p_ei_val = (*p_ei)[j]; 
 
                 if (Estar_val < 0 || Estar_val > S_val || 
                         Istar_val > E_val)
 
                 {
                     *value = -INFINITY;
-                    // Restore p_ei
-                    (*context) -> calculateP_EI_CPU();
                     return(-1);
                 }
                 else
                 {
                     output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
-                                 ln_1m_p_ei*E_val + 
-                                 ((*context) -> random -> choosePartial(E_val, Istar_val)));
+                               ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val))); 
                 }
                 compIdx++;
             }
@@ -212,9 +205,6 @@ namespace SpatialSEIR
                 output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
             }
         }
-
-        // Restore p_ei
-        (*context) -> calculateP_EI_CPU();
 
         if (!std::isfinite(output))
         {
@@ -236,7 +226,7 @@ namespace SpatialSEIR
 
         int j, compIdx;
         int nTpts = *((*S) -> nrow); 
-        double ln_1m_p_ei; 
+        double p_ei_val; 
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;
         long double output = 0.0;
@@ -249,7 +239,7 @@ namespace SpatialSEIR
         for (j = tpt; j < nTpts; j++)
         {
             std::cout << "time " << j << "\n";
-            ln_1m_p_ei = std::log(1-(*p_ei)[j]);    
+            p_ei_val = (*p_ei)[j];    
             Estar_val = ((*E_star) -> data)[compIdx];
             S_val = ((*S) -> data)[compIdx];
             E_val = ((*E) -> data)[compIdx];
@@ -268,11 +258,9 @@ namespace SpatialSEIR
             }
             else
             {
-                output = (std::log(p_se_val)*Estar_val +
-                             std::log(1-p_se_val)*(S_val - Estar_val) +
-                             ln_1m_p_ei*E_val + 
-                             ((*context) -> random -> choosePartial(E_val, Istar_val)) + 
-                             ((*context)->random->choose(S_val, Estar_val)));
+                 output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
+                           ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)));
+                       
                 if (!std::isfinite(output))
                 {
                     std::cout << "Computation Error Detected: " << tpt << "\n";
@@ -281,7 +269,7 @@ namespace SpatialSEIR
                     std::cout << "E: " << E_val << "\n";
                     std::cout << "I_star: " << Istar_val << "\n";
                     std::cout << "p_se: " << p_se_val << "\n";
-                    std::cout << "ln_1m_p_ei: " << ln_1m_p_ei << "\n";
+                    std::cout << "p_ei: " << p_ei_val << "\n";
                     return; 
                 }
             }
@@ -305,7 +293,7 @@ namespace SpatialSEIR
             std::cout << "E: " << E_val << "\n";
             std::cout << "I_star: " << Istar_val << "\n";
             std::cout << "p_se: " << p_se_val << "\n";
-            std::cout << "ln_1m_p_ei: " << ln_1m_p_ei << "\n";
+            std::cout << "p_ei: " << p_ei_val << "\n";
             std::cout << "E_star_sum: " << E_star_sum << "\n";
             std::cout << "I_star_sum: " << I_star_sum << "\n";
             return;

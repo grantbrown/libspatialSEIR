@@ -220,7 +220,10 @@ void spatialSEIRInterface::standardizeDistanceMatrix()
        }
        (context -> scaledDistMat -> makeRowStochastic()); 
     }
-    Rcpp::Rcout << "No distance matrix to standardize.\n";
+    else
+    {
+        Rcpp::Rcout << "No distance matrix to standardize.\n";
+    }
 }
 
 
@@ -1146,6 +1149,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("printSamplingParameters", &spatialSEIRInterface::printSamplingParameters)
     .method("updateSamplingParameters", &spatialSEIRInterface::updateSamplingParameters)
     .method("getGenerationMatrix", &spatialSEIRInterface::getGenerationMatrix)
+    .method("standardizeDistanceMatrix", &spatialSEIRInterface::standardizeDistanceMatrix)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
     .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")
