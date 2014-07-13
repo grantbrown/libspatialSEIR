@@ -163,14 +163,18 @@ namespace SpatialSEIR
                 GIndex = l*nLoc + i;
                 if (i != l)
                 {
-                    G[GIndex] = -(((N[iIndex])/((I->data)[lIndex]))
+                    G[GIndex] = ((I->data)[lIndex] != 0 ?
+                                    (-(((N[iIndex])/((I->data)[lIndex]))
                                     * (1-std::exp((*rho)*((scaledDistMat->data)[GIndex]) 
-                                    * (((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]))));
+                                    * (((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]))))) :
+                                        0.0 );
                 }
                 else
                 { 
-                    G[GIndex] = -(((N[iIndex])/((I->data)[lIndex]))
-                                    * (1-std::exp((((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]))));
+                    G[GIndex] = ((I->data)[lIndex] != 0 ?
+                                    -(((N[iIndex])/((I->data)[lIndex]))
+                                    * (1-std::exp((((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex])))) : 
+                                     0.0 );
                 }
             }
         }
