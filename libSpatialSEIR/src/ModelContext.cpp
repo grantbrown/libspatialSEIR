@@ -55,18 +55,6 @@ namespace SpatialSEIR
         return((config -> parameterSamplingMode));
     }
 
-    void ModelContext::setHybridReinfection(int hybridReinfection)
-    {
-        if (hybridReinfection != 0 && hybridReinfection != 1)
-        {
-            std::cout << "Invalid Reinfection Mode" << "\n";
-            throw(-1);
-        }
-        (config -> hybridReinfection) = hybridReinfection; 
-        buildModel();
-    }
-
-
     void ModelContext::populate(InitData* _A0,
                                 covariateArgs* xArgs, 
                                 covariateArgs* xPrsArgs,
@@ -353,28 +341,6 @@ namespace SpatialSEIR
                              0,
                              *(sliceWidths -> gammaIrWidth));
 
-        hybridReinfect_fc = new FC_Hybrid_Reinfection(this,
-                                                      S_star,
-                                                      S,
-                                                      R,
-                                                      E_star,
-                                                      R_star,
-                                                      S_star_fc,
-                                                      betaPrs_fc,
-                                                      A0,
-                                                      X,
-                                                      X_pRS,
-                                                      p_se,
-                                                      p_rs,
-                                                      betaPrs,
-                                                      (priorValues->betaPrsPriorPrecision),
-                                                      beta,
-                                                      rho,
-                                                      (S_starArgs -> steadyStateConstraintPrecision),
-                                                      0
-                                                      );
-
-
         S0_OCL = S0_fc -> useOCL; 
         I0_OCL = I0_fc -> useOCL; 
         S_star_OCL = S_star_fc -> useOCL;
@@ -418,21 +384,11 @@ namespace SpatialSEIR
         {
             model -> push_back(S0_fc);
             model -> push_back(I0_fc);
-            if (config -> hybridReinfection == 0)
-            {
-                model -> push_back(S_star_fc);
-            }
+            model -> push_back(S_star_fc);
             model -> push_back(E_star_fc);
             model -> push_back(R_star_fc);
             model -> push_back(beta_fc);
-            if (config -> hybridReinfection == 0)
-            {
-                model -> push_back(betaPrs_fc);
-            }
-            else
-            {
-                model -> push_back(hybridReinfect_fc);
-            }
+            model -> push_back(betaPrs_fc);
             if (!(*singleLocation))
             {
                 model -> push_back(rho_fc);

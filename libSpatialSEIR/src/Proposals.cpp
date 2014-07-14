@@ -20,23 +20,40 @@ namespace SpatialSEIR
 
     
     
-    void CompartmentFullConditional::proposeUpdate(int* initCompartment,
-                                                   int initCompartmentLength,
+    void CompartmentFullConditional::proposeUpdate(int* compartment,
+                                                   int compartmentLength,
                                                    double width,
                                                    double* metropolisComponent1,
                                                    double* metropolisComponent2)
     {        
-        // Not implemented
+        int i;
+        int x0, x1;
+        for (i = 0; i < compartmentLength; i++)
+        {
+            x0 = compartment[i];
+            x1 = std::floor(context -> random -> normal(x0 + 0.5, width));
+            compartment[i] = x1;
+            *metropolisComponent1 += (context -> random -> dnorm(x1, x0, width));
+            *metropolisComponent2 += (context -> random -> dnorm(x0, x1, width));
+        }
     }
 
-    void CompartmentFullConditional::proposeUpdate(int* initCompartment,
+    void CompartmentFullConditional::proposeUpdate(int* compartment,
                                                    int* indexList,
                                                    int indexListLength,
                                                    double width,
                                                    double* metropolisComponent1,
                                                    double* metropolisComponent2)
     {
-        // Not implemented
+        int i;
+        int x0, x1;
+        for (i = 0; i < indexListLength; i++)
+        {
+            x0 = compartment[indexList[i]];
+            x1 = std::floor((*context) -> random -> normal(x0 + 0.5, width));
+            compartment[indexList[i]] = x1;
+            *metropolisComponent1 += (context -> random -> dnorm(x1, x0, width));
+            *metropolisComponent2 += (context -> random -> dnorm(x0, x1, width));
     }
 
     void ParameterFullConditional::proposeUpdate(double* variable,
@@ -76,43 +93,5 @@ namespace SpatialSEIR
                                                        double* metropolisComponent2)
     {
         // Not implemented
-    }
-
-
-    void HybridFullConditional::proposeUpdate(double* variable,
-                                              int varLen,
-                                              int* destCompartment,
-                                              double* varWidth,
-                                              double compWidth,
-                                              double* metropolisComponent1,
-                                              double* metropolisComponent2)
-    {
-        // Not Implemented
-    }
-
-    void HybridFullConditional::proposeUpdate(double* variable,
-                                              int varLen,
-                                              int* destCompartment,
-                                              double* varWidth,
-                                              double compWidth,
-                                              CovariateMatrix* priorMatrix,
-                                              double* metropolisComponent1,
-                                              double* metropolisComponent2)
-    {
-        // Not Implemented
-    }
-
-    void HybridFullConditional::proposeUpdate(double* variable,
-                                              int varLen,
-                                              int* destCompartment,
-                                              double* varWidth,
-                                              double compWidth,
-                                              CovariateMatrix* priorMatrix,
-                                              int *indexList,
-                                              int indexListLength,
-                                              double* metropolisComponent1,
-                                              double* metropolisComponent2)
-    {
-        // Not Implemented
     }
 }

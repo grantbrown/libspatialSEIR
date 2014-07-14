@@ -198,41 +198,6 @@ namespace SpatialSEIR
         *samples = 0;
         *accepted = 0;
     }
-
-    void HybridFullConditional::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
-    {
-        if (*samples == 0)
-        {
-            std::cout << "No sampling data. \n";
-            return;
-        }
-        if (proportionChange <= 0 || proportionChange >= 1)
-        {
-            std::cerr << "Invalid Proportion: " << proportionChange << "\n";
-            throw(-1);
-        }
-        double currentRatio = (this -> acceptanceRatio());
-        int i; 
-        int varLen = *((*parameterFullConditional) -> varLen);
-        if ((currentRatio > desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
-        {
-            (*((*compartmentFullConditional) -> sliceWidth))*=(1+proportionChange); 
-            for (i = 0; i < varLen; i++)
-            {
-                (((*parameterFullConditional)) -> sliceWidth[i])*=(1+proportionChange); 
-            }
-        }
-        else if ((currentRatio < desiredRatio) && (std::abs(currentRatio - desiredRatio) > targetWidth))
-        {
-            (*((*compartmentFullConditional) -> sliceWidth))*=(1-proportionChange); 
-            for (i = 0; i < varLen; i++)
-            {
-                (((*parameterFullConditional)) -> sliceWidth[i])*=(1-proportionChange); 
-            } 
-        }
-        *samples = 0;
-        *accepted = 0;
-    }
 }
 
 

@@ -28,7 +28,6 @@ namespace SpatialSEIR
     class FC_Gamma_IR;
     class FC_Beta_P_RS;
     class FC_Rho;
-    class FC_Hybrid_Reinfection;
     class InitData;
 
     class CompartmentalModelMatrix;
@@ -262,12 +261,6 @@ namespace SpatialSEIR
                 RandomNumberProvider*/
             void setRandomSeed(unsigned int seedValue); 
               
-
-            /** Toggle whether the reinfection process should be block sampled. Non-blocked sampling is useful
-                to begin with to determine a reasonable MCMC tuning parameter, but once this is determined it 
-                may be desireable to sample the correlated beta_P_RS and S_star components together.*/
-            void setHybridReinfection(int hybridReinfection);
-
             /** simulationIter runs a single MCMC update given the current model state. Optionally,
                 verbose and debug level output is available.*/
             void simulationIter(bool verbose, bool debug); 
@@ -415,8 +408,6 @@ namespace SpatialSEIR
             FC_Gamma_EI *gamma_ei_fc;
             /** Pointer to FullConditional distribution for the parameter controlling transition probability p_ir*/
             FC_Gamma_IR *gamma_ir_fc;
-            /** Pointer to FullConditional distribution for the combined reinfection parameters betaP_RS and S_star*/
-            FC_Hybrid_Reinfection *hybridReinfect_fc;
 
             //Data
             /** Pointer to the CompartmentalModelMatrix data structure storing the S compartment.*/ 
