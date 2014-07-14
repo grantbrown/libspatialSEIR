@@ -50,7 +50,6 @@ namespace SpatialSEIR
      */
     struct modelConfiguration
     {
-        int hybridReinfection;
         int reinfectionMode;
         int compartmentSamplingMode; 
         int parameterSamplingMode; 

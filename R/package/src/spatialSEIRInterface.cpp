@@ -129,9 +129,6 @@ class spatialSEIRInterface
         virtual int getVerbose();
         virtual void setVerbose(int verbose_);
 
-        virtual int getHybridReinfection();
-        virtual void setHybridReinfection(int hybridReinfect);
-
         virtual void standardizeDistanceMatrix();
  
         //Destructor
@@ -425,12 +422,10 @@ void spatialSEIRInterface::printAcceptanceRates()
     Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> accepted)*1.0)/ 
                                   (*(context -> I0_fc -> samples)) 
                           <<  "\n"; 
-    if ((context -> config -> hybridReinfection) == 0)
-    {
-        Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
-                                          (*(context -> S_star_fc -> samples)) 
-                                  << "\n"; 
-    }
+    Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
+                                      (*(context -> S_star_fc -> samples)) 
+                              << "\n"; 
+
     Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> accepted)*1.0)/
                                       (*(context -> E_star_fc -> samples)) 
                               << "\n"; 
@@ -452,23 +447,14 @@ void spatialSEIRInterface::printAcceptanceRates()
                                           (*(context -> rho_fc -> samples)) 
                                   << "\n"; 
     }
-    if ((context -> config -> hybridReinfection) == 0)
+    Rcpp::Rcout << "betaP_RS: ";
+    for (i = 0; i < *(context -> betaPrs_fc -> varLen); i++)
     {
-        Rcpp::Rcout << "betaP_RS: ";
-        for (i = 0; i < *(context -> betaPrs_fc -> varLen); i++)
-        {
-            Rcpp::Rcout << ((context -> betaPrs_fc -> accepted)[i]*1.0)/
-                                      (*(context -> betaPrs_fc -> samples)) 
-                                      << ", "; 
-        }
-        Rcpp::Rcout << "\n"; 
+        Rcpp::Rcout << ((context -> betaPrs_fc -> accepted)[i]*1.0)/
+                                  (*(context -> betaPrs_fc -> samples)) 
+                                  << ", "; 
     }
-    else
-    {
-        Rcpp::Rcout << "Reinfection terms: " << (*(context -> hybridReinfect_fc -> accepted)*1.0)/
-                                          (*(context -> hybridReinfect_fc -> samples)) 
-                              << "\n"; 
-    }
+    Rcpp::Rcout << "\n"; 
     Rcpp::Rcout << "gamma_ei:     " << (*(context -> gamma_ei_fc -> accepted)*1.0)/
                                       (*(context -> gamma_ei_fc -> samples)) 
                               << "\n"; 
@@ -748,7 +734,6 @@ void spatialSEIRInterface::setOCLPreferences(Rcpp::IntegerVector prefs)
     *(context -> beta_OCL) = prefs[5];
     *(context -> beta_P_RS_OCL) = prefs[6];
     *(context -> rho_OCL) = prefs[7];
-    *(context -> hybridReinfect_fc -> useOCL) = (prefs[6] != 0 || prefs[2] != 0);
 }
 
 int spatialSEIRInterface::getDebug()
@@ -770,15 +755,6 @@ int spatialSEIRInterface::getVerbose()
 void spatialSEIRInterface::setVerbose(int verbose_)
 {
    *verbose = verbose_; 
-}
-
-int spatialSEIRInterface::getHybridReinfection()
-{
-    return(context -> config -> hybridReinfection); 
-}
-void spatialSEIRInterface::setHybridReinfection(int hybridReinfect)
-{
-    context -> setHybridReinfection(hybridReinfect);
 }
 
 spatialSEIRInterface::spatialSEIRInterface()
@@ -1040,7 +1016,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     modelConfig.reinfectionMode = reinfectMode[0];
     modelConfig.compartmentSamplingMode = 2;
     modelConfig.parameterSamplingMode = 3;
-    modelConfig.hybridReinfection = 0;
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];
@@ -1183,9 +1158,6 @@ RCPP_MODULE(mod_spatialSEIRInterface)
             &spatialSEIRInterface::setParameterSamplingMode, "Type of sampler used for non-compartment parameters.")
     .property("compartmentSamplingMode", &spatialSEIRInterface::getCompartmentSamplingMode, 
             &spatialSEIRInterface::setCompartmentSamplingMode, "Type of sampler used for disease compartments.")
-    .property("hybridReinfectionSampling", &spatialSEIRInterface::getHybridReinfection, 
-                    &spatialSEIRInterface::setHybridReinfection, "Joint sample beta_P_RS and S_star?")
-
     .property("oclPreferences", &spatialSEIRInterface::getOCLPreferences, &spatialSEIRInterface::setOCLPreferences, "Use OCL? Length 8:  S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho")
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")

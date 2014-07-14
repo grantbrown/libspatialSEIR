@@ -72,9 +72,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_EI.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_IR.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma.cpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Hybrid_Reinfection.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers.cpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Proposals.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS.h"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS-complex.h"
@@ -103,7 +101,6 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma.hpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Hybrid_Reinfection.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
 	"${SpatialSEIR_Boost_LIBRARIES}"
 	)
@@ -162,7 +159,6 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma.hpp"
-            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Hybrid_Reinfection.hpp"
 
             DESTINATION include)
 
