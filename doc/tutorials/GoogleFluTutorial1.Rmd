@@ -102,12 +102,17 @@ The infection intensity is a function of both the infectivity of the current inf
 Here we'll keep things simple, and include (in addition to an intercept) a linear term for time to capture average increases or decreases in infection intensity along with a trigonometric basis with a period of one year to capture basic epidemic behavior. 
 
 ```{r, tidy=FALSE}
+
+standard = function(x)
+{
+    (x-mean(x))/sd(x)  
+}
 # Fixed Co-variates
 X = matrix(1)
 # Time Varying co-variates
 daysSince2000 = as.numeric(as.Date(fluDat.sub$Date) - as.Date("2000-01-01"))
 trigBasis = daysSince2000/365*2*pi
-Z = cbind(daysSince2000/365,            # linear term for time
+Z = cbind(standard(daysSince2000),            # linear term for time
           sin(trigBasis),               # trig basis function 1
           cos(trigBasis)               # trig basis function 2
   )
@@ -178,6 +183,7 @@ beta_p_rs[1] = -2.5
 # Dummy values for spatial components, as this is a non spatial model.
 rho = -1 # spatial dependence parameter
 DM = c(0)
+scaleDistMode = 0
 
 
 # Starting tuning parameters for MCMC sampling
@@ -279,7 +285,8 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       verbose,
                       debug,
                       mcmcTuningParams,
-                      reinfectionMode)
+                      reinfectionMode,
+                      scaleDistMode)
 
 # Sample regression parameters individually.
 SEIRmodel$parameterSamplingMode=1
@@ -573,8 +580,9 @@ the parameter values and predict the epidemic for each.
   fluDat.pred = fluDat[dat.pred,]
 
   daysSince2000.pred = as.numeric(as.Date(fluDat.pred$Date) - as.Date("2000-01-01"))
+  daysSince2000.pred = (daysSince2000.pred - mean(daysSince2000))/sd(daysSince2000)
   trigBasis.pred = daysSince2000.pred/365*2*pi
-  Z.pred = cbind(daysSince2000.pred/365,            # linear term for time
+  Z.pred = cbind(daysSince2000.pred,            # linear term for time
             sin(trigBasis.pred),               # trig basis function 1
             cos(trigBasis.pred))               # trig basis function 2
   X.pred = cbind(1,Z.pred)

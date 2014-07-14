@@ -377,7 +377,7 @@ plotChains(1-exp(-chain1$gamma_ir),
 
 Let's take a look at the estimated epidemic. 
 
-```{r tidy = FALSE}
+```{r tidy = FALSE, fig.height=8,fig.width=6}
 par(mfrow=c(2,1))
 # Plot number of infectious
 SEIRmodel = SEIRmodels[[1]]
@@ -390,7 +390,8 @@ lines(rptDate, SEIRmodel$I[,2], col = "blue", lty = 2, lwd = 2)
 lines(rptDate, SEIRmodel$I[,3], col = "red", lty = 3, lwd = 2)
 legend(x = min(rptDate), y = maxI*0.95, 
        legend = c("Guinea", "Liberia", "Sierra Leone"),
-       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2)
+       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2,
+       cex=0.5)
 # Plot Removed
 maxR = floor(max(SEIRmodel$R)*1.2)
 plot(rptDate, SEIRmodel$R[,1], type = "l", ylim=c(0,maxR), lwd = 2, 
@@ -401,7 +402,8 @@ lines(rptDate, SEIRmodel$R[,2], col = "blue", lty = 2, lwd = 2)
 lines(rptDate, SEIRmodel$R[,3], col = "red", lty = 3, lwd = 2)
 legend(x = min(rptDate), y = maxR*0.95, 
        legend = c("Guinea", "Liberia", "Sierra Leone"),
-       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2)
+       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2,
+     cex=0.5)
 
 
 
@@ -542,7 +544,7 @@ pred.dates = c(rptDate[(which.max(rptDate))] + 1,rptDate[(which.max(rptDate))] +
 
 # Plot number of infectious
 
-maxI = floor(max(SEIRmodels[[1]]$I)*1.2)
+maxI = max(floor(max(SEIRmodels[[1]]$I)*1.2), preds[[1]]$I*1.2)
 plot(rptDate, SEIRmodels[[1]]$I[,1], type = "l", ylim=c(0,3000), lwd = 2, 
      xlim = c(min(rptDate), max(rptDate + 60)), 
      main = "Estimated Number of Infectious Individuals", ylab = "Number",
