@@ -300,7 +300,7 @@ for (i in 1:length(SEIRmodels))
     cat(paste("Running in chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels[[i]], 
                   numBatches=100, 
-                  batchSize=50000, 
+                  batchSize=100000, 
                   targetAcceptanceRatio=0.25,
                   tolerance=0.025,
                   proportionChange = 0.1))

@@ -201,10 +201,10 @@ mcmcTuningParams = c(1, # S_star
 
 
 # Prior parameters. 
-priorAlpha_gammaEI = 23000;
-priorBeta_gammaEI = 10000;
-priorAlpha_gammaIR = 23000;
-priorBeta_gammaIR = 10000;
+priorAlpha_gammaEI = 2300;
+priorBeta_gammaEI = 1000;
+priorAlpha_gammaIR = 2300;
+priorBeta_gammaIR = 1000;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
@@ -376,22 +376,18 @@ SEIRmodel$printSamplingParameters()
 
 These look reasonable, so let's launch the main simulation. As currently implemented, the MCMC samplers encounter distressingly high autocorrelation. This is an active target of optimization, but in the meantime we need to be prepared to run inconveniently many samples. A bit of timekeeping code helps keep track of how long this might take. 
 
-One potential approach to reducing autocorrelation is to sample correlated paramters together in a block. Let's tell libspatialSEIR to do this for the 
-R to S transition parameters and transition matrix. 
-
-```{r tidy=FALSE}
-SEIRmodel$hybridReinfectionSampling=1
-```
-
 
 ```{r tidy = FALSE}
+# Switch to block sampling for parameters
+SEIRmodel$parameterSamplingMode=1
+
 tm = 0
 for (i in 1:100)
 {
   tm = tm + system.time(SEIRmodel$simulate(100000))[3]
-  SEIRmodel$updateSamplingParameters(0.05, 
-                                     0.0025, 
-                                     0.005)
+  SEIRmodel$updateSamplingParameters(0.2, 
+                                     0.025, 
+                                     0.05)
   cat(paste(i, "of 100,", 
             round((tm/(i)*(100-i)/60), 2), 
             " minutes remaining.\n"))
