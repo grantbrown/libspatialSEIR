@@ -223,6 +223,10 @@ reinfectionMode = 1
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
 
+scaledDistMode = 1
+# 1 = inv square root
+# 0 = raw
+
 steadyStateConstraintPrecision = -1
 
 verbose = FALSE 
@@ -232,7 +236,7 @@ debug = FALSE
 # pretend not to know the true values of things
 #proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
 proposal = generateCompartmentProposal(I_star, N, S0 = N[1]-100, I0 = 100, E0 = 0)
-beta = c(5, rep(0, (length(beta)-1)))
+beta = c(2, rep(0, (length(beta)-1)))
 betaPrs = -c(4, rep(0,(length(betaPrs)-1)))
 gamma_ei = 2.3
 gamma_ir = 2.3
@@ -273,7 +277,8 @@ res = spatialSEIRModel(compMatDim,
                       verbose,
                       debug, 
                       sliceWidths,
-                      reinfectionMode)
+                      reinfectionMode,
+                      scaledDistMode)
 
 
 #res$setTrace(0)

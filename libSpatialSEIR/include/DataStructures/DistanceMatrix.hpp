@@ -29,6 +29,7 @@ namespace SpatialSEIR
         double* phi;
         double* inData;
         int* dim;
+        int mode;
     };
 
     // Begin with a naive implementation, this should eventually 

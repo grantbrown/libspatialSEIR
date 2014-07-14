@@ -183,7 +183,10 @@ namespace SpatialSEIR
         scaledDistMat -> genFromDataStream(rawDistArgs -> inData,
                                            rawDistArgs -> dim);
 
-        scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
+        if ((scaledDistArgs -> mode) == 1)
+        {
+            scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
+        }
 
         // Initialize Data
         int i;

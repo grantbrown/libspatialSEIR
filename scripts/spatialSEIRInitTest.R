@@ -83,8 +83,8 @@ rho = 0.05
 gamma_ei = 2.3
 gamma_ir = 2.3
 
-beta = c(sim_results$true_fixed_beta, sim_results$true_time_varying_beta)
-betaPriorPrecision = 1
+beta = sim_results$true_beta 
+betaPriorPrecision = 0.1
 
 N = matrix(data_list[["pop"]][,2], nrow = nrow(S), ncol = ncol(S), byrow = TRUE)
 
@@ -141,6 +141,12 @@ reinfectionMode = 1;
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3: no reinfection
 
+scaledDistMode = 1
+# 1 = inv square root
+# 0 = raw
+
+
+
 # forget true values
 
 true_beta = beta
@@ -154,9 +160,10 @@ rho = 0.00001
 
 steadyStateConstraintPrecision = -1 
 
-proposal = generateCompartmentProposal(I_star, N, S0, E0, I0,p_ir=0.2)
+proposal = generateCompartmentProposal(I_star, N, S0, E0, I0,p_ir=0.3)
 
-offset = rep(1, nrow(S))
+offsets = rep(1, nrow(S))
+
 res = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
@@ -169,7 +176,7 @@ res = spatialSEIRModel(compMatDim,
                       proposal$E_star,
                       proposal$I_star,
                       proposal$R_star,
-                      offset,
+                      offsets,
                       X,
                       Z,
                       X_betaPrs,
@@ -192,7 +199,8 @@ res = spatialSEIRModel(compMatDim,
                       verbose,
                       debug, 
                       sliceWidths,
-                      reinfectionMode)
+                      reinfectionMode,
+                      scaledDistMode)
 
 # Use OpenCL:
 #res$oclPreferences = res$oclPreferences + 1 
@@ -261,7 +269,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 #}
 
 #runSimulation(1000,10, printAR=TRUE)
-runSimulation(50000,100, printAR=TRUE)
+runSimulation(1000,100, printAR=TRUE, proportionChange = 0.1)
 #runSimulation(10000,1, printAR=TRUE)
 #runSimulation(10000,100, printAR=TRUE)
 runSimulation(10000000,1000, printAR=TRUE)

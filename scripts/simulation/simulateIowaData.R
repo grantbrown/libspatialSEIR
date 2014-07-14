@@ -93,34 +93,32 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
     X = matrix(1, ncol = 1, nrow = nrow(dcm))
     Z = cbind(seq(1,nyear*nTptPerYear), sin(seq(1,nyear*nTptPerYear)/nTptPerYear*2*pi), 
                 cos(seq(1,nyear*nTptPerYear)/nTptPerYear*2*pi))
-    Z = Z[rep(1:nrow(Z), each = nrow(dcm)),] # Same time varying covariates for all spatial locations 
+    Z = Z[rep(1:nrow(Z), nrow(dcm)),] # Same time varying covariates for all spatial locations 
 
     X_prs = cbind(1, 
                   sin((1:maxTpt)/nTptPerYear*2*pi),
                   cos((1:maxTpt)/nTptPerYear*2*pi))
 
-    trueBetaSEFixed = c(0.1)
+    trueBetaSEFixed = c(0.15)
     #trueBetaSEVarying = c(0.0001, 0.02, 0.03, 0.05, 0.06, 
     #                      0.2, 0.1, 0.1, 0.1, 0.2, 0.1, 0.1)*5
-    trueBetaSEVarying = c(0.0001, 1.2, -0.3)
+    trueBetaSEVarying = c(0.001, 2, -1)
 
     trueGamma = rep(0.0, maxTpt)
-    trueRho = 0.2
+    trueRho = 0.22
     rho = trueRho
 
-    true_fixed_eta = X %*% trueBetaSEFixed
-    true_time_varying_eta = Z %*% trueBetaSEVarying
-
-    eta_se = matrix((as.numeric(true_fixed_eta) + 
-                     as.numeric(true_time_varying_eta)), 
-                     nrow = maxTpt, ncol = ncol(dcm), byrow = TRUE)
+    X_combined = cbind(X[rep(1:nrow(X), each = nrow(Z)/nrow(X)),], Z)
+    trueBetaSE = c(trueBetaSEFixed, trueBetaSEVarying)
+    eta_se = matrix(X_combined %*% trueBetaSE, 
+                     nrow = maxTpt, ncol = ncol(dcm))
 
     p_se = matrix(0.0, nrow = maxTpt, ncol = ncol(dcm)) 
     gamma_ei = 2.3
     gamma_ir = 2.3
     p_ei = 1-exp(-gamma_ei)
     p_ir = 1-exp(-gamma_ir)
-    trueBetaRS = c(-3, 1, -2)
+    trueBetaRS = c(-3, 1, -1)
     eta_rs = X_prs %*% trueBetaRS    
     p_rs = 1-exp(-exp(eta_rs))
 
@@ -203,8 +201,7 @@ main_sim = function(dcm, pop, nTptPerYear = 12, nyear =5)
                 "I_star0"=I_star0,
                 "R_star0"=R_star0,
                 "gamma" = trueGamma,
-                "true_fixed_beta" = trueBetaSEFixed,
-                "true_time_varying_beta" = trueBetaSEVarying,
+                "true_beta" = trueBetaSE,
                 "true_beta_pRS"=trueBetaRS,
                 "X" = X,
                 "Z" = Z,

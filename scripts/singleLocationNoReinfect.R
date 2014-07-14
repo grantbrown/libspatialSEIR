@@ -220,6 +220,12 @@ reinfectionMode = 4
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
 
+scaledDistMode = 1
+# 1 = inv square root
+# 0 = raw
+
+
+
 steadyStateConstraintPrecision = -1
 
 verbose = FALSE 
@@ -271,7 +277,8 @@ res = spatialSEIRModel(compMatDim,
                       verbose,
                       debug, 
                       sliceWidths,
-                      reinfectionMode)
+                      reinfectionMode,
+                      scaledDistMode)
 
 
 res$setRandomSeed(123123)

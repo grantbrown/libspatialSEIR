@@ -76,26 +76,41 @@ namespace SpatialSEIR
     // Combined beta/gamma parameters
     int CovariateMatrix::calculate_eta_CPU(double *eta, double *beta)
     {
-        // This is a naiive, but hopefully correct implementation. 
         // TODO: do this in LAPACK
+        // TODO: bite the bullet and just store this as one big matrix, 
+        // forget the distinction between time varying and not. Storage is cheap, 
+        // and the extra overhead is confusing. This will require API cleanup. 
         try
         {
+            int nLoc = (*nrow_x);
+            int nTpt = (*nrow_z)/(*nrow_x);
+            int compIdx;
             int i; int j;
+            int k;
             // Initialize eta 
             for (i = 0; i < (*nrow_z); i++)
             {
                 eta[i] = 0.0;
             }
-            for (j = 0; j < (*nrow_z); j++)
+            // Locations
+            for (i = 0; i < nLoc; i++)
             {
-               for (i = 0; i < (*ncol_x); i++) 
-               {
-                   eta[j] += X[j%(*nrow_x) + i*(*nrow_x)]*beta[i];
-               }
-               for (i = 0; i < (*ncol_z); i++)
-               {
-                   eta[j] += Z[j + i*(*nrow_z)]*beta[i + (*ncol_x)];
-               }
+                compIdx = i*nTpt;
+                // Time points
+                for (j = 0; j < nTpt; j++)
+                {
+                    // Fixed Co-variates
+                    for (k = 0; k < (*ncol_x); k++)
+                    {
+                        eta[compIdx] += X[i + k*nLoc]*beta[k];
+                    }
+                    // Time Varying Co-variates
+                    for (k = 0; k < (*ncol_z); k++)
+                    {
+                        eta[compIdx] += Z[j + i*nTpt + k*(*nrow_z)]*beta[k + (*ncol_x)];
+                    }
+                    compIdx++;
+                }
             }
         }
         catch(int e)

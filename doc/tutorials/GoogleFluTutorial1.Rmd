@@ -301,11 +301,6 @@ Now we're ready to start sampling. On the other hand, we're not particularly con
 
 
 ```{r tidy=FALSE}
-# Burn in double precision parameters individually, to scale their sampling
-# parameters appropriately.
-
-SEIRmodel$parameterSamplingMode = 1
-
 burnInSamplingParams = function(modelObject,
                                numBatches=500, 
                                batchSize=20, 
@@ -321,7 +316,6 @@ burnInSamplingParams = function(modelObject,
     }
 }
 
-SEIRmodel$parameterSamplingMode = 3
 ```
 
 Before we adjust these, however, we may be interested whether using the OpenCL capabilities is any faster for this particular data size. Let's take a look at what devices we have available:
@@ -387,7 +381,7 @@ SEIRmodel$hybridReinfectionSampling=1
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(50000))[3]
+  tm = tm + system.time(SEIRmodel$simulate(100000))[3]
   SEIRmodel$updateSamplingParameters(0.05, 
                                      0.0025, 
                                      0.005)

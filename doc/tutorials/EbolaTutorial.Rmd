@@ -13,6 +13,7 @@ A mirror of the WHO case reports is compiled on wikipedia - let's
 read it in with the xml library. 
   
 ```{r}
+library(coda)
 library(spatialSEIR)
 library(XML)
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
@@ -67,34 +68,68 @@ daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
 # Use orthogonal polynomials for time basis
 
 Z = poly(daysSinceJan, degree=3)
+
+
+# We're going to want to do prediction, so let's generate the fixed and time varying co-variate matrices now
+# before we modify Z
+X.predict = cbind(diag(3))
+Z.predict = predict.poly(Z, c(max(daysSinceJan) + 1, max(daysSinceJan) + seq(10,60,10)))
+
+
 # These co-variates are the same for each spatial location, so duplicate them row-wise. 
 Z = Z[rep(1:nrow(Z), nrow(X)),]
+Z.predict = Z.predict[rep(1:nrow(Z.predict), nrow(X)),]
 
-# No reinfection, so dummy matrix for X_prs
+# For convenience, let's combine X and Z for prediction.
+X.pred = cbind(X.predict[rep(1:nrow(X.predict), each = 7),], Z.predict)
+
+# Define prediction offsets. 
+
+offset.pred = c(1,rep(10, 6))
+
+# No reinfection, so use a dummy matrix for X_prs
 
 X_p_rs = matrix(0)
 
+# Get object dimensions. This will be done automatically in the future
+compMatDim = dim(I_star)
+xDim = dim(X)
+zDim = dim(Z)
+xPrsDim = dim(X_p_rs)
 
-```
-
-
-
-Parameter Starting Values
-------------------------------
-
-```{r, tidy=FALSE}
-
-p_ei = 0.25 # 2 to 21 day incubation period according to who
-p_ir = 0.14  # Up to 7 weeks even after recovery
-gamma_ei=-log(1-p_ei)
-gamma_ir=-log(1-p_ir)
   
-beta = rep(0, ncol(X) + ncol(Z))
-beta[1] = 2.5
+    
+# Prior parameters. 
+priorAlpha_gammaEI = 25;
+priorBeta_gammaEI = 100;
+priorAlpha_gammaIR = 14;
+priorBeta_gammaIR = 100;
 
+# Dummy value for betaP_RS prior precision
+betaPrsPriorPrecision = 0.5
+
+# Prior precision for regression paramters
+betaPriorPrecision = 0.01
+
+# reinfection mode is 3, which forces S_star to remain 0.
+reinfectionMode = 3
+
+# Dummy value for beta_p_rs
 beta_p_rs = rep(0, ncol(X_p_rs))
 
-rho = 0.1 # spatial dependence parameter
+# steadyStateConstraintPrecision is a loose constraint on net flows
+# between compartments. Setting it to a negative value eliminates
+# the constraint, but it can help with identifiability in cases where 
+# there should be a long term equilibrium (endemic disease). 
+steadyStateConstraintPrecision = -1
+
+# iterationStride determines the delay between saving samples to the 
+# output file
+iterationStride = 1000
+
+# Turn off verbose and debug output.
+verbose = FALSE
+debug = FALSE
 
 # Starting tuning parameters for MCMC sampling
 mcmcTuningParams = c(1, # S_star
@@ -108,52 +143,74 @@ mcmcTuningParams = c(1, # S_star
                      0.01, # gamma_ei
                      0.01) # gamma_ir
 
-
-# Prior parameters. 
-priorAlpha_gammaEI = 25;
-priorBeta_gammaEI = 100;
-priorAlpha_gammaIR = 14;
-priorBeta_gammaIR = 100;
-betaPrsPriorPrecision = 0.5
-betaPriorPrecision = 0.01
-
-# reinfection mode is 3, because there is no reinfection. 
-reinfectionMode = 3
-# steadyStateConstraintPrecision is a loose constraint on net flows
-# between compartments. Setting it to a negative value eliminates
-# the constraint, but it can help with identifiability. 
-steadyStateConstraintPrecision = -1
-
-# iterationStride determines the delay between saving samples to the output file
-iterationStride = 1000
-outFileName = "./chain_output_ebola.txt"
-
-# Make a crude guess as to the true compartments:
-# S_star, E_star, R_star, and thus S,E,I and R
-proposal = generateCompartmentProposal(I_star, N, 
-                                       S0 = N[1,]-I_star[1,] - c(10,0,0),
-                                       I0 = c(10,0,0), 
-                                       p_ir = 0.5, 
-                                       p_rs = 0.00)
-
-# Turn off verbose and debug output.
-verbose = FALSE
-debug = FALSE
-
-
-# Get object dimensions. This will be done automatically in the future
-compMatDim = dim(I_star)
-xDim = dim(X)
-zDim = dim(Z)
-xPrsDim = dim(X_p_rs)
+# Don't re-scale distance matrix.
+scaleDistanceMode = 0
 ```
 
 
 
+Parameter Starting Values
+------------------------------
+
+In order to start multiple chains from different but reasonable starting points, let's make a function to perform the requisite set up randomly.
+
 ```{r, tidy=FALSE}
-# Create model object. This giant constructor is going to be replaced with something friendlier 
-# in the future. 
-SEIRmodel = spatialSEIRModel(compMatDim,
+proposeParameters = function(seedVal, chainNumber)
+{
+    set.seed(seedVal) 
+    
+    # 2 to 21 day incubation period according to who
+    p_ei = 0.25 + rnorm(1, 0, 0.02) 
+    # Up to 7 weeks even after recovery
+    p_ir = 0.14 + rnorm(1, 0, 0.01) 
+    gamma_ei=-log(1-p_ei)
+    gamma_ir=-log(1-p_ir)
+      
+    # Starting value for exposure regression parameters
+    beta = rep(0, ncol(X) + ncol(Z))
+    beta[1] = 2.5 + rnorm(1,0,0.5)
+    
+    rho = 0.1 + rnorm(1,0,0.01) # spatial dependence parameter
+  
+    outFileName = paste("./chain_output_ebola_", chainNumber ,".txt", sep = "")
+    
+    # Make a crude guess as to the true compartments:
+    # S_star, E_star, R_star, and thus S,E,I and R
+    proposal = generateCompartmentProposal(I_star, N, 
+                                           S0 = N[1,]-I_star[1,] - c(10,0,0),
+                                           I0 = c(10,0,0), 
+                                           p_ir = 0.5, 
+                                           p_rs = 0.00)
+    
+    return(list(S0=proposal$S0,
+                E0=proposal$E0,
+                I0=proposal$I0,
+                R0=proposal$R0,
+                S_star=proposal$S_star,
+                E_star=proposal$E_star,
+                I_star=proposal$I_star,
+                R_star=proposal$R_star,
+                rho=rho,
+                beta=beta,
+                gamma_ei=gamma_ei,
+                gamma_ir=gamma_ir,
+                outFileName=outFileName))
+}
+
+```
+
+
+Now we're ready to build, burn in, and run the models.
+
+
+```{r tidy=FALSE}
+
+SEIRmodels = list()
+i = 1;
+for (seedVal in c(12345,543219,992134))
+{
+  proposal = proposeParameters(seedVal, i)
+  SEIRmodels[[i]] = spatialSEIRModel(compMatDim,
                       xDim,
                       zDim,
                       xPrsDim,
@@ -170,41 +227,50 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       Z,
                       X_p_rs,
                       DM,
-                      rho,
+                      proposal$rho,
                       priorAlpha_gammaEI,
                       priorBeta_gammaEI,
                       priorAlpha_gammaIR,
                       priorBeta_gammaIR,
-                      beta,
+                      proposal$beta,
                       betaPriorPrecision,
                       beta_p_rs,
                       betaPrsPriorPrecision,
-                      gamma_ei,
-                      gamma_ir,
+                      proposal$gamma_ei,
+                      proposal$gamma_ir,
                       N,
-                      outFileName,
+                      proposal$outFileName,
                       iterationStride,
                       steadyStateConstraintPrecision,
                       verbose,
                       debug,
                       mcmcTuningParams,
-                      reinfectionMode)
-#SEIRmodel$standardizeDistanceMatrix()
+                      reinfectionMode,
+                      scaleDistanceMode)
+  
+  i = i + 1;
+}
+
+# Track the last time point for each of the three locations 
+# in order to make predictions
+
+
+SEIRmodels[[1]]$setTrace(0,23) #Guinea 
+SEIRmodels[[1]]$setTrace(1,23) #Liberia
+SEIRmodels[[1]]$setTrace(2,23) #Sierra Leone
+  
 ```
-
-
-Now we're ready to burn in and run the model. 
 
 
 ```{r tidy=FALSE}
 
-burnInSamplingParams = function(modelObject,
-                               numBatches=500, 
-                               batchSize=20, 
-                               targetAcceptanceRatio=0.1,
-                               tolerance=0.05,
-                               proportionChange = 0.1
-                              )
+runSimulation = function(modelObject,
+                         numBatches=500, 
+                         batchSize=20, 
+                         targetAcceptanceRatio=0.1,
+                         tolerance=0.05,
+                         proportionChange = 0.1
+                        )
 {
     for (batch in 1:numBatches)
     {
@@ -213,25 +279,99 @@ burnInSamplingParams = function(modelObject,
     }
 }
 
-burnInSamplingParams(SEIRmodel)
 
-SEIRmodel$simulate(1000)
-SEIRmodel$printAcceptanceRates()
-SEIRmodel$printSamplingParameters()
 
-tm = 0
-batches = 100
-for (i in 1:batches)
+
+for (i in 1:length(SEIRmodels))
 {
-  tm = tm + system.time(SEIRmodel$simulate(10000))[3]
-  SEIRmodel$updateSamplingParameters(0.25, 
-                                     0.025, 
-                                     0.05)
-  cat(paste(i, "of", batches, ":", 
-            round((tm/(i)*(batches-i)/60), 2), 
-            " minutes remaining.\n"))
+    cat(paste("Burning in chain ", i, "\n", sep =""))
+    runSimulation(SEIRmodels[[i]])
+    SEIRmodels[[i]]$simulate(1000)
+    SEIRmodels[[i]]$printAcceptanceRates()
+}
+```
+
+Now we can run the chains. In practice, this is probably better done in separate R sessions so that the chains can be run at the same time. Note that if we were using the OpenCL features of libspatialSEIR, this would need to be done on separate machines.
+
+```{r tidy = FALSE}
+
+for (i in 1:length(SEIRmodels))
+{
+    cat(paste("Running in chain ", i, "\n", sep =""))
+    tm = system.time(runSimulation(SEIRmodels[[i]], 
+                  numBatches=100, 
+                  batchSize=50000, 
+                  targetAcceptanceRatio=0.25,
+                  tolerance=0.025,
+                  proportionChange = 0.1))
+    cat(paste("Time elapsed: ", round(tm[3]/60,3), 
+              " minutes\n", sep = ""))
 }
 
+```
+
+Now let's assess chain convergence. 
+
+```{r tidy=FALSE}
+
+chain1 = read.csv("chain_output_ebola_1.txt")
+chain2 = read.csv("chain_output_ebola_2.txt")
+chain3 = read.csv("chain_output_ebola_3.txt")
+
+plotChains = function(c1, c2, c3, main)
+{
+    idx = floor(length(c1)/2):length(c1)
+    mcl = mcmc.list(as.mcmc(c1),
+                    as.mcmc(c2),
+                    as.mcmc(c3))
+    g.d = gelman.diag(mcl)
+    main = paste(main, "\n", "Gelman Convergence Diagnostic and UL: \n",
+                 round(g.d[[1]][1],2), ", ", round(g.d[[1]][2],2))
+    
+    plot(chain1$Iteration[idx], c1[idx], type = "l", main = main,
+         xlab = "Iteration", ylab = "value")
+    lines(chain2$Iteration[idx],c2[idx], col = "red", lty=2)
+    lines(chain3$Iteration[idx],c3[idx], col = "green", lty=3)
+}
+
+# Guinea, Liberia, Sierra Leone
+par(mfrow = c(3,2))
+plotChains(chain1$BetaP_SE_0,
+           chain2$BetaP_SE_0,
+           chain3$BetaP_SE_0, 
+           "Guinea Exposure Intercept")
+plotChains(chain1$BetaP_SE_3,
+           chain2$BetaP_SE_3,
+           chain3$BetaP_SE_3, 
+           "Linear Time Component")
+
+plotChains(chain1$BetaP_SE_1,
+           chain2$BetaP_SE_1,
+           chain3$BetaP_SE_1, 
+           "Liberia Exposure Intercept")
+plotChains(chain1$BetaP_SE_3,
+           chain2$BetaP_SE_3,
+           chain3$BetaP_SE_3, 
+           "Quadratic Time Component")
+
+plotChains(chain1$BetaP_SE_2,
+           chain2$BetaP_SE_2,
+           chain3$BetaP_SE_2, 
+           "Sierra Leone Exposure Intercept")
+plotChains(chain1$BetaP_SE_3,
+           chain2$BetaP_SE_3,
+           chain3$BetaP_SE_3, 
+           "Cubic Time Component")
+
+par(mfrow = c(2,1))
+plotChains(1-exp(-chain1$gamma_ei),
+           1-exp(-chain2$gamma_ei),
+           1-exp(-chain3$gamma_ei)
+           , "E to I Transition Probability")
+plotChains(1-exp(-chain1$gamma_ir),
+           1-exp(-chain2$gamma_ir),
+           1-exp(-chain3$gamma_ir)
+           , "I to R Transition Probability")
 
 ```
 
@@ -240,10 +380,12 @@ Let's take a look at the estimated epidemic.
 ```{r tidy = FALSE}
 par(mfrow=c(2,1))
 # Plot number of infectious
+SEIRmodel = SEIRmodels[[1]]
 maxI = floor(max(SEIRmodel$I)*1.2)
 plot(rptDate, SEIRmodel$I[,1], type = "l", ylim=c(0,maxI), lwd = 2, 
      xlim = c(min(rptDate), max(rptDate + 30)), 
-     main = "Estimated Number of Infectious Individuals")
+     main = "Estimated Number of Infectious Individuals", ylab = "Number",
+     xlab="Date")
 lines(rptDate, SEIRmodel$I[,2], col = "blue", lty = 2, lwd = 2)
 lines(rptDate, SEIRmodel$I[,3], col = "red", lty = 3, lwd = 2)
 legend(x = min(rptDate), y = maxI*0.95, 
@@ -251,9 +393,10 @@ legend(x = min(rptDate), y = maxI*0.95,
        lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2)
 # Plot Removed
 maxR = floor(max(SEIRmodel$R)*1.2)
-plot(rptDate, SEIRmodel$R[,1], type = "l", ylim=c(0,maxI), lwd = 2, 
+plot(rptDate, SEIRmodel$R[,1], type = "l", ylim=c(0,maxR), lwd = 2, 
      xlim = c(min(rptDate), max(rptDate + 30)), 
-     main = "Estimated Number of Recovered/Deceased Individuals")
+     main = "Estimated Number of Recovered/Deceased Individuals",
+     ylab = "Number", xlab="Date")
 lines(rptDate, SEIRmodel$R[,2], col = "blue", lty = 2, lwd = 2)
 lines(rptDate, SEIRmodel$R[,3], col = "red", lty = 3, lwd = 2)
 legend(x = min(rptDate), y = maxR*0.95, 
@@ -265,9 +408,165 @@ legend(x = min(rptDate), y = maxR*0.95,
 
 ```
 
+Basic Reproductive Number
+===========================
+
+
+```{r, tidy =FALSE}
+  getR0 = function(t)
+  {
+    max(eigen(SEIRmodels[[1]]$getGenerationMatrix(t))$values)  
+  }
+  
+  R0_vec = sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0)
+
+  par(xaxt = "n")
+  plot(rptDate[1:(length(rptDate)-1)], R0_vec, type = "l", xlab = "Date",ylab = "R0",
+       main = "Estimated Basic Reproductive Number")
+  abline(h=seq(0, 2, 0.1), lty=2, col="lightgrey")
+  abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
+  lines(R0_vec, lwd = 1.5)
+
+```
+
+
+Prediction
+=============
 
 ```{r tidy = FALSE}
 
-chainDat = read.csv("./chain_output_ebola.txt")
+  predictEpidemic = function(beta.pred, 
+                             X.pred,
+                             gamma.ei,
+                             gamma.ir,
+                             S0,
+                             E0,
+                             I0,
+                             R0,
+                             rho,
+                             offsets)
+  {
+      N = (S0+E0+I0+R0)
+      p_se_components = matrix(exp(X.pred %*% beta.pred), ncol=length(S0))
+      p_se = matrix(0, ncol = length(S0), nrow = nrow(p_se_components))
+      p_ei = 1-exp(-gamma.ei)
+      p_ir = 1-exp(-gamma.ir)
+      S_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      E_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      I_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      R_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      S = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      E = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      I = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      R = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+      S[1,] = S0
+      E[1,] = E0
+      I[1,] = I0
+      R[1,] = R0
+      S_star[1,] = rbinom(1, R0, 0)
+      p_se[1,] = 1-exp(-offsets[1]*(I[1,]/N*p_se_components[1,] + 
+                            rho*(DM %*% (I[1,]/N*p_se_components[1,]))))
+      E_star[1,] = rbinom(1, S0, p_se[1,])
+      I_star[1,] = rbinom(1, E0, p_ei)
+      R_star[1,] = rbinom(1, I0, p_ir)
+      
+      for (i in 2:nrow(S))
+      {
+      
+        S[i,] = S[i-1,] + S_star[i-1,] - E_star[i-1,]
+        E[i,] = E[i-1,] + E_star[i-1,] - I_star[i-1,]
+        I[i,] = I[i-1,] + I_star[i-1,] - R_star[i-1,]
+        R[i,] = R[i-1,] + R_star[i-1,] - S_star[i-1,]
+        
+        p_se[i,] = 1-exp(-offsets[i]*(I[i,]/N*p_se_components[i,] + 
+                            rho*(DM %*% (I[i,]/N*p_se_components[i,]))))
+        S_star[i,] = rbinom(1, R[i,], 0)
+        E_star[i,] = rbinom(1, S[i,], p_se[i,])
+        I_star[i,] = rbinom(1, E[i,], p_ei)
+        R_star[i,] = rbinom(1, I[i,], p_ir)
+      }
+      return(list(S=S,E=E,I=I,R=R,
+                  S_star=S_star,E_star=E_star,
+                  I_star=I_star,R_star=R_star,
+                  p_se=p_se))
+  }
+
+
+  predict.i = function(i)
+  {
+    dataRow = chain1[i,]
+    rho = dataRow$rho
+    beta = c(dataRow$BetaP_SE_0,
+             dataRow$BetaP_SE_1,
+             dataRow$BetaP_SE_2,
+             dataRow$BetaP_SE_3,
+             dataRow$BetaP_SE_4,
+             dataRow$BetaP_SE_5)
+    S0 = c(dataRow$S_0_23,
+           dataRow$S_1_23,
+           dataRow$S_2_23)
+    E0 = c(dataRow$E_0_23,
+           dataRow$E_1_23,
+           dataRow$E_2_23)
+    I0 = c(dataRow$I_0_23,
+           dataRow$I_1_23,
+           dataRow$I_2_23)
+    R0 = c(dataRow$R_0_23,
+           dataRow$R_1_23,
+           dataRow$R_2_23)
+    return(predictEpidemic(beta,  
+                           X.pred,
+                           dataRow$gamma_ei,
+                           dataRow$gamma_ir,
+                           S0,
+                           E0,
+                           I0,
+                           R0,
+                           rho,
+                           offset.pred
+                           ))
+  }
+  
+  preds = lapply((nrow(chain1) - floor(nrow(chain1)/4)):
+                   nrow(chain1), predict.i)
 
 ```
+
+
+Now return to the estimated epidemic plot, but include predictions for the next sixty days. 
+
+
+```{r tidy = FALSE}
+
+pred.dates = c(rptDate[(which.max(rptDate))] + 1,rptDate[(which.max(rptDate))] + seq(10,60,10))
+
+# Plot number of infectious
+
+maxI = floor(max(SEIRmodels[[1]]$I)*1.2)
+plot(rptDate, SEIRmodels[[1]]$I[,1], type = "l", ylim=c(0,3000), lwd = 2, 
+     xlim = c(min(rptDate), max(rptDate + 60)), 
+     main = "Estimated Number of Infectious Individuals", ylab = "Number",
+     xlab="Date")
+lines(rptDate, SEIRmodels[[1]]$I[,2], col = "blue", lty = 2, lwd = 2)
+lines(rptDate, SEIRmodels[[1]]$I[,3], col = "red", lty = 3, lwd = 2)
+legend(x = min(rptDate), y = 3000, 
+       legend = c("Guinea", "Liberia", "Sierra Leone"),
+       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2)
+
+lastIdx = nrow(SEIRmodels[[1]]$I)
+for (pred in preds)
+{
+   lines(c(pred.dates[1]-1, pred.dates),
+         c(SEIRmodels[[1]]$I[lastIdx,1],pred$I[,1]), 
+        lty=1, col = "black", lwd = 0.5)
+   lines(c(pred.dates[1]-1, pred.dates),
+         c(SEIRmodels[[1]]$I[lastIdx,2],pred$I[,2]), 
+        lty=2, col = "blue", lwd = 0.5)
+   lines(c(pred.dates[1]-1, pred.dates),
+         c(SEIRmodels[[1]]$I[lastIdx,3],pred$I[,3]), 
+        lty=3, col = "red", lwd = 0.5)
+}
+
+
+```
+

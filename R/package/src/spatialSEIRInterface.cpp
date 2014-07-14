@@ -59,7 +59,8 @@ class spatialSEIRInterface
                      SEXP verboseFlag,
                      SEXP debugFlag,
                      SEXP sliceWidths,
-                     SEXP reinfectionMode);
+                     SEXP reinfectionMode,
+                     SEXP scaleDistanceMode_);
         // Simulation Functions
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);
@@ -826,7 +827,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP verboseFlag,
                      SEXP debugFlag,
                      SEXP sliceWidths,
-                     SEXP reinfectionMode)
+                     SEXP reinfectionMode,
+                     SEXP scaleDistanceMode_)
 {
     int err = 0;
     Rcpp::Rcout << "Wrapping input data in Rcpp vectors.\n";
@@ -873,6 +875,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::NumericVector sliceParams(sliceWidths);
 
     Rcpp::IntegerVector reinfectMode(reinfectionMode);
+    Rcpp::IntegerVector scaleDistanceMode(scaleDistanceMode_);
 
     chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
@@ -985,6 +988,12 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                 }
             }
         }
+        if (scaleDistanceMode[0] != 0 && scaleDistanceMode[0] != 1)
+        {
+            Rcpp::Rcout << "scaleDistanceMode should be true or false until more options are implemented.\n";
+            Rcpp::Rcout << "   mode given: " << scaleDistanceMode[0] << "\n";
+            throw(-1);
+        }
     }
     catch(int e)
     {
@@ -1082,6 +1091,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     scaledDistArgs.phi = &phi; 
     scaledDistArgs.inData = DistMat.begin();
     scaledDistArgs.dim = &compartmentDimensions[1];
+    scaledDistArgs.mode = scaleDistanceMode[0];
     Rcpp::Rcout << "Loading covariate information into model context object\n";
 
     // Create the InitData object 
