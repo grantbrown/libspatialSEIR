@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FullConditional.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -105,6 +106,22 @@ namespace SpatialSEIR
     {
         return((*accepted*1.0)/(*samples));
     }
+
+    void FullConditional::setSamplerType(int samplerType)
+    {
+        unsigned int i;
+        for (i = 0; i < (this -> samplers) -> size(); i++)
+        {
+            if (((*samplers)[i] -> getSamplerType()) == samplerType)
+            {
+                *currentSampler = (*samplers)[i];
+                return;
+            }
+        }
+        std::cout << "Sampler type not found.\n";
+        throw(-1);
+    }
+
 
     double ParameterFullConditional::acceptanceRatio(int i)
     {

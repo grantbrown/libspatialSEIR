@@ -100,6 +100,7 @@ namespace SpatialSEIR
             virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange) = 0;
             double acceptanceRatio();
             double* sliceWidth;
+            void setSamplerType(int type);
             std::vector<Sampler*>* samplers;
             Sampler** currentSampler;
             int* useOCL;
