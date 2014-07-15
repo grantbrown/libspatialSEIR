@@ -19,6 +19,7 @@ namespace SpatialSEIR
     class CompartmentalModelMatrix;
     class CovariateMatrix;
     class OCLProvider;
+    class Sampler;
 
     //! struct containing hyperparameters for beta, betaP_RS, P_EI, and P_IR
     struct priorControl

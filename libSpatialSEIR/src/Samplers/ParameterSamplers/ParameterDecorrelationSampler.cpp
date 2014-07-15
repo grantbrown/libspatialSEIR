@@ -43,6 +43,11 @@ namespace SpatialSEIR
         delete proposalMatrix;
     }
 
+    int ParameterDecorrelationSampler::getSamplerType()
+    {
+        return(PARAMETER_DECORR_SAMPLER);
+    }
+
     void ParameterDecorrelationSampler::drawSample()
     {
         std::cout << "Decorrelation sampler not yet implemented\n";

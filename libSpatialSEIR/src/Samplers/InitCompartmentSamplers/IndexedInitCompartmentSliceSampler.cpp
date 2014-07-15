@@ -47,6 +47,13 @@ namespace SpatialSEIR
         delete context;
     }
 
+    int IndexedInitCompartmentSliceSampler::getSamplerType()
+    {
+        return(INITCOMPARTMENT_IDX_SLICE_SAMPLER);
+    }
+
+
+
     void IndexedInitCompartmentSliceSampler::drawSample()
     {
         std::cout << "Blocked slice sampling not yet implemented.\n"; 

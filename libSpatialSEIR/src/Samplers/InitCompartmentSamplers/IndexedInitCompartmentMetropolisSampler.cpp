@@ -47,6 +47,11 @@ namespace SpatialSEIR
         delete context;
     }
 
+    int IndexedInitCompartmentMetropolisSampler::getSamplerType()
+    {
+        return(INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER);
+    }
+
     void IndexedInitCompartmentMetropolisSampler::drawSample()
     {
         *((*initCompartmentFC) -> samples) += 1;

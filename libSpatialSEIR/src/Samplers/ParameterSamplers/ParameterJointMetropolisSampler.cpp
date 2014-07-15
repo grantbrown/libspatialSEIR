@@ -39,6 +39,11 @@ namespace SpatialSEIR
         delete context;
     }
 
+    int ParameterJointMetropolisSampler::getSamplerType()
+    {
+        return(PARAMETER_JOINT_METROPOLIS_SAMPLER);
+    }
+
     void ParameterJointMetropolisSampler::drawSample()
     {
         *((*paramFC) -> samples) += 1;

@@ -10,6 +10,18 @@
 #ifndef LSS_SAMPLERS_INC
 #define LSS_SAMPLERS_INC
 
+#define COMPARTMENT_METROPOLIS_SAMPLER 1
+#define COMPARTMENT_IDX_METROPOLIS_SAMPLER 2
+#define COMPARTMENT_IDX_SLICE_SAMPLER 3
+#define INITCOMPARTMENT_METROPOLIS_SAMPLER 4
+#define INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER 5
+#define INITCOMPARTMENT_IDX_SLICE_SAMPLER 6
+#define PARAMETER_SINGLE_METROPOLIS_SAMPLER 7
+#define PARAMETER_JOINT_METROPOLIS_SAMPLER 8
+#define PARAMETER_JOINT_SLICE_SAMPLER 9
+#define PARAMETER_DECORR_SAMPLER 10
+
+
 namespace SpatialSEIR
 {
     using std::cout;
@@ -30,6 +42,7 @@ namespace SpatialSEIR
         public:
             virtual ~Sampler(){};
             virtual void drawSample() = 0; 
+            virtual int getSamplerType() = 0;
     };
 
     // Samplers for CompartmentalModelMatrix classes
@@ -40,6 +53,7 @@ namespace SpatialSEIR
                                          CompartmentFullConditional* compartmentFC,
                                          int* compartmentData);
             void drawSample();
+            int getSamplerType();
             ~CompartmentMetropolisSampler();
 
             ModelContext** context;
@@ -56,6 +70,7 @@ namespace SpatialSEIR
                                          int* indexList,
                                          int indexLength);
             void drawSample();
+            int getSamplerType();
             ~IndexedCompartmentMetropolisSampler();
 
             ModelContext** context;
@@ -74,6 +89,7 @@ namespace SpatialSEIR
                                          int* indexList,
                                          int indexLength);
             void drawSample();
+            int getSamplerType();
             ~IndexedCompartmentSliceSampler();
 
             ModelContext** context;
@@ -91,6 +107,7 @@ namespace SpatialSEIR
                                              InitCompartmentFullConditional* initCompartmentFC,
                                              int* initCompartmentData);
             void drawSample();
+            int getSamplerType();
             ~InitCompartmentMetropolisSampler();
 
             ModelContext** context;
@@ -106,6 +123,7 @@ namespace SpatialSEIR
                                              int* indexList,
                                              int indexLength);
             void drawSample();
+            int getSamplerType();
             ~IndexedInitCompartmentMetropolisSampler();
 
             ModelContext** context;
@@ -124,6 +142,7 @@ namespace SpatialSEIR
                                              int* indexList,
                                              int indexLength);
             void drawSample();
+            int getSamplerType();
             ~IndexedInitCompartmentSliceSampler();
 
             ModelContext** context;
@@ -141,6 +160,7 @@ namespace SpatialSEIR
                                             ParameterFullConditional* paramFC,
                                             double* param);
             void drawSample();
+            int getSamplerType();
             ~ParameterSingleMetropolisSampler();
 
             double** param;
@@ -155,6 +175,7 @@ namespace SpatialSEIR
                                             ParameterFullConditional* paramFC,
                                             double* param);
             void drawSample();
+            int getSamplerType();
             ~ParameterJointMetropolisSampler();
 
             double** param;
@@ -169,6 +190,7 @@ namespace SpatialSEIR
                                             ParameterFullConditional* paramFC,
                                             double* param);
             void drawSample();
+            int getSamplerType();
             ~ParameterJointSliceSampler();
 
             double** param;
@@ -184,6 +206,7 @@ namespace SpatialSEIR
                                           double* param,
                                           CovariateMatrix* proposalMatrix);
             void drawSample();
+            int getSamplerType();
             ~ParameterDecorrelationSampler();
 
             double** param;
