@@ -114,7 +114,8 @@ daysSince2000 = as.numeric(as.Date(fluDat.sub$Date) - as.Date("2000-01-01"))
 trigBasis = daysSince2000/365*2*pi
 Z = cbind(standard(daysSince2000),            # linear term for time
           sin(trigBasis),               # trig basis function 1
-          cos(trigBasis)               # trig basis function 2
+          cos(trigBasis),               # trig basis function 2
+          sin(trigBasis)*cos(trigBasis)
   )
 
 # There is only one spatial location here, so we don't need to do anything 
@@ -128,7 +129,7 @@ Let's look at our infection process basis (minus the intercept).
 ```{r, tidy=FALSE, echo=TRUE}
 
 par(mfrow = c(2,2))
-for (i in 1:3)
+for (i in 1:4)
 {
   par(xaxt = "n")
   plot(Z[,i], type = "l", main = paste("Time Varying Co-variate", i),
@@ -379,13 +380,13 @@ These look reasonable, so let's launch the main simulation. As currently impleme
 
 ```{r tidy = FALSE}
 # Switch to block sampling for parameters
-SEIRmodel$parameterSamplingMode=1
+SEIRmodel$parameterSamplingMode=3
 
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(200000))[3]
-  SEIRmodel$updateSamplingParameters(0.25, 
+  tm = tm + system.time(SEIRmodel$simulate(300000))[3]
+  SEIRmodel$updateSamplingParameters(0.2, 
                                      0.025, 
                                      0.05)
   cat(paste(i, "of 100,", 

@@ -49,6 +49,7 @@ namespace SpatialSEIR
 
     void IndexedCompartmentSliceSampler::drawSample()
     {
-        
+        std::cerr << "Block slice sampling not yet implemented.\n";
+        throw(-1); 
     }
 }

@@ -41,6 +41,7 @@ namespace SpatialSEIR
 
     void ParameterJointSliceSampler::drawSample()
     {
-        
+        std::cout << "Joint slice sampling not yet implemented\n";
+        throw(-1); 
     }
 }

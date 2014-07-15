@@ -42,8 +42,6 @@ namespace SpatialSEIR
                                                        double width)
     {
         ((*samples)) += 1;
-        double initProposal = 0.0;
-        double newProposal = 0.0;
         int i;
         int x0, x1;
         int totalPoints = (*(starCompartment -> nrow))*(*(starCompartment -> ncol));
@@ -62,13 +60,11 @@ namespace SpatialSEIR
             x0 = (starCompartment -> data)[i];
             x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
             (starCompartment -> data)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width));
-            initProposal += (context -> random -> dnorm(x0, x1,width));
         }
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
         double newVal = (this->getValue());
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
+        double criterion = (newVal - initVal);
 
         if (std::log((context -> random -> uniform())) < criterion)
         {
@@ -120,8 +116,8 @@ namespace SpatialSEIR
         // Else proposalType is zero, add random noise.
 
 
-        double initProposal = 0.0;
-        double newProposal = 0.0;
+
+
         int i, j;
         int compIdx;
         int x0, x1;
@@ -146,8 +142,6 @@ namespace SpatialSEIR
                 x0 = (starCompartment -> data)[i];
                 x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
                 (starCompartment -> data)[i] = x1;
-                newProposal += (context -> random -> dnorm(x1, x0,width));
-                initProposal += (context -> random -> dnorm(x0, x1,width));
             }
         }
         else if (proposalType == 1 || proposalType == 3)
@@ -162,8 +156,6 @@ namespace SpatialSEIR
                     x0 = (starCompartment -> data)[compIdx-shiftNo];
                     x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
                     (starCompartment -> data)[compIdx] = x1;
-                    newProposal += (context -> random -> dnorm(x1, x0,width));
-                    initProposal += (context -> random -> dnorm(x0, x1,width));
                     compIdx--;
                 }
                 compIdx = j*nTpt;
@@ -172,8 +164,6 @@ namespace SpatialSEIR
                     x0 = (starCompartment -> data)[compIdx];
                     x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
                     (starCompartment -> data)[compIdx] = x1;
-                    newProposal += (context -> random -> dnorm(x1, x0,width));
-                    initProposal += (context -> random -> dnorm(x0, x1,width));
                     compIdx++;
                 } 
             }
@@ -190,8 +180,6 @@ namespace SpatialSEIR
                     x0 = (starCompartment -> data)[compIdx+shiftNo];
                     x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
                     (starCompartment -> data)[compIdx] = x1;
-                    newProposal += (context -> random -> dnorm(x1, x0,width));
-                    initProposal += (context -> random -> dnorm(x0, x1,width));
                     compIdx++;
                 }
                 compIdx = (j+1)*nTpt - 1;
@@ -200,8 +188,6 @@ namespace SpatialSEIR
                     x0 = (starCompartment -> data)[compIdx];
                     x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
                     (starCompartment -> data)[compIdx] = x1;
-                    newProposal += (context -> random -> dnorm(x1, x0,width));
-                    initProposal += (context -> random -> dnorm(x0, x1,width));
                     compIdx--;
                 } 
             }
@@ -209,7 +195,7 @@ namespace SpatialSEIR
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
         double newVal = (this->getValue());
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
+        double criterion = (newVal - initVal);
 
         if (std::log((context -> random -> uniform())) < criterion)
         {
@@ -239,8 +225,6 @@ namespace SpatialSEIR
                                                        double width)
     {
         (*samples) += 1;
-        double initProposal = 0.0;
-        double newProposal = 0.0;
         int i;
         int x0, x1;
         
@@ -260,13 +244,11 @@ namespace SpatialSEIR
             x0 = (starCompartment -> data)[i];
             x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
             (starCompartment -> data)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width));
-            initProposal += (context -> random -> dnorm(x0, x1,width));
         }
         this -> calculateRelevantCompartments_OCL(); 
         this -> evalOCL();
         double newVal = (this->getValue());
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
+        double criterion = (newVal - initVal);
 
         if (std::log((context -> random -> uniform())) < criterion)
         {
@@ -324,7 +306,6 @@ namespace SpatialSEIR
         int nTpts = *(starCompartment -> nrow);
         int x0, x1;
         double initVal, newVal;
-        double initProposal, newProposal;
         double criterion;
  
         compIdx = i*nTpts;
@@ -348,9 +329,7 @@ namespace SpatialSEIR
                 this -> calculateRelevantCompartments(i,j);
                 this -> evalCPU(i,j);
                 newVal = (this->getValue());
-                newProposal = (context -> random -> dnorm(x1, x0,width));
-                initProposal = (context -> random -> dnorm(x0, x1,width));
-                criterion = (newVal - initVal) + (initProposal - newProposal);
+                criterion = (newVal - initVal);
                 if (std::log((context -> random -> uniform())) < criterion)
                 {
                     // Accept new value
@@ -378,121 +357,6 @@ namespace SpatialSEIR
         }
         return(0);
     }
-
-
-    int CompartmentFullConditional::jointSampleCompartmentLocation(int i, int batchSize, int numBatches, int* batchCache, ModelContext* context,
-                                                                   CompartmentalModelMatrix* starCompartment,
-                                                                   double width)
-    {
-        int j,k,l,compIdx;
-        int nTpts = *(starCompartment -> nrow);
-        int x0, x1;
-        double initVal, newVal;
-        double initProposal, newProposal;
-        double criterion;
-        //int numBatches = nTpts % batchSize; 
- 
-        compIdx = i*nTpts;
-        j = 0;
-        for (k = 0; k < numBatches; k++)
-        { 
-            (*samples) += 1;
-            //init
-            newProposal = 0.0;
-            initProposal = 0.0;
-            criterion = 0.0;
-
-            this -> calculateRelevantCompartments(i,j); 
-            this -> evalCPU(i,j);
-
-            initVal = (this -> getValue());
-
-            // Propose new values, bounded away from zero. 
-            for (l = 0; l < batchSize; l++)
-            { 
-                x0 = (starCompartment -> data)[compIdx + l];
-                batchCache[l] = x0;
-                x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
-                (starCompartment -> data)[compIdx + l] = x1;
-                newProposal += (context -> random -> dnorm(x1, x0,width));
-                initProposal += (context -> random -> dnorm(x0, x1,width));
-            }
-            this -> calculateRelevantCompartments(i,j);
-            this -> evalCPU(i,j);
-            newVal = (this->getValue());
-            criterion = (newVal - initVal) + (initProposal - newProposal);
-            if (std::log((context -> random -> uniform())) < criterion)
-            {
-                // Accept new value
-                (*accepted) += 1; 
-            }
-            else
-            {
-                // Keep Original Value
-                for (l = 0; l < batchSize; l++)
-                {
-                    (starCompartment -> data)[compIdx + l] = batchCache[l];
-                }
-                this -> calculateRelevantCompartments(i,j);
-                this -> setValue(initVal); 
-            }                
-
-
-            if (!std::isfinite(this -> getValue()))
-            {
-                std::cout << "Impossible value selected:\n";
-                std::cout << "(i,j): (" << i << "," << j << ")\n";
-                std::cout << "Data value: " << (starCompartment -> data)[compIdx] << "\n";
-                this -> printDebugInfo(i,j);
-                throw(-1);
-            }
-            compIdx += batchSize;
-            j += batchSize;
-        }
-        
-        //Remainder
-        for (l = j; l < nTpts; l++)
-        {
-            this -> calculateRelevantCompartments(i,l); 
-            this -> evalCPU(i,l);
-            x0 = (starCompartment -> data)[compIdx];
-            initVal = (this -> getValue());
-
-            // Propose new value, bounded away from zero. 
-            x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
-            (starCompartment -> data)[compIdx] = x1;
-            this -> calculateRelevantCompartments(i,l);
-            this -> evalCPU(i,l);
-            newVal = (this->getValue());
-            newProposal = (context -> random -> dnorm(x1, x0,width));
-            initProposal = (context -> random -> dnorm(x0, x1,width));
-            criterion = (newVal - initVal) + (initProposal - newProposal);
-            if (std::log((context -> random -> uniform())) < criterion)
-            {
-                // Accept new value
-            }
-            else
-            {
-                // Keep Original Value
-                (starCompartment -> data)[compIdx] = x0;
-                this -> calculateRelevantCompartments(i,l);
-                this -> setValue(initVal); 
-            }                
-
-
-            if (!std::isfinite(this -> getValue()))
-            {
-                std::cout << "Impossible value selected:\n";
-                std::cout << "(i,l): (" << i << "," << l << ")\n";
-                std::cout << "Data value: " << (starCompartment -> data)[compIdx] << "\n";
-                this -> printDebugInfo(i,l);
-                throw(-1);
-            }
-            compIdx ++;
-        } 
-        return(0);
-    }
-
 
     int CompartmentFullConditional::sliceSampleCompartmentLocation(int i, ModelContext* context,
                                                        CompartmentalModelMatrix* starCompartment,
@@ -552,8 +416,6 @@ namespace SpatialSEIR
                                                                        double width)
     {
         (*samples) += 1;
-        double initProposal = 0.0;
-        double newProposal = 0.0;
         int i;
         int x0, x1;
         int nLoc = *(context -> S -> ncol);        
@@ -572,13 +434,11 @@ namespace SpatialSEIR
             x0 = (initCompartment)[i];
             x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
             (initCompartment)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width));
-            initProposal += (context -> random -> dnorm(x0, x1,width));
         }
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
         double newVal = (this->getValue());
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
+        double criterion = (newVal - initVal);
 
         if (std::log((context -> random -> uniform())) < criterion)
         {
@@ -607,8 +467,6 @@ namespace SpatialSEIR
                                                                        double width)
     {
         (*samples) += 1;
-        double initProposal = 0.0;
-        double newProposal = 0.0;
         int i;
         int x0, x1;
         int nLoc = *(context -> S -> ncol);        
@@ -627,13 +485,11 @@ namespace SpatialSEIR
             x0 = (initCompartment)[i];
             x1 = std::floor((context -> random -> normal(x0 + 0.5, width))); 
             (initCompartment)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width));
-            initProposal += (context -> random -> dnorm(x0, x1,width));
         }
         this -> calculateRelevantCompartments_OCL(); 
         this -> evalOCL();
         double newVal = (this->getValue());
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
+        double criterion = (newVal - initVal);
 
         if (std::log((context -> random -> uniform())) < criterion)
         {
@@ -666,7 +522,6 @@ namespace SpatialSEIR
         (*samples) += 1;
         int x0, x1;
         double initVal, newVal;
-        double initProposal, newProposal;
         double criterion;
      
         this -> calculateRelevantCompartments(i); 
@@ -675,14 +530,12 @@ namespace SpatialSEIR
         initVal = (this -> getValue());
 
         // Propose new value, bounded away from zero. 
-        x1 = std::floor(std::max(0.0,(context -> random -> normal(x0,width))));
+        x1 = std::floor(context -> random -> normal(x0 + 0.5,width));
         initCompartment[i] = x1;
         this -> calculateRelevantCompartments(i);
         this -> evalCPU(i);
         newVal = (this->getValue());
-        newProposal = (context -> random -> dnorm(x1, x0,width));
-        initProposal = (context -> random -> dnorm(x0, x1,width));
-        criterion = (newVal - initVal) + (initProposal - newProposal);
+        criterion = (newVal - initVal);
         if (std::log((context -> random -> uniform())) < criterion)
         {
             // Accept new value
@@ -761,7 +614,7 @@ namespace SpatialSEIR
         // Declare required variables
         int i;
         double x0,x1;
-        double initVal, newVal, initProposal, newProposal;
+        double initVal, newVal;
 
         (*samples) += 1;
         // Update the relevant CompartmentalModelMatrix instances
@@ -783,10 +636,8 @@ namespace SpatialSEIR
             this -> calculateRelevantCompartments();
             this -> evalCPU();
             newVal = (this->getValue());
-            initProposal = (context->random->dnorm(x0, x1, width[i]));
-            newProposal = (context->random->dnorm(x1, x0, width[i])); 
 
-            if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
+            if (std::log((context -> random -> uniform())) < ((newVal - initVal)))
             {
                 // Accept the new value. 
                 (accepted[i])+=1;
@@ -810,8 +661,6 @@ namespace SpatialSEIR
     {
 
         ((*samples)) += 1;
-        double initProposal = 0.0;
-        double newProposal = 0.0;
         int i;
         double x0, x1;
 
@@ -832,13 +681,11 @@ namespace SpatialSEIR
             x0 = (variable)[i];
             x1 = ((context -> random -> normal(x0, width[i]))); 
             (variable)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width[i]));
-            initProposal += (context -> random -> dnorm(x0, x1,width[i]));
         }
         this -> calculateRelevantCompartments(); 
         this -> evalCPU();
         double newVal = (this->getValue());
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
+        double criterion = (newVal - initVal);
 
 
         if (std::log((context -> random -> uniform())) < criterion)
@@ -872,8 +719,6 @@ namespace SpatialSEIR
     {
 
         ((*samples)) += 1;
-        double initProposal = 0.0;
-        double newProposal = 0.0;
         int i;
         double x0, x1;
         // Backup Parameters (use the compartmentCache cache)
@@ -891,13 +736,11 @@ namespace SpatialSEIR
             x0 = (variable)[i];
             x1 = ((context -> random -> normal(x0, width[i]))); 
             (variable)[i] = x1;
-            newProposal += (context -> random -> dnorm(x1, x0,width[i]));
-            initProposal += (context -> random -> dnorm(x0, x1,width[i]));
         }
         this -> calculateRelevantCompartments_OCL(); 
         this -> evalOCL();
         double newVal = (this->getValue());
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
+        double criterion = (newVal - initVal);
 
         if (std::log((context -> random -> uniform())) < criterion)
         {
@@ -933,7 +776,7 @@ namespace SpatialSEIR
         // Declare required variables
         int i;
         double x0,x1;
-        double initVal, newVal, initProposal, newProposal;
+        double initVal, newVal;
 
         // Update the relevant CompartmentalModelMatrix instances
         this -> calculateRelevantCompartments_OCL();
@@ -954,10 +797,8 @@ namespace SpatialSEIR
             this -> calculateRelevantCompartments_OCL();
             this -> evalOCL();
             newVal = (this->getValue());
-            initProposal = (context->random->dnorm(x0, x1, width[i]));
-            newProposal = (context->random->dnorm(x1, x0, width[i])); 
 
-            if (std::log((context -> random -> uniform())) < ((newVal - initVal) + (initProposal - newProposal)))
+            if (std::log((context -> random -> uniform())) < ((newVal - initVal)))
             {
                 // Accept the new value. 
                 (accepted[i])+=1;

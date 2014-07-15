@@ -41,6 +41,46 @@ namespace SpatialSEIR
 
     void ParameterSingleMetropolisSampler::drawSample()
     {
-        
+        // Declare required variables
+        int i;
+        int varLen = *((*paramFC) -> varLen);
+        double* width = ((*paramFC) -> sliceWidth);
+        double x0,x1;
+        double initVal, newVal;
+
+        (*((*paramFC) -> samples)) += 1;
+        // Update the relevant CompartmentalModelMatrix instances
+        (*paramFC) -> calculateRelevantCompartments();
+
+        // Set the "value" attribute appropriately
+        (*paramFC) -> evalCPU();
+   
+        // Main loop: 
+        for (i = 0; i < varLen; i++)
+        { 
+            x0 = (*param)[i];
+            (*paramFC) -> calculateRelevantCompartments(); 
+            (*paramFC) -> evalCPU();
+            initVal = ((*paramFC)->getValue());
+
+            x1 = ((*context) -> random -> normal(x0, width[i]));
+            (*param)[i] = x1;
+            (*paramFC) -> calculateRelevantCompartments();
+            (*paramFC) -> evalCPU();
+            newVal = ((*paramFC)->getValue());
+
+            if (std::log(((*context) -> random -> uniform())) < ((newVal - initVal)))
+            {
+                // Accept the new value. 
+                ((*paramFC) -> accepted)[i]+=1;
+            }
+            else
+            {
+                // Keep original value
+                (*param)[i] = x0;
+                (*paramFC) -> calculateRelevantCompartments();
+                (*paramFC) -> setValue(initVal);
+            }
+        }
     }
 }

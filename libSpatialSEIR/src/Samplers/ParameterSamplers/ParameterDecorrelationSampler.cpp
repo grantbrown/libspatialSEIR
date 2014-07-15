@@ -45,6 +45,7 @@ namespace SpatialSEIR
 
     void ParameterDecorrelationSampler::drawSample()
     {
-        
+        std::cout << "Decorrelation sampler not yet implemented\n";
+        throw(-1); 
     }
 }

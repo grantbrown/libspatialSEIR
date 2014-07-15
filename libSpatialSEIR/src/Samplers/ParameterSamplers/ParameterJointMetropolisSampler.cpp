@@ -41,6 +41,49 @@ namespace SpatialSEIR
 
     void ParameterJointMetropolisSampler::drawSample()
     {
+        *((*paramFC) -> samples) += 1;
+        double initVal;
+        double sliceWidth = *((*paramFC) -> sliceWidth);
+        int i;
+        double x0, x1;
+        int totalPoints = *((*paramFC) -> varLen);
+        memcpy((*context) -> compartmentCache, *param, totalPoints*sizeof(double));
+        (*paramFC) -> calculateRelevantCompartments(); 
+        (*paramFC) -> evalCPU();
+        initVal = (*paramFC) -> getValue();
+        if (! std::isfinite(initVal))
+        {
+            std::cerr << "Compartment sampler starting from value of zero probability.\n";
+            throw(-1);
+        }
+        for (i = 0; i < totalPoints; i++)
+        {
+            x0 = (*param)[i];
+            x1 = std::floor(((*context) -> random -> normal(x0, sliceWidth)));
+            (*param)[i] = x1;
+        }
+        (*paramFC) -> calculateRelevantCompartments(); 
+        (*paramFC) -> evalCPU();
+        double newVal = (*paramFC) -> getValue();
+        double criterion = (newVal - initVal);
+
+        if (std::log((*context) -> random -> uniform()) < criterion)
+        {
+            // Accept new values
+            ((*paramFC) -> accepted) += 1;
+        }
+        else
+        {
+            // Keep original values
+            memcpy(*param, (*context) -> compartmentCache, totalPoints*sizeof(double));
+            (*paramFC) -> calculateRelevantCompartments(); 
+            (*paramFC) -> setValue(initVal); 
+        }
+        if (! std::isfinite((*paramFC) -> getValue()))
+        {
+            std::cout << "Impossible value selected.\n";
+            throw(-1);
+        } 
         
     }
 }
