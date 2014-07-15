@@ -385,7 +385,7 @@ SEIRmodel$parameterSamplingMode=3
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(300000))[3]
+  tm = tm + system.time(SEIRmodel$simulate(20000))[3]
   SEIRmodel$updateSamplingParameters(0.2, 
                                      0.025, 
                                      0.05)

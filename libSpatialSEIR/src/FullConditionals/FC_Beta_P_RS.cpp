@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_Beta_P_RS.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -74,9 +75,18 @@ namespace SpatialSEIR
         *sliceWidth = _sliceWidth;
         *value = -1.0;
         *useOCL = _useOCL;
+
+        // Set up samplers
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *beta_p_rs));
+        samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *beta_p_rs));
+
     }
     FC_Beta_P_RS::~FC_Beta_P_RS()
     {
+        delete currentSampler;
+        delete[] samplers;
         delete S_star;
         delete varLen;
         delete R;

@@ -96,6 +96,12 @@ namespace SpatialSEIR
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         p_se_components = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
+
+        // Create empty index cache
+        indexLength = new int; *indexLength = 0;
+        indexList = new int[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
+        memset(indexList, 0, (*(S_starArgs -> inRow)*(*(S_starArgs -> inCol)))*sizeof(int));
+
         p_ei = new double[*(S_starArgs -> inRow)];
         p_ir = new double[*(S_starArgs -> inRow)];
         p_rs = new double[*(S_starArgs -> inRow)];
@@ -106,6 +112,8 @@ namespace SpatialSEIR
         int nbeta = (*(xArgs -> inCol_x) + (*(xArgs -> inCol_z)));
         int neta = (*(xArgs -> inRow_z));
         int nBetaPrs = *(xPrsArgs -> inCol_x);
+
+
 
         beta = new double[nbeta];
         betaPrs = new double[nBetaPrs];
@@ -1154,6 +1162,8 @@ namespace SpatialSEIR
             delete singleLocation;
             delete[] model;
             delete oclProvider;
+            delete indexList;
+            delete indexLength;
         }
         delete isPopulated;
     }

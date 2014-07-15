@@ -21,21 +21,19 @@ namespace SpatialSEIR
 
     IndexedInitCompartmentSliceSampler::IndexedInitCompartmentSliceSampler(ModelContext* context_,
                                                                InitCompartmentFullConditional* initCompartmentFC_,
-                                                               int* initCompartmentData_,
-                                                               int* indexList_,
-                                                               int indexLength_)
+                                                               int* initCompartmentData_)
     {
         context = new ModelContext*;
         initCompartmentFC = new InitCompartmentFullConditional*;
         initCompartmentData = new int*;
         indexList = new int*;
-        indexLength = new int;
+        indexLength = new int*;
 
         *context = context_; 
         *initCompartmentFC = initCompartmentFC_;
         *initCompartmentData = initCompartmentData_;
-        *indexLength = indexLength_;
-        *indexList = indexList_;
+        *indexLength = (*context) -> indexList;
+        *indexList = (*context) -> indexLength;
     }
 
     IndexedInitCompartmentSliceSampler::~IndexedInitCompartmentSliceSampler()
@@ -51,8 +49,6 @@ namespace SpatialSEIR
     {
         return(INITCOMPARTMENT_IDX_SLICE_SAMPLER);
     }
-
-
 
     void IndexedInitCompartmentSliceSampler::drawSample()
     {

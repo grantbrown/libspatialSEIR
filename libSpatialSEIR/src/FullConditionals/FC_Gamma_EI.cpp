@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_Gamma_EI.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -71,9 +72,17 @@ namespace SpatialSEIR
         *value = -1.0;
         *sliceWidth = _sliceWidth;
 
+        // Set up samplers
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *gamma_ei));
+        samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *gamma_ei));
+
     }
     FC_Gamma_EI::~FC_Gamma_EI()
     {
+        delete currentSampler;
+        delete[] samplers;
         delete varLen;
         delete sliceWidth;
         delete I_star;

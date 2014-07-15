@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_E0.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -67,9 +68,18 @@ namespace SpatialSEIR
         *A0 = _A0;
         *sliceWidth = _sliceWidth;
         *useOCL = _useOCL;
+
+        // Set up samplers
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new InitCompartmentMetropolisSampler(*context, this, (*A0) -> E0));
+        samplers -> push_back(new IndexedInitCompartmentMetropolisSampler(*context, this, (*A0) -> E0));
+
     }
     FC_E0::~FC_E0()
     {
+        delete currentSampler;
+        delete[] samplers;
         delete context;
         delete S;
         delete E;

@@ -6,12 +6,14 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_Beta.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+
 
 namespace SpatialSEIR
 {
@@ -76,10 +78,19 @@ namespace SpatialSEIR
         *priorPrecision = _priorPrecision;
         *value = -1.0;
         *useOCL = _useOCL;
+
+        // Set up samplers
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *beta));
+        samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *beta));
+
     }
 
     FC_Beta::~FC_Beta()
     {
+        delete currentSampler;
+        delete []samplers;
         delete E_star;
         delete S;
         delete A0;

@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_E_star.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -75,10 +76,17 @@ namespace SpatialSEIR
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
         *useOCL = _useOCL;
+
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new CompartmentMetropolisSampler(*context, this, (*E_star) -> data));
+        samplers -> push_back(new CompartmentMetropolisSampler(*context, this, (*E_star) -> data));
     }
 
     FC_E_Star::~FC_E_Star()
     {
+        delete currentSampler;
+        delete[] samplers;
         delete E_star;
         delete E;
         delete S;
@@ -96,7 +104,6 @@ namespace SpatialSEIR
         delete samples;
         delete accepted;
         delete useOCL;
-
     }
 
     int FC_E_Star::evalCPU(int startLoc, int startTime)

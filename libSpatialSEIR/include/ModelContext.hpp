@@ -462,6 +462,10 @@ namespace SpatialSEIR
             double* p_se_components;
             /** ComparmentalModelMatrix sized cache of doubles. */
             double* compartmentCache;
+            /** Length of the indexList array.*/
+            int* indexLength;
+            /** List of indices, used by some sampling functions. */
+            int* indexList;
             /** Parameter controlling transition probability vector p_ei*/
             double* gamma_ei;
             /** Transition probability vector p_ei*/

@@ -66,16 +66,14 @@ namespace SpatialSEIR
         public: 
             IndexedCompartmentMetropolisSampler(ModelContext* context,
                                          CompartmentFullConditional* compartmentFC,
-                                         int* compartmentData,
-                                         int* indexList,
-                                         int indexLength);
+                                         int* compartmentData);
             void drawSample();
             int getSamplerType();
             ~IndexedCompartmentMetropolisSampler();
 
             ModelContext** context;
             CompartmentFullConditional** compartmentFC;
-            int* indexLength;
+            int** indexLength;
             int** compartmentData;
             int** indexList;
     };
@@ -85,16 +83,14 @@ namespace SpatialSEIR
         public: 
             IndexedCompartmentSliceSampler(ModelContext* context,
                                          CompartmentFullConditional* compartmentFC,
-                                         int* compartmentData,
-                                         int* indexList,
-                                         int indexLength);
+                                         int* compartmentData);
             void drawSample();
             int getSamplerType();
             ~IndexedCompartmentSliceSampler();
 
             ModelContext** context;
             CompartmentFullConditional** compartmentFC;
-            int* indexLength;
+            int** indexLength;
             int** compartmentData;
             int** indexList;
     };
@@ -119,16 +115,14 @@ namespace SpatialSEIR
         public:
             IndexedInitCompartmentMetropolisSampler(ModelContext* context,
                                              InitCompartmentFullConditional* initCompartmentFC,
-                                             int* initCompartmentData,
-                                             int* indexList,
-                                             int indexLength);
+                                             int* initCompartmentData);
             void drawSample();
             int getSamplerType();
             ~IndexedInitCompartmentMetropolisSampler();
 
             ModelContext** context;
             InitCompartmentFullConditional** initCompartmentFC;
-            int* indexLength;
+            int** indexLength;
             int** indexList;
             int** initCompartmentData;
 
@@ -138,16 +132,14 @@ namespace SpatialSEIR
         public:
             IndexedInitCompartmentSliceSampler(ModelContext* context,
                                              InitCompartmentFullConditional* initCompartmentFC,
-                                             int* initCompartmentData,
-                                             int* indexList,
-                                             int indexLength);
+                                             int* initCompartmentData);
             void drawSample();
             int getSamplerType();
             ~IndexedInitCompartmentSliceSampler();
 
             ModelContext** context;
             InitCompartmentFullConditional** initCompartmentFC;
-            int* indexLength;
+            int** indexLength;
             int** indexList;
             int** initCompartmentData;
     };

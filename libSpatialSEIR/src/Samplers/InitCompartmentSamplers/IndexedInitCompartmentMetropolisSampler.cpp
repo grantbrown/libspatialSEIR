@@ -21,21 +21,19 @@ namespace SpatialSEIR
 
     IndexedInitCompartmentMetropolisSampler::IndexedInitCompartmentMetropolisSampler(ModelContext* context_,
                                                                InitCompartmentFullConditional* initCompartmentFC_,
-                                                               int* initCompartmentData_,
-                                                               int* indexList_,
-                                                               int indexLength_)
+                                                               int* initCompartmentData_)
     {
         context = new ModelContext*;
         initCompartmentFC = new InitCompartmentFullConditional*;
         initCompartmentData = new int*;
         indexList = new int*;
-        indexLength = new int;
+        indexLength = new int*;
 
         *context = context_; 
         *initCompartmentFC = initCompartmentFC_;
         *initCompartmentData = initCompartmentData_;
-        *indexLength = indexLength_;
-        *indexList = indexList_;
+        *indexLength = (*context) -> indexLength;
+        *indexList = (*context) -> indexList;
     }
 
     IndexedInitCompartmentMetropolisSampler::~IndexedInitCompartmentMetropolisSampler()
@@ -69,7 +67,7 @@ namespace SpatialSEIR
             std::cerr << "Compartment sampler starting from value of zero probability.\n";
             throw(-1);
         }
-        for (i = 0; i < *indexLength; i++)
+        for (i = 0; i < **indexLength; i++)
         {
             x0 = (*initCompartmentData)[(*indexList)[i]];
             x1 = std::floor(((*context) -> random -> normal(x0 + 0.5, sliceWidth)));

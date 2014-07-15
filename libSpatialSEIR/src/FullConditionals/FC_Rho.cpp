@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_Rho.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -60,9 +61,18 @@ namespace SpatialSEIR
         *sliceWidth = _sliceWidth;
         *value = -1.0;
         *useOCL = _useOCL;
+
+        // Set up samplers
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *rho));
+        samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *rho));
+
     }
     FC_Rho::~FC_Rho()
     {
+        delete currentSampler;
+        delete samplers;
         delete varLen;
         delete E_star;
         delete S;

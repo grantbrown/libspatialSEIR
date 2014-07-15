@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_Gamma_IR.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -70,10 +71,18 @@ namespace SpatialSEIR
         *value = -1.0;
         *sliceWidth = _sliceWidth;
 
+        // Set up samplers
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *gamma_ir));
+        samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *gamma_ir));
+
     }
 
     FC_Gamma_IR::~FC_Gamma_IR()
     {
+        delete currentSampler;
+        delete[] samplers;
         delete varLen;
         delete sliceWidth;
         delete gamma_ir;

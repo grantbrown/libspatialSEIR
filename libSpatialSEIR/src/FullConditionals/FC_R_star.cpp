@@ -6,6 +6,7 @@
 #include<cblas.h>
 #include<cmath>
 #include<algorithm>
+#include<LSS_Samplers.hpp>
 #include<LSS_FC_R_star.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
@@ -77,9 +78,18 @@ namespace SpatialSEIR
         *sliceWidth = _sliceWidth;
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
+
+        // Set up samplers
+        samplers = new std::vector<Sampler*>();
+        currentSampler = new Sampler*;
+        samplers -> push_back(new CompartmentMetropolisSampler(*context, this, (*R_star) -> data));
+        samplers -> push_back(new CompartmentMetropolisSampler(*context, this, (*R_star) -> data));
+
     }
     FC_R_Star::~FC_R_Star()
     {
+        delete currentSampler;
+        delete[] samplers;
         delete R_star;
         delete R;
         delete I;

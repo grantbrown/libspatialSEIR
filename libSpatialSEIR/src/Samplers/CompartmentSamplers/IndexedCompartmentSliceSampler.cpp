@@ -21,21 +21,19 @@ namespace SpatialSEIR
 
     IndexedCompartmentSliceSampler::IndexedCompartmentSliceSampler(ModelContext* context_,
                                                                CompartmentFullConditional* compartmentFC_,
-                                                               int* compartmentData_,
-                                                               int* indexList_,
-                                                               int indexLength_)
+                                                               int* compartmentData_)
     {
         context = new ModelContext*;
         compartmentFC = new CompartmentFullConditional*;
         compartmentData = new int*;
         indexList = new int*;
-        indexLength = new int;
+        indexLength = new int*;
 
         *context = context_; 
         *compartmentFC = compartmentFC_;
         *compartmentData = compartmentData_;
-        *indexLength = indexLength_;
-        *indexList = indexList_;
+        *indexLength = (*context) -> indexLength;
+        *indexList = (*context) -> indexList;
     }
 
     IndexedCompartmentSliceSampler::~IndexedCompartmentSliceSampler()
