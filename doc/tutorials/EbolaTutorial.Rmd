@@ -586,15 +586,11 @@ Liberia.UB = apply(Liberia.Pred, 2, quantile, probs = c(0.95))
 SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
 SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
 
-
-
-
-
 ## Guinea 
 par(mfrow = c(3,1))
 plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), xlim = pred.xlim,
      main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
-     type = "l", lwd = 2)
+     type = "l", lwd = 2, ylab = "Infectious Count", xlab = "Date")
 lines(rptDate, Guinea.I.Est[2,], lty = 2)
 lines(rptDate, Guinea.I.Est[3,], lty = 2)
 
@@ -609,7 +605,7 @@ abline(v = breakpoint, lty = 3, col= "lightgrey")
 ## Liberia 
 plot(rptDate, Liberia.I.Est[1,], ylim = c(0, maxI),  xlim = pred.xlim,
      main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
-     type = "l", lwd = 2, col = "blue")
+     type = "l", lwd = 2, col = "blue", ylab = "Infectious Count", xlab = "Date")
 lines(rptDate, Liberia.I.Est[2,], lty = 2, col = "blue")
 lines(rptDate, Liberia.I.Est[3,], lty = 2, col = "blue")
 
@@ -624,7 +620,7 @@ abline(v = breakpoint, lty = 3, col= "lightgrey")
 ## Sierra Leone
 plot(rptDate, SierraLeone.I.Est[1,], ylim = c(0, maxI),  xlim = pred.xlim,
      main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
-     type = "l", lwd = 2, col = "red")
+     type = "l", lwd = 2, col = "red",ylab = "Infectious Count", xlab = "Date")
 lines(rptDate, SierraLeone.I.Est[2,], lty = 2, col = "red")
 lines(rptDate, SierraLeone.I.Est[3,], lty = 2, col ="red")
 
