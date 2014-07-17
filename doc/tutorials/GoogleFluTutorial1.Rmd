@@ -178,10 +178,10 @@ gamma_ei = 2.3
 gamma_ir = 2.3
 
 beta = rep(0, ncol(X) + ncol(Z))
-beta[1] = 2.5
+beta[1:4] = c(0.62, 0.5, -0.065, 0.180)
 
 beta_p_rs = rep(0, ncol(X_p_rs))
-beta_p_rs[1] = -2.5
+beta_p_rs[1:5] = c(-2.5,-0.36,0.9,0.9,-0.015)
 
 
 # Dummy values for spatial components, as this is a non spatial model.
@@ -217,7 +217,7 @@ reinfectionMode = 1
 # steadyStateConstraintPrecision is a loose constraint on net flows
 # between compartments. Setting it to a negative value eliminates
 # the constraint, but it can help with identifiability in some cases. 
-steadyStateConstraintPrecision = 0.1
+steadyStateConstraintPrecision = 0.001
 
 # iterationStride determines the delay between saving samples to the output file
 iterationStride = 10000
@@ -452,7 +452,7 @@ names(chainDat)
 
 plotChain = function(chain, main)
 {
-  chainIdx = floor(length(chain) - length(chain)/2):length(chain)
+  chainIdx = floor(length(chain) - length(chain)/8):length(chain)
   plot(chainDat$Iteration[chainIdx],chain[chainIdx],
        main = main, xlab = "Iteration", ylab = "Value", type = "l")
   abline(h = mean(chain[chainIdx]), lty = 2, col = "grey")
@@ -502,7 +502,7 @@ An additional task we will often want to do is to calculate the basic reproducti
   par(xaxt = "n")
   plot(R0_vec, type = "l", xlab = "Year",ylab = "R0",
        main = "Estimated Basic Reproductive Number")
-  abline(h=seq(0, 2, 0.1), lty=2, col="lightgrey")
+  abline(h=seq(0, 10, 0.1), lty=2, col="lightgrey")
   abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
   lines(R0_vec, lwd = 1.5)
   xAxis()
