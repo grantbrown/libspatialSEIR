@@ -1,16 +1,17 @@
 ---
 title: "Spatial SEIR Ebola Tutorial"
 author: "Grant Brown"
-date: "07/06/2014"
+date: "07/16/2014"
 output: html_document
 ---
 
 The ongoing West Africa Ebola outbreak is an ongoing public health crisis, which 
-has killed hundreds of people so far. 
-
+has killed hundreds of people so far. The virus has emerged in Gunea, Liberia and Sierra Leone, 
+complicating mitigation efforts. 
 
 A mirror of the WHO case reports is compiled on wikipedia - let's
-read it in with the xml library. 
+read it in with the xml library. The case reports present cumulative case counts - due to the fact
+that these are sometimes revised downward, we need to take this into account when "uncumulating" the data. 
   
 ```{r}
 library(coda)
@@ -22,19 +23,24 @@ dat = tbls[[2]]
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 ascendingOrder = order(rptDate)
-rptDate = rptDate[ascendingOrder]
+rptDate = rptDate[ascendingOrder][2:length(rptDate)]
 Guinea = as.numeric(as.character(dat$V4[2:nrow(dat)]))[ascendingOrder]
+Guinea = ifelse(is.na(Guinea), 0, Guinea)
 Liberia = as.numeric(as.character(dat$V6[2:nrow(dat)]))[ascendingOrder]
+Liberia = ifelse(is.na(Liberia), 0, Liberia)
 Sierra.Leone = as.numeric(as.character(dat$V8[2:nrow(dat)]))[ascendingOrder]
 Sierra.Leone = ifelse(is.na(Sierra.Leone), 0,Sierra.Leone)
-I_star = cbind(Guinea, Liberia, Sierra.Leone)
+
+uncumulate = function(x)
+{
+    out = x[2:length(x)]-x[1:(length(x)-1)]
+    ifelse(out >= 0, out, 0)
+}
+I_star = cbind(uncumulate(Guinea), uncumulate(Liberia), uncumulate(Sierra.Leone))
 
 ```
 
-
-
 The ebola outbreak started in February, though the exact date is difficult to pin down. Let's assume that the cases reflected in the report originated in the time since the end of February. This allows us to calculate the ammount of time corresponding to each report. 
-
 
 ```{r tidy=FALSE}
   offsets = rptDate- c(as.Date("2014-03-01"), rptDate[1:(length(rptDate)-1)])
@@ -47,20 +53,12 @@ to a fairly simple neighborhood distance structure.
 DM = 0.5*(1-diag(3))
 ```
 
-
-
 With so few spatial locations, we're limited in how many location specific variables we can entertain. While some demographic variables are easily obtained, for now let's just fit a separate intercept for each spatial location. 
 
 ```{r tidy=FALSE}
 # Guinea, Liberia, Sierra Leone
 N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, byrow=TRUE)
 
-pop.dens.km2 = c(40.9, 35.5, 79.4)
-GDP.pc = c(1082 , 672, 1344)
-standard = function(x)
-{
-  (x-mean(x))/sd(x)  
-}
 # Fixed Co-variates
 X = cbind(diag(3))
 # Time Varying co-variates
@@ -81,7 +79,7 @@ Z = Z[rep(1:nrow(Z), nrow(X)),]
 Z.predict = Z.predict[rep(1:nrow(Z.predict), nrow(X)),]
 
 # For convenience, let's combine X and Z for prediction.
-X.pred = cbind(X.predict[rep(1:nrow(X.predict), each = 7),], Z.predict)
+X.pred = cbind(X.predict[rep(1:nrow(X.predict), each = nrow(Z.predict)/nrow(X)),], Z.predict)
 
 # Define prediction offsets. 
 
@@ -107,15 +105,15 @@ priorBeta_gammaIR = 100;
 
 # Dummy value for betaP_RS prior precision
 betaPrsPriorPrecision = 0.5
+# Dummy value for beta_p_rs
+beta_p_rs = rep(0, ncol(X_p_rs))
+
 
 # Prior precision for regression paramters
 betaPriorPrecision = 0.01
 
 # reinfection mode is 3, which forces S_star to remain 0.
 reinfectionMode = 3
-
-# Dummy value for beta_p_rs
-beta_p_rs = rep(0, ncol(X_p_rs))
 
 # steadyStateConstraintPrecision is a loose constraint on net flows
 # between compartments. Setting it to a negative value eliminates
@@ -200,7 +198,7 @@ proposeParameters = function(seedVal, chainNumber)
 ```
 
 
-Now we're ready to build, burn in, and run the models.
+Now we're ready to build, burn in, and run the models. We also need to tell libspatialSEIR to set a trace to keep track of the epidemic at each location in order to estimate the epidemic size. 
 
 
 ```{r tidy=FALSE}
@@ -255,12 +253,13 @@ for (seedVal in c(12345,543219,992134))
 # in order to make predictions
 
 
-SEIRmodels[[1]]$setTrace(0,23) #Guinea 
-SEIRmodels[[1]]$setTrace(1,23) #Liberia
-SEIRmodels[[1]]$setTrace(2,23) #Sierra Leone
+SEIRmodels[[1]]$setTrace(0) #Guinea 
+SEIRmodels[[1]]$setTrace(1) #Liberia
+SEIRmodels[[1]]$setTrace(2) #Sierra Leone
   
 ```
 
+Declare a helper function to run the simulation and update the sampling parameters periodically
 
 ```{r tidy=FALSE}
 
@@ -299,8 +298,8 @@ for (i in 1:length(SEIRmodels))
 {
     cat(paste("Running in chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels[[i]], 
-                  numBatches=100, 
-                  batchSize=100000, 
+                  numBatches=50, 
+                  batchSize=50000, 
                   targetAcceptanceRatio=0.25,
                   tolerance=0.025,
                   proportionChange = 0.1))
@@ -375,37 +374,39 @@ plotChains(1-exp(-chain1$gamma_ir),
 
 ```
 
-Let's take a look at the estimated epidemic. 
+Convergence looks good, so let's take a look at the estimated epidemic in each location. Just the I category is presented here, but many other factors may be of interest.  
 
 ```{r tidy = FALSE, fig.height=8,fig.width=6}
-par(mfrow=c(2,1))
-# Plot number of infectious
-SEIRmodel = SEIRmodels[[1]]
-maxI = floor(max(SEIRmodel$I)*1.2)
-plot(rptDate, SEIRmodel$I[,1], type = "l", ylim=c(0,maxI), lwd = 2, 
-     xlim = c(min(rptDate), max(rptDate + 30)), 
-     main = "Estimated Number of Infectious Individuals", ylab = "Number",
-     xlab="Date")
-lines(rptDate, SEIRmodel$I[,2], col = "blue", lty = 2, lwd = 2)
-lines(rptDate, SEIRmodel$I[,3], col = "red", lty = 3, lwd = 2)
-legend(x = min(rptDate), y = maxI*0.95, 
-       legend = c("Guinea", "Liberia", "Sierra Leone"),
-       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2,
-       cex=0.5)
-# Plot Removed
-maxR = floor(max(SEIRmodel$R)*1.2)
-plot(rptDate, SEIRmodel$R[,1], type = "l", ylim=c(0,maxR), lwd = 2, 
-     xlim = c(min(rptDate), max(rptDate + 30)), 
-     main = "Estimated Number of Recovered/Deceased Individuals",
-     ylab = "Number", xlab="Date")
-lines(rptDate, SEIRmodel$R[,2], col = "blue", lty = 2, lwd = 2)
-lines(rptDate, SEIRmodel$R[,3], col = "red", lty = 3, lwd = 2)
-legend(x = min(rptDate), y = maxR*0.95, 
-       legend = c("Guinea", "Liberia", "Sierra Leone"),
-       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2,
-     cex=0.5)
+getMeanAndCI = function(loc,tpt,baseStr="I_")
+{
+    vec = chain1[[paste(baseStr, loc, "_", tpt, sep = "")]]
+    vec = vec[floor(length(vec)/2):length(vec)]
+    return(c(mean(vec), quantile(vec, probs = c(0.05, 0.95))))
+}
 
+Guinea.I.Est = sapply(0:23, getMeanAndCI, loc=0)
+Liberia.I.Est = sapply(0:23, getMeanAndCI, loc=1)
+SierraLeone.I.Est = sapply(0:23, getMeanAndCI, loc=2)
 
+maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
+par(mfrow = c(3,1))
+plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), 
+     main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
+     type = "l", lwd = 2)
+lines(rptDate, Guinea.I.Est[2,], lty = 2)
+lines(rptDate, Guinea.I.Est[3,], lty = 2)
+
+plot(rptDate, Liberia.I.Est[1,], ylim = c(0, maxI), 
+     main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
+     type = "l", lwd = 2, col = "blue")
+lines(rptDate, Liberia.I.Est[2,], lty = 2, col = "blue")
+lines(rptDate, Liberia.I.Est[3,], lty = 2, col = "blue")
+
+plot(rptDate, SierraLeone.I.Est[1,], ylim = c(0, maxI), 
+     main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
+     type = "l", lwd = 2, col = "red")
+lines(rptDate, SierraLeone.I.Est[2,], lty = 2, col = "red")
+lines(rptDate, SierraLeone.I.Est[3,], lty = 2, col ="red")
 
 
 ```
@@ -413,6 +414,7 @@ legend(x = min(rptDate), y = maxR*0.95,
 Basic Reproductive Number
 ===========================
 
+The basic reproductive number is a useful quantity which gives the expected number of secondary infections caused by a single infected individual. We did not calculate this value periodically throughout the MCMC samples so far, so in order to capture the variability in this measure we'll need to run a few more samples. 
 
 ```{r, tidy =FALSE}
   getR0 = function(t)
@@ -422,18 +424,33 @@ Basic Reproductive Number
   
   R0_vec = sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0)
 
-  par(xaxt = "n")
-  plot(rptDate[1:(length(rptDate)-1)], R0_vec, type = "l", xlab = "Date",ylab = "R0",
-       main = "Estimated Basic Reproductive Number")
-  abline(h=seq(0, 2, 0.1), lty=2, col="lightgrey")
+  for (i in 1:200)
+  {
+      SEIRmodels[[1]]$simulate(500)
+      R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0))
+  }
+
+  r0.ylim = c(min(R0_vec), max(R0_vec))
+  r0.meanvec = apply(R0_vec, 2, mean)
+  r0.LB = apply(R0_vec, 2, quantile, probs = c(0.05))
+  r0.UB = apply(R0_vec, 2, quantile, probs = c(0.95))
+
+  plot(rptDate[1:(length(rptDate)-1)], r0.meanvec , type = "l", xlab = "Date",ylab = "R0",
+       main = "Estimated Basic Reproductive Number\n 90% Credible Interval", ylim = r0.ylim,
+       lwd = 2)
+  lines(rptDate[1:(length(rptDate)-1)], r0.LB, lty = 2)
+  lines(rptDate[1:(length(rptDate)-1)], r0.UB, lty = 2)
+  abline(h=seq(0, 5, 0.25), lty=2, col="lightgrey")
   abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
-  lines(R0_vec, lwd = 1.5)
+
 
 ```
 
 
 Prediction
 =============
+
+Prediction is a critical function of epidemic models like these. While prediction is not yet built into libspatialSEIR, we can run the chain binomial process forward in time from a number of starting positions given by the mcmc samples taken so far to obtain mean predictions and credible intervals. 
 
 ```{r tidy = FALSE}
 
@@ -446,13 +463,13 @@ Prediction
                              I0,
                              R0,
                              rho,
-                             offsets)
+                             offsets.pred)
   {
       N = (S0+E0+I0+R0)
       p_se_components = matrix(exp(X.pred %*% beta.pred), ncol=length(S0))
       p_se = matrix(0, ncol = length(S0), nrow = nrow(p_se_components))
-      p_ei = 1-exp(-gamma.ei)
-      p_ir = 1-exp(-gamma.ir)
+      p_ei = 1-exp(-gamma.ei*offsets.pred)
+      p_ir = 1-exp(-gamma.ir*offsets.pred)
       S_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
       E_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
       I_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
@@ -465,12 +482,12 @@ Prediction
       E[1,] = E0
       I[1,] = I0
       R[1,] = R0
-      S_star[1,] = rbinom(1, R0, 0)
-      p_se[1,] = 1-exp(-offsets[1]*(I[1,]/N*p_se_components[1,] + 
+      S_star[1,] = rbinom(rep(1, length(S0)), R0, 0)
+      p_se[1,] = 1-exp(-offsets.pred[1]*(I[1,]/N*p_se_components[1,] + 
                             rho*(DM %*% (I[1,]/N*p_se_components[1,]))))
-      E_star[1,] = rbinom(1, S0, p_se[1,])
-      I_star[1,] = rbinom(1, E0, p_ei)
-      R_star[1,] = rbinom(1, I0, p_ir)
+      E_star[1,] = rbinom(rep(1, length(S0)), S0, p_se[1,])
+      I_star[1,] = rbinom(rep(1, length(S0)), E0, p_ei[1])
+      R_star[1,] = rbinom(rep(1, length(S0)), I0, p_ir[1])
       
       for (i in 2:nrow(S))
       {
@@ -480,17 +497,17 @@ Prediction
         I[i,] = I[i-1,] + I_star[i-1,] - R_star[i-1,]
         R[i,] = R[i-1,] + R_star[i-1,] - S_star[i-1,]
         
-        p_se[i,] = 1-exp(-offsets[i]*(I[i,]/N*p_se_components[i,] + 
+        p_se[i,] = 1-exp(-offsets.pred[i]*(I[i,]/N*p_se_components[i,] + 
                             rho*(DM %*% (I[i,]/N*p_se_components[i,]))))
-        S_star[i,] = rbinom(1, R[i,], 0)
-        E_star[i,] = rbinom(1, S[i,], p_se[i,])
-        I_star[i,] = rbinom(1, E[i,], p_ei)
-        R_star[i,] = rbinom(1, I[i,], p_ir)
+        S_star[i,] = rbinom(rep(1, length(S0)), R[i,], 0)
+        E_star[i,] = rbinom(rep(1, length(S0)), S[i,], p_se[i,])
+        I_star[i,] = rbinom(rep(1, length(S0)), E[i,], p_ei[i])
+        R_star[i,] = rbinom(rep(1, length(S0)), I[i,], p_ir[i])
       }
       return(list(S=S,E=E,I=I,R=R,
                   S_star=S_star,E_star=E_star,
                   I_star=I_star,R_star=R_star,
-                  p_se=p_se))
+                  p_se=p_se,p_ei=p_ei,p_ir=p_ir))
   }
 
 
@@ -504,18 +521,18 @@ Prediction
              dataRow$BetaP_SE_3,
              dataRow$BetaP_SE_4,
              dataRow$BetaP_SE_5)
-    S0 = c(dataRow$S_0_23,
-           dataRow$S_1_23,
-           dataRow$S_2_23)
-    E0 = c(dataRow$E_0_23,
-           dataRow$E_1_23,
-           dataRow$E_2_23)
-    I0 = c(dataRow$I_0_23,
-           dataRow$I_1_23,
-           dataRow$I_2_23)
-    R0 = c(dataRow$R_0_23,
-           dataRow$R_1_23,
-           dataRow$R_2_23)
+    S0 = c(dataRow$S_0_23 - dataRow$E_star_0_23,
+           dataRow$S_1_23 - dataRow$E_star_1_23,
+           dataRow$S_2_23 - dataRow$E_star_2_23)
+    E0 = c(dataRow$E_0_23 + dataRow$E_star_0_23 - dataRow$I_star_0_23,
+           dataRow$E_1_23 + dataRow$E_star_1_23 - dataRow$I_star_1_23,
+           dataRow$E_2_23 + dataRow$E_star_2_23 - dataRow$I_star_2_23)
+    I0 = c(dataRow$I_0_23 + dataRow$I_star_0_23 - dataRow$R_star_0_23,
+           dataRow$I_1_23 + dataRow$I_star_1_23 - dataRow$R_star_1_23,
+           dataRow$I_2_23 + dataRow$I_star_2_23 - dataRow$R_star_2_23)
+    R0 = c(dataRow$R_0_23 + dataRow$R_star_0_23,
+           dataRow$R_1_23 + dataRow$R_star_1_23,
+           dataRow$R_2_23 + dataRow$R_star_2_23)
     return(predictEpidemic(beta,  
                            X.pred,
                            dataRow$gamma_ei,
@@ -529,46 +546,102 @@ Prediction
                            ))
   }
   
-  preds = lapply((nrow(chain1) - floor(nrow(chain1)/4)):
+  preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
                    nrow(chain1), predict.i)
 
 ```
 
 
-Now return to the estimated epidemic plot, but include predictions for the next sixty days. 
+With the predictions made, we need a way to visualize them. For illustrative purposes, return to the estimated epidemic plot, but include predictions for the next sixty days. 
 
 
 ```{r tidy = FALSE}
 
 pred.dates = c(rptDate[(which.max(rptDate))] + 1,rptDate[(which.max(rptDate))] + seq(10,60,10))
-
-# Plot number of infectious
-
-maxI = max(floor(max(SEIRmodels[[1]]$I)*1.2), preds[[1]]$I*1.2)
-plot(rptDate, SEIRmodels[[1]]$I[,1], type = "l", ylim=c(0,3000), lwd = 2, 
-     xlim = c(min(rptDate), max(rptDate + 60)), 
-     main = "Estimated Number of Infectious Individuals", ylab = "Number",
-     xlab="Date")
-lines(rptDate, SEIRmodels[[1]]$I[,2], col = "blue", lty = 2, lwd = 2)
-lines(rptDate, SEIRmodels[[1]]$I[,3], col = "red", lty = 3, lwd = 2)
-legend(x = min(rptDate), y = 3000, 
-       legend = c("Guinea", "Liberia", "Sierra Leone"),
-       lty =  c(1,2,3), col = c("black", "blue", "red"), lwd = 2)
-
+pred.xlim = c(min(rptDate), max(pred.dates))
 lastIdx = nrow(SEIRmodels[[1]]$I)
-for (pred in preds)
+Guinea.Pred = preds[[1]]$I[,1]
+Liberia.Pred = preds[[1]]$I[,2]
+SierraLeone.Pred = preds[[1]]$I[,3]
+
+breakpoint = mean(c(max(rptDate), min(pred.dates)))
+
+for (predIdx in 2:length(preds))
 {
-   lines(c(pred.dates[1]-1, pred.dates),
-         c(SEIRmodels[[1]]$I[lastIdx,1],pred$I[,1]), 
-        lty=1, col = "black", lwd = 0.5)
-   lines(c(pred.dates[1]-1, pred.dates),
-         c(SEIRmodels[[1]]$I[lastIdx,2],pred$I[,2]), 
-        lty=2, col = "blue", lwd = 0.5)
-   lines(c(pred.dates[1]-1, pred.dates),
-         c(SEIRmodels[[1]]$I[lastIdx,3],pred$I[,3]), 
-        lty=3, col = "red", lwd = 0.5)
+   Guinea.Pred = rbind(Guinea.Pred, preds[[predIdx]]$I[,1])
+   Liberia.Pred = rbind(Liberia.Pred, preds[[predIdx]]$I[,2])
+   SierraLeone.Pred = rbind(SierraLeone.Pred, preds[[predIdx]]$I[,3])
 }
+
+Guinea.mean = apply(Guinea.Pred, 2, mean)
+Liberia.mean = apply(Liberia.Pred, 2, mean)
+SierraLeone.mean = apply(SierraLeone.Pred, 2, mean)
+
+Guinea.LB = apply(Guinea.Pred, 2, quantile, probs = c(0.05))
+Guinea.UB = apply(Guinea.Pred, 2, quantile, probs = c(0.95))
+
+Liberia.LB = apply(Liberia.Pred, 2, quantile, probs = c(0.05))
+Liberia.UB = apply(Liberia.Pred, 2, quantile, probs = c(0.95))
+
+SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
+SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
+
+
+
+
+
+## Guinea 
+par(mfrow = c(3,1))
+plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), xlim = pred.xlim,
+     main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
+     type = "l", lwd = 2)
+lines(rptDate, Guinea.I.Est[2,], lty = 2)
+lines(rptDate, Guinea.I.Est[3,], lty = 2)
+
+lines(pred.dates,Guinea.mean, 
+        lty=1, col = "black", lwd = 1)
+lines(pred.dates,Guinea.LB, 
+        lty=2, col = "black", lwd = 1)
+lines(pred.dates,Guinea.UB, 
+        lty=2, col = "black", lwd = 1)
+abline(v = breakpoint, lty = 3, col= "lightgrey")
+
+## Liberia 
+plot(rptDate, Liberia.I.Est[1,], ylim = c(0, maxI),  xlim = pred.xlim,
+     main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
+     type = "l", lwd = 2, col = "blue")
+lines(rptDate, Liberia.I.Est[2,], lty = 2, col = "blue")
+lines(rptDate, Liberia.I.Est[3,], lty = 2, col = "blue")
+
+lines(pred.dates,Liberia.mean, 
+        lty=1, col = "blue", lwd = 1)
+lines(pred.dates,Liberia.LB, 
+        lty=2, col = "blue", lwd = 1)
+lines(pred.dates,Liberia.UB, 
+        lty=2, col = "blue", lwd = 1)
+abline(v = breakpoint, lty = 3, col= "lightgrey")
+
+## Sierra Leone
+plot(rptDate, SierraLeone.I.Est[1,], ylim = c(0, maxI),  xlim = pred.xlim,
+     main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
+     type = "l", lwd = 2, col = "red")
+lines(rptDate, SierraLeone.I.Est[2,], lty = 2, col = "red")
+lines(rptDate, SierraLeone.I.Est[3,], lty = 2, col ="red")
+
+lines(pred.dates,SierraLeone.mean, 
+        lty=1, col = "red", lwd = 1)
+lines(pred.dates,SierraLeone.LB, 
+        lty=2, col = "red", lwd = 1)
+lines(pred.dates,SierraLeone.UB, 
+        lty=2, col = "red", lwd = 1)
+abline(v = breakpoint, lty = 3, col= "lightgrey")
 
 
 ```
+
+That wraps it up. Based on this quick analysis, it seems that the epidemic is predicted to die out around September. On the other hand, because this analysis was based on polynomial terms, predictions that far in the future are suspect. While we can hope that such an optimistic prediction holds, additional models should be fit with a different basis to help detect sensitivity of the predictions to the basis used. 
+
+
+
+
 

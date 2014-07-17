@@ -115,7 +115,10 @@ trigBasis = daysSince2000/365*2*pi
 Z = cbind(standard(daysSince2000),            # linear term for time
           sin(trigBasis),               # trig basis function 1
           cos(trigBasis),               # trig basis function 2
-          sin(trigBasis)*cos(trigBasis)
+          sin(2*trigBasis),
+          cos(2*trigBasis),
+          sin(0.5*trigBasis),
+          cos(0.5*trigBasis)
   )
 
 # There is only one spatial location here, so we don't need to do anything 
@@ -202,10 +205,10 @@ mcmcTuningParams = c(1, # S_star
 
 
 # Prior parameters. 
-priorAlpha_gammaEI = 2300;
-priorBeta_gammaEI = 1000;
-priorAlpha_gammaIR = 2300;
-priorBeta_gammaIR = 1000;
+priorAlpha_gammaEI = 230;
+priorBeta_gammaEI = 100;
+priorAlpha_gammaIR = 230;
+priorBeta_gammaIR = 100;
 betaPrsPriorPrecision = 0.1
 betaPriorPrecision = 0.1
 
@@ -214,7 +217,7 @@ reinfectionMode = 1
 # steadyStateConstraintPrecision is a loose constraint on net flows
 # between compartments. Setting it to a negative value eliminates
 # the constraint, but it can help with identifiability in some cases. 
-steadyStateConstraintPrecision = -1
+steadyStateConstraintPrecision = 0.1
 
 # iterationStride determines the delay between saving samples to the output file
 iterationStride = 10000
@@ -312,8 +315,8 @@ Now we're ready to start sampling. On the other hand, we're not particularly con
 burnInSamplingParams = function(modelObject,
                                numBatches=500, 
                                batchSize=20, 
-                               targetAcceptanceRatio=0.1,
-                               tolerance=0.05,
+                               targetAcceptanceRatio=0.05,
+                               tolerance=0.0025,
                                proportionChange = 0.1
                               )
 {
@@ -385,9 +388,9 @@ SEIRmodel$parameterSamplingMode=3
 tm = 0
 for (i in 1:100)
 {
-  tm = tm + system.time(SEIRmodel$simulate(20000))[3]
-  SEIRmodel$updateSamplingParameters(0.2, 
-                                     0.025, 
+  tm = tm + system.time(SEIRmodel$simulate(100000))[3]
+  SEIRmodel$updateSamplingParameters(0.05, 
+                                     0.0025, 
                                      0.05)
   cat(paste(i, "of 100,", 
             round((tm/(i)*(100-i)/60), 2), 
@@ -609,12 +612,12 @@ the parameter values and predict the epidemic for each.
                            X.prs.pred,
                            dataRow$gamma_ei,
                            dataRow$gamma_ir,
-                           dataRow$S_0_207,
-                           dataRow$E_0_207,
-                           dataRow$E_0_207,
-                           dataRow$R_0_207)) # These values are made available by setTrace, 
-                                             # and are named like: Comp_loc#_time#
-  }
+                           dataRow$S_0_207 + dataRow$S_star_0_207 - dataRow$E_star_0_207,
+                           dataRow$E_0_207 + dataRow$E_star_0_207 - dataRow$I_star_0_207,
+                           dataRow$I_0_207 + dataRow$I_star_0_207 - dataRow$R_star_0_207,
+                           dataRow$R_0_207 + dataRow$R_star_0_207 - dataRow$S_star_0_207))
+                                             # These values are made available by setTrace, 
+    }
   
   preds = lapply((nrow(chainDat) - floor(nrow(chainDat)/2)):
                    nrow(chainDat), predict.i)
