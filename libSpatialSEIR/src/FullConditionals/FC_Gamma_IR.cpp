@@ -81,7 +81,6 @@ namespace SpatialSEIR
 
     FC_Gamma_IR::~FC_Gamma_IR()
     {
-        delete currentSampler;
         delete[] samplers;
         delete varLen;
         delete sliceWidth;

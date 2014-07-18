@@ -88,7 +88,6 @@ namespace SpatialSEIR
     }
     FC_R_Star::~FC_R_Star()
     {
-        delete currentSampler;
         delete[] samplers;
         delete R_star;
         delete R;

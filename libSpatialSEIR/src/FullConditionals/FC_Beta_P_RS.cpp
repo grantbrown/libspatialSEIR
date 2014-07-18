@@ -85,7 +85,6 @@ namespace SpatialSEIR
     }
     FC_Beta_P_RS::~FC_Beta_P_RS()
     {
-        delete currentSampler;
         delete[] samplers;
         delete S_star;
         delete varLen;

@@ -78,7 +78,6 @@ namespace SpatialSEIR
     }
     FC_E0::~FC_E0()
     {
-        delete currentSampler;
         delete[] samplers;
         delete context;
         delete S;

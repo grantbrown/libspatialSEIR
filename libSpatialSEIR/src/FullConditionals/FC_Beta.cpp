@@ -89,7 +89,6 @@ namespace SpatialSEIR
 
     FC_Beta::~FC_Beta()
     {
-        delete currentSampler;
         delete []samplers;
         delete E_star;
         delete S;
