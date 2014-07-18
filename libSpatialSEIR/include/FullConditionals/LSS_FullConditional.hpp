@@ -98,6 +98,7 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange) = 0;
+            static int getFullConditionalType();
             double acceptanceRatio();
             double* sliceWidth;
             void setSamplerType(int type);
@@ -134,6 +135,9 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
             virtual void printDebugInfo(int loc, int tpt) = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
+
+            /** Identify as compartment full conditional*/
+            static int getFullConditionalType();
 
             /** Standard Metropolis proposal, centered at current value. */
             void proposeUpdate(int* initCompartment,
@@ -206,6 +210,9 @@ namespace SpatialSEIR
 
             int *varLen;
 
+            /** Identify as parameter full conditional*/
+            static int getFullConditionalType();
+
             /** Standard Metropolis proposal, centered at current value. */
             void proposeUpdate(double* variable,
                                        int varLen,
@@ -274,6 +281,10 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments(int startLoc) = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
             virtual void printDebugInfo(int loc) = 0;
+
+
+            /** Identify as init compartment full conditional*/
+            static int getFullConditionalType();
 
             /** Standard Metropolis proposal, centered at current value. */
             void proposeUpdate(int* initCompartment,
