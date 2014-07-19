@@ -10,6 +10,7 @@ GPU's to accelerate computation. The primary interface is provided via the inclu
 library to access the lower level C++ API. 
 
 The most up to date documentation is hosted via github pages here_.
+
 .. _here: http://grantbrown.github.io/libspatialSEIR/
 
 In addition, example R code is available in the /scripts directory.  
