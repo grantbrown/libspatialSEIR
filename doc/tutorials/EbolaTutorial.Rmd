@@ -298,7 +298,7 @@ for (i in 1:length(SEIRmodels))
 {
     cat(paste("Running in chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels[[i]], 
-                  numBatches=50, 
+                  numBatches=25, 
                   batchSize=50000, 
                   targetAcceptanceRatio=0.25,
                   tolerance=0.025,
@@ -384,9 +384,9 @@ getMeanAndCI = function(loc,tpt,baseStr="I_")
     return(c(mean(vec), quantile(vec, probs = c(0.05, 0.95))))
 }
 
-Guinea.I.Est = sapply(0:23, getMeanAndCI, loc=0)
-Liberia.I.Est = sapply(0:23, getMeanAndCI, loc=1)
-SierraLeone.I.Est = sapply(0:23, getMeanAndCI, loc=2)
+Guinea.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=0)
+Liberia.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=1)
+SierraLeone.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=2)
 
 maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
 par(mfrow = c(3,1))
@@ -727,7 +727,7 @@ for (i in 1:length(SEIRmodels.spline))
 {
     cat(paste("Running in chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels.spline[[i]], 
-                  numBatches=50, 
+                  numBatches=25, 
                   batchSize=50000, 
                   targetAcceptanceRatio=0.25,
                   tolerance=0.025,
@@ -788,9 +788,9 @@ getMeanAndCI = function(loc,tpt,baseStr="I_")
     return(c(mean(vec), quantile(vec, probs = c(0.05, 0.95))))
 }
 
-Guinea.I.Est = sapply(0:23, getMeanAndCI, loc=0)
-Liberia.I.Est = sapply(0:23, getMeanAndCI, loc=1)
-SierraLeone.I.Est = sapply(0:23, getMeanAndCI, loc=2)
+Guinea.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=0)
+Liberia.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=1)
+SierraLeone.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=2)
 
 maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
 par(mfrow = c(3,1))
