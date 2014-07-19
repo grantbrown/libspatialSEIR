@@ -9,8 +9,8 @@ The numerical heavy lifting is all done in C++ with the optional use of OpenCL c
 GPU's to accelerate computation. The primary interface is provided via the included R package, which uses the Rcpp 
 library to access the lower level C++ API. 
 
-At this point documentation is pretty limited, but a description of the class of models which can be fit
-is available in /doc/models/SEIR_ALGO.pdf
+The most up to date documentation is hosted via github pages here_.
+.. _here: http://grantbrown.github.io/libspatialSEIR/
 
 In addition, example R code is available in the /scripts directory.  
 
