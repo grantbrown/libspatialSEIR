@@ -39,10 +39,13 @@ The numerical heavy lifting is all done in C++ with the optional use of OpenCL c
 GPU's to accelerate computation. The primary interface is provided via the included R package, which uses the Rcpp 
 library to access the lower level C++ API. </p>
 
-<p>At this point documentation is pretty limited, but a description of the class of models which can be fit
-is available in /doc/models/SEIR_ALGO.pdf</p>
+<p>The R and C++ API's for libspatialSEIR are under heavy development, so documentation is a bit limited. 
+For an introduction to the underlying C++ structure, <a href="./doc/html/classes.html">doxygen class summaries</a> are available. Perhaps 
+the best current example of libspatialSEIR use from R is given by the <a href="./doc/tutorials/LSS_EbolaTutorial.html">spatial SEIR Ebola tutorial</a>
+addressing the current outbreak of Ebola in West Africa. 
+</p>
 
-<p>In addition, example R code is available in the /scripts directory.  </p>
+<p>Additional example R code is available in the /scripts directory on the main branch.  </p>
 
 <h3>
 <a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h3>
