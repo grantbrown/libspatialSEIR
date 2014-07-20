@@ -122,19 +122,33 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h3><a class="anchor" id="index_g"></a>- g -</h3><ul>
 <li>gamma
 : <a class="el" href="classSpatialSEIR_1_1ModelContext.html#a4e545262577a97dd3aceeefc2a956626">SpatialSEIR::ModelContext</a>
+, <a class="el" href="structSpatialSEIR_1_1gammaArgs.html#aa9d1dfce724864b18debf09032df9bac">SpatialSEIR::gammaArgs</a>
 , <a class="el" href="classSpatialSEIR_1_1RandomNumberProvider.html#aa78c216a74056588b9b6a76d91e84006">SpatialSEIR::RandomNumberProvider</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Gamma.html#aa9bc14ea263e16e58b7ff998f2623d9c">SpatialSEIR::FC_Gamma</a>
+, <a class="el" href="classSpatialSEIR_1_1RandomNumberProvider.html#aa6c39494c6a7bf4cb71177e945b950ee">SpatialSEIR::RandomNumberProvider</a>
 </li>
 <li>gamma_ei
 : <a class="el" href="classSpatialSEIR_1_1ModelContext.html#a72509958c44ad6153feff07ec3da9895">SpatialSEIR::ModelContext</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Gamma__EI.html#a6c9eaf49e5c3464a819cc3ed15b58001">SpatialSEIR::FC_Gamma_EI</a>
 </li>
 <li>gamma_ei_fc
 : <a class="el" href="classSpatialSEIR_1_1ModelContext.html#a6973164c7a807aea76f3bab1f4403cd5">SpatialSEIR::ModelContext</a>
 </li>
 <li>gamma_ir
 : <a class="el" href="classSpatialSEIR_1_1ModelContext.html#a9cbe4ffa8f5b19740f7cffc37d1a7b3c">SpatialSEIR::ModelContext</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Gamma__IR.html#a59115dead1bcf07b3839241a27be4c37">SpatialSEIR::FC_Gamma_IR</a>
 </li>
 <li>gamma_ir_fc
 : <a class="el" href="classSpatialSEIR_1_1ModelContext.html#a9293a2cef5007f0f4510072fb3babbf1">SpatialSEIR::ModelContext</a>
+</li>
+<li>gammaEiWidth
+: <a class="el" href="structSpatialSEIR_1_1sliceParameters.html#aa390f8753fbf788e73dcd9c865fd78ee">SpatialSEIR::sliceParameters</a>
+</li>
+<li>gammaIrWidth
+: <a class="el" href="structSpatialSEIR_1_1sliceParameters.html#aa6e7b44947455b6376ef7eb2258e599f">SpatialSEIR::sliceParameters</a>
+</li>
+<li>gammaWidth
+: <a class="el" href="structSpatialSEIR_1_1sliceParameters.html#a90c5e19d52378344810e38b844ad6eb4">SpatialSEIR::sliceParameters</a>
 </li>
 <li>genFromDataStream()
 : <a class="el" href="classSpatialSEIR_1_1CompartmentalModelMatrix.html#a49a4fe227e57abdd57f43b4436f3e087">SpatialSEIR::CompartmentalModelMatrix</a>
@@ -147,21 +161,46 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>getCompartmentSamplingMode()
 : <a class="el" href="classSpatialSEIR_1_1ModelContext.html#aaae62ac4cd67fe7bc5468214213cdaf3">SpatialSEIR::ModelContext</a>
 </li>
+<li>getFullConditionalType()
+: <a class="el" href="classSpatialSEIR_1_1FullConditional.html#a48d61942c91e430e02488b4f4005507b">SpatialSEIR::FullConditional</a>
+, <a class="el" href="classSpatialSEIR_1_1CompartmentFullConditional.html#a9e5c2af82aac7179f59ff937c7dcf89d">SpatialSEIR::CompartmentFullConditional</a>
+, <a class="el" href="classSpatialSEIR_1_1ParameterFullConditional.html#a2f2b5de88ed6e34e06b9b95413bfbdfc">SpatialSEIR::ParameterFullConditional</a>
+, <a class="el" href="classSpatialSEIR_1_1InitCompartmentFullConditional.html#a6c35c9ed95a8adbada0e3da0608531bd">SpatialSEIR::InitCompartmentFullConditional</a>
+</li>
 <li>getParameterSamplingMode()
 : <a class="el" href="classSpatialSEIR_1_1ModelContext.html#a7c69bb2ce3657b025b265ee3a6cd2073">SpatialSEIR::ModelContext</a>
 </li>
 <li>getSamplerType()
-: <a class="el" href="classSpatialSEIR_1_1ParameterJointSliceSampler.html#ac435f72bd91e0585b45d42233b0741dc">SpatialSEIR::ParameterJointSliceSampler</a>
+: <a class="el" href="classSpatialSEIR_1_1IndexedInitCompartmentMetropolisSampler.html#af2891523864f89b9587205eaba4bd41a">SpatialSEIR::IndexedInitCompartmentMetropolisSampler</a>
+, <a class="el" href="classSpatialSEIR_1_1IndexedInitCompartmentSliceSampler.html#a8687c4d1acc384cc4e8d7f4b91db79a5">SpatialSEIR::IndexedInitCompartmentSliceSampler</a>
+, <a class="el" href="classSpatialSEIR_1_1ParameterSingleMetropolisSampler.html#a0576cfdda14e0afb0f63413f01a82c13">SpatialSEIR::ParameterSingleMetropolisSampler</a>
+, <a class="el" href="classSpatialSEIR_1_1InitCompartmentMetropolisSampler.html#ad64b5ae0943c980f752c49f9c179a3b7">SpatialSEIR::InitCompartmentMetropolisSampler</a>
+, <a class="el" href="classSpatialSEIR_1_1ParameterJointMetropolisSampler.html#a5684e2933ff1fab50e1761450ba41897">SpatialSEIR::ParameterJointMetropolisSampler</a>
+, <a class="el" href="classSpatialSEIR_1_1ParameterJointSliceSampler.html#ac435f72bd91e0585b45d42233b0741dc">SpatialSEIR::ParameterJointSliceSampler</a>
+, <a class="el" href="classSpatialSEIR_1_1ParameterDecorrelationSampler.html#ad3039ef7f917ec85fc210be2940b5da1">SpatialSEIR::ParameterDecorrelationSampler</a>
 , <a class="el" href="classSpatialSEIR_1_1Sampler.html#aaa79310ad809e6aeb25479849f322dda">SpatialSEIR::Sampler</a>
 , <a class="el" href="classSpatialSEIR_1_1CompartmentMetropolisSampler.html#a249b461e6f848c20f274bac7cae76e95">SpatialSEIR::CompartmentMetropolisSampler</a>
 , <a class="el" href="classSpatialSEIR_1_1IndexedCompartmentMetropolisSampler.html#a87fe511f9a9fd517c4bafad59c296986">SpatialSEIR::IndexedCompartmentMetropolisSampler</a>
-, <a class="el" href="classSpatialSEIR_1_1ParameterDecorrelationSampler.html#ad3039ef7f917ec85fc210be2940b5da1">SpatialSEIR::ParameterDecorrelationSampler</a>
-, <a class="el" href="classSpatialSEIR_1_1ParameterSingleMetropolisSampler.html#a0576cfdda14e0afb0f63413f01a82c13">SpatialSEIR::ParameterSingleMetropolisSampler</a>
-, <a class="el" href="classSpatialSEIR_1_1InitCompartmentMetropolisSampler.html#ad64b5ae0943c980f752c49f9c179a3b7">SpatialSEIR::InitCompartmentMetropolisSampler</a>
-, <a class="el" href="classSpatialSEIR_1_1IndexedInitCompartmentSliceSampler.html#a8687c4d1acc384cc4e8d7f4b91db79a5">SpatialSEIR::IndexedInitCompartmentSliceSampler</a>
-, <a class="el" href="classSpatialSEIR_1_1IndexedInitCompartmentMetropolisSampler.html#af2891523864f89b9587205eaba4bd41a">SpatialSEIR::IndexedInitCompartmentMetropolisSampler</a>
-, <a class="el" href="classSpatialSEIR_1_1ParameterJointMetropolisSampler.html#a5684e2933ff1fab50e1761450ba41897">SpatialSEIR::ParameterJointMetropolisSampler</a>
 , <a class="el" href="classSpatialSEIR_1_1IndexedCompartmentSliceSampler.html#aeeeeb33f86bf684e6e44914c784847e6">SpatialSEIR::IndexedCompartmentSliceSampler</a>
+</li>
+<li>getValue()
+: <a class="el" href="classSpatialSEIR_1_1FC__E__Star.html#aa5df0a2e3cc79e4d01db7a39bab33d4f">SpatialSEIR::FC_E_Star</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__R__Star.html#a538786683fedde6a14c85b9081de3c4a">SpatialSEIR::FC_R_Star</a>
+, <a class="el" href="classSpatialSEIR_1_1FullConditional.html#abe67c774a66370686ee9dc6fe6f278f6">SpatialSEIR::FullConditional</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__E0.html#aa2681b2dc4378d162dd2c68ff5333288">SpatialSEIR::FC_E0</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__S__Star.html#a3dd725f1ab193c0b0774c498be092344">SpatialSEIR::FC_S_Star</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Gamma__EI.html#ad33d614b75ea81d0a34eecbcec2fd406">SpatialSEIR::FC_Gamma_EI</a>
+, <a class="el" href="classSpatialSEIR_1_1ParameterFullConditional.html#a901368d385809e77179b9fa7532adfec">SpatialSEIR::ParameterFullConditional</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__I0.html#a69f4e641113c47ae2e28dbd44f8c8261">SpatialSEIR::FC_I0</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Beta__P__RS.html#a3017d4d02d954375869fe5d8e7e301ea">SpatialSEIR::FC_Beta_P_RS</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Gamma__IR.html#a0895a64e8292e75141a4ad9ed1145e9d">SpatialSEIR::FC_Gamma_IR</a>
+, <a class="el" href="classSpatialSEIR_1_1InitCompartmentFullConditional.html#aadb3975a791221136e6c4be5e016d9f1">SpatialSEIR::InitCompartmentFullConditional</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__R0.html#ab52e48b7be8eb46258602b0d1467ff08">SpatialSEIR::FC_R0</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Gamma.html#ab942c9b900d9bd84d47cd62f35a9d3db">SpatialSEIR::FC_Gamma</a>
+, <a class="el" href="classSpatialSEIR_1_1CompartmentFullConditional.html#a28794be23ee7f6fcba96ff2bee63e065">SpatialSEIR::CompartmentFullConditional</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Rho.html#a2f6ad33590328ce079e7bc9b4f078907">SpatialSEIR::FC_Rho</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__Beta.html#a3d25a7f6965f0a899249b76d8bd9d75f">SpatialSEIR::FC_Beta</a>
+, <a class="el" href="classSpatialSEIR_1_1FC__S0.html#ad1b806dbe3573b1e9652850b934d7b10">SpatialSEIR::FC_S0</a>
 </li>
 <li>globalSize
 : <a class="el" href="structSpatialSEIR_1_1FC__R__Star__KernelData.html#a50131965a184ddda7a92bdc43ea32bed">SpatialSEIR::FC_R_Star_KernelData</a>
@@ -180,7 +219,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 19 2014 17:06:41 for libspatialSEIR by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jul 20 2014 11:30:55 for libspatialSEIR by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.4
 </small></address>

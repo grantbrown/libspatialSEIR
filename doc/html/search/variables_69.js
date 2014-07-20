@@ -1,9 +1,11 @@
 var searchData=
 [
-  ['i',['I',['../classSpatialSEIR_1_1ModelContext.html#aa68b54ddf89a3ea432433dfb09c7983f',1,'SpatialSEIR::ModelContext']]],
+  ['i',['I',['../classSpatialSEIR_1_1ModelContext.html#aa68b54ddf89a3ea432433dfb09c7983f',1,'SpatialSEIR::ModelContext::I()'],['../classSpatialSEIR_1_1FC__E0.html#a048432b716d928e7ad3d2d58d448139d',1,'SpatialSEIR::FC_E0::I()'],['../classSpatialSEIR_1_1FC__Gamma__IR.html#abe3e9d16aa960008aa14709a55972606',1,'SpatialSEIR::FC_Gamma_IR::I()'],['../classSpatialSEIR_1_1FC__I0.html#abed267a2d412d94515c38468b4995297',1,'SpatialSEIR::FC_I0::I()'],['../classSpatialSEIR_1_1FC__R__Star.html#a469dfad50afd14f2c0d31e0fa2251b07',1,'SpatialSEIR::FC_R_Star::I()']]],
+  ['i0',['I0',['../classSpatialSEIR_1_1InitData.html#a393dd2e968876861412439caf2e3c05b',1,'SpatialSEIR::InitData']]],
   ['i0_5ffc',['I0_fc',['../classSpatialSEIR_1_1ModelContext.html#a595c21a8b6130f09e3a2af6e114fe9da',1,'SpatialSEIR::ModelContext']]],
   ['i0_5focl',['I0_OCL',['../classSpatialSEIR_1_1ModelContext.html#ad947e4751688d7effbc93019a92a44f6',1,'SpatialSEIR::ModelContext']]],
-  ['i_5fstar',['I_star',['../classSpatialSEIR_1_1ModelContext.html#adf47583e6bd65b272ea17dc84620e09f',1,'SpatialSEIR::ModelContext']]],
+  ['i0width',['I0Width',['../structSpatialSEIR_1_1sliceParameters.html#af927171f24f8b4f4f4f44cbc3dcabb2a',1,'SpatialSEIR::sliceParameters']]],
+  ['i_5fstar',['I_star',['../classSpatialSEIR_1_1ModelContext.html#adf47583e6bd65b272ea17dc84620e09f',1,'SpatialSEIR::ModelContext::I_star()'],['../classSpatialSEIR_1_1FC__E0.html#a5a40eb8abec5db63710a0d84bdad151c',1,'SpatialSEIR::FC_E0::I_star()'],['../classSpatialSEIR_1_1FC__E__Star.html#ab529083fb9708dd102ac8391ba58013f',1,'SpatialSEIR::FC_E_Star::I_star()'],['../classSpatialSEIR_1_1FC__Gamma__EI.html#a1160b335f074316d5c7cda9ed37c6718',1,'SpatialSEIR::FC_Gamma_EI::I_star()'],['../classSpatialSEIR_1_1FC__R__Star.html#a09d61de6e39bcfd4ff2e899c19670d55',1,'SpatialSEIR::FC_R_Star::I_star()'],['../classSpatialSEIR_1_1FC__S0.html#a89165d891584534f202f4ecc542bb920',1,'SpatialSEIR::FC_S0::I_star()']]],
   ['incol',['inCol',['../structSpatialSEIR_1_1compartmentArgs.html#a099157d615a905760cbfffecfc1ae601',1,'SpatialSEIR::compartmentArgs']]],
   ['incol_5fx',['inCol_x',['../structSpatialSEIR_1_1covariateArgs.html#ab62fd8861e67e0911f1af78a0d77572e',1,'SpatialSEIR::covariateArgs']]],
   ['incol_5fz',['inCol_z',['../structSpatialSEIR_1_1covariateArgs.html#a15b3c909a5218f2035bb03e4f21a5a95',1,'SpatialSEIR::covariateArgs']]],

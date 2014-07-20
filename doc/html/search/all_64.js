@@ -1,6 +1,7 @@
 var searchData=
 [
   ['data',['data',['../classSpatialSEIR_1_1CompartmentalModelMatrix.html#a6883dff990309a3f25f769f3d32c3c61',1,'SpatialSEIR::CompartmentalModelMatrix::data()'],['../classSpatialSEIR_1_1DistanceMatrix.html#a9d55c558325f820a6b581c096464b4ac',1,'SpatialSEIR::DistanceMatrix::data()']]],
+  ['dbeta',['dbeta',['../FC__Gamma__EI_8cpp.html#aec2bf6f04198b9c35452d6534f36e35c',1,'dbeta():&#160;FC_Gamma_EI.cpp'],['../namespaceSpatialSEIR.html#a5111a2bb19b97c248bbd9c39e8269f19',1,'SpatialSEIR::dbeta()']]],
   ['dbinom',['dbinom',['../classSpatialSEIR_1_1RandomNumberProvider.html#a2dd3f589c4aacc87d501f9ed56ea58bd',1,'SpatialSEIR::RandomNumberProvider']]],
   ['device',['device',['../classSpatialSEIR_1_1DeviceContainer.html#aa566ed7574ec01de6f08fc422532f0b6',1,'SpatialSEIR::DeviceContainer']]],
   ['devicecontainer',['DeviceContainer',['../classSpatialSEIR_1_1DeviceContainer.html#a1654b9904a32df77cf82b9408ef1fdec',1,'SpatialSEIR::DeviceContainer']]],

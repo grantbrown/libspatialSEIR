@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['tausq',['tausq',['../classSpatialSEIR_1_1FC__Beta__P__RS.html#abbe3f96f9301c22e015cf7d16043b34c',1,'SpatialSEIR::FC_Beta_P_RS']]],
   ['test',['test',['../classSpatialSEIR_1_1OCLProvider.html#a681ec4289165a8206ad3c869367ea94b',1,'SpatialSEIR::OCLProvider']]],
   ['test_5fkernel',['test_kernel',['../classSpatialSEIR_1_1OCLProvider.html#a90c34f0187d9b5c19dd6c2eb9608741c',1,'SpatialSEIR::OCLProvider']]],
   ['timeindex',['timeIndex',['../structSpatialSEIR_1_1TimeLocationTrace.html#a5d006c0c9b1226c25baffc56a4736441',1,'SpatialSEIR::TimeLocationTrace']]],
