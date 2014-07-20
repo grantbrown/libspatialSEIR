@@ -2,6 +2,7 @@
 #include <cmath>
 #include <ModelContext.hpp>
 #include <LSS_FullConditionalList.hpp>
+#include <LSS_Samplers.hpp>
 #include <CovariateMatrix.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <DistanceMatrix.hpp>
@@ -1014,8 +1015,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     sliceParameters sliceParamStruct;
     modelConfiguration modelConfig;
     modelConfig.reinfectionMode = reinfectMode[0];
-    modelConfig.compartmentSamplingMode = 2;
-    modelConfig.parameterSamplingMode = 3;
+    modelConfig.compartmentSamplingMode = COMPARTMENT_METROPOLIS_SAMPLER;
+    modelConfig.parameterSamplingMode = PARAMETER_JOINT_METROPOLIS_SAMPLER;
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];

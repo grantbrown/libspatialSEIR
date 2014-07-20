@@ -14,10 +14,6 @@
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
 
-#define LSS_COMPARTMENT_FULL_CONDITIONAL_TYPE 1
-#define LSS_INIT_COMPARTMENT_FULL_CONDITIONAL_TYPE 2
-#define LSS_PARAMETER_FULL_CONDITIONAL_TYPE 3
-
 namespace SpatialSEIR
 {
     using std::cout;

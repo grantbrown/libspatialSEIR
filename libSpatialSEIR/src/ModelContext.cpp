@@ -1,5 +1,6 @@
 #include <ModelContext.hpp>
 #include <LSS_FullConditionalList.hpp>
+#include <LSS_Samplers.hpp>
 #include <OCLProvider.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <CovariateMatrix.hpp>
@@ -38,6 +39,27 @@ namespace SpatialSEIR
     void ModelContext::setCompartmentSamplingMode(int mode)
     {
         (config -> compartmentSamplingMode) = mode;
+        unsigned int i;
+        for (i = 0; i < model -> size(); i++)
+        {
+            if ((*model)[i] -> getFullConditionalType() == LSS_PARAMETER_FULL_CONDITIONAL_TYPE)
+            {
+                // Do nothing. 
+            }
+            else if ((*model)[i] -> getFullConditionalType() == LSS_INIT_COMPARTMENT_FULL_CONDITIONAL_TYPE)
+
+            {
+                // Current samplers available to compartments have direct analogues for init compartments. 
+                // See LSS_Samplers.hpp for specification
+                (*model)[i] -> setSamplerType(mode + 3);
+            }
+            else if ((*model)[i] -> getFullConditionalType() == LSS_COMPARTMENT_FULL_CONDITIONAL_TYPE)
+ 
+            {
+                (*model)[i] -> setSamplerType(mode);
+            }
+            
+        }
     }
 
     int ModelContext::getCompartmentSamplingMode()
@@ -48,6 +70,15 @@ namespace SpatialSEIR
     void ModelContext::setParameterSamplingMode(int mode)
     {
         (config -> parameterSamplingMode) = mode;
+        unsigned int i;
+        for (i = 0; i < model -> size(); i++)
+        {
+            if ((*model)[i] -> getFullConditionalType() == LSS_PARAMETER_FULL_CONDITIONAL_TYPE)
+            {
+                (*model)[i] -> setSamplerType(mode);
+            } 
+        }
+
     }
 
     int ModelContext::getParameterSamplingMode()
