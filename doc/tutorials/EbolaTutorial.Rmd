@@ -5,7 +5,7 @@ date: "07/16/2014"
 output: html_document
 ---
 
-The ongoing West Africa Ebola outbreak is an ongoing public health crisis, which 
+The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which 
 has killed hundreds of people so far. The virus has emerged in Gunea, Liberia and Sierra Leone, 
 complicating mitigation efforts. 
 
