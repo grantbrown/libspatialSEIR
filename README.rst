@@ -1,6 +1,11 @@
 libspatialSEIR
 ===============
 
+Disclaimer
+-----------
+This software is under heavy development, and as such it's full of jagged edges, changing API's, and broken things.
+You have been warned. 
+
 Introduction
 ---------------
 
