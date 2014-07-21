@@ -357,7 +357,6 @@ namespace SpatialSEIR
                             A0,X,p_se,beta,rho,
                             *(sliceWidths -> rhoWidth));
 
-
         betaPrs_fc = new FC_Beta_P_RS(this,S_star,R,X_pRS,A0,p_rs,betaPrs, 
                                       (priorValues->betaPrsPriorPrecision), 
                                       *(sliceWidths -> betaPrsWidth));

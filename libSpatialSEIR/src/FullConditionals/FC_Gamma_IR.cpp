@@ -78,7 +78,9 @@ namespace SpatialSEIR
 
     FC_Gamma_IR::~FC_Gamma_IR()
     {
-        delete[] samplers;
+        while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
+
+        delete samplers;
         delete varLen;
         delete sliceWidth;
         delete gamma_ir;

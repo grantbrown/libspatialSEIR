@@ -70,7 +70,8 @@ namespace SpatialSEIR
     }
     FC_S0::~FC_S0()
     {
-        delete []samplers;
+        while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
+        delete samplers;
         delete context;
         delete S;
         delete E;

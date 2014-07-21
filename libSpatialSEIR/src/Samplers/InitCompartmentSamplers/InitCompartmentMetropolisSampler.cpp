@@ -34,8 +34,8 @@ namespace SpatialSEIR
 
     InitCompartmentMetropolisSampler::~InitCompartmentMetropolisSampler()
     {
-        delete initCompartmentFC;
         delete initCompartmentData;
+        delete initCompartmentFC;
         delete context;
     }
 

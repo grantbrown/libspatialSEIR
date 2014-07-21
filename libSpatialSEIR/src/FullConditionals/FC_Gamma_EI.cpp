@@ -78,7 +78,9 @@ namespace SpatialSEIR
     }
     FC_Gamma_EI::~FC_Gamma_EI()
     {
-        delete[] samplers;
+        while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
+
+        delete samplers;
         delete varLen;
         delete sliceWidth;
         delete I_star;

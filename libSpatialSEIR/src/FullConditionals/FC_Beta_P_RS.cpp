@@ -82,7 +82,9 @@ namespace SpatialSEIR
     }
     FC_Beta_P_RS::~FC_Beta_P_RS()
     {
-        delete[] samplers;
+        while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
+
+        delete samplers;
         delete S_star;
         delete varLen;
         delete R;

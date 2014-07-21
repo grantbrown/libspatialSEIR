@@ -26,8 +26,6 @@ namespace SpatialSEIR
      * Implement the full conditional distribution for the regression
      * parameters: beta
      */
-
-
     FC_Beta::FC_Beta(ModelContext *_context,
                      CompartmentalModelMatrix *_E_star, 
                      CompartmentalModelMatrix *_S, 
@@ -56,9 +54,7 @@ namespace SpatialSEIR
         varLen = new int;
         *varLen = nBeta;
         *samples = 0;
-        *accepted = 0;
-        *samples = 0;
-        memset(accepted, 0, nBeta*sizeof(double)); 
+        memset(accepted, 0, nBeta*sizeof(int)); 
         int i;
         for (i = 0; i < nBeta; i++)
         {
@@ -81,12 +77,12 @@ namespace SpatialSEIR
         currentSampler = new Sampler*;
         samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *beta));
         samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *beta));
-
     }
 
     FC_Beta::~FC_Beta()
     {
-        delete []samplers;
+        while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
+        delete samplers;
         delete E_star;
         delete S;
         delete A0;

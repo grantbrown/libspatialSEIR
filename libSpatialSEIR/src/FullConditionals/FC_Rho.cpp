@@ -68,7 +68,9 @@ namespace SpatialSEIR
     }
     FC_Rho::~FC_Rho()
     {
-        delete []samplers;
+        while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
+
+        delete samplers;
         delete varLen;
         delete E_star;
         delete S;

@@ -88,7 +88,8 @@ namespace SpatialSEIR
     }    
     FC_S_Star::~FC_S_Star()
     {
-        delete[] samplers;
+        while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
+        delete samplers;
         delete S_star;
         delete S;
         delete R;
