@@ -784,7 +784,6 @@ void spatialSEIRInterface::setVerbose(int verbose_)
 
 spatialSEIRInterface::spatialSEIRInterface()
 {
-    Rcpp::Rcout << "Creating Model Context\n";
     // Create the empty ModelContext object  
     context = new ModelContext();
     verbose = new int();
@@ -832,7 +831,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP scaleDistanceMode_)
 {
     int err = 0;
-    Rcpp::Rcout << "Wrapping input data in Rcpp vectors.\n";
     //Deal with the data conversion from R to c++
     Rcpp::IntegerVector compartmentDimensions(compMatDim);
     Rcpp::IntegerVector covariateDimensions_x(xDim);
@@ -965,7 +963,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
             Rcpp::Rcout << "Invalid N Compartment Size!\n";
             throw(-1);
         }
-        if ((X_pRS.size() % compartmentDimensions[0]) != 0)
+        if ((X_pRS.size() % compartmentDimensions[0]) != 0 && reinfectMode[0] <= 2)
         {
             Rcpp::Rcout << "Invalid X_pRS size.\n";
             Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
@@ -1007,9 +1005,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
 
 
-    Rcpp::Rcout << "Rcpp Provided Num Locations: " << compartmentDimensions[1] 
+    Rcpp::Rcout << "Building Model.\n   Number of Locations: " << compartmentDimensions[1] 
         << "\n";
-    Rcpp::Rcout << "Rcpp Provided Num Times: " << compartmentDimensions[0] 
+    Rcpp::Rcout << "   Number of Time Points: " << compartmentDimensions[0] 
         << "\n";
 
     // Gather information for the creation of the 
@@ -1092,16 +1090,12 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     scaledDistArgs.inData = DistMat.begin();
     scaledDistArgs.dim = &compartmentDimensions[1];
     scaledDistArgs.mode = scaleDistanceMode[0];
-    Rcpp::Rcout << "Loading covariate information into model context object\n";
 
     // Create the InitData object 
     InitData A0;
     A0.populate(S0.begin(),E0.begin(),I0.begin(),R0.begin()
             ,&compartmentDimensions[1]);
 
-
-
-    Rcpp::Rcout << "Populating Model Context\n";
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
     context -> populate(&A0, &xArgs, &xPrsArgs, offset.begin(), &S_starArgs, &E_starArgs, &I_starArgs, 
@@ -1113,9 +1107,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,
             (int*) chainStride.begin());
-
-    Rcpp::Rcout << "Context setup complete.\n";
-
 
     return(err);
 }
