@@ -484,23 +484,6 @@ namespace SpatialSEIR
             int* singleLocation;
             /** Number of MCMC samples so far.*/
             int* numIterations;
-
-            /** Indicator: use OpenCL for FC_S0?*/
-            int* S0_OCL;
-            /** Indicator: use OpenCL for FC_I0?*/
-            int* I0_OCL;
-            /** Indicator: use OpenCL for FC_S_Star?*/
-            int* S_star_OCL;
-            /** Indicator: use OpenCL for FC_E_Star?*/
-            int* E_star_OCL;
-            /** Indicator: use OpenCL for FC_R_Star?*/
-            int* R_star_OCL;
-            /** Indicator: use OpenCL for FC_Rho?*/
-            int* rho_OCL;
-            /** Indicator: use OpenCL for FC_Beta?*/
-            int* beta_OCL;
-            /** Indicator: use OpenCL for FC_Beta_P_RS?*/
-            int* beta_P_RS_OCL;
     };
 }
 #endif

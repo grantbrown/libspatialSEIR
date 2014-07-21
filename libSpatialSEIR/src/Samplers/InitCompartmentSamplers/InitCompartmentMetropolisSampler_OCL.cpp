@@ -19,64 +19,65 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-    IndexedInitCompartmentMetropolisSampler::IndexedInitCompartmentMetropolisSampler(ModelContext* context_,
+    InitCompartmentMetropolisSampler_OCL::InitCompartmentMetropolisSampler_OCL(ModelContext* context_,
                                                                InitCompartmentFullConditional* initCompartmentFC_,
                                                                int* initCompartmentData_)
     {
         context = new ModelContext*;
         initCompartmentFC = new InitCompartmentFullConditional*;
         initCompartmentData = new int*;
-        indexList = new int*;
-        indexLength = new int*;
 
         *context = context_; 
         *initCompartmentFC = initCompartmentFC_;
         *initCompartmentData = initCompartmentData_;
-        *indexLength = (*context) -> indexLength;
-        *indexList = (*context) -> indexList;
     }
 
-    IndexedInitCompartmentMetropolisSampler::~IndexedInitCompartmentMetropolisSampler()
+    InitCompartmentMetropolisSampler_OCL::~InitCompartmentMetropolisSampler_OCL()
     {
         delete initCompartmentFC;
         delete initCompartmentData;
-        delete indexLength;
-        delete indexList;
         delete context;
     }
 
-    int IndexedInitCompartmentMetropolisSampler::getSamplerType()
+    int InitCompartmentMetropolisSampler_OCL::getSamplerType()
     {
-        return(INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER);
+        return(INITCOMPARTMENT_METROPOLIS_SAMPLER);
     }
 
-    void IndexedInitCompartmentMetropolisSampler::drawSample()
+    void InitCompartmentMetropolisSampler_OCL::drawSample()
     {
+
+
+
         *((*initCompartmentFC) -> samples) += 1;
         double initVal;
+        double initProposal = 0.0;
+        double newProposal = 0.0;
         double sliceWidth = *((*initCompartmentFC) -> sliceWidth);
         int i;
         int x0, x1;
         int totalPoints = (*((*context) -> S -> ncol));
         memcpy((*context) -> tmpContainer -> data, *initCompartmentData, totalPoints*sizeof(int));
-        (*initCompartmentFC) -> calculateRelevantCompartments(); 
-        (*initCompartmentFC) -> evalCPU();
+        (*initCompartmentFC) -> calculateRelevantCompartments_OCL(); 
+        (*initCompartmentFC) -> evalOCL();
         initVal = (*initCompartmentFC) -> getValue();
         if (! std::isfinite(initVal))
         {
             std::cerr << "Compartment sampler starting from value of zero probability.\n";
             throw(-1);
         }
-        for (i = 0; i < **indexLength; i++)
+        for (i = 0; i < totalPoints; i++)
         {
-            x0 = (*initCompartmentData)[(*indexList)[i]];
+            x0 = (*initCompartmentData)[i];
             x1 = std::floor(((*context) -> random -> normal(x0 + 0.5, sliceWidth)));
-            (*initCompartmentData)[(*indexList)[i]] = x1;
+            (*initCompartmentData)[i] = x1;
+            newProposal += ((*context) -> random -> dnorm(x1, x0 + 0.5, sliceWidth));
+            initProposal += ((*context) -> random -> dnorm(x0, x1 + 0.5, sliceWidth)); 
         }
-        (*initCompartmentFC) -> calculateRelevantCompartments(); 
-        (*initCompartmentFC) -> evalCPU();
+        (*initCompartmentFC) -> calculateRelevantCompartments_OCL(); 
+        (*initCompartmentFC) -> evalOCL();
         double newVal = (*initCompartmentFC) -> getValue();
-        double criterion = (newVal - initVal);
+        double criterion = (newVal - initVal) + (initProposal - newProposal);
 
         if (std::log((*context) -> random -> uniform()) < criterion)
         {
@@ -87,7 +88,7 @@ namespace SpatialSEIR
         {
             // Keep original values
             memcpy(*initCompartmentData, (*context) -> tmpContainer -> data, totalPoints*sizeof(int));
-            (*initCompartmentFC) -> calculateRelevantCompartments(); 
+            (*initCompartmentFC) -> calculateRelevantCompartments_OCL(); 
             (*initCompartmentFC) -> setValue(initVal); 
         }
         if (! std::isfinite((*initCompartmentFC) -> getValue()))
@@ -96,6 +97,6 @@ namespace SpatialSEIR
             throw(-1);
         } 
 
-
+        
     }
 }

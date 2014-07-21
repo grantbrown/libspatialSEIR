@@ -8,7 +8,6 @@
 #include<LSS_FC_Beta.hpp>
 #include<LSS_FC_Beta_P_RS.hpp>
 #include<LSS_FC_Rho.hpp>
-#include<LSS_FC_Gamma.hpp>
 #include<LSS_FC_Gamma_EI.hpp>
 #include<LSS_FC_Gamma_IR.hpp>
 

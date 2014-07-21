@@ -30,15 +30,12 @@ namespace SpatialSEIR
                     double *_beta,
                     double *_rho,
                     double sliceWidth,
-                    double _priorPrecision,
-                    int _useOCL); 
+                    double _priorPrecision); 
             ~FC_Beta();
 
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);
-            virtual int sampleCPU();
-            virtual int sampleOCL();
             virtual long double getValue();
             virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();

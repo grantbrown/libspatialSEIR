@@ -37,8 +37,7 @@ namespace SpatialSEIR
                      double *_beta, 
                      double *_rho,
                      double _sliceWidth,
-                     double _priorPrecision,
-                     int _useOCL)
+                     double _priorPrecision)
     {
         int nBeta = (*((_X) -> ncol_x) + *((_X) -> ncol_z));
         context = new ModelContext*;
@@ -54,9 +53,8 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int[nBeta]; 
-        useOCL = new int;
         varLen = new int;
-        *varLen = (nBeta);
+        *varLen = nBeta;
         *samples = 0;
         *accepted = 0;
         *samples = 0;
@@ -77,7 +75,6 @@ namespace SpatialSEIR
         *rho = _rho;
         *priorPrecision = _priorPrecision;
         *value = -1.0;
-        *useOCL = _useOCL;
 
         // Set up samplers
         samplers = new std::vector<Sampler*>();
@@ -104,7 +101,6 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete[] accepted;
-        delete useOCL;
     }
 
     int FC_Beta::evalCPU()
@@ -163,38 +159,8 @@ namespace SpatialSEIR
 
     void FC_Beta::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling Beta\n";}
-        if (*useOCL){sampleOCL(); return;}
-        sampleCPU(); 
-    }
-
-
-    int FC_Beta::sampleCPU()
-    {
-        int mode = (*context) -> getParameterSamplingMode();
-        if (mode == 1)
-        {
-            sampleDoubleMetropolis(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
-        }
-        else if (mode == 2)
-        {
-            sampleDouble(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
-        }
-        else if (mode == 3)
-        {
-            sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
-        }
-        else
-        {
-            std::cout << "Invalid Sampling Mode. Falling back to 3.\n";
-            sampleEntireDouble_CPU(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
-        }
-        return(0);
-    }
-    int FC_Beta::sampleOCL()
-    {
-        sampleEntireDouble_OCL(*context, *beta, (*((*X) -> ncol_x) + *((*X) -> ncol_z)), sliceWidth); 
-        return(0);
+        if (verbose){std::cout << "Sampling Beta \n";}
+        (*currentSampler) -> drawSample();
     }
 
     long double FC_Beta::getValue()

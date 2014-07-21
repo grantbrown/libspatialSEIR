@@ -29,15 +29,12 @@ namespace SpatialSEIR
                       InitData *_A0,
                       double *_p_se,
                       double *_p_ei,
-                      double sliceWidth,
-                      int _useOCL);
+                      double sliceWidth);
             virtual ~FC_S0();
             virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual void sample(int verbose);
-            virtual int sampleCPU();
-            virtual int sampleOCL();
             virtual long double getValue();
             virtual void setValue(long double value);
             virtual int calculateRelevantCompartments();

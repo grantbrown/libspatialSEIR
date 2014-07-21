@@ -82,7 +82,7 @@ namespace SpatialSEIR
         if (std::log((*context) -> random -> uniform()) < criterion)
         {
             // Accept new values
-            ((*initCompartmentFC) -> accepted) += 1;
+            *((*initCompartmentFC) -> accepted) += 1;
         }
         else
         {

@@ -38,7 +38,6 @@ namespace SpatialSEIR
                      double *_gamma_ir,
                      double _priorAlpha,
                      double _priorBeta,
-                     int _useOCL,
                      double _sliceWidth)
     {
 
@@ -53,13 +52,11 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        useOCL = new int;
         sliceWidth = new double;
         varLen = new int;
         *varLen = 1;
         *samples = 0;
         *accepted = 0;
-        *useOCL = _useOCL;
         *context = _context;
         *R_star = _R_star;
         *I = _I;
@@ -95,7 +92,6 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
-        delete useOCL;
     }
 
     int FC_Gamma_IR::evalCPU()
@@ -143,22 +139,8 @@ namespace SpatialSEIR
 
     void FC_Gamma_IR::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling P_IR\n";}
-        if (*useOCL){sampleOCL(); return;}
-        sampleCPU();
-    }
-
-
-    int FC_Gamma_IR::sampleCPU()
-    {
-        sampleEntireDouble_CPU(*context, *gamma_ir, 1, sliceWidth); 
-        return(0);
-    }
-
-    int FC_Gamma_IR::sampleOCL()
-    {
-        //NOT IMPLEMENTED
-        return(sampleCPU());
+        if (verbose){std::cout << "Sampling gamma_IR  \n";}
+        (*currentSampler) -> drawSample();
     }
 
     long double FC_Gamma_IR::getValue()

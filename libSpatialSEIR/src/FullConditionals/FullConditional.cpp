@@ -128,12 +128,6 @@ namespace SpatialSEIR
         return((accepted[i]*1.0)/(*samples));
     }
 
-    int FullConditional::getFullConditionalType()
-    {
-        std::cout << "FullConditional class should never be directly instantiated.\n ";
-        throw(-1);
-    }
-
     int CompartmentFullConditional::getFullConditionalType()
     {
         return(LSS_COMPARTMENT_FULL_CONDITIONAL_TYPE);

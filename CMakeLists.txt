@@ -71,19 +71,19 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Rho.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_EI.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_IR.cpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentMetropolisSampler.cpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentMetropolisSampler.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentMetropolisSampler_OCL.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/IndexedCompartmentMetropolisSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/IndexedCompartmentSliceSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/InitCompartmentSamplers/InitCompartmentMetropolisSampler.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/InitCompartmentSamplers/InitCompartmentMetropolisSampler_OCL.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/InitCompartmentSamplers/IndexedInitCompartmentMetropolisSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/InitCompartmentSamplers/IndexedInitCompartmentSliceSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterSingleMetropolisSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterJointMetropolisSampler.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterJointMetropolisSampler_OCL.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterJointSliceSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterDecorrelationSampler.cpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS.h"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS/clBLAS-complex.h"
@@ -112,7 +112,6 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Rho.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
 	"${SpatialSEIR_Boost_LIBRARIES}"
 	)
@@ -171,7 +170,6 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Rho.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
-            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma.hpp"
 
             DESTINATION include)
 

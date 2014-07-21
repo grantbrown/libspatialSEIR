@@ -28,8 +28,7 @@ namespace SpatialSEIR
                    double *_p_se,
                    double *_beta,
                    double *_rho,
-                   double _sliceWidth,
-                   int _useOCL)
+                   double _sliceWidth)
     {
         context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
@@ -43,7 +42,6 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int; 
-        useOCL = new int;
         varLen = new int;
         *varLen = 1;
         *samples = 0;
@@ -60,7 +58,6 @@ namespace SpatialSEIR
         *rho = _rho;
         *sliceWidth = _sliceWidth;
         *value = -1.0;
-        *useOCL = _useOCL;
 
         // Set up samplers
         samplers = new std::vector<Sampler*>();
@@ -85,8 +82,6 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
-        delete useOCL;
-
     }
 
     int FC_Rho::evalCPU()
@@ -138,20 +133,8 @@ namespace SpatialSEIR
 
     void FC_Rho::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling Rho\n";}
-        if (*useOCL){sampleOCL(); return;}
-        sampleCPU();
-    }
-
-    int FC_Rho::sampleCPU()
-    {
-        sampleEntireDouble_CPU(*context, *rho, 1, sliceWidth); 
-        return(0);
-    }
-    int FC_Rho::sampleOCL()
-    {
-        sampleEntireDouble_OCL(*context, *rho, 1, sliceWidth); 
-        return(0);
+        if (verbose){std::cout << "Sampling rho\n";}
+        (*currentSampler) -> drawSample();
     }
 
     long double FC_Rho::getValue()

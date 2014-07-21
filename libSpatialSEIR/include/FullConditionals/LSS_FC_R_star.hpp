@@ -33,16 +33,13 @@ namespace SpatialSEIR
                       double *_p_ir,
                       double *_p_se,
                       double _steadyStateConstraintPrecision,
-                      double sliceWidth,
-                      int _useOCL);
+                      double sliceWidth);
             ~FC_R_Star();
 
             virtual int evalCPU(int startLoc, int startTime);
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);
-            virtual int sampleCPU();
-            virtual int sampleOCL();
             virtual long double getValue();
             virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();

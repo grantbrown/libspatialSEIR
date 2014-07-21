@@ -121,8 +121,6 @@ class spatialSEIRInterface
         virtual Rcpp::NumericVector getBeta();
         virtual Rcpp::NumericVector getBetaP_RS();
         virtual Rcpp::NumericVector getRho();
-        virtual Rcpp::IntegerVector getOCLPreferences();
-        virtual void setOCLPreferences(Rcpp::IntegerVector prefs);
 
         virtual int getDebug();
         virtual void setDebug(int debug_);
@@ -172,6 +170,32 @@ void spatialSEIRInterface::setCompartmentSamplingMode(int mode)
 {
     if (*(context -> isPopulated))
     {
+        if (mode == COMPARTMENT_METROPOLIS_SAMPLER)
+        {
+            Rcpp::Rcout << "Setting compartment sampling mode to Metropolis\n";
+        }
+        else if (mode == COMPARTMENT_IDX_METROPOLIS_SAMPLER)
+        {
+            Rcpp::Rcout << "Setting compartment sampling mode to indexed Metropolis\n";
+        }
+        else if (mode == COMPARTMENT_IDX_SLICE_SAMPLER)
+        {
+            Rcpp::Rcout << "Setting compartment sampling mode to indexed slice\n";
+        }
+        else if (mode == COMPARTMENT_METROPOLIS_SAMPLER_OCL)
+        {
+             Rcpp::Rcout << "Setting compartment sampling mode to Metropolis using OpenCL\n";  
+        }
+        else
+        {
+            Rcpp::Rcout << "Error: mode must be one of the following: \n"
+                        << COMPARTMENT_METROPOLIS_SAMPLER << ": Metropolis \n   "
+                        << COMPARTMENT_METROPOLIS_SAMPLER_OCL << ": Metropolis with OpenCL\n   "
+                        << COMPARTMENT_IDX_METROPOLIS_SAMPLER << ": Indexed Metropolis\n   "
+                        << COMPARTMENT_IDX_SLICE_SAMPLER << ": Indexed Slice\n   ";
+            return;
+        }
+
         context -> setCompartmentSamplingMode(mode);
         return;
     }
@@ -191,6 +215,38 @@ void spatialSEIRInterface::setParameterSamplingMode(int mode)
 {
     if (*(context -> isPopulated))
     {
+        if (mode == PARAMETER_SINGLE_METROPOLIS_SAMPLER)
+        {
+            Rcpp::Rcout << "Setting parameter sampling mode to single Metropolis\n";
+        }
+        else if (mode == PARAMETER_JOINT_METROPOLIS_SAMPLER)
+        {
+            Rcpp::Rcout << "Setting parameter sampling mode to joint Metropolis\n";
+        }
+        else if (mode == PARAMETER_JOINT_SLICE_SAMPLER)
+        {
+            Rcpp::Rcout << "Setting parameter sampling mode to joint slice\n";
+        }
+        else if (mode == PARAMETER_DECORR_SAMPLER)
+        {
+            Rcpp::Rcout << "Setting parameter sampling mode to decorrelation Metropolis\n";
+        }
+        else if (mode == PARAMETER_JOINT_METROPOLIS_SAMPLER_OCL)
+        {
+            Rcpp::Rcout << "Setting parameter sampling mode to joint Metropolis with OpenCL\n";
+        }
+        else
+        {
+            Rcpp::Rcout << "Error: mode must be one of the following: \n"
+                        << PARAMETER_SINGLE_METROPOLIS_SAMPLER << ": Single Value Metropolis \n   "
+                        << PARAMETER_JOINT_METROPOLIS_SAMPLER << ": Joint Proposal Metropolis\n   "
+                        << PARAMETER_JOINT_SLICE_SAMPLER << ": Joint Slice\n   "
+                        << PARAMETER_DECORR_SAMPLER << ": Decorrelation Proposal Metropolis\n   "
+                        << PARAMETER_JOINT_METROPOLIS_SAMPLER_OCL << ": Joint Proposal Metropolis with OpenCL\n   "                        
+                        ;
+            return;
+        }
+
         context -> setParameterSamplingMode(mode);
         return;
     }
@@ -705,38 +761,6 @@ Rcpp::NumericVector spatialSEIRInterface::getRho()
     return(output);
 }
 
-Rcpp::IntegerVector spatialSEIRInterface::getOCLPreferences()
-{
-    Rcpp::IntegerVector prefs(8);
-    prefs[0] = *(context -> S0_OCL);
-    prefs[1] = *(context -> I0_OCL);
-    prefs[2] = *(context -> S_star_OCL);
-    prefs[3] = *(context -> E_star_OCL);
-    prefs[4] = *(context -> R_star_OCL);
-    prefs[5] = *(context -> beta_OCL);
-    prefs[6] = *(context -> beta_P_RS_OCL);
-    prefs[7] = *(context -> rho_OCL);
-    return(prefs);
-}
-
-void spatialSEIRInterface::setOCLPreferences(Rcpp::IntegerVector prefs)
-{
-    if (prefs.size() != 8)
-    {
-        Rcpp::Rcout << "OCL Preferences must be length 8: S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho\n";
-        throw(-1);
-    }
-    // Consider moving this from Rcpp to core libspatialSEIR
-    *(context -> S0_OCL) = prefs[0];
-    *(context -> I0_OCL) = prefs[1];
-    *(context -> S_star_OCL) = prefs[2];
-    *(context -> E_star_OCL) = prefs[3];
-    *(context -> R_star_OCL) = prefs[4];
-    *(context -> beta_OCL) = prefs[5];
-    *(context -> beta_P_RS_OCL) = prefs[6];
-    *(context -> rho_OCL) = prefs[7];
-}
-
 int spatialSEIRInterface::getDebug()
 {
     int out;
@@ -1159,7 +1183,6 @@ RCPP_MODULE(mod_spatialSEIRInterface)
             &spatialSEIRInterface::setParameterSamplingMode, "Type of sampler used for non-compartment parameters.")
     .property("compartmentSamplingMode", &spatialSEIRInterface::getCompartmentSamplingMode, 
             &spatialSEIRInterface::setCompartmentSamplingMode, "Type of sampler used for disease compartments.")
-    .property("oclPreferences", &spatialSEIRInterface::getOCLPreferences, &spatialSEIRInterface::setOCLPreferences, "Use OCL? Length 8:  S0, I0, S_star, E_star, R_star, beta, betaP_RS, rho")
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")
     ;

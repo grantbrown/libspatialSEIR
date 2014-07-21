@@ -96,20 +96,17 @@ namespace SpatialSEIR
             //Template for shared methods
             virtual ~FullConditional(){}; 
             virtual void sample(int verbose) = 0;
-            virtual int sampleCPU() = 0;
-            virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange) = 0;
-            static int getFullConditionalType();
+            virtual int getFullConditionalType() = 0;
             double acceptanceRatio();
             double* sliceWidth;
             void setSamplerType(int type);
             std::vector<Sampler*>* samplers;
             Sampler** currentSampler;
-            int* useOCL;
             int* samples;
             int* accepted;
     };
@@ -131,8 +128,6 @@ namespace SpatialSEIR
             virtual int evalCPU(int startLoc, int startTime) = 0;
             virtual int evalOCL() = 0;
             virtual void sample(int verbose) = 0;
-            virtual int sampleCPU() = 0;
-            virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
@@ -142,46 +137,7 @@ namespace SpatialSEIR
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
             /** Identify as compartment full conditional*/
-            static int getFullConditionalType();
-
-            /** Standard Metropolis proposal, centered at current value. */
-            void proposeUpdate(int* initCompartment,
-                               int initCompartmentLength,
-                               double width,
-                               double* metropolisComponent1,
-                               double* metropolisComponent2);
-
-            /** Partial Metropolis proposal, for indices in indexList. */
-            void proposeUpdate(int* initCompartment,
-                               int* indexList,
-                               int indexListLength,
-                               double width,
-                               double* metropolisComponent1,
-                               double* metropolisComponent2);
-
-            int sampleCompartment_CPU(ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width); 
-
-            int sampleEntireCompartment_CPU(ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width); 
-
-            int sampleEntireCompartment2_CPU(ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width); 
-
-            int sampleCompartment_OCL(ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width); 
-
-            int sampleCompartmentLocation(int loc, ModelContext* context,
-                                  CompartmentalModelMatrix* destCompartment,
-                                  double width); 
-
-            int sliceSampleCompartmentLocation(int loc, ModelContext* context,
-                                               CompartmentalModelMatrix* destCompartment,
-                                               double width);
+            int getFullConditionalType();
 
             double* steadyStateConstraintPrecision;
     };
@@ -204,8 +160,6 @@ namespace SpatialSEIR
             virtual int evalCPU() = 0;
             virtual int evalOCL() = 0;
             virtual void sample(int verbose) = 0;
-            virtual int sampleCPU() = 0;
-            virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
@@ -216,47 +170,7 @@ namespace SpatialSEIR
             int *varLen;
 
             /** Identify as parameter full conditional*/
-            static int getFullConditionalType();
-
-            /** Standard Metropolis proposal, centered at current value. */
-            void proposeUpdate(double* variable,
-                                       int varLen,
-                                       double* width,
-                                       double* metropolisComponent1,
-                                       double* metropolisComponent2);
-
-            /** Decorrelation proposal */
-            void proposeUpdate(double* variable,
-                               int varLen,
-                               CovariateMatrix* priorMatrix,
-                               double* width,
-                               double* metropolisComponent1,
-                               double* metropolisComponent2);
-
-            int sampleDouble(ModelContext* context, 
-                             double* variable,
-                             int varLen,
-                             double* width);
-
-            int sampleEntireDouble_CPU(ModelContext* context, 
-                             double* variable,
-                             int varLen,
-                             double* width);
-
-            int sampleEntireDouble_OCL(ModelContext* context, 
-                             double* variable,
-                             int varLen,
-                             double* width);
-
-            int sampleDouble_OCL(ModelContext* context, 
-                             double* variable,
-                             int varLen,
-                             double* width);
-
-            int sampleDoubleMetropolis(ModelContext* context, 
-                                       double* variable,
-                                       int varLen,
-                                       double* width);
+            int getFullConditionalType();
     };
 
 
@@ -277,8 +191,6 @@ namespace SpatialSEIR
             virtual int evalCPU(int startLoc) = 0;
             virtual int evalOCL() = 0;
             virtual void sample(int verbose) = 0;
-            virtual int sampleCPU() = 0;
-            virtual int sampleOCL() = 0;
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
@@ -289,42 +201,8 @@ namespace SpatialSEIR
 
 
             /** Identify as init compartment full conditional*/
-            static int getFullConditionalType();
-
-            /** Standard Metropolis proposal, centered at current value. */
-            void proposeUpdate(int* initCompartment,
-                               int initCompartmentLength,
-                               double width,
-                               double* metropolisComponent1,
-                               double* metropolisComponent2);
-
-            /** Partial Metropolis proposal, for indices in indexList. */
-            void proposeUpdate(int* initCompartment,
-                               int* indexList,
-                               int indexListLength,
-                               double width,
-                               double* metropolisComponent1,
-                               double* metropolisComponent2);
-
-            int sampleCompartment_CPU(ModelContext* context,
-                                      int* initCompartment, 
-                                      double width); 
-
-            int sampleEntireCompartment_CPU(ModelContext* context,
-                                            int* initCompartment,
-                                            double width); 
-
-            int sampleEntireCompartment_OCL(ModelContext* context,
-                                            int* initCompartment,
-                                            double width); 
-
-            int sampleCompartmentLocation(int loc, ModelContext* context,
-                                          int* initCompartment,
-                                          double width); 
-
+            int getFullConditionalType();
     };
-
-
 }
 
 #endif

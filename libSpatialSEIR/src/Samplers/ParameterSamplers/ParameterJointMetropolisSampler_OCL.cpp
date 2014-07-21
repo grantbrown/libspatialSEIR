@@ -19,11 +19,10 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-    ParameterJointMetropolisSampler::ParameterJointMetropolisSampler(ModelContext* context_,
+    ParameterJointMetropolisSampler_OCL::ParameterJointMetropolisSampler_OCL(ModelContext* context_,
                                                                        ParameterFullConditional* paramFC_,
                                                                        double* param_) 
     {
-
         context = new ModelContext*;
         paramFC = new ParameterFullConditional*;
         param = new double*;
@@ -33,19 +32,19 @@ namespace SpatialSEIR
         *param = param_;
     }
 
-    ParameterJointMetropolisSampler::~ParameterJointMetropolisSampler()
+    ParameterJointMetropolisSampler_OCL::~ParameterJointMetropolisSampler_OCL()
     {
         delete paramFC;
         delete param;
         delete context;
     }
 
-    int ParameterJointMetropolisSampler::getSamplerType()
+    int ParameterJointMetropolisSampler_OCL::getSamplerType()
     {
         return(PARAMETER_JOINT_METROPOLIS_SAMPLER);
     }
 
-    void ParameterJointMetropolisSampler::drawSample()
+    void ParameterJointMetropolisSampler_OCL::drawSample()
     {
         *((*paramFC) -> samples) += 1;
         double initVal;
@@ -53,12 +52,10 @@ namespace SpatialSEIR
         int i;
         double x0, x1;
         int totalPoints = *((*paramFC) -> varLen);
-
         memcpy((*context) -> compartmentCache, *param, totalPoints*sizeof(double));
-        (*paramFC) -> calculateRelevantCompartments(); 
-        (*paramFC) -> evalCPU();
+        (*paramFC) -> calculateRelevantCompartments_OCL(); 
+        (*paramFC) -> evalOCL();
         initVal = (*paramFC) -> getValue();
-
         if (! std::isfinite(initVal))
         {
             std::cerr << "Compartment sampler starting from value of zero probability.\n";
@@ -70,9 +67,8 @@ namespace SpatialSEIR
             x1 = (((*context) -> random -> normal(x0, sliceWidth)));
             (*param)[i] = x1;
         }
-
-        (*paramFC) -> calculateRelevantCompartments(); 
-        (*paramFC) -> evalCPU();
+        (*paramFC) -> calculateRelevantCompartments_OCL(); 
+        (*paramFC) -> evalOCL();
         double newVal = (*paramFC) -> getValue();
         double criterion = (newVal - initVal);
 
@@ -88,14 +84,14 @@ namespace SpatialSEIR
         {
             // Keep original values
             memcpy(*param, (*context) -> compartmentCache, totalPoints*sizeof(double));
-            (*paramFC) -> calculateRelevantCompartments(); 
+            (*paramFC) -> calculateRelevantCompartments_OCL(); 
             (*paramFC) -> setValue(initVal); 
         }
-
         if (! std::isfinite((*paramFC) -> getValue()))
         {
             std::cout << "Impossible value selected.\n";
             throw(-1);
         } 
+        
     }
 }

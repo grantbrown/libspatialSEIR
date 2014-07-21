@@ -34,8 +34,7 @@ namespace SpatialSEIR
                      double *_p_rs,
                      double *_beta_p_rs,
                      double _tausq,
-                     double _sliceWidth,
-                     int _useOCL)
+                     double _sliceWidth)
     {
 
         int nBeta = (*((_X) -> ncol_x));
@@ -52,7 +51,6 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int; 
         accepted = new int[nBeta];
-        useOCL = new int;
         varLen = new int;
 
         *varLen = nBeta;
@@ -74,7 +72,6 @@ namespace SpatialSEIR
         *tausq = _tausq;
         *sliceWidth = _sliceWidth;
         *value = -1.0;
-        *useOCL = _useOCL;
 
         // Set up samplers
         samplers = new std::vector<Sampler*>();
@@ -99,7 +96,6 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete[] accepted;
-        delete useOCL;
     }
 
     int FC_Beta_P_RS::evalCPU()
@@ -158,39 +154,7 @@ namespace SpatialSEIR
     void FC_Beta_P_RS::sample(int verbose)
     {
         if (verbose){std::cout << "Sampling Beta_P_RS\n";}
-        if (*useOCL){sampleOCL(); return;}
-        sampleCPU(); 
-    }
-
-    int FC_Beta_P_RS::sampleCPU()
-    {
-        int nbeta = *((*X) -> ncol_x);
-        int mode = (*context) -> getParameterSamplingMode();
-        if (mode == 1)
-        {
-            sampleDoubleMetropolis(*context, *beta_p_rs, nbeta, sliceWidth); 
-        }
-        else if (mode == 2)
-        {
-            sampleDouble(*context, *beta_p_rs, nbeta, sliceWidth); 
-        }
-        else if (mode == 3)
-        {
-            sampleEntireDouble_CPU(*context, *beta_p_rs, nbeta, sliceWidth);
-        }
-        else
-        {
-            std::cout << "Invalid sampling mode: falling back to 3\n";
-            sampleEntireDouble_CPU(*context, *beta_p_rs, nbeta, sliceWidth);
-        }
-        return(0);
-    }
-
-    int FC_Beta_P_RS::sampleOCL()
-    {
-        int nbeta = *((*X) -> ncol_x);
-        sampleEntireDouble_OCL(*context, *beta_p_rs, nbeta, sliceWidth); 
-        return(0);
+        (*currentSampler) -> drawSample();
     }
 
     long double FC_Beta_P_RS::getValue()

@@ -321,7 +321,6 @@ runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
 #runSimulation(1000,200, printAR = FALSE, targetRatio = 0.2)
 #print("Switching to joint reinfection sampling.")
 runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
-#res$oclPreferences = res$oclPreferences + 1
 
 
 

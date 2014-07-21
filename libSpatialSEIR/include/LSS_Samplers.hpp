@@ -21,6 +21,9 @@
 #define PARAMETER_JOINT_SLICE_SAMPLER 9
 #define PARAMETER_DECORR_SAMPLER 10
 
+#define COMPARTMENT_METROPOLIS_SAMPLER_OCL 11
+#define INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL 12
+#define PARAMETER_JOINT_METROPOLIS_SAMPLER_OCL 13
 
 namespace SpatialSEIR
 {
@@ -55,6 +58,21 @@ namespace SpatialSEIR
             void drawSample();
             int getSamplerType();
             ~CompartmentMetropolisSampler();
+
+            ModelContext** context;
+            CompartmentFullConditional** compartmentFC;
+            int** compartmentData;
+    };
+
+    class CompartmentMetropolisSampler_OCL : public Sampler
+    {
+        public: 
+            CompartmentMetropolisSampler_OCL(ModelContext* context,
+                                         CompartmentFullConditional* compartmentFC,
+                                         int* compartmentData);
+            void drawSample();
+            int getSamplerType();
+            ~CompartmentMetropolisSampler_OCL();
 
             ModelContext** context;
             CompartmentFullConditional** compartmentFC;
@@ -110,6 +128,22 @@ namespace SpatialSEIR
             InitCompartmentFullConditional** initCompartmentFC;
             int** initCompartmentData;
     };
+
+    class InitCompartmentMetropolisSampler_OCL : public Sampler
+    {
+        public:
+            InitCompartmentMetropolisSampler_OCL(ModelContext* context,
+                                             InitCompartmentFullConditional* initCompartmentFC,
+                                             int* initCompartmentData);
+            void drawSample();
+            int getSamplerType();
+            ~InitCompartmentMetropolisSampler_OCL();
+
+            ModelContext** context;
+            InitCompartmentFullConditional** initCompartmentFC;
+            int** initCompartmentData;
+    };
+
     class IndexedInitCompartmentMetropolisSampler : public Sampler
     {
         public:
@@ -169,6 +203,21 @@ namespace SpatialSEIR
             void drawSample();
             int getSamplerType();
             ~ParameterJointMetropolisSampler();
+
+            double** param;
+            ModelContext** context;
+            ParameterFullConditional** paramFC;
+    };
+
+    class ParameterJointMetropolisSampler_OCL : public Sampler
+    {
+        public:
+            ParameterJointMetropolisSampler_OCL(ModelContext* context,
+                                            ParameterFullConditional* paramFC,
+                                            double* param);
+            void drawSample();
+            int getSamplerType();
+            ~ParameterJointMetropolisSampler_OCL();
 
             double** param;
             ModelContext** context;

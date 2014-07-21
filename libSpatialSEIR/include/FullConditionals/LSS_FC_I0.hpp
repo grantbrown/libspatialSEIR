@@ -31,15 +31,12 @@ namespace SpatialSEIR
                       double *_p_ir,
                       double *_p_rs,
                       double *_p_se,
-                      double sliceWidth,
-                      int _useOCL);
+                      double sliceWidth);
             virtual ~FC_I0(); 
             virtual int evalCPU();
             virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual void sample(int verbose);
-            virtual int sampleCPU();
-            virtual int sampleOCL();
             virtual long double getValue();
             virtual void setValue(long double value);
             virtual int calculateRelevantCompartments();

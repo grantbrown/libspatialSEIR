@@ -37,8 +37,7 @@ namespace SpatialSEIR
                          double *_rho,
                          double *_beta,
                          double _steadyStateConstraintPrecision,
-                         double _sliceWidth,
-                         int _useOCL) 
+                         double _sliceWidth) 
     {
 
         context = new ModelContext*;
@@ -59,7 +58,6 @@ namespace SpatialSEIR
         accepted = new int; 
         *samples = 0;
         *accepted = 0;
-        useOCL = new int;
        
         *context = _context;
         *E_star = _E_star;
@@ -75,7 +73,6 @@ namespace SpatialSEIR
         *sliceWidth = _sliceWidth;
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
-        *useOCL = _useOCL;
 
         samplers = new std::vector<Sampler*>();
         currentSampler = new Sampler*;
@@ -102,7 +99,6 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
-        delete useOCL;
     }
 
     int FC_E_Star::evalCPU(int startLoc, int startTime)
@@ -334,58 +330,9 @@ namespace SpatialSEIR
     void FC_E_Star::sample(int verbose)
     {
         if (verbose){std::cout << "Sampling E_star\n";}
-        if (*useOCL){sampleOCL(); return;}
-        sampleCPU();
+        (*currentSampler) -> drawSample();
     }
 
-    int FC_E_Star::sampleCPU()
-    {
-        int mode = (*context) -> getCompartmentSamplingMode();
-        if (mode == 1)
-        {
-            this -> sampleCompartment_CPU(*context,
-                                          *E_star,*sliceWidth);
-        }
-        else if (mode == 2)
-        {
-            this -> sampleEntireCompartment_CPU(*context,
-                                       *E_star,*sliceWidth);
-        }
-        else if (mode == 3)
-        {
-            this -> sampleEntireCompartment2_CPU(*context,
-                                       *E_star,*sliceWidth);
-
-        }
-        else if (mode == 4)
-        {
-            if ((*context) -> random -> uniform() < 0.9)
-            {
-                this -> sampleEntireCompartment2_CPU(*context,
-                                          *E_star,*sliceWidth);
-            }
-            else 
-            {
-                this -> sampleCompartment_CPU(*context,
-                                          *E_star,*sliceWidth);
-            }
-        }
-        else
-        {
-            std::cout << "Invalid sampling mode, falling back to default.\n";
-            this -> sampleEntireCompartment_CPU(*context,
-                                       *E_star,*sliceWidth);
-        }
-
-        return 0;
-    }
-
-    int FC_E_Star::sampleOCL()
-    {
-        this -> sampleCompartment_OCL(*context,
-                                  *E_star,*sliceWidth);
-        return(0);
-    }
     long double FC_E_Star::getValue()
     {
         return(*(this -> value));

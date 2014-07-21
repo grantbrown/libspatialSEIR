@@ -49,9 +49,22 @@ namespace SpatialSEIR
             else if ((*model)[i] -> getFullConditionalType() == LSS_INIT_COMPARTMENT_FULL_CONDITIONAL_TYPE)
 
             {
-                // Current samplers available to compartments have direct analogues for init compartments. 
-                // See LSS_Samplers.hpp for specification
-                (*model)[i] -> setSamplerType(mode + 3);
+                // There is a 1 to 1 equivalence between InitCompartment samplers and Compartment samplers
+                switch (mode)
+                {
+                    case COMPARTMENT_METROPOLIS_SAMPLER:
+                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
+                        break;
+                    case COMPARTMENT_IDX_METROPOLIS_SAMPLER:
+                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER);
+                        break;
+                    case COMPARTMENT_IDX_SLICE_SAMPLER:
+                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_IDX_SLICE_SAMPLER);
+                        break;
+                    case COMPARTMENT_METROPOLIS_SAMPLER_OCL:
+                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL);
+                        break;
+                }
             }
             else if ((*model)[i] -> getFullConditionalType() == LSS_COMPARTMENT_FULL_CONDITIONAL_TYPE)
  
@@ -255,8 +268,7 @@ namespace SpatialSEIR
                           A0,
                           p_se,
                           p_ei,
-                          *(sliceWidths -> S0Width),
-                          0);
+                          *(sliceWidths -> S0Width));
 
         E0_fc = new FC_E0(this,
                           S,
@@ -269,8 +281,7 @@ namespace SpatialSEIR
                           p_ir,
                           p_ei,
                           p_se,
-                          *(sliceWidths -> S0Width),
-                          0);
+                          *(sliceWidths -> S0Width));
 
         I0_fc = new FC_I0(this, 
                           S,
@@ -283,8 +294,7 @@ namespace SpatialSEIR
                           p_ir,
                           p_rs,
                           p_se,
-                          *(sliceWidths -> I0Width),
-                          0);
+                          *(sliceWidths -> I0Width));
 
         R0_fc = new FC_R0(this,
                           R,
@@ -295,8 +305,7 @@ namespace SpatialSEIR
                           A0,
                           p_rs,
                           p_se, 
-                          *(sliceWidths -> I0Width),
-                          0);
+                          *(sliceWidths -> I0Width));
 
         S_star_fc = new FC_S_Star(this,
                                   S_star,
@@ -311,8 +320,7 @@ namespace SpatialSEIR
                                   beta,
                                   rho,
                                   (S_starArgs -> steadyStateConstraintPrecision),
-                                  *(sliceWidths -> S_starWidth),
-                                  0);
+                                  *(sliceWidths -> S_starWidth));
 
         E_star_fc = new FC_E_Star(this,
                                   E_star,
@@ -322,8 +330,7 @@ namespace SpatialSEIR
                                   X,A0,p_se,p_ei,
                                   rho,beta,
                                   (E_starArgs -> steadyStateConstraintPrecision),
-                                  *(sliceWidths -> E_starWidth),
-                                  0);
+                                  *(sliceWidths -> E_starWidth));
 
         R_star_fc = new FC_R_Star(this,
                                   R_star,
@@ -335,29 +342,25 @@ namespace SpatialSEIR
                                   S,
                                   A0,p_rs,p_ir,p_se,
                                   (R_starArgs -> steadyStateConstraintPrecision),
-                                  *(sliceWidths -> R_starWidth),
-                                  0);
+                                  *(sliceWidths -> R_starWidth));
 
         beta_fc = new FC_Beta(this,
                               E_star,
                               S,
                               A0,X,p_se,beta,rho,
                               *(sliceWidths -> betaWidth),
-                              (priorValues -> betaPriorPrecision),
-                              0);
+                              (priorValues -> betaPriorPrecision));
 
         rho_fc = new FC_Rho(this,
                             E_star,
                             S,
                             A0,X,p_se,beta,rho,
-                            *(sliceWidths -> rhoWidth),
-                            0);
+                            *(sliceWidths -> rhoWidth));
 
 
         betaPrs_fc = new FC_Beta_P_RS(this,S_star,R,X_pRS,A0,p_rs,betaPrs, 
                                       (priorValues->betaPrsPriorPrecision), 
-                                      *(sliceWidths -> betaPrsWidth),
-                                      0);
+                                      *(sliceWidths -> betaPrsWidth));
 
         gamma_ei_fc = new FC_Gamma_EI(this,
                               I_star,
@@ -366,7 +369,6 @@ namespace SpatialSEIR
                               gamma_ei,
                               (priorValues -> P_EI_priorAlpha),
                               (priorValues -> P_EI_priorBeta),
-                              0,
                               *(sliceWidths -> gammaEiWidth)
                               );
 
@@ -377,17 +379,7 @@ namespace SpatialSEIR
                              gamma_ir,
                              (priorValues -> P_IR_priorAlpha),
                              (priorValues -> P_IR_priorBeta),
-                             0,
                              *(sliceWidths -> gammaIrWidth));
-
-        S0_OCL = S0_fc -> useOCL; 
-        I0_OCL = I0_fc -> useOCL; 
-        S_star_OCL = S_star_fc -> useOCL;
-        E_star_OCL = E_star_fc -> useOCL; 
-        R_star_OCL = R_star_fc -> useOCL; 
-        rho_OCL = rho_fc -> useOCL;
-        beta_OCL = beta_fc -> useOCL;
-        beta_P_RS_OCL = betaPrs_fc -> useOCL;
 
         // Calculate Compartments
         this -> calculateS_CPU();
@@ -401,6 +393,10 @@ namespace SpatialSEIR
 
         this -> buildModel();
         *isPopulated = 1;
+
+
+        this -> setCompartmentSamplingMode(COMPARTMENT_METROPOLIS_SAMPLER);
+        this -> setParameterSamplingMode(PARAMETER_JOINT_METROPOLIS_SAMPLER);
     }
 
     void ModelContext::buildModel()
@@ -1161,14 +1157,6 @@ namespace SpatialSEIR
             delete[] p_ir;
             delete[] p_rs;
             delete config;
-            delete S0_OCL;
-            delete I0_OCL;
-            delete S_star_OCL;
-            delete E_star_OCL;
-            delete R_star_OCL;
-            delete rho_OCL;
-            delete beta_OCL;
-            delete beta_P_RS_OCL;
             delete fileProvider;
             delete random;
             delete S_star;

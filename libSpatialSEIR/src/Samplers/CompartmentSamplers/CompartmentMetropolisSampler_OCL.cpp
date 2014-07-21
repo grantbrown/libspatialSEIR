@@ -7,9 +7,9 @@
 #include<cmath>
 #include<algorithm>
 #include<LSS_FullConditional.hpp>
-#include<LSS_Samplers.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
+#include<LSS_Samplers.hpp>
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
@@ -19,38 +19,32 @@ namespace SpatialSEIR
     using std::cout;
     using std::endl;
 
-    IndexedCompartmentMetropolisSampler::IndexedCompartmentMetropolisSampler(ModelContext* context_,
+    CompartmentMetropolisSampler_OCL::CompartmentMetropolisSampler_OCL(ModelContext* context_,
                                                                CompartmentFullConditional* compartmentFC_,
                                                                int* compartmentData_)
     {
         context = new ModelContext*;
         compartmentFC = new CompartmentFullConditional*;
         compartmentData = new int*;
-        indexList = new int*;
-        indexLength = new int*;
 
         *context = context_; 
         *compartmentFC = compartmentFC_;
         *compartmentData = compartmentData_;
-        *indexLength = (*context) -> indexLength;
-        *indexList = (*context) -> indexList;
     }
 
-    IndexedCompartmentMetropolisSampler::~IndexedCompartmentMetropolisSampler()
+    CompartmentMetropolisSampler_OCL::~CompartmentMetropolisSampler_OCL()
     {
         delete compartmentFC;
         delete compartmentData;
-        delete indexLength;
-        delete indexList;
         delete context;
     }
 
-    int IndexedCompartmentMetropolisSampler::getSamplerType()
+    int CompartmentMetropolisSampler_OCL::getSamplerType()
     {
-        return(COMPARTMENT_IDX_METROPOLIS_SAMPLER);
+        return(COMPARTMENT_METROPOLIS_SAMPLER);
     }
 
-    void IndexedCompartmentMetropolisSampler::drawSample()
+    void CompartmentMetropolisSampler_OCL::drawSample()
     {
         *((*compartmentFC) -> samples) += 1;
         double initVal;
@@ -59,23 +53,22 @@ namespace SpatialSEIR
         int x0, x1;
         int totalPoints = *((*context) -> S -> nrow)*(*((*context) -> S -> ncol));
         memcpy((*context) -> tmpContainer -> data, *compartmentData, totalPoints*sizeof(int));
-        (*compartmentFC) -> calculateRelevantCompartments(); 
-        (*compartmentFC) -> evalCPU();
+        (*compartmentFC) -> calculateRelevantCompartments_OCL(); 
+        (*compartmentFC) -> evalOCL();
         initVal = (*compartmentFC) -> getValue();
         if (! std::isfinite(initVal))
         {
             std::cerr << "Compartment sampler starting from value of zero probability.\n";
             throw(-1);
         }
-        for (i = 0; i < (**indexLength); i++)
+        for (i = 0; i < totalPoints; i++)
         {
-            x0 = (*compartmentData)[(*indexList)[i]];
+            x0 = (*compartmentData)[i];
             x1 = std::floor(((*context) -> random -> normal(x0 + 0.5, sliceWidth)));
-            (*compartmentData)[(*indexList)[i]] = x1;
+            (*compartmentData)[i] = x1;
         }
-        (*compartmentFC) -> calculateRelevantCompartments();
-        (*compartmentFC) -> evalCPU();
-
+        (*compartmentFC) -> calculateRelevantCompartments_OCL(); 
+        (*compartmentFC) -> evalOCL();
         double newVal = (*compartmentFC) -> getValue();
         double criterion = (newVal - initVal);
 
@@ -88,8 +81,8 @@ namespace SpatialSEIR
         {
             // Keep original values
             memcpy(*compartmentData, (*context) -> tmpContainer -> data, totalPoints*sizeof(int));
-            (*compartmentFC) -> calculateRelevantCompartments();
-            (*compartmentFC) -> setValue(initVal);
+            (*compartmentFC) -> calculateRelevantCompartments_OCL(); 
+            (*compartmentFC) -> setValue(initVal); 
         }
         if (! std::isfinite((*compartmentFC) -> getValue()))
         {
