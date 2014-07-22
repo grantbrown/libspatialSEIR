@@ -507,10 +507,10 @@ namespace SpatialSEIR
         // todo: test output
         ((*currentDevice) -> commandQueue) -> enqueueUnmapMemObject(bufferOut, mappedMemory);
 
-        delete A;
-        delete B;
-        delete out;
-        delete cpuOut;
+        delete[] A;
+        delete[] B;
+        delete[] out;
+        delete[] cpuOut;
         return(0); 
     }
 

@@ -137,8 +137,8 @@ namespace SpatialSEIR
     CompartmentalModelMatrix::~CompartmentalModelMatrix()
     {
         delete[] data;
-        delete[] nrow;
-        delete[] ncol;
+        delete nrow;
+        delete ncol;
     }
 
 }

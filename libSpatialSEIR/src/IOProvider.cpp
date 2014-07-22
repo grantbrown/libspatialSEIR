@@ -62,7 +62,9 @@ namespace SpatialSEIR
             this -> close();
             delete isOpen;
         }
-        delete[] timeLocationTraces;
+
+        while ((timeLocationTraces -> size() != 0)){delete timeLocationTraces -> back(); timeLocationTraces -> pop_back();}
+        delete timeLocationTraces;
         delete startTime;
         delete timer;
         delete iterationStride;

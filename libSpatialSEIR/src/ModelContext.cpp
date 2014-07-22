@@ -1134,8 +1134,7 @@ namespace SpatialSEIR
         delete numIterations;
         if (*isPopulated)
         {
-            delete offset;
-            delete isPopulated; 
+            delete[] offset;
             delete S0_fc;
             delete E0_fc;
             delete I0_fc;
@@ -1148,6 +1147,8 @@ namespace SpatialSEIR
             delete betaPrs_fc;
             delete gamma_ei_fc;
             delete gamma_ir_fc;
+            delete gamma_ei;
+            delete gamma_ir;
             delete tmpContainer;
             delete[] p_se;
             delete[] p_se_components;
@@ -1177,11 +1178,13 @@ namespace SpatialSEIR
             delete[] eta;
             delete rho;
             delete[] gamma;
-            delete singleLocation;
-            delete[] model;
+            delete singleLocation;   
+            // FC's have already been disposed of.
+            delete model;
             delete oclProvider;
-            delete indexList;
+            delete[] indexList;
             delete indexLength;
+
         }
         delete isPopulated;
     }

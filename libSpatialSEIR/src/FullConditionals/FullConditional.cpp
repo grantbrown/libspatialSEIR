@@ -95,10 +95,10 @@ namespace SpatialSEIR
 
     InitData::~InitData()
     {
-        delete S0;
-        delete E0;
-        delete I0;
-        delete R0;
+        delete[] S0;
+        delete[] E0;
+        delete[] I0;
+        delete[] R0;
         delete numLocations;
     }
 

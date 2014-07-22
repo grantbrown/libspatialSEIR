@@ -123,13 +123,12 @@ namespace SpatialSEIR
 
     CovariateMatrix::~CovariateMatrix()
     {
-        std::cout << "Covariate Matrix Destroyed" << std::endl;
         delete[] X;
         delete[] Z;
-        delete[] nrow_x;
-        delete[] ncol_x;
-        delete[] nrow_z;
-        delete[] ncol_z;
+        delete nrow_x;
+        delete ncol_x;
+        delete nrow_z;
+        delete ncol_z;
 
     }
 

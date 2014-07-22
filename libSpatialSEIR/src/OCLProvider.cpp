@@ -18,8 +18,11 @@ SpatialSEIR::DeviceContainer::DeviceContainer(cl::Device *inDevice, cl::Context 
 }
 SpatialSEIR::DeviceContainer::~DeviceContainer()
 {
+    std::cout << "Deleting DeviceContainer.\n";
     delete commandQueue;
+    std::cout << "1\n";
     delete device;
+    std::cout << "2\n";
 }
 
 SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
@@ -110,10 +113,13 @@ SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
 
 SpatialSEIR::PlatformContainer::~PlatformContainer()
 {
-    delete[] devices;
-    delete[] deviceTypes;
-    delete[] deviceNames;
-    delete[] doublePrecision;
+    while (devices -> size() != 0){delete (devices -> back()); devices -> pop_back();}
+    delete devices;
+    delete deviceTypes;
+    while (deviceNames -> size() != 0){deviceNames -> pop_back();}
+    delete deviceNames;
+    while (doublePrecision -> size() != 0){doublePrecision -> pop_back();}
+    delete doublePrecision;
     delete context;
     delete platform;
 }
