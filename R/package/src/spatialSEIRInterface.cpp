@@ -435,7 +435,10 @@ void spatialSEIRInterface::printSamplingParameters()
     int i;
     Rcpp::Rcout << "S0:       " << (*(context -> S0_fc -> sliceWidth)) << "\n"; 
     Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> sliceWidth)) << "\n"; 
-    Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> sliceWidth)) << "\n"; 
+    if ((context -> config -> reinfectionMode) <= 2)
+    {
+        Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> sliceWidth)) << "\n"; 
+    }
     Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> sliceWidth)) << "\n"; 
     Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> sliceWidth))<< "\n";  
 
@@ -447,13 +450,16 @@ void spatialSEIRInterface::printSamplingParameters()
     }
     Rcpp::Rcout << "\n"; 
 
-    Rcpp::Rcout << "betaP_RS:     ";
-    for (i = 0; i < (*(context -> betaPrs_fc -> varLen)); i++)
+    if ((context -> config -> reinfectionMode) == 1)
     {
-        Rcpp::Rcout << ((context -> betaPrs_fc -> sliceWidth)[i]) << ", ";
+        Rcpp::Rcout << "betaP_RS:     ";
+        for (i = 0; i < (*(context -> betaPrs_fc -> varLen)); i++)
+        {
+            Rcpp::Rcout << ((context -> betaPrs_fc -> sliceWidth)[i]) << ", ";
 
+        }
+        Rcpp::Rcout << "\n"; 
     }
-    Rcpp::Rcout << "\n"; 
 
     if (*(context -> S_star -> ncol) > 1)
     {
@@ -479,9 +485,12 @@ void spatialSEIRInterface::printAcceptanceRates()
     Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> accepted)*1.0)/ 
                                   (*(context -> I0_fc -> samples)) 
                           <<  "\n"; 
-    Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
-                                      (*(context -> S_star_fc -> samples)) 
-                              << "\n"; 
+    if ((context -> config -> reinfectionMode) <= 2)
+    {
+        Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
+                                          (*(context -> S_star_fc -> samples)) 
+                                  << "\n"; 
+    }
 
     Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> accepted)*1.0)/
                                       (*(context -> E_star_fc -> samples)) 
@@ -504,14 +513,17 @@ void spatialSEIRInterface::printAcceptanceRates()
                                           (*(context -> rho_fc -> samples)) 
                                   << "\n"; 
     }
-    Rcpp::Rcout << "betaP_RS: ";
-    for (i = 0; i < *(context -> betaPrs_fc -> varLen); i++)
+    if ((context -> config -> reinfectionMode) == 1)
     {
-        Rcpp::Rcout << ((context -> betaPrs_fc -> accepted)[i]*1.0)/
-                                  (*(context -> betaPrs_fc -> samples)) 
-                                  << ", "; 
+        Rcpp::Rcout << "betaP_RS: ";
+        for (i = 0; i < *(context -> betaPrs_fc -> varLen); i++)
+        {
+            Rcpp::Rcout << ((context -> betaPrs_fc -> accepted)[i]*1.0)/
+                                      (*(context -> betaPrs_fc -> samples)) 
+                                      << ", "; 
+        }
+        Rcpp::Rcout << "\n"; 
     }
-    Rcpp::Rcout << "\n"; 
     Rcpp::Rcout << "gamma_ei:     " << (*(context -> gamma_ei_fc -> accepted)*1.0)/
                                       (*(context -> gamma_ei_fc -> samples)) 
                               << "\n"; 
