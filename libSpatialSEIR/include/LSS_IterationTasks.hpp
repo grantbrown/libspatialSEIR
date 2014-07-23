@@ -35,13 +35,17 @@ namespace SpatialSEIR
      * same space-time locations for each of the compartments in order
      * to reduce sampler autocorrelation. This task updates the list of 
      * indices after each MCMC sample. */
-    class SetCompartmentSamplingIndices : public IterationTask
+    class SetCompartmentSamplingIndicesTask : public IterationTask
     {
         public:
-            SetCompartmentMetropolisIndices(ModelContext* context, 
+            SetCompartmentMetropolisIndicesTask(ModelContext* context, 
                                             int updateProportion);
             void executeTask();
-            void getTaskType();
+            int getTaskType();
+
+            ModelContext** context;
+            int** index;
+            int** indexLength;
     };
 }
  
