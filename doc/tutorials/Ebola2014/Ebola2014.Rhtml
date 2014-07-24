@@ -76,17 +76,20 @@
     </div>
 
     <div class="container">
-      <a id="introduction-sect" class="anchor"></a>
+      <a id="introduction-sect" class="anchor">
       <h2>Introduction</h2>
+      </a>
       <div class="row">
         <div class = "col-sm-10 col-sm-offset-1">
-        <a id="intro-outbreak-sect" class="anchor"></a>
+        <a id="intro-outbreak-sect" class="anchor">
         <h3>The Outbreak</h3>
+        </a>
           <p>
           The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, there aren't many specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of peer reivewed epidemic forecasts, this document explores a simple spatial SEIR model to make some initial forecasts. 
           </p>
-          <a id="intro-data-sect" class="anchor"></a>
+          <a id="intro-data-sect" class="anchor">
         <h3>The Data</h3>
+        </a>
         <p>
         A summary of the WHO case reports is very helpfully compiled on wikipedia for analysts who are too lazy to read the case reports themselves. Let's read it in with the xml library: 
       </p>
@@ -195,8 +198,9 @@ end.rcode-->
   figure2()
 end.rcode-->
 
-      <a id="intro-compartment-sect" class="anchor"></a>
+      <a id="intro-compartment-sect" class="anchor">
       <h3>Compartmental Models</h3>
+      </a>
       <p>
         Now that we've got data read in and made a couple of plots to ensure we haven't done anything to terribly stupid with it
         , let's do some compartmental epidemic modeling. Not only has Ebola been <a href="http://www.ncbi.nlm.nih.gov/pubmed/17156292">well modeled in the past</a> using compartmental modeling techniques, but this author happens to be working on a software library designed to fit compartmental models in the spatial SEIRS family. What a strange coincidence! Specifically, we'll be using heirarchical Bayesian estimation methods to fit a spatial SEIR model to the data.  
@@ -218,8 +222,9 @@ We're not going to do anything fancy with demographic information or public heal
     <div class="col-sm-1">
     </div>
   </div>
-  <a id="analysis-1-sect" class = "anchor"></a>
+  <a id="analysis-1-sect" class = "anchor">
   <h2>Analysis 1</h2> 
+  </a>
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
       <a id="analysis-1-set-up-sect" class = "anchor">
@@ -534,8 +539,9 @@ for (i in 1:length(SEIRmodels))
 end.rcode-->
 </div>
 
-<a id="analysis-1-convergence-sect" class="anchor"></a>
+<a id="analysis-1-convergence-sect" class="anchor">
 <h3>Convergence Diagnosis</h3>
+</a>
 
 <p>As this is a Bayesian analysis in which the posterior distribution is sampled using MCMC techniques, we really need some
 indication that the samplers have indeed converged to the posterior distribution in order to make any inferences about the 
@@ -622,8 +628,9 @@ end.rcode-->
   figure4()
 end.rcode-->
 
-<a id="analysis-1-estimates-sect" class="anchor"></a>
+<a id="analysis-1-estimates-sect" class="anchor">
 <h3>Estimated Epidemic Behavior</h3>
+</a>
 <p>
   The convergence looks reasonable, so let's dissect the estimates a bit. 
 </p>
@@ -721,8 +728,9 @@ end.rcode-->
 figure5()
 end.rcode-->
 
-<a id="analysis-1-r0-sect" class="anchor"></a>
+<a id="analysis-1-r0-sect" class="anchor">
 <h3>Basic Reproductive Number Calculation</h3>
+</a>
 <p>
 A common tool for describing the development and containment of an epidemic is a quantity known as the basic reproductive numer, or the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections an infected individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect it to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity. <br/>
 
@@ -773,8 +781,9 @@ The dip in recent days in the estimated basic reproductive ratio is definitely a
 While the basic reproductive number is a useful quantity to know, it does not directly make any predictions about future epidemic behavior. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
  
 
-<a id="analysis-1-prediction-sect" class="anchor"></a>
+<a id="analysis-1-prediction-sect" class="anchor">
 <h3>Epidemic Prediction</h3>
+</a>
 <p>
  
  Currently the simulation required for epidemic prediction must be done "manually", or by writing a bunch of R code (given below). As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
