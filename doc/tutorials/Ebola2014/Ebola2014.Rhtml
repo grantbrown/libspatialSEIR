@@ -83,12 +83,12 @@
         <a id="intro-outbreak-sect" class="anchor"></a>
         <h3>The Outbreak</h3>
           <p>
-          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, there aren't many specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of peer reivewed epidemic forecasts, let's make some!
+          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, there aren't many specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of peer reivewed epidemic forecasts, this document explores a simple spatial SEIR model to make some initial forecasts. 
           </p>
           <a id="intro-data-sect" class="anchor"></a>
         <h3>The Data</h3>
         <p>
-        A summary of the WHO case reports is very helpfully compiled on wikipedia for analysts who are too lazy to read the case reports themselves.  Let's read it in with the xml library. 
+        A summary of the WHO case reports is very helpfully compiled on wikipedia for analysts who are too lazy to read the case reports themselves. Let's read it in with the xml library: 
       </p>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
 <div class="code-and-output-block" style="display:none">
@@ -101,8 +101,10 @@ tbls = readHTMLTable(url)
 dat = tbls[[2]]
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
+original.rptDate = rptDate
 ascendingOrder = order(rptDate)
-rptDate = rptDate[ascendingOrder]
+rptDate = rptDate[ascendingOrder][2:length(rptDate)]
+original.rptDate = original.rptDate[ascendingOrder]
 Guinea = as.numeric(as.character(dat$V4[2:nrow(dat)]))[ascendingOrder]
 Guinea = ifelse(is.na(Guinea), 0, Guinea)
 Liberia = as.numeric(as.character(dat$V6[2:nrow(dat)]))[ascendingOrder]
@@ -111,20 +113,19 @@ Sierra.Leone = as.numeric(as.character(dat$V8[2:nrow(dat)]))[ascendingOrder]
 Sierra.Leone = ifelse(is.na(Sierra.Leone), 0,Sierra.Leone)
 
 # Define the plot for the next section
-
+ylim = c(min(c(Guinea, Sierra.Leone, Liberia)), 
+             max(c(Guinea, Sierra.Leone, Liberia)))
 figure1 = function()
 {
-    ylim = c(min(c(Guinea, Sierra.Leone, Liberia)), 
-             max(c(Guinea, Sierra.Leone, Liberia)))
-      plot(rptDate, Guinea, type = "l", 
+      plot(original.rptDate, Guinea, type = "l", 
            main = "Raw Data: Case Counts From Wikipedia", 
            xlab = "Date", 
            ylab = "Total Cases",
            ylim = ylim, lwd = 3)
       abline(h = seq(0,1000, 50), lty = 2, col = "lightgrey")
-      lines(rptDate, Liberia, lwd = 3, col = "blue", lty = 2)
-      lines(rptDate, Sierra.Leone, lwd = 3, col = "red", lty = 3)
-      legend(x = rptDate[1], y = max(ylim), legend = 
+      lines(original.rptDate, Liberia, lwd = 3, col = "blue", lty = 2)
+      lines(original.rptDate, Sierra.Leone, lwd = 3, col = "red", lty = 3)
+      legend(x = original.rptDate[1], y = max(ylim), legend = 
                c("Guinea", "Liberia", "Sierra Leone"), 
              lty = 1:3, col = c("black", "blue","red"), bg="white", cex = 1.1)
 }
@@ -132,7 +133,7 @@ figure1 = function()
 end.rcode-->
 </div>
 <p>
-Let's take a look at the raw data:
+With data in hand, let's begin where every analysis should begin: graphs.
 </p>
 
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
@@ -142,13 +143,13 @@ end.rcode-->
 These represent cumulative counts, but because case reports can be revised downward due to non-Ebola illnesses the graphs are not monotone. If someone would hire an intern to read all the case reports and compile their best guess as to actual case infection times, that would be pretty awesome. Instead, let's just "un-cumulate"* the data and bound it at zero to get a rough estimate of new case counts over time. 
 <br/>
 
-<small> *Unlike uncumulate, decumulate is actually a word. Unfortunately it just means "to decrease". </small></p>
+<small> *Unlike uncumulate, decumulate is actually a word. Unfortunately it just means "to decrease", and so was unsuitable for use here. There should probably be a word for uncumulating things, perhaps uncumulate. </small></p>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
 <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
 uncumulate = function(x)
 {
-    out = c(x[1], x[2:length(x)]-x[1:(length(x)-1)])
+    out = c(x[2:length(x)]-x[1:(length(x)-1)])
     ifelse(out >= 0, out, 0)
 }
 # The "I_star" name will make more sense in a bit
@@ -158,11 +159,11 @@ I_star = cbind(uncumulate(Guinea),
 
 
 # Define figure 2 for next section
+ylim = c(0,max(I_star))
 figure2 = function()
 {
     layout(matrix(c(1,2), nrow = 1),
         widths = c(8,4), heights = c(4,4))
-    ylim = c(0,max(I_star))
     plot(rptDate, I_star[,1], main = "Crude Guess at New Case Counts Over Time", 
          xlab = "Date", 
          ylab = "New Cases",
@@ -187,18 +188,18 @@ end.rcode-->
 </div>
 
 <p>
-  Here's a look at the "un-cumulated" counts.
+  Here's a look at the "un-cumulated" counts. The process is a bit noisier from this perspective. 
 </p>
 
-<!--begin.rcode dpi=150,echo=FALSE
+<!--begin.rcode dpi=150,fig.align='center',echo=FALSE
   figure2()
 end.rcode-->
 
       <a id="intro-compartment-sect" class="anchor"></a>
       <h3>Compartmental Models</h3>
       <p>
-        Now that we've got data read in and made a couple pretty plots, let's do some compartmental epidemic modeling. Not only has Ebola been <a href="http://www.ncbi.nlm.nih.gov/pubmed/17156292">well modeled in the past</a>
-        using compartmental modeling techniques, but this author happens to be working on a software library to fit compartmental models in the spatial SEIRS family. What a strange coincidence! Specifically, we'll be using heirarchical Bayesian estimation methods to fit a spatial SEIR model to the data.  
+        Now that we've got data read in and made a couple of plots to ensure we haven't done anything to terribly stupid with it
+        , let's do some compartmental epidemic modeling. Not only has Ebola been <a href="http://www.ncbi.nlm.nih.gov/pubmed/17156292">well modeled in the past</a> using compartmental modeling techniques, but this author happens to be working on a software library designed to fit compartmental models in the spatial SEIRS family. What a strange coincidence! Specifically, we'll be using heirarchical Bayesian estimation methods to fit a spatial SEIR model to the data.  
         <br/>
         
         While a full treatment of this field of epidemic modeling is (far) beyond the scope of this writing, the basic idea is pretty intuitive. In order to come up with a simplified model of a disease process, discrete disease states (aka, compartments) are defined. The most common of these are S, E, I, and R which stand for:<br>
@@ -210,8 +211,8 @@ end.rcode-->
         <li><strong>R</strong>emoved or recovered</li>
       </ul>
   <p>
-    This sequence traversed by members of a population (S to E to I to R) forms what we might call the temporal process model of our analysis. This analysis belongs to the stochastic part of the compartmental modeling family (which has its roots in deterministic systems of ordinary and partial differential equations), the transitions between these compartments occurs according to unknown probabilities. It is the S to E probability, which captures infection activity, into which we introduce spatial structure. Some details of this are given as comments to the code below, and more information than you probably want on the statistical particulars is available in <a href="https://github.com/grantbrown/libspatialSEIR/blob/master/doc/models/SEIR_Algo.pdf">this pdf document</a>. For now, suffice it to say that we'll place a simple spatial structure on the epidemic process which simply allows disease to spread between the three nations involved, and we'll try to estimate the strength of that relationship. <br/>
-In addition, we're not going to do anything fancy with demographic information or public health intervention dates. Although we certainly could, this <i>is</i> a quick and dirty analysis. In the interest of simplicity, we'll simply fit a different disease intensity parameter for each of the countries, as well as a set of basis functions to capture the temporal trend. 
+    This sequence traversed by members of a population (S to E to I to R) forms what we might call the temporal process model of our analysis. This analysis belongs to the stochastic branch of the compartmental modeling family, which has its roots in deterministic systems of ordinary and partial differential equations. In this framework, transitions between the compartments occur according to unknown probabilities. It is the S to E probability, which captures infection activity, into which we introduce spatial structure. Some details of this are given as comments to the code below, and more information than you probably want on the statistical particulars is available in <a href="https://github.com/grantbrown/libspatialSEIR/blob/master/doc/models/SEIR_Algo.pdf">this pdf document</a>. For now, suffice it to say that we'll place a simple spatial structure on the epidemic process which simply allows disease to spread between the three nations involved, and we'll try to estimate the strength of that relationship. Many other potential structures are possible, limited primarily by the ammount of additional research and data compilation you are willing to do. <br/>
+We're not going to do anything fancy with demographic information or public health intervention dates. Demographic parameters are relatively difficult to estimate here, as there are only three spatial units which are all from the same region. Intervention dates are more promising, but their inclusion requires much more background research than we have time for here. In the interest of simplicity and estimability, we'll just fit a different disease intensity parameter for each of the three countries in addition to as a set of basis functions to capture the temporal trend. 
   </p>
     </div>
     <div class="col-sm-1">
@@ -221,18 +222,18 @@ In addition, we're not going to do anything fancy with demographic information o
   <h2>Analysis 1</h2> 
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
-      <a id="analysis-1-set-up-sect" class = "anchor"></a>
-      <h3>Set Up</h3>
+      <a id="analysis-1-set-up-sect" class = "anchor">
+      <h3>Set Up</h3></a>
   <p>
     There are some things we need to define before we can start fitting models and making predictions. 
   </p>
   <ol>
     <li>The time points are not evenly spaced, so we need to define appropriate offset values to capture the ammount
     of aggregation performed (time between reports).</li>
-    <li>We must define the measure of distance between the three spatial units that drives the spatial correlation structure.</li>
+    <li>We must define the spatial correlation structure.</li>
     <li>A set of basis functions needs to be chosen to capture the temporal trend.</li>
-    <li>Prior parameters and parameter staring values must be specified for each chain.</li>
-    <li>A whole bunch of bookkeeping stuff for which I haven't yet programmed sensible default behavior needs to be defined.</li>
+    <li>Prior parameters and parameter staring values must be specified for each <a href="http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">chain.</a></li>
+    <li>A whole bunch of bookkeeping stuff for which I haven't yet programmed sensible default behavior needs to be set up.</li>
   </ol>
   <p>
   More details are available in comments to the code below. 
@@ -242,9 +243,8 @@ In addition, we're not going to do anything fancy with demographic information o
 <!--begin.rcode
 
 # Define the temporal offset vector to be the number of days reflected in each 
-# aggregated record (time between reports). Start at the beginning of march 
-# (simplifying assumptions)
-offsets = rptDate- c(as.Date("2014-03-01"), rptDate[1:(length(rptDate)-1)])
+# aggregated record (time between reports).
+offsets = uncumulate(original.rptDate)
 
 # Define the simple "distance" matrix. There are 3 countries, all of which 
 # share borders. Therefore we simply define a 3x3 matrix with zero diagonals 
@@ -311,13 +311,13 @@ xDim = dim(X)
 zDim = dim(Z)
     
 # Declare prior parameters for the E to I and I to R probabilities. 
-priorAlpha_gammaEI = 25;
-priorBeta_gammaEI = 100;
-priorAlpha_gammaIR = 14;
-priorBeta_gammaIR = 100;
+priorAlpha_gammaEI = 250;
+priorBeta_gammaEI = 1000;
+priorAlpha_gammaIR = 140;
+priorBeta_gammaIR = 1000;
 
 # Declare prior precision for exposure model paramters
-betaPriorPrecision = 0.01
+betaPriorPrecision = 0.1
 
 # Set the reinfection mode to 3, which indicates that S_star, or the newly 
 # susceptibles, must remain zero. People are very unlikely to get ebola twice.
@@ -384,8 +384,8 @@ proposeParameters = function(seedVal, chainNumber)
     # Make a crude guess as to the true compartments:
     # S_star, E_star, R_star, and thus S,E,I and R
     proposal = generateCompartmentProposal(I_star, N, 
-                                           S0 = N[1,]-I_star[1,] - c(10,0,0),
-                                           I0 = c(10,0,0), 
+                                           S0 = N[1,]-I_star[1,] - c(86,0,0),
+                                           I0 = c(86,0,0), 
                                            p_ir = 0.5, 
                                            p_rs = 0.00)
     
@@ -476,7 +476,7 @@ SEIRmodels[[1]]$setTrace(2) #Sierra Leone
 runSimulation = function(modelObject,
                          numBatches=500, 
                          batchSize=20, 
-                         targetAcceptanceRatio=0.1,
+                         targetAcceptanceRatio=0.2,
                          tolerance=0.05,
                          proportionChange = 0.1
                         )
@@ -494,7 +494,7 @@ end.rcode-->
       </div> 
 
 <p>
-  With the model objects created, let's do some short runs for each chain to try to choose sensible tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
+  With the model objects created, let's do some short runs for each chain to try to choose sensible Metropolis tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
 </p>
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -511,7 +511,9 @@ for (i in 1:length(SEIRmodels))
 end.rcode-->
 </div>
       
-<p>With some initial tuning samples out of the way, we can run the three chains for longer in order to acheive convergence. As before, we'll adjust the tuning parameters along the way. </p>  
+<p>Now we can run the three chains for longer in order to acheive convergence. 
+As before, we'll adjust the tuning parameters along the way. Astute readers may notice the frankly inconvenient number of samples requested
+, and will correctly infer that autocorrelation is currently a major problem for this library. This problem is being worked on.</p>  
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
@@ -521,11 +523,11 @@ for (i in 1:length(SEIRmodels))
 {
     cat(paste("Running chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels[[i]], 
-                  numBatches=25, 
-                  batchSize=50000, 
-                  targetAcceptanceRatio=0.25,
+                  numBatches=200, 
+                  batchSize=10000, 
+                  targetAcceptanceRatio=0.2,
                   tolerance=0.025,
-                  proportionChange = 0.1))
+                  proportionChange = 0.05))
     cat(paste("Time elapsed: ", round(tm[3]/60,3), 
               " minutes\n", sep = ""))
 }
@@ -612,11 +614,11 @@ figure4 = function()
 end.rcode-->
 </div>
 
-<!--begin.rcode dpi=150, echo=FALSE
+<!--begin.rcode dpi=150,fig.align='center', echo=FALSE
   figure3()
 end.rcode-->
 
-<!--begin.rcode dpi=150, echo=FALSE
+<!--begin.rcode dpi=150, fig.align='center',echo=FALSE
   figure4()
 end.rcode-->
 
@@ -661,7 +663,17 @@ cat("Output from coda library summary:\n########################\n")
 summary(mcl)
 end.rcode-->
 
-<p><strong>## Add some analysis of parameter estimates here. ##</strong></p>
+<p>The average time spent in a particular disease compartment is just one divided by the probability of 
+a transition between compartments. The units here are days, so we can see that the average infectious time is estimated to be
+(roughly) between 7 and 11 days, while the average latent time is (roughly) between 7 and 10 days. In reality, there is a lot 
+of variability in these times for Ebola, but these seem like reasonable estimates for the average values. <br/>
+
+We also notice that there is reasonably strong spatial dependence (the distribution of the spatial dependence parameter is well separated from zero), indicating reasonably strong mixing between the three populations. This is unsurprising, as the disease has in fact spread between all three nations. 
+<br/>
+
+It also appears that Guinea has the lowest estimated epidemic intensity, followed by Sierra Leone and Liberia, which have similar credible
+intervals for their intercept parameters.
+</p>
 
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -674,13 +686,14 @@ getMeanAndCI = function(loc,tpt,baseStr="I_")
     vec = vec[floor(length(vec)/2):length(vec)]
     return(c(mean(vec), quantile(vec, probs = c(0.05, 0.95))))
 }
-figure5 = function()
-{
-  Guinea.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=0)
-  Liberia.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=1)
-  SierraLeone.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=2)
+
+Guinea.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=0)
+Liberia.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=1)
+SierraLeone.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=2)
   
   maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
+figure5 = function()
+{
   par(mfrow = c(3,1))
   plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), 
        main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
@@ -704,7 +717,7 @@ figure5 = function()
 end.rcode-->
 </div>
 
-<!--begin.rcode dpi=150, echo=FALSE
+<!--begin.rcode dpi=150,fig.align='center', echo=FALSE
 figure5()
 end.rcode-->
 
@@ -726,9 +739,9 @@ In addition to coming up with a point estimate of the ratio, it is helpful to qu
   
   R0_vec = sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0)
 
-  for (i in 1:200)
+  for (i in 1:500)
   {
-      SEIRmodels[[1]]$simulate(500)
+      SEIRmodels[[1]]$simulate(1000)
       R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0))
   }
 
@@ -745,25 +758,27 @@ figure6 = function()
        ylim = r0.ylim, lwd = 2)
   lines(rptDate[1:(length(rptDate)-1)], r0.LB, lty = 2)
   lines(rptDate[1:(length(rptDate)-1)], r0.UB, lty = 2)
-  abline(h=seq(0, 5, 0.25), lty=2, col="lightgrey")
+  abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
   abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
 }
 end.rcode-->
 </div>
 
-<!--begin.rcode dpi=150, echo=FALSE
+<!--begin.rcode dpi=150,fig.align='center', echo=FALSE
 figure6()
 end.rcode-->
 
+The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. Notice, on the other hand, the high variability during May. This is an interesting result, and perhaps reflects the seemingly contradicting information from Guinea (where the epidemic continued to spread) and Liberia (where the epidemic briefly disappeared).<br/>
 
+While the basic reproductive number is a useful quantity to know, it does not directly make any predictions about future epidemic behavior. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
+ 
 
 <a id="analysis-1-prediction-sect" class="anchor"></a>
 <h3>Epidemic Prediction</h3>
 <p>
- The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. This still doesn't directly make any predictions about future epidemic behavior, however. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
  
- Currently this simulation must be done "manually", or by writing a bunch of R code (given below). As the library develops, a simpler prediction 
- interface is a high priority. 
+ Currently the simulation required for epidemic prediction must be done "manually", or by writing a bunch of R code (given below). As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
+ We must be cautious when making predictions about a chaotic process this far into the future. We must be particularly cautious becase the basis chosen for the temporal trend in the epidemic intensity process was polynomial. While polynomial bases often provide a good fit to the data, they can behave unreasonably outside the range over which the model was fit (quadratic and cubic terms can get large very quickly). Analysis 2 will consider, in abbreviated fashion, the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
 </p>
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -951,21 +966,21 @@ figure7 = function()
 end.rcode-->
 </div>
 
-<!--begin.rcode dpi=150, echo=FALSE
+<!--begin.rcode dpi=150,fig.align='center', echo=FALSE
 figure7()
 end.rcode-->
 
-<p>This looks really promising! Based on these predictions, so long as the virus does not spread to additional reservoirs which have not experienced the population behavior shifts apparent in the data, the epidemic looks like it should continue to weaken into the fall, eventually dying out.
-<br/> On the other hand, we must be cautious when making predictions about a chaotic process this far into the future. We must be particularly cautious becase the basis chosen for the temporal trend in the epidemic intensity process was polynomial. While polynomial bases often provide a good fit to the data, they can behave unreasonable outside the range over which the model was fit. Analysis 2 will consider, in abbreviated fashion, the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. </p>
+<p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. There is no data to support these large swings in epidemic behavior, so we can be fairly certain that these long term predictions are extrapolation errors. 
+<br/> On the other hand,</p>
     </div>
     <div class="col-sm-1">
   </div>
  
-  <a id="anchor-analysis-2-sect" class = "anchor"></a>
-  <h2>Analysis 2: Spline Basis</h2> 
+  <a id="anchor-analysis-2-sect" class = "anchor">
+  <h2>Analysis 2: Spline Basis</h2> </a>
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
-      <p>As we're satisfied with the estimation performance of the polynomial basis presented in analysis 1, and because this document is quite long enough already, we'll consider only prediction here. Below is an abbreviated and concatenated modification of the code presented above.</p>
+      <p> Below is an abbreviated and concatenated modification of the code presented above. We won't be concerned with interpreting the model parameters, as the polynomial model was likely sufficient in terms of estimation.</p>
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
@@ -1055,11 +1070,11 @@ for (i in 1:length(SEIRmodels.spline))
 {
     cat(paste("Running in chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels.spline[[i]], 
-                  numBatches=25, 
-                  batchSize=50000, 
-                  targetAcceptanceRatio=0.25,
+                  numBatches=200, 
+                  batchSize=10000, 
+                  targetAcceptanceRatio=0.2,
                   tolerance=0.025,
-                  proportionChange = 0.1))
+                  proportionChange = 0.05))
     cat(paste("Time elapsed: ", round(tm[3]/60,3), 
               " minutes\n", sep = ""))
 }
@@ -1068,6 +1083,82 @@ for (i in 1:length(SEIRmodels.spline))
 chain1 = read.csv("chain_output_ebola_4.txt")
 chain2 = read.csv("chain_output_ebola_5.txt")
 chain3 = read.csv("chain_output_ebola_6.txt")
+
+figure8 = function()
+{
+  par(mfrow = c(3,2))
+  plotChains(chain1$BetaP_SE_0,
+             chain2$BetaP_SE_0,
+             chain3$BetaP_SE_0, 
+             "Guinea Exposure Intercept")
+  plotChains(chain1$BetaP_SE_3,
+             chain2$BetaP_SE_3,
+             chain3$BetaP_SE_3, 
+             "Linear Time Component")
+  
+  plotChains(chain1$BetaP_SE_1,
+             chain2$BetaP_SE_1,
+             chain3$BetaP_SE_1, 
+             "Liberia Exposure Intercept")
+  plotChains(chain1$BetaP_SE_3,
+             chain2$BetaP_SE_3,
+             chain3$BetaP_SE_3, 
+             "Quadratic Time Component")
+  
+  plotChains(chain1$BetaP_SE_2,
+             chain2$BetaP_SE_2,
+             chain3$BetaP_SE_2, 
+             "Sierra Leone Exposure Intercept")
+  plotChains(chain1$BetaP_SE_3,
+             chain2$BetaP_SE_3,
+             chain3$BetaP_SE_3, 
+             "Cubic Time Component")
+}
+figure9 = function()
+{
+  par(mfrow = c(2,1))
+  plotChains(1-exp(-chain1$gamma_ei),
+             1-exp(-chain2$gamma_ei),
+             1-exp(-chain3$gamma_ei)
+             , "E to I Transition Probability")
+  plotChains(1-exp(-chain1$gamma_ir),
+             1-exp(-chain2$gamma_ir),
+             1-exp(-chain3$gamma_ir)
+             , "I to R Transition Probability")
+}
+
+## R0 stuff
+
+
+getR0 = function(t)
+  {
+    max(eigen(SEIRmodels.spline[[1]]$getGenerationMatrix(t))$values)  
+  }
+  
+  R0_vec = sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0)
+
+  for (i in 1:500)
+  {
+      SEIRmodels.spline[[1]]$simulate(1000)
+      R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0))
+  }
+
+  r0.ylim = c(min(R0_vec), max(R0_vec))
+  r0.meanvec = apply(R0_vec, 2, mean)
+  r0.LB = apply(R0_vec, 2, quantile, probs = c(0.05))
+  r0.UB = apply(R0_vec, 2, quantile, probs = c(0.95))
+
+figure10 = function()
+{
+  plot(rptDate[1:(length(rptDate)-1)], r0.meanvec , type = "l", xlab = "Date",
+       ylab = "R0",
+       main = "Estimated Basic Reproductive Number - Spline Model\n 90% Credible Interval", 
+       ylim = r0.ylim, lwd = 2)
+  lines(rptDate[1:(length(rptDate)-1)], r0.LB, lty = 2)
+  lines(rptDate[1:(length(rptDate)-1)], r0.UB, lty = 2)
+  abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
+  abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
+}
 
 
 # Guinea, Liberia, Sierra Leone
@@ -1083,7 +1174,7 @@ Guinea.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=0)
 Liberia.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=1)
 SierraLeone.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=2)
 
-figure8 = function()
+figure11 = function()
 {
   maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
   preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
@@ -1177,7 +1268,31 @@ end.rcode-->
 figure8()
 end.rcode-->
 
-<p>As you can see, the predictions are actually quite similar for both sets of basis functions. While we must still be cautious when projecting epidemic behavior so far beyond the scope of the observed data, this is indeed an encouraging sign. This document will continue to be updated as the epidemic progresses. Furthermore, as the document is tracked via source control it will be easy to see how well past predictions held up and how they change. </p>      
+<!--begin.rcode dpi=150, fig.align='center', echo=FALSE
+figure9()
+end.rcode-->
+
+<!--begin.rcode dpi=150, fig.align='center', echo=FALSE
+figure10()
+end.rcode-->
+
+<!--begin.rcode dpi=150, fig.align='center', echo=FALSE
+figure11()
+end.rcode-->
+
+
+
+<p>These predictions do appear more reasonable. As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady rate for at least the next few weeks, though we must still be careful projecting too far into the future. Still, if I had to bet, I'd bet on a steadily decreasing infection rate dropping towards zero in mid September.<br/>
+
+That wraps up the analyses for now, though of course there are numerous other hypotheses we could explore:
+<ul>
+  <li>Use time varying co-variates to track the effect of various public health interventions.</li>
+  <li>Explore other types of spline bases, as well as bases of different complexity (quartic etc.).</li>
+  <li>Obtain better information about population flows between the three countries, or obtain more finely geocoded data to 
+  examine the effect on the sub-regional level.</li>
+</ul>
+This document will continue to be updated as the epidemic progressesm and as the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Time permitting, some of the more nuanced analyses mentioned above will be explored as well. <br/>
+</p>      
       
       </div>
     <div class="col-sm-1">
