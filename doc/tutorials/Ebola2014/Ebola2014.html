@@ -104,8 +104,9 @@
         <div class="col-sm-12">
           <h1>Estimating and Predicting Epidemic Behavior for the 2014 West African Ebola Outbreak</h1>
           <h4>A Quick and Dirty Spatial SEIR Modeling Approach</h4>
-          <h5>Grant Brown</h5>
-          <h5>Last Updated: 7/22/2014</h5>
+          <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
+          <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
+          <h5>Last Updated: 7/24/2014</h5>
         </div>
       </div>
     </div>
@@ -138,17 +139,20 @@
     </div>
 
     <div class="container">
-      <a id="introduction-sect" class="anchor"></a>
+      <a id="introduction-sect" class="anchor">
       <h2>Introduction</h2>
+      </a>
       <div class="row">
         <div class = "col-sm-10 col-sm-offset-1">
-        <a id="intro-outbreak-sect" class="anchor"></a>
+        <a id="intro-outbreak-sect" class="anchor">
         <h3>The Outbreak</h3>
+        </a>
           <p>
           The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, there aren't many specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of peer reivewed epidemic forecasts, this document explores a simple spatial SEIR model to make some initial forecasts. 
           </p>
-          <a id="intro-data-sect" class="anchor"></a>
+          <a id="intro-data-sect" class="anchor">
         <h3>The Data</h3>
+        </a>
         <p>
         A summary of the WHO case reports is very helpfully compiled on wikipedia for analysts who are too lazy to read the case reports themselves. Let's read it in with the xml library: 
       </p>
@@ -258,8 +262,9 @@ These represent cumulative counts, but because case reports can be revised downw
 
 <div class="chunk" id="unnamed-chunk-4"><div class="rimage center"><img src="figure/unnamed-chunk-4.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div></div>
 
-      <a id="intro-compartment-sect" class="anchor"></a>
+      <a id="intro-compartment-sect" class="anchor">
       <h3>Compartmental Models</h3>
+      </a>
       <p>
         Now that we've got data read in and made a couple of plots to ensure we haven't done anything to terribly stupid with it
         , let's do some compartmental epidemic modeling. Not only has Ebola been <a href="http://www.ncbi.nlm.nih.gov/pubmed/17156292">well modeled in the past</a> using compartmental modeling techniques, but this author happens to be working on a software library designed to fit compartmental models in the spatial SEIRS family. What a strange coincidence! Specifically, we'll be using heirarchical Bayesian estimation methods to fit a spatial SEIR model to the data.  
@@ -281,8 +286,9 @@ We're not going to do anything fancy with demographic information or public heal
     <div class="col-sm-1">
     </div>
   </div>
-  <a id="analysis-1-sect" class = "anchor"></a>
+  <a id="analysis-1-sect" class = "anchor">
   <h2>Analysis 1</h2> 
+  </a>
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
       <a id="analysis-1-set-up-sect" class = "anchor">
@@ -478,7 +484,6 @@ We're not going to do anything fancy with demographic information or public heal
 <span class="hl std">i</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl std">;</span>
 <span class="hl kwa">for</span> <span class="hl std">(seedVal</span> <span class="hl kwa">in</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">12345</span><span class="hl std">,</span><span class="hl num">543219</span><span class="hl std">,</span><span class="hl num">992134</span><span class="hl std">))</span>
 <span class="hl std">{</span>
-  <span class="hl kwd">set.seed</span><span class="hl std">(seedVal)</span>
   <span class="hl std">proposal</span> <span class="hl kwb">=</span> <span class="hl kwd">proposeParameters</span><span class="hl std">(seedVal, i)</span>
   <span class="hl std">SEIRmodels[[i]]</span> <span class="hl kwb">=</span> <span class="hl kwd">spatialSEIRModel</span><span class="hl std">(compMatDim,</span>
                       <span class="hl std">xDim,</span>
@@ -639,17 +644,18 @@ As before, we'll adjust the tuning parameters along the way. Astute readers may 
 <span class="hl std">}</span>
 </pre></div>
 <div class="output"><pre class="knitr r">## Running chain 1
-## Time elapsed: 11.278 minutes
+## Time elapsed: 11.307 minutes
 ## Running chain 2
-## Time elapsed: 11.523 minutes
+## Time elapsed: 11.16 minutes
 ## Running chain 3
-## Time elapsed: 11.272 minutes
+## Time elapsed: 11.189 minutes
 </pre></div>
 </div></div>
 </div>
 
-<a id="analysis-1-convergence-sect" class="anchor"></a>
+<a id="analysis-1-convergence-sect" class="anchor">
 <h3>Convergence Diagnosis</h3>
+</a>
 
 <p>As this is a Bayesian analysis in which the posterior distribution is sampled using MCMC techniques, we really need some
 indication that the samplers have indeed converged to the posterior distribution in order to make any inferences about the 
@@ -731,8 +737,9 @@ several important parameters, and take a look at the Gelman and Rubin convergenc
 
 <div class="chunk" id="unnamed-chunk-11"><div class="rimage center"><img src="figure/unnamed-chunk-11.png" title="plot of chunk unnamed-chunk-11" alt="plot of chunk unnamed-chunk-11" class="plot" /></div></div>
 
-<a id="analysis-1-estimates-sect" class="anchor"></a>
+<a id="analysis-1-estimates-sect" class="anchor">
 <h3>Estimated Epidemic Behavior</h3>
+</a>
 <p>
   The convergence looks reasonable, so let's dissect the estimates a bit. 
 </p>
@@ -859,8 +866,9 @@ intervals for their intercept parameters.
 
 <div class="chunk" id="unnamed-chunk-15"><div class="rimage center"><img src="figure/unnamed-chunk-15.png" title="plot of chunk unnamed-chunk-15" alt="plot of chunk unnamed-chunk-15" class="plot" /></div></div>
 
-<a id="analysis-1-r0-sect" class="anchor"></a>
+<a id="analysis-1-r0-sect" class="anchor">
 <h3>Basic Reproductive Number Calculation</h3>
+</a>
 <p>
 A common tool for describing the development and containment of an epidemic is a quantity known as the basic reproductive numer, or the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections an infected individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect it to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity. <br/>
 
@@ -909,8 +917,9 @@ The dip in recent days in the estimated basic reproductive ratio is definitely a
 While the basic reproductive number is a useful quantity to know, it does not directly make any predictions about future epidemic behavior. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
  
 
-<a id="analysis-1-prediction-sect" class="anchor"></a>
+<a id="analysis-1-prediction-sect" class="anchor">
 <h3>Epidemic Prediction</h3>
+</a>
 <p>
  
  Currently the simulation required for epidemic prediction must be done "manually", or by writing a bunch of R code (given below). As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
@@ -1181,7 +1190,7 @@ While the basic reproductive number is a useful quantity to know, it does not di
                       <span class="hl std">mcmcTuningParams,</span>
                       <span class="hl std">reinfectionMode,</span>
                       <span class="hl std">scaleDistanceMode)</span>
-
+  <span class="hl std">SEIRmodels.spline[[i</span><span class="hl opt">-</span><span class="hl num">3</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">setRandomSeed</span><span class="hl std">(seedVal)</span>
   <span class="hl std">i</span> <span class="hl kwb">=</span> <span class="hl std">i</span> <span class="hl opt">+</span> <span class="hl num">1</span><span class="hl std">;</span>
 <span class="hl std">}</span>
 </pre></div>
@@ -1218,36 +1227,36 @@ While the basic reproductive number is a useful quantity to know, it does not di
 <div class="output"><pre class="knitr r">## Burning in chain 1
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.191
-## I0:       0.241
-## E_star:   0.296
-## R_star:   0.375
-## beta:     0.198, 0.198, 0.198, 0.198, 0.198, 0.198, 
-## rho:      0.29
-## gamma_ei:     0.169
-## gamma_ir:     0.231
+## S0:       0.261
+## I0:       0.203
+## E_star:   0.148
+## R_star:   0.147
+## beta:     0.269, 0.269, 0.269, 0.269, 0.269, 0.269, 
+## rho:      0.24
+## gamma_ei:     0.21
+## gamma_ir:     0.232
 ## Burning in chain 2
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.243
-## I0:       0.204
-## E_star:   0.077
-## R_star:   0.257
-## beta:     0.183, 0.183, 0.183, 0.183, 0.183, 0.183, 
-## rho:      0.298
-## gamma_ei:     0.178
-## gamma_ir:     0.198
+## S0:       0.262
+## I0:       0.224
+## E_star:   0.254
+## R_star:   0.31
+## beta:     0.23, 0.23, 0.23, 0.23, 0.23, 0.23, 
+## rho:      0.247
+## gamma_ei:     0.212
+## gamma_ir:     0.323
 ## Burning in chain 3
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.235
-## I0:       0.18
-## E_star:   0.294
-## R_star:   0.142
-## beta:     0.227, 0.227, 0.227, 0.227, 0.227, 0.227, 
-## rho:      0.297
-## gamma_ei:     0.167
-## gamma_ir:     0.187
+## S0:       0.211
+## I0:       0.251
+## E_star:   0.206
+## R_star:   0.149
+## beta:     0.256, 0.256, 0.256, 0.256, 0.256, 0.256, 
+## rho:      0.223
+## gamma_ei:     0.257
+## gamma_ir:     0.221
 </pre></div>
 <div class="source"><pre class="knitr r"><span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(SEIRmodels.spline))</span>
 <span class="hl std">{</span>
@@ -1263,11 +1272,11 @@ While the basic reproductive number is a useful quantity to know, it does not di
 <span class="hl std">}</span>
 </pre></div>
 <div class="output"><pre class="knitr r">## Running in chain 1
-## Time elapsed: 11.451 minutes
+## Time elapsed: 11.531 minutes
 ## Running in chain 2
-## Time elapsed: 11.164 minutes
+## Time elapsed: 11.484 minutes
 ## Running in chain 3
-## Time elapsed: 11.269 minutes
+## Time elapsed: 11.538 minutes
 </pre></div>
 <div class="source"><pre class="knitr r"><span class="hl std">chain1</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;chain_output_ebola_4.txt&quot;</span><span class="hl std">)</span>
 <span class="hl std">chain2</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;chain_output_ebola_5.txt&quot;</span><span class="hl std">)</span>
@@ -1493,22 +1502,6 @@ This document will continue to be updated as the epidemic progressesm and as the
           });
       });
       
-      $("img[class=plot]").click(function(){
-        if ($(this).width() == 640)
-        {
-          $(this).animate({
-            width: "+=300",
-          }, 100, function() {
-          });
-        }
-        else
-        {
-          $(this).animate({
-            width: "-=300",
-          }, 100, function() {
-          });
-        }
-      });
     </script>
   </body>
 </html>
