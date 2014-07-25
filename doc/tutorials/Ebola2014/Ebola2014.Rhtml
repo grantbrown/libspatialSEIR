@@ -425,7 +425,6 @@ SEIRmodels = list()
 i = 1;
 for (seedVal in c(12345,543219,992134))
 {
-  set.seed(seedVal)
   proposal = proposeParameters(seedVal, i)
   SEIRmodels[[i]] = spatialSEIRModel(compMatDim,
                       xDim,
@@ -1058,7 +1057,7 @@ for (seedVal in c(12345,543219,992134))
                       mcmcTuningParams,
                       reinfectionMode,
                       scaleDistanceMode)
-  
+  SEIRmodels.spline[[i-3]]$setRandomSeed(seedVal)
   i = i + 1;
 }
 
