@@ -38,8 +38,8 @@ namespace SpatialSEIR
     class SetCompartmentSamplingIndicesTask : public IterationTask
     {
         public:
-            SetCompartmentMetropolisIndicesTask(ModelContext* context, 
-                                            int updateProportion);
+            SetCompartmentSamplingIndicesTask(ModelContext* context);
+            ~SetCompartmentSamplingIndicesTask();
             void executeTask();
             int getTaskType();
 
@@ -48,4 +48,4 @@ namespace SpatialSEIR
             int** indexLength;
     };
 }
- 
+#endif 
