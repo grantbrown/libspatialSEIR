@@ -315,6 +315,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
     })
 }
 
+#res$compartmentSamplingMode = 2
 
 #print("Burn in 1 to adjust sampling widths.")
 runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)

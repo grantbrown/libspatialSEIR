@@ -83,7 +83,9 @@ namespace SpatialSEIR
         samplers = new std::vector<Sampler*>();
         currentSampler = new Sampler*;
         samplers -> push_back(new CompartmentMetropolisSampler(*context, this, (*S_star) -> data));
-        samplers -> push_back(new CompartmentMetropolisSampler(*context, this, (*S_star) -> data));
+        samplers -> push_back(new IndexedCompartmentMetropolisSampler(*context, this, (*S_star) -> data));
+        samplers -> push_back(new CompartmentMetropolisSampler_OCL(*context, this, (*S_star) -> data));
+
 
     }    
     FC_S_Star::~FC_S_Star()

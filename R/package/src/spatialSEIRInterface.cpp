@@ -168,6 +168,7 @@ void spatialSEIRInterface::setDevice(int platformId, int deviceId)
 
 void spatialSEIRInterface::setCompartmentSamplingMode(int mode)
 {
+    int oldMode = getCompartmentSamplingMode();
     if (*(context -> isPopulated))
     {
         if (mode == COMPARTMENT_METROPOLIS_SAMPLER)
@@ -196,7 +197,15 @@ void spatialSEIRInterface::setCompartmentSamplingMode(int mode)
             return;
         }
 
-        context -> setCompartmentSamplingMode(mode);
+        try
+        {
+            context -> setCompartmentSamplingMode(mode);
+        }
+        catch (int err)
+        {
+            Rcpp::Rcout << "Unable to update compartment sampling mode\n";
+            setCompartmentSamplingMode(oldMode);
+        }
         return;
     }
     Rcpp::Rcout << "Context Not populated\n";
@@ -213,6 +222,8 @@ int spatialSEIRInterface::getCompartmentSamplingMode()
 
 void spatialSEIRInterface::setParameterSamplingMode(int mode)
 {
+
+    int oldMode = getCompartmentSamplingMode();
     if (*(context -> isPopulated))
     {
         if (mode == PARAMETER_SINGLE_METROPOLIS_SAMPLER)
@@ -247,7 +258,15 @@ void spatialSEIRInterface::setParameterSamplingMode(int mode)
             return;
         }
 
-        context -> setParameterSamplingMode(mode);
+        try
+        {
+            context -> setParameterSamplingMode(mode);
+        }
+        catch (int err)
+        {
+            Rcpp::Rcout << "Unable to update compartment sampling mode\n";
+            setParameterSamplingMode(oldMode);
+        }
         return;
     }
     Rcpp::Rcout << "Context Not populated\n";

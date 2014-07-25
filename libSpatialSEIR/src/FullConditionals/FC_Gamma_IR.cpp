@@ -73,6 +73,7 @@ namespace SpatialSEIR
         currentSampler = new Sampler*;
         samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *gamma_ir));
         samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *gamma_ir));
+        samplers -> push_back(new ParameterJointMetropolisSampler_OCL(*context, this, *gamma_ir));
 
     }
 

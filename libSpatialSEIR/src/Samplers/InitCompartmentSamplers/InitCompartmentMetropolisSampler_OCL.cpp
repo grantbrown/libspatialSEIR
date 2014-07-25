@@ -41,7 +41,7 @@ namespace SpatialSEIR
 
     int InitCompartmentMetropolisSampler_OCL::getSamplerType()
     {
-        return(INITCOMPARTMENT_METROPOLIS_SAMPLER);
+        return(INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL);
     }
 
     void InitCompartmentMetropolisSampler_OCL::drawSample()

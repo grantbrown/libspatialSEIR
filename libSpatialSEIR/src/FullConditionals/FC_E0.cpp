@@ -71,6 +71,7 @@ namespace SpatialSEIR
         currentSampler = new Sampler*;
         samplers -> push_back(new InitCompartmentMetropolisSampler(*context, this, (*A0) -> E0));
         samplers -> push_back(new IndexedInitCompartmentMetropolisSampler(*context, this, (*A0) -> E0));
+        samplers -> push_back(new InitCompartmentMetropolisSampler_OCL(*context, this, (*A0) -> E0));
 
     }
     FC_E0::~FC_E0()

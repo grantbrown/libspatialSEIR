@@ -77,6 +77,7 @@ namespace SpatialSEIR
         currentSampler = new Sampler*;
         samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *beta));
         samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *beta));
+        samplers -> push_back(new ParameterJointMetropolisSampler_OCL(*context, this, *beta));
     }
 
     FC_Beta::~FC_Beta()

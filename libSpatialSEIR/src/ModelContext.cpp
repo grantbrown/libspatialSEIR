@@ -51,17 +51,16 @@ namespace SpatialSEIR
             else if ((*model)[i] -> getFullConditionalType() == LSS_INIT_COMPARTMENT_FULL_CONDITIONAL_TYPE)
 
             {
-                // There is a 1 to 1 equivalence between InitCompartment samplers and Compartment samplers
                 switch (mode)
                 {
                     case COMPARTMENT_METROPOLIS_SAMPLER:
                         (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
                         break;
                     case COMPARTMENT_IDX_METROPOLIS_SAMPLER:
-                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER);
+                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
                         break;
                     case COMPARTMENT_IDX_SLICE_SAMPLER:
-                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_IDX_SLICE_SAMPLER);
+                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
                         break;
                     case COMPARTMENT_METROPOLIS_SAMPLER_OCL:
                         (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL);
@@ -662,6 +661,10 @@ namespace SpatialSEIR
         for (i = 0; i < model->size(); i++)
         {
            (*model)[i] -> sample(verbose);
+        }
+        for (i = 0; i < iterationTasks -> size(); i++)
+        {
+            (*iterationTasks)[i] -> executeTask();
         }
     }
 

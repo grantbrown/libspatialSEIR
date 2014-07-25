@@ -74,6 +74,7 @@ namespace SpatialSEIR
         currentSampler = new Sampler*;
         samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *gamma_ei));
         samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *gamma_ei));
+        samplers -> push_back(new ParameterJointMetropolisSampler_OCL(*context, this, *gamma_ei));
 
     }
     FC_Gamma_EI::~FC_Gamma_EI()
