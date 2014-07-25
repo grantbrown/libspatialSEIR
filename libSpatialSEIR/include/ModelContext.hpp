@@ -16,6 +16,8 @@ namespace SpatialSEIR
     using std::endl;
 
     class FullConditional;
+    class IterationTask;
+    class SetCompartmentSamplingIndicesTask;
     class FC_S0;
     class FC_E0;
     class FC_I0;
@@ -53,6 +55,7 @@ namespace SpatialSEIR
         int reinfectionMode;
         int compartmentSamplingMode; 
         int parameterSamplingMode; 
+        int indexLength;
     };
 
 
@@ -126,6 +129,10 @@ namespace SpatialSEIR
             /*buildModel is called at the end of the populate function to fill the ModelContext.model vector with the required 
               full conditional distributions.*/
             void buildModel();
+
+            /** configureIterationTasks determines whether there are any conditions which require additional logical tasks
+             * to be performed during MCMC sampling.*/
+            void configureIterationTasks();
             
             /** The zero parameter overload of calculateS_CPU calculates the S compartment from A0, S_star, and E_star.*/
             void calculateS_CPU(); 
@@ -408,6 +415,9 @@ namespace SpatialSEIR
             /** Pointer to FullConditional distribution for the parameter controlling transition probability p_ir*/
             FC_Gamma_IR *gamma_ir_fc;
 
+            /** Pointer to the sampling indices task.*/
+            SetCompartmentSamplingIndicesTask* setSamplingIndicesTask;
+
             //Data
             /** Pointer to the CompartmentalModelMatrix data structure storing the S compartment.*/ 
             CompartmentalModelMatrix* S;
@@ -443,7 +453,9 @@ namespace SpatialSEIR
              * is assembled during ModelContext.populate based on the reinfection mode, data model (not yet implemented), and the detection
              * of special cases such as the single location case. */
             std::vector<FullConditional*>* model; 
-
+            /** Iteration tasks are bits of logical code that need to execute periodically during MCMC sampling, but don't fall into the usual
+             * FullConditional framework.*/
+            std::vector<IterationTask*>* iterationTasks;
             /** Storage for the regression parameters beta*/
             double* beta;
             /** Storage for the regression parameters betaP_RS*/

@@ -1,6 +1,7 @@
 #include <ModelContext.hpp>
 #include <LSS_FullConditionalList.hpp>
 #include <LSS_Samplers.hpp>
+#include <LSS_IterationTasks.hpp>
 #include <OCLProvider.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <CovariateMatrix.hpp>
@@ -39,6 +40,7 @@ namespace SpatialSEIR
     void ModelContext::setCompartmentSamplingMode(int mode)
     {
         (config -> compartmentSamplingMode) = mode;
+        configureIterationTasks();
         unsigned int i;
         for (i = 0; i < model -> size(); i++)
         {
@@ -135,6 +137,7 @@ namespace SpatialSEIR
         singleLocation = new int; *singleLocation = -1;
         oclProvider = new OCLProvider();
         model = new std::vector<FullConditional*>;
+        iterationTasks = new std::vector<IterationTask*>;
         config = new modelConfiguration();
         *config = config_;
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
@@ -142,7 +145,7 @@ namespace SpatialSEIR
         compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
 
         // Create empty index cache
-        indexLength = new int; *indexLength = 0;
+        indexLength = new int; *indexLength = config -> indexLength;
         indexList = new int[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         memset(indexList, 0, (*(S_starArgs -> inRow)*(*(S_starArgs -> inCol)))*sizeof(int));
 
@@ -258,8 +261,10 @@ namespace SpatialSEIR
         *gamma_ei = *gamma_ei_;
         *gamma_ir = *gamma_ir_;
 
-        // Wire up the full conditional classes
-        
+        // Set up iteration tasks
+        setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
+
+        // Wire up the full conditional classes 
         S0_fc = new FC_S0(this,
                           S,
                           E,
@@ -398,8 +403,26 @@ namespace SpatialSEIR
         this -> setParameterSamplingMode(PARAMETER_JOINT_METROPOLIS_SAMPLER);
     }
 
+    void ModelContext::configureIterationTasks()
+    {
+        // Clear iterationTasks queue. 
+        unsigned int i, sz;
+        sz = iterationTasks -> size();
+        for (i = 0; i < sz; i++){iterationTasks -> pop_back();}
+        // Currently, the only defined iteration task is to update the 
+        // compartment sampling indices.
+        if  ((config -> compartmentSamplingMode) == COMPARTMENT_IDX_METROPOLIS_SAMPLER || 
+             (config -> compartmentSamplingMode) == COMPARTMENT_IDX_SLICE_SAMPLER)
+        {
+            iterationTasks -> push_back(setSamplingIndicesTask);
+        } 
+    }
+
     void ModelContext::buildModel()
     {
+        // Configure iteration tasks
+        configureIterationTasks();
+
         // clear the previous model
         unsigned int i;
         unsigned int modelSize = model -> size();
@@ -1181,6 +1204,8 @@ namespace SpatialSEIR
             delete singleLocation;   
             // FC's have already been disposed of.
             delete model;
+            while (iterationTasks -> size() != 0){delete (*iterationTasks).back(); (iterationTasks -> pop_back());}
+            delete iterationTasks;
             delete oclProvider;
             delete[] indexList;
             delete indexLength;
