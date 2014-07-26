@@ -41,7 +41,7 @@ namespace SpatialSEIR
 
     int ParameterJointMetropolisSampler_OCL::getSamplerType()
     {
-        return(PARAMETER_JOINT_METROPOLIS_SAMPLER);
+        return(PARAMETER_JOINT_METROPOLIS_SAMPLER_OCL);
     }
 
     void ParameterJointMetropolisSampler_OCL::drawSample()

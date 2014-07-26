@@ -293,7 +293,7 @@ SEIRmodel = spatialSEIRModel(compMatDim,
                       scaleDistMode)
 
 # Sample regression parameters individually.
-SEIRmodel$parameterSamplingMode=1
+SEIRmodel$parameterSamplingMode=7
 
 ```
 
@@ -352,14 +352,16 @@ Note that the "elapsed" number is the important one as far as we're concerned.
 Now let's tell spatialSEIR that we want to use OpenCL and try again.
 
 ```{r tidy=FALSE}
-SEIRmodel$oclPreferences = SEIRmodel$oclPreferences + 1
+SEIRmodel$compartmentSamplingMode = 11
+SEIRmodel$parameterSamplingMode = 13
 system.time(SEIRmodel$simulate(1000))
 ```
 
 Looks like CPU mode wins handily for this small data set, so let's switch our preferences back. 
 
 ```{r tidy=FALSE}
-SEIRmodel$oclPreferences = SEIRmodel$oclPreferences-1
+SEIRmodel$compartmentSamplingMode = 2
+SEIRmodel$parameterSamplingMode = 8
 ```
 
 Now we can worry about our tuning parameters. Let's run the sampler for a bit, and then look at our acceptance rates. 

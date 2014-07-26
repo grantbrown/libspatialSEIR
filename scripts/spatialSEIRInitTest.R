@@ -269,6 +269,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 #}
 
 #runSimulation(1000,10, printAR=TRUE)
+res$compartmentSamplingMode = 2
 runSimulation(1000,100, printAR=TRUE, proportionChange = 0.1)
 #runSimulation(10000,1, printAR=TRUE)
 #runSimulation(10000,100, printAR=TRUE)
