@@ -70,7 +70,16 @@
                 <li><a href="#analysis-1-prediction-sect">Prediction</a></li>
               </ul>
             </li>
-            <li><a href="#anchor-analysis-2-sect">Analysis 2: Natural Spline Basis</a></li>
+            <li><a href="#anchor-analysis-2-sect">Analysis 2: Natural Spline Basis</a>
+              <ul>
+                <li><a href="#analysis-2-set-up-sect">Set Up</a></li>
+                <li><a href="#analysis-2-convergence-sect">Convergence Diagnosis</a></li>
+                <li><a href="#analysis-2-estimates-sect">Estimated Epidemic Behavior</a></li>
+                <li><a href="#analysis-2-r0-sect">Basic Reproductive Number</a></li>
+                <li><a href="#analysis-2-prediction-sect">Prediction</a></li>
+              </ul>
+            </li>
+            <li><a href="#conclusions-sect">Conclusions</a></li>
           </ol>
         </div>
       </div>
@@ -100,6 +109,21 @@
 library(coda)
 library(spatialSEIR)
 library(XML)
+
+## Define Document Compilation Parameters
+
+
+#documentCompilatonMode = "release"
+documentCompilationMode = "debug"
+
+
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 200, 1)
+convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
+extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 50)
+
+##
+
+
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
 dat = tbls[[2]]
@@ -528,8 +552,8 @@ for (i in 1:length(SEIRmodels))
 {
     cat(paste("Running chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels[[i]], 
-                  numBatches=200, 
-                  batchSize=10000, 
+                  numBatches=numConvergenceBatches, 
+                  batchSize=convergenceBatchSize, 
                   targetAcceptanceRatio=0.2,
                   tolerance=0.025,
                   proportionChange = 0.05))
@@ -538,7 +562,7 @@ for (i in 1:length(SEIRmodels))
 }
 end.rcode-->
 </div>
-
+<br/>
 <a id="analysis-1-convergence-sect" class="anchor">
 <h3>Convergence Diagnosis</h3>
 </a>
@@ -747,7 +771,7 @@ In addition to coming up with a point estimate of the ratio, it is helpful to qu
   
   R0_vec = sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0)
 
-  for (i in 1:500)
+  for (i in 1:extraR0Iterations)
   {
       SEIRmodels[[1]]$simulate(1000)
       R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0))
@@ -989,6 +1013,7 @@ end.rcode-->
   <h2>Analysis 2: Spline Basis</h2> </a>
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
+      <a id="analysis-2-set-up-sect" class="anchor"><h3>Set Up</h3></a>
       <p> Below is an abbreviated and concatenated modification of the code presented above. We won't be concerned with interpreting the model parameters, as the polynomial model was likely sufficient in terms of estimation.</p>
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -1079,8 +1104,8 @@ for (i in 1:length(SEIRmodels.spline))
 {
     cat(paste("Running in chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels.spline[[i]], 
-                  numBatches=200, 
-                  batchSize=10000, 
+                  numBatches=numConvergenceBatches, 
+                  batchSize=convergenceBatchSize, 
                   targetAcceptanceRatio=0.2,
                   tolerance=0.025,
                   proportionChange = 0.05))
@@ -1146,7 +1171,7 @@ getR0 = function(t)
   
   R0_vec = sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0)
 
-  for (i in 1:500)
+  for (i in 1:extraR0Iterations)
   {
       SEIRmodels.spline[[1]]$simulate(1000)
       R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0))
@@ -1272,7 +1297,8 @@ figure11 = function()
 
 end.rcode-->
 </div>
-
+<br/>
+<a id="analysis-2-convergence-sect" class="anchor"><h3>Convergence</h3></a>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure8()
 end.rcode-->
@@ -1281,10 +1307,15 @@ end.rcode-->
 figure9()
 end.rcode-->
 
+<a id="analysis-2-estimates-sect" class="anchor"> <h3>Estimated Epidemic Behavior</h3></a>
+
+<br/>
+<a id="analysis-2-r0-sect" class="anchor"><h3>Basic Reproductive Number Calculation</h3></a>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure10()
 end.rcode-->
 
+<a id="analysis-2-prediction-sect" class="anchor"><h3>Epidemic Prediction</h3></a>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure11()
 end.rcode-->
@@ -1293,6 +1324,8 @@ end.rcode-->
 
 <p>These predictions do appear more reasonable. As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady rate for at least the next few weeks, though we must still be careful projecting too far into the future. Still, if I had to bet, I'd bet on a steadily decreasing infection rate dropping towards zero in mid September.<br/>
 
+
+<a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 That wraps up the analyses for now, though of course there are numerous other hypotheses we could explore:
 <ul>
   <li>Use time varying co-variates to track the effect of various public health interventions.</li>
