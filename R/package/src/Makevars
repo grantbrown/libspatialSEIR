@@ -1,1 +1,1 @@
-PKG_LIBS = -lOpenCL -lSpatialSEIR -lclBLAS 
+PKG_LIBS = -lOpenCL -lSpatialSEIR -lclBLAS -lblas 

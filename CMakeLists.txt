@@ -20,15 +20,23 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 set(Boost_USE_STATIC_LIBS OFF) 
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.49.0 COMPONENTS random) 
+find_package(Boost 1.49.0 COMPONENTS random REQUIRED) 
+
+set(BLA_STATIC OFF)
+find_package(BLAS)
+if (BLAS_FOUND)
+    message("BLAS found: ${BLAS_LIBRARIES}")  
+    message("            ${BLAS95_LIBRARIES}")
+    message("BLAS linker flags: ${BLAS_LINKER_FLAGS}")
+else()
+    message("Error: Blas not found.")
+endif()
 
 set(SpatialSEIR_Boost_LIBRARIES   )
 set(SpatialSEIR_Boost_INCLUDE_DIRS   )
 if(Boost_FOUND)
 	set(SpatialSEIR_Boost_LIBRARIES ${Boost_LIBRARIES})
 	set(SpatialSEIR_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-	message(${SpatialSEIR_Boost_LIBRARIES})
-	message(${SpatialSEIR_Boost_INCLUDE_DIRS})
 else()
     message("Error: Boost was not found on the system. This dependency 
              will be relaxed in the release version of libSpatialSEIR,
@@ -38,15 +46,13 @@ else()
 endif()
 
 
-
-
-
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS"
                     "."
-					"${SpatialSEIR_Boost_INCLUDE_DIRS}")
+					"${SpatialSEIR_Boost_INCLUDE_DIRS}"
+                    )
 
 
 
@@ -116,6 +122,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
 	"${SpatialSEIR_Boost_LIBRARIES}"
+    "${BLAS_LIBRARIES}"
 	)
 
 add_library(CLBLAS1 SHARED IMPORTED)
