@@ -12,9 +12,16 @@
     <title>2014 Ebola Epidemic</title>
     <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="./css/ebola.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js' type='text/javascript'></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js"></script>
+    <script src="./datamaps.world.min.js"></script>
   </head>
 
-  <body>
+  <body ng-app ng-controller='rChartsCtrl'>
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -41,10 +48,10 @@
       <div class="row">
         <div class="col-sm-12">
           <h1>Estimating and Predicting Epidemic Behavior for the 2014 West African Ebola Outbreak</h1>
-          <h4>A Quick and Dirty Spatial SEIR Modeling Approach</h4>
+          <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 7/24/2014</h5>
+          <h5>Last Updated: 7/28/2014</h5>
         </div>
       </div>
     </div>
@@ -70,7 +77,15 @@
                 <li><a href="#analysis-1-prediction-sect">Prediction</a></li>
               </ul>
             </li>
-            <li><a href="#anchor-analysis-2-sect">Analysis 2: Natural Spline Basis</a></li>
+            <li><a href="#anchor-analysis-2-sect">Analysis 2: Natural Spline Basis</a>
+              <ul>
+                <li><a href="#analysis-2-set-up-sect">Set Up</a></li>
+                <li><a href="#analysis-2-convergence-sect">Convergence Diagnosis</a></li>
+                <li><a href="#analysis-2-r0-sect">Basic Reproductive Number</a></li>
+                <li><a href="#analysis-2-prediction-sect">Prediction</a></li>
+              </ul>
+            </li>
+            <li><a href="#conclusions-sect">Conclusions</a></li>
           </ol>
         </div>
       </div>
@@ -86,23 +101,38 @@
         <h3>The Outbreak</h3>
         </a>
           <p>
-          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, there aren't many specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of peer reivewed epidemic forecasts, this document explores a simple spatial SEIR model to make some initial forecasts. 
+          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, to our knowledge there aren't any specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of epidemic forecasts, this document explores a simple spatial SEIR model to make some initial predictions. 
           </p>
           <a id="intro-data-sect" class="anchor">
         <h3>The Data</h3>
         </a>
         <p>
-        A summary of the WHO case reports is very helpfully compiled on wikipedia for analysts who are too lazy to read the case reports themselves. Let's read it in with the xml library: 
+        A summary of the WHO case reports is very helpfully compiled on wikipedia. It can be easily read into R with the xml library: 
       </p>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
 <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
-library(coda)
-library(spatialSEIR)
-library(XML)
+library(coda) # Load the coda library for MCMC convergence diagnosis
+library(spatialSEIR) # Load the spatialSEIR library to perform the modeling. 
+library(XML) # Load the XML library to read in data from Wikipedia
+
+## Define Document Compilation Parameters
+
+
+documentCompilationMode = "release"
+#documentCompilationMode = "debug"
+
+
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 1)
+convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
+extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 50)
+
+##
+
+
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[2]]
+dat = tbls[[3]]
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 original.rptDate = rptDate
@@ -144,7 +174,7 @@ With data in hand, let's begin where every analysis should begin: graphs.
 figure1()
 end.rcode-->
 <p>
-These represent cumulative counts, but because case reports can be revised downward due to non-Ebola illnesses the graphs are not monotone. If someone would hire an intern to read all the case reports and compile their best guess as to actual case infection times, that would be pretty awesome. Instead, let's just "un-cumulate"* the data and bound it at zero to get a rough estimate of new case counts over time. 
+These represent cumulative counts, but because case reports can be revised downward due to non-Ebola illnesses the graphs are not monotone. A quick, but effective solution to this problem is to simply "un-cumulate"* the data and bound it at zero to get a rough estimate of new case counts over time. 
 <br/>
 
 <small> *Unlike uncumulate, decumulate is actually a word. Unfortunately it just means "to decrease", and so was unsuitable for use here. There should probably be a word for uncumulating things, perhaps uncumulate. </small></p>
@@ -161,27 +191,34 @@ I_star = cbind(uncumulate(Guinea),
                uncumulate(Liberia), 
                uncumulate(Sierra.Leone))
 
+# Define the temporal offset vector to be the number of days reflected in each 
+# aggregated record (time between reports).
+offsets = uncumulate(original.rptDate)
+
+
+InfectionPerDay = I_star/(cbind(offsets, offsets, offsets))
 
 # Define figure 2 for next section
-ylim = c(0,max(I_star))
+ylim = c(0,max(InfectionPerDay)*1.2)
 figure2 = function()
 {
     layout(matrix(c(1,2), nrow = 1),
         widths = c(8,4), heights = c(4,4))
-    plot(rptDate, I_star[,1], main = "Crude Guess at New Case Counts Over Time", 
+    plot(rptDate, InfectionPerDay[,1], main = "Crude Guess at New Case Counts Over Time", 
          xlab = "Date", 
          ylab = "New Cases",
-         pch = 1, cex = 2
+         lty=1, lwd = 2,
+         ylim = ylim, type = "l"
          )
     abline(h = seq(1, max(ylim), 10), lty = 2, col = "lightgrey")
-    points(rptDate, I_star[,2], col = "blue", pch = 2, cex = 2)
-    points(rptDate, I_star[,3], col = "red", pch = 3, cex = 2)
+    lines(rptDate, InfectionPerDay[,2], col = "blue",lty=2, lwd = 2)
+    lines(rptDate, InfectionPerDay[,3], col = "red", lty = 3, lwd = 2)
     par(xaxt="n")
     par(yaxt="n")
     par(bty="n")
     par(xpd=TRUE)
     plot(c(0,10),c(0,10), type = "n", main  ="",xlab="",ylab="")
-    legend(x=-1,y=10, legend = c("Gunea", "Liberia", "Sierra Leone"), pch = 1:3, 
+    legend(x=-2,y=10, legend = c("Gunea", "Liberia", "Sierra Leone"), lty = 1:3,lwd=2, 
            col = c("black", "blue", "red"))
     par(xpd=FALSE)
     par(xaxt="s")
@@ -191,13 +228,129 @@ figure2 = function()
 end.rcode-->
 </div>
 
+
 <p>
-  Here's a look at the "un-cumulated" counts. The process is a bit noisier from this perspective. 
+  For better graphical representation, the "un-cumulated" counts are scaled to represent average number of infections per day, and linearly interpolated. The process is a bit noisier from this perspective when compared to the original cumulative counts.  
 </p>
 
 <!--begin.rcode dpi=150,fig.align='center',echo=FALSE
   figure2()
 end.rcode-->
+
+<br/>
+
+One can also represent this data geographically to get an idea of the spatial epidemic pattern, and to place the problem in a more relatable context. 
+
+<h4>Average Number of Infections Per Day:</h4>
+<!--begin.rcode echo=FALSE
+library(rCharts)
+library(stats)
+
+x = rptDate - min(rptDate)
+guinea.interp = approx(x,InfectionPerDay[,1],xout = 0:max(x))
+liberia.interp = approx(x,InfectionPerDay[,2],xout = 0:max(x))
+sierraleone.interp = approx(x,InfectionPerDay[,3],xout = 0:max(x))
+
+interpMatrix = cbind(guinea.interp$y, liberia.interp$y,sierraleone.interp$y)
+interpMatrix.cut = matrix(as.numeric(cut(interpMatrix, breaks = 9)), nrow = nrow(interpMatrix))
+
+
+hcol = c("#ffffef", "#fff7bf", "#fee39f", "#fec45f", "#fe993f", "#ec702f", "#cc4c1f", "#993402e", "#662520")
+color.palette = c(hcol[1],hcol)
+fills = setNames(color.palette, c("defaultFill", paste("Col", 1:max(interpMatrix.cut), sep = "")))
+
+
+# GIN, LBR, SLE
+outList = list()
+for (tpt in min(x):max(x))
+{
+    outList[[as.character(tpt+1)]] = list("GIN" = list("fillKey"=factor(paste("Col", interpMatrix.cut[tpt+1,1], sep =""), 
+                                                        levels = names(fills))),
+                                          "LBR" = list("fillKey"=factor(paste("Col", interpMatrix.cut[tpt+1,2], sep = ""), 
+                                                        levels = names(fills))),
+                                          "SLE" = list("fillKey"=factor(paste("Col",interpMatrix.cut[tpt+1,3], sep = ""), 
+                                                        levels = names(fills))))
+}
+
+end.rcode-->
+
+
+<div class='container' id ="zoom_map_container" style="position: relative; max-width: 100%; height:100%">
+  <div class = "row">
+    <div class="col-sm-3">
+      <input id='slider' type='range' min=1 max=119 ng-model='Day' width=200>
+      <span ng-bind='Day'></span>
+    </div>
+    <div class = "col-sm-7"></div>
+  </div>
+  <div class="row">
+    <div id='zoom_map' class='rChart datamaps col-sm-8 col-sm-offset-1' style="position: relative; max-width: 100%; height:100%"></div>  
+    <div class="col-sm-3"></div>
+  </div>
+</div>
+<script>
+  function rChartsCtrl($scope){
+    $scope.Day = 1;
+    $scope.$watch('Day', function(newDay){
+      zoom.updateChoropleth(alldata[newDay]);
+    })
+  }
+</script>    
+
+<script id='popup-template' type='text/x-handlebars-template'>
+</script>
+
+<script>
+var alldata = 
+<!--begin.rcode echo=FALSE, results="asis"
+{cat(toJSON2(outList))}
+end.rcode-->
+
+
+var chartParams={"dom": "zoom_map",
+"scope": "world",
+"geographyConfig":{
+  "borderColor":"#cccccc",
+  "borderWidth":"2px"},
+"fills": 
+<!--begin.rcode echo=FALSE, results="asis"
+cat(toJSON2(fills))
+end.rcode-->
+,
+"data":
+<!--begin.rcode echo=FALSE, results="asis"
+cat(toJSON2(outList[[1]]))
+end.rcode-->
+,"setProjection": function( element, options ) {
+    var path;
+    var projection = d3.geo.equirectangular()
+        .center([-5, 7])
+    	  .rotate([4.4, 0])
+  		  .scale(1600)
+  		  .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
+     
+    path = d3.geo.path()
+      .projection( projection );
+ 
+    return {path: path, projection: projection};
+  }
+}
+
+chartParams.element = document.getElementById('zoom_map')
+  
+  
+  var zoom = new Datamap(chartParams);
+  
+  if (chartParams.labels){
+    zoom.labels()
+  }
+  
+  if (chartParams.legend){
+    zoom.legend()
+  }
+
+
+</script>
 
       <a id="intro-compartment-sect" class="anchor">
       <h3>Compartmental Models</h3>
@@ -234,23 +387,20 @@ We're not going to do anything fancy with demographic information or public heal
     There are some things we need to define before we can start fitting models and making predictions. 
   </p>
   <ol>
-    <li>The time points are not evenly spaced, so we need to define appropriate offset values to capture the ammount
-    of aggregation performed (time between reports).</li>
+    <li>The population sizes need to be determined.</li>
+    <li>Initial values for the four compartments must be determined.<li>
+    <li>The time points are not evenly spaced, so we need to define appropriate offset values to capture the ammount of aggregation performed (time between reports).</li>
     <li>We must define the spatial correlation structure.</li>
     <li>A set of basis functions needs to be chosen to capture the temporal trend.</li>
     <li>Prior parameters and parameter staring values must be specified for each <a href="http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">chain.</a></li>
     <li>A whole bunch of bookkeeping stuff for which I haven't yet programmed sensible default behavior needs to be set up.</li>
   </ol>
   <p>
-  More details are available in comments to the code below. 
+  Compartment starting values follow the usual convention of letting the entire initial population be divided into susceptibles and infectious individuals. The starting value for the number of infectious individuals was 86, the first infection count available in the data. Offsets are actually calculated in the first code block (above) as the differences between the report times. For temporal basis functions, orthogonal polynomials of degree three were used. Prior parameters for the E to I and I to R transitions were chosen based on well documented values for the average latent and infectious times, and the rest of the prior parameters were left vague. These decisions are addressed in more detail as comments to the code below. 
   </p>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
-
-# Define the temporal offset vector to be the number of days reflected in each 
-# aggregated record (time between reports).
-offsets = uncumulate(original.rptDate)
 
 # Define the simple "distance" matrix. There are 3 countries, all of which 
 # share borders. Therefore we simply define a 3x3 matrix with zero diagonals 
@@ -499,7 +649,7 @@ end.rcode-->
       </div> 
 
 <p>
-  With the model objects created, let's do some short runs for each chain to try to choose sensible Metropolis tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
+  With the model objects created, we may perform some some short runs in order to choose sensible Metropolis tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
 </p>
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -516,20 +666,18 @@ for (i in 1:length(SEIRmodels))
 end.rcode-->
 </div>
       
-<p>Now we can run the three chains for longer in order to acheive convergence. 
-As before, we'll adjust the tuning parameters along the way. Astute readers may notice the frankly inconvenient number of samples requested
-, and will correctly infer that autocorrelation is currently a major problem for this library. This problem is being worked on.</p>  
+<p>Using these tuning parameters, we can now run the chains until convergence. 
+As before, we'll adjust the tuning parameters along the way. Astute readers may notice the frankly inconvenient number of samples requested, and will correctly infer that autocorrelation is currently a major problem for this library. While such autocorrelation does not impact the validity of estimates based on the converged chains, it does increase the required computation time. This is an area of active development for libspatialSEIR.</p>  
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
-
 for (i in 1:length(SEIRmodels))
 {
     cat(paste("Running chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels[[i]], 
-                  numBatches=200, 
-                  batchSize=10000, 
+                  numBatches=numConvergenceBatches, 
+                  batchSize=convergenceBatchSize, 
                   targetAcceptanceRatio=0.2,
                   tolerance=0.025,
                   proportionChange = 0.05))
@@ -538,11 +686,10 @@ for (i in 1:length(SEIRmodels))
 }
 end.rcode-->
 </div>
-
-<a id="analysis-1-convergence-sect" class="anchor">
-<h3>Convergence Diagnosis</h3>
-</a>
-
+<br/><br/>
+<div>
+<h3><a id="analysis-1-convergence-sect" class="anchor">Convergence Diagnosis</a></h3>
+</div>
 <p>As this is a Bayesian analysis in which the posterior distribution is sampled using MCMC techniques, we really need some
 indication that the samplers have indeed converged to the posterior distribution in order to make any inferences about the 
 problem at hand. In the code below, we'll read in the MCMC output files created so far, plot the three chains for each of 
@@ -628,12 +775,14 @@ end.rcode-->
   figure4()
 end.rcode-->
 
+<p>
+  The convergence looks quite reasonable, so let's dissect the estimates a bit. 
+</p>
+
 <a id="analysis-1-estimates-sect" class="anchor">
 <h3>Estimated Epidemic Behavior</h3>
 </a>
-<p>
-  The convergence looks reasonable, so let's dissect the estimates a bit. 
-</p>
+<br/>
 
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -671,11 +820,37 @@ summary(mcl)
 end.rcode-->
 
 <p>The average time spent in a particular disease compartment is just one divided by the probability of 
-a transition between compartments. The units here are days, so we can see that the average infectious time is estimated to be
-(roughly) between 7 and 11 days, while the average latent time is (roughly) between 7 and 10 days. In reality, there is a lot 
+a transition between compartments. The units here are days, so we can see that the average infectious time is estimated to be between 
+
+<!--begin.rcode echo =FALSE, results="asis"
+mcl.summary = summary(mcl)
+cat(paste(" ", round(1/mcl.summary$quantiles[9,5],1), " ", sep = ""))
+end.rcode-->
+
+and
+
+<!--begin.rcode echo =FALSE, results="asis"
+cat(paste(" ", round(1/mcl.summary$quantiles[9,1],1), " ", sep = ""))
+end.rcode-->
+
+days, while the average latent time is most likely between
+
+
+<!--begin.rcode echo =FALSE, results="asis"
+
+cat(paste(" ", round(1/mcl.summary$quantiles[8,5],1), " ", sep = ""))
+end.rcode-->
+
+and
+
+<!--begin.rcode echo =FALSE, results="asis"
+cat(paste(" ", round(1/mcl.summary$quantiles[8,1],1), " ", sep = ""))
+end.rcode-->
+
+days. In reality, there is a lot 
 of variability in these times for Ebola, but these seem like reasonable estimates for the average values. <br/>
 
-We also notice that there is reasonably strong spatial dependence (the distribution of the spatial dependence parameter is well separated from zero), indicating reasonably strong mixing between the three populations. This is unsurprising, as the disease has in fact spread between all three nations. 
+We also notice that there is definitely non-zero spatial dependence (the distribution of the spatial dependence parameter is well separated from zero), indicating reasonably strong mixing between the populations. This is unsurprising, as the disease has in fact spread between all three nations. 
 <br/>
 
 It also appears that Guinea has the lowest estimated epidemic intensity, followed by Sierra Leone and Liberia, which have similar credible
@@ -732,9 +907,9 @@ end.rcode-->
 <h3>Basic Reproductive Number Calculation</h3>
 </a>
 <p>
-A common tool for describing the development and containment of an epidemic is a quantity known as the basic reproductive numer, or the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections an infected individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect it to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity. <br/>
+A common tool for describing the development and containment of an epidemic is a quantity known as the basic reproductive numer, or the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections each infectious individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect the epidemic to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity. <br/>
 
-In addition to coming up with a point estimate of the ratio, it is helpful to quantify the uncertainty in the estimates obtained. Unfortunately, we can't just grab this from the MCMC output so far. Fortunately, we can just perform more samples and compute the ratio along the way as shown in the code below. 
+In addition to coming up with a point estimate of the ratio, it is helpful to quantify the uncertainty in the estimates obtained. The code below draws additional samples from the posterior distribution in order to estimate this uncertainty.
 </p>
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -747,7 +922,7 @@ In addition to coming up with a point estimate of the ratio, it is helpful to qu
   
   R0_vec = sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0)
 
-  for (i in 1:500)
+  for (i in 1:extraR0Iterations)
   {
       SEIRmodels[[1]]$simulate(1000)
       R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0))
@@ -761,7 +936,7 @@ In addition to coming up with a point estimate of the ratio, it is helpful to qu
 figure6 = function()
 {
   plot(rptDate[1:(length(rptDate)-1)], r0.meanvec , type = "l", xlab = "Date",
-       ylab = "R0",
+       ylab = expression('R'[0]),
        main = "Estimated Basic Reproductive Number\n 90% Credible Interval", 
        ylim = r0.ylim, lwd = 2)
   lines(rptDate[1:(length(rptDate)-1)], r0.LB, lty = 2)
@@ -776,7 +951,7 @@ end.rcode-->
 figure6()
 end.rcode-->
 
-The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. Notice, on the other hand, the high variability during May. This is an interesting result, and perhaps reflects the seemingly contradicting information from Guinea (where the epidemic continued to spread) and Liberia (where the epidemic briefly disappeared).<br/>
+The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. Notice, on the other hand, the high variability in May. This is an interesting result, and perhaps reflects the seemingly contradicting information from Guinea (where the epidemic continued to spread) and Liberia (where the epidemic briefly disappeared).<br/>
 
 While the basic reproductive number is a useful quantity to know, it does not directly make any predictions about future epidemic behavior. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
  
@@ -786,8 +961,8 @@ While the basic reproductive number is a useful quantity to know, it does not di
 </a>
 <p>
  
- Currently the simulation required for epidemic prediction must be done "manually", or by writing a bunch of R code (given below). As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
- We must be cautious when making predictions about a chaotic process this far into the future. We must be particularly cautious becase the basis chosen for the temporal trend in the epidemic intensity process was polynomial. While polynomial bases often provide a good fit to the data, they can behave unreasonably outside the range over which the model was fit (quadratic and cubic terms can get large very quickly). Analysis 2 will consider, in abbreviated fashion, the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
+ Currently the simulation required for epidemic prediction must be done "manually" by writing a bunch of R code. As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
+ We must be cautious when making predictions about a chaotic process this far into the future. We must be particularly cautious because the basis chosen for the temporal trend in the epidemic intensity process was polynomial. While polynomial bases often provide a good fit to the data, they can behave unreasonably outside the range over which the model was fit (quadratic and cubic terms can get large very quickly). 
 </p>
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -979,18 +1154,20 @@ end.rcode-->
 figure7()
 end.rcode-->
 
-<p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. There is no data to support these large swings in epidemic behavior, so we can be fairly certain that these long term predictions are extrapolation errors. 
-<br/> On the other hand,</p>
+<p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. The behavior of the epidemic so far does not support these large swings in epidemic behavior, so we can be fairly certain that these long term predictions are extrapolation errors. Analysis 2 will consider the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
     </div>
     <div class="col-sm-1">
   </div>
  
   <a id="anchor-analysis-2-sect" class = "anchor">
   <h2>Analysis 2: Spline Basis</h2> </a>
+  
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
-      <p> Below is an abbreviated and concatenated modification of the code presented above. We won't be concerned with interpreting the model parameters, as the polynomial model was likely sufficient in terms of estimation.</p>
-      
+      <a id="analysis-2-set-up-sect" class="anchor"><h3>Set Up</h3></a>
+      <p> The problem with polynomial basis functions is that they extrapolate poorly, exhibiting extreme behavior under prediction. On the other hand, they often perform quite well for estimation purposes and prediction within the range of observed data. For this reason, and because spline basis coefficients are somewhat difficult to interpret, analysis 2 will not repeat the qualitative interpretation work presented above. Parameter estimates are available below for completeness.</p>
+      <br/>
+  <br/>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
@@ -1079,8 +1256,8 @@ for (i in 1:length(SEIRmodels.spline))
 {
     cat(paste("Running in chain ", i, "\n", sep =""))
     tm = system.time(runSimulation(SEIRmodels.spline[[i]], 
-                  numBatches=200, 
-                  batchSize=10000, 
+                  numBatches=numConvergenceBatches, 
+                  batchSize=convergenceBatchSize, 
                   targetAcceptanceRatio=0.2,
                   tolerance=0.025,
                   proportionChange = 0.05))
@@ -1136,31 +1313,57 @@ figure9 = function()
              , "I to R Transition Probability")
 }
 
+## Parameter Estimates 
+
+
+c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:6,8:10)]
+c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:6,8:10)]
+c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:6,8:10)]
+
+c1$gamma_ei = 1-exp(-c1$gamma_ei)
+c1$gamma_ir = 1-exp(-c1$gamma_ir)
+c2$gamma_ei = 1-exp(-c2$gamma_ei)
+c2$gamma_ir = 1-exp(-c2$gamma_ir)
+c3$gamma_ei = 1-exp(-c3$gamma_ei)
+c3$gamma_ir = 1-exp(-c3$gamma_ir)
+colnames(c1) = c("Guinea Intercept", "Liberia Intercept", 
+                 "Sierra Leone Intercept", "Linear Time Component", 
+                 "Quadratic Time Component", "Cubic Time Component",
+                 "Spatial Dependence Parameter", "E to I probability", 
+                 "I to R probability")
+colnames(c2) = colnames(c1)
+colnames(c3) = colnames(c1)
+
+mcl = mcmc.list(as.mcmc(c1), 
+                as.mcmc(c2),
+                as.mcmc(c3))
+summary(mcl)
+
 ## R0 stuff
 
 
 getR0 = function(t)
-  {
-    max(eigen(SEIRmodels.spline[[1]]$getGenerationMatrix(t))$values)  
-  }
+{
+  max(eigen(SEIRmodels.spline[[1]]$getGenerationMatrix(t))$values)  
+}
   
-  R0_vec = sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0)
+R0_vec = sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0)
 
-  for (i in 1:500)
-  {
-      SEIRmodels.spline[[1]]$simulate(1000)
-      R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0))
-  }
+for (i in 1:extraR0Iterations)
+{
+    SEIRmodels.spline[[1]]$simulate(1000)
+    R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0))
+}
 
-  r0.ylim = c(min(R0_vec), max(R0_vec))
-  r0.meanvec = apply(R0_vec, 2, mean)
-  r0.LB = apply(R0_vec, 2, quantile, probs = c(0.05))
-  r0.UB = apply(R0_vec, 2, quantile, probs = c(0.95))
+r0.ylim = c(min(R0_vec), max(R0_vec))
+r0.meanvec = apply(R0_vec, 2, mean)
+r0.LB = apply(R0_vec, 2, quantile, probs = c(0.05))
+r0.UB = apply(R0_vec, 2, quantile, probs = c(0.95))
 
 figure10 = function()
 {
   plot(rptDate[1:(length(rptDate)-1)], r0.meanvec , type = "l", xlab = "Date",
-       ylab = "R0",
+       ylab = expression('R'[0]),
        main = "Estimated Basic Reproductive Number - Spline Model\n 90% Credible Interval", 
        ylim = r0.ylim, lwd = 2)
   lines(rptDate[1:(length(rptDate)-1)], r0.LB, lty = 2)
@@ -1185,7 +1388,6 @@ SierraLeone.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=2)
 
 figure11 = function()
 {
-  maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
   preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
                   nrow(chain1), predict.i)
   
@@ -1197,6 +1399,7 @@ figure11 = function()
   Guinea.Pred = preds[[1]]$I[,1]
   Liberia.Pred = preds[[1]]$I[,2]
   SierraLeone.Pred = preds[[1]]$I[,3]
+  
   
   breakpoint = mean(c(max(rptDate), min(pred.dates)))
   
@@ -1219,6 +1422,8 @@ figure11 = function()
   
   SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
   SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
+  
+  maxI = max(c(max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est)), Guinea.UB, Liberia.UB, SierraLeone.UB))
   
   ## Guinea 
   par(mfrow = c(3,1))
@@ -1272,7 +1477,10 @@ figure11 = function()
 
 end.rcode-->
 </div>
-
+<br/>
+<br/>
+<h3><a id="analysis-2-convergence-sect" class="anchor">Convergence</a></h3>
+<p>Again, convergence looks quite good:</p>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure8()
 end.rcode-->
@@ -1281,26 +1489,30 @@ end.rcode-->
 figure9()
 end.rcode-->
 
+<br/>
+
+<p>The estimated basic reproductive number and associated variability is virtually unchanged:</p>
+<a id="analysis-2-r0-sect" class="anchor"><h3>Basic Reproductive Number Calculation</h3></a>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure10()
 end.rcode-->
 
+<a id="analysis-2-prediction-sect" class="anchor"><h3>Epidemic Prediction</h3></a>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure11()
 end.rcode-->
 
 
 
-<p>These predictions do appear more reasonable. As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady rate for at least the next few weeks, though we must still be careful projecting too far into the future. Still, if I had to bet, I'd bet on a steadily decreasing infection rate dropping towards zero in mid September.<br/>
+<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. </p>
+<br/>
 
-That wraps up the analyses for now, though of course there are numerous other hypotheses we could explore:
-<ul>
-  <li>Use time varying co-variates to track the effect of various public health interventions.</li>
-  <li>Explore other types of spline bases, as well as bases of different complexity (quartic etc.).</li>
-  <li>Obtain better information about population flows between the three countries, or obtain more finely geocoded data to 
-  examine the effect on the sub-regional level.</li>
-</ul>
-This document will continue to be updated as the epidemic progressesm and as the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Time permitting, some of the more nuanced analyses mentioned above will be explored as well. <br/>
+
+<a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
+<br/>
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying of validating this tentative prediction, and as a result providing a demonstration of the benefits and potential drawbacks of the application of simple temporal modeling to complex international health problems. <br/>
+
+That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> <br/>
 </p>      
       
       </div>
@@ -1310,8 +1522,7 @@ This document will continue to be updated as the epidemic progressesm and as the
   
 </div>
      <a id="dummy_anchor" class = "anchor"></a>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    
     <script type="text/javascript">
       $(".code-button").click(function(){
           $(this).next().animate({
@@ -1323,5 +1534,7 @@ This document will continue to be updated as the epidemic progressesm and as the
       });
       
     </script>
+    
+
   </body>
 </html>
