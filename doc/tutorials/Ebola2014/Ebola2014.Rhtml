@@ -81,7 +81,6 @@
               <ul>
                 <li><a href="#analysis-2-set-up-sect">Set Up</a></li>
                 <li><a href="#analysis-2-convergence-sect">Convergence Diagnosis</a></li>
-                <li><a href="#analysis-2-estimates-sect">Estimated Epidemic Behavior</a></li>
                 <li><a href="#analysis-2-r0-sect">Basic Reproductive Number</a></li>
                 <li><a href="#analysis-2-prediction-sect">Prediction</a></li>
               </ul>
@@ -783,7 +782,7 @@ end.rcode-->
 <a id="analysis-1-estimates-sect" class="anchor">
 <h3>Estimated Epidemic Behavior</h3>
 </a>
-
+<br/>
 
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
@@ -1162,11 +1161,13 @@ end.rcode-->
  
   <a id="anchor-analysis-2-sect" class = "anchor">
   <h2>Analysis 2: Spline Basis</h2> </a>
+  
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
       <a id="analysis-2-set-up-sect" class="anchor"><h3>Set Up</h3></a>
       <p> The problem with polynomial basis functions is that they extrapolate poorly, exhibiting extreme behavior under prediction. On the other hand, they often perform quite well for estimation purposes and prediction within the range of observed data. For this reason, and because spline basis coefficients are somewhat difficult to interpret, analysis 2 will not repeat the qualitative interpretation work presented above. Parameter estimates are available below for completeness.</p>
-      
+      <br/>
+  <br/>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
@@ -1500,11 +1501,15 @@ end.rcode-->
 
 
 
-<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying of validating this tentative prediction.<br/>
+<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. </p>
+<br/>
 
 
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
-That wraps up the analyses for now, though there are, of course, numerous potential data and analysis improvements which could be made. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. <br/>
+
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying of validating this tentative prediction, and as a result providing a demonstration of the benefits and potential drawbacks of the application of simple temporal modeling to complex international health problems. <br/>
+
+That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> <br/>
 </p>      
       
       </div>
