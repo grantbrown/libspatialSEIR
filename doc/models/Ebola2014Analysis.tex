@@ -1,0 +1,241 @@
+\documentclass[12pt]{article}
+\oddsidemargin .15in \evensidemargin .0in \topmargin 0in
+\columnsep 10pt \columnseprule 0pt
+\marginparwidth 19pt \marginparsep 11pt \marginparpush 5pt
+\headheight 0pt \headsep 0pt
+\textheight 8in
+\textwidth 6in 
+\pagestyle{plain}
+\usepackage{graphicx, latexsym}
+\usepackage{alltt}
+\usepackage{float}
+\usepackage{amsmath}
+\newcommand{\widesim}[2][1.5]{
+      \mathrel{\overset{#2}{\scalebox{#1}[1]{$\sim$}}}
+  }
+
+\newcommand \noi {\noindent}
+\newcommand \itx {\indent \indent \indent}
+\newcommand \bg {\begin}
+\newcommand \en {\end}
+\newcommand \mth {\begin{math}}
+\newcommand \mthx {\end{math}}
+\newcommand \ds {\displaystyle}
+\newcommand \mbreak {\\ \vspace{0.1in}}
+\begin{document}
+
+\begin{center}    
+    \noi \bf 2014 West African Ebola Epidemic: Model Development\\ 
+    \vspace{.05in}
+    \noi Summer 2014\\
+    \vspace{.05in}
+
+    \vspace{.15in}
+    \noi Grant Brown\\ 
+
+\end{center}
+\section{The SEIR Compartmental Epidemic Model}
+\subsection{Introduction}
+Compartmental epidemic modeling is a flexible and extensible method of describing epidemic behavior.  
+Such techniques rely on the idea that individuals within a population undergoing an epidemic process 
+can be categorized by disease state. The most common terms used to describe these disease states are: \\ 
+
+\begin{itemize}
+    \item {\bf{Susceptible}}: Individuals capable of contracting the disease of interest. 
+    \item {\bf{Exposed}}: Individuals who have contracted the disease, but are not yet infectious. 
+    \item {\bf{Infectious}}: Individuals who are capable of spreading the disease.  
+    \item {\bf{Recovered/Removed}}: Individuals who have either recovered or been removed from the population. 
+\end{itemize}
+
+The stochastic SEIR model has been successfully applied in the past to Ebola by Lekone and Finkenst{\"a}dt (2006), 
+making it a good candidate model family for the current outbreak. The development here is broadly simily to the 
+aforementioned paper, ``Statistical Inference in a Stochastic Epidemic SEIR Model with Control Intervention: Ebola 
+as a Case Study'', with the addition of a simple conditionally autoregressive spatial correlation structure. 
+
+\section{Model Development}
+
+    \subsection{Compartments and Notation}
+    {
+        \itx
+        Denote the spatial locations of interest $\left\{s_i : i = 1, ...,n \right\}$ \\
+        Let $d(s_i, s_l) = d_{il}$ be an indicator function which denotes whether two spatial locations share a border.  
+        spatial locations. Note that $d(s_i, s_i) = 0$, and that for this data analysis all locations share a border. Should
+        this change as the epidemic progresses (by spreading to additional nations), only small changes will be required. \\
+         
+        Let time (in units appropriate to the data and disease process) be denoted ${t_j : j = 1, ...,T}$ \\
+        Let each of these discrete time points be associated with an offset term which describes the relative amount of 
+        continuous time over which the discretely indexe data was aggregated. Here, this offset is the time between WHO reports. 
+        Define the following components for each $s_i$ and $t_j$: \mbreak
+
+        All components indexed by time and space in libspatialSEIR are layed out as arrays of double precision elements
+        in column major order with T rows and n columns. 
+    }
+        \begin{itemize}
+            \item {${N_{ij}}$} is the population size.
+            \item {${S_{ij}}$} is the count of susceptible individuals.
+            \item {${E_{ij}}$} is the count of exposed individuals.
+            \item {${I_{ij}}$} is the count of infectious individuals. 
+            \item {${R_{ij}}$} is the count of recovered/removed individuals.
+            \item {${E^*_{ij}}$} is the number of newly exposed individuals.
+            \item {${I^*_{ij}}$} is the number of newly infectious individuals. We assume that the observed data gives an accurate count of this value. 
+            \item {${R^*_{ij}}$} is the number of newly recovered/removed individuals.
+        \end{itemize}
+        
+        Let {$\bf{N_j} = \bf{S_j + E_j + I_j + R_j}$} for all $j$ rows of the disease process compartments. As population size is not 
+        expected to change dramatically over the time scale of this epidemic, $N$ is held fixed for each spatial location. 
+        In addition let ${\bf{S_0, E_0, I_0,}}$ and ${\bf{R_0}}$ denote the $n$-vectors of unknown compartment sizes at the 
+        start of the modeling period. Here, $I_0$ is initialized at $86$ in Guinea and $0$ elsewhere, as this is the first available
+        estimate of the number of infectious individuals. The rest of the population was considered susceptible, as is usual for these models.  
+        
+
+    \vspace{0.15in}
+    \subsection{Disease Evolution Process Model}
+    Given the values of the aforementioned parameters, the disease process evolves forward in time 
+    as one would expect based on the definitions.  
+    \begin{center}
+
+
+        $\bf{S_{j+1}} = \bf{S_j} - \bf{E_j^*}$\mbreak
+        $\bf{E_{j+1}} = \bf{E_j} - \bf{I_j^*} + \bf{E_j^*}$\mbreak
+        $\bf{I_{j+1}} = \bf{I_j} - \bf{R_j^*} + \bf{I_j^*}$\mbreak
+        $\bf{R_{j+1}} = \bf{R_j} + \bf{R_j^*}$\mbreak
+    \end{center}
+    \vspace{0.15in}
+
+    While models of this form are often fit using deterministic systems of ordinary or partial differential equations, 
+    libspatialSEIR uses a heirarchical Bayesian framework in order to adequately capture the inherent variability in the model parameters.
+    To complete the temporal process model, specify the following chain binomial relationship: 
+    \vspace{0.15in}
+    {
+
+
+        $\{E_{ij}^* | \pi^{(SE)}_{ij}, S_{ij} \} \widesim{ind}\ binom(S_{ij}, \pi^{SE}_{ij})$ \mbreak
+
+        $\{I_{ij}^* | \pi^{(EI)}, E_{ij} \} \widesim{ind}\ binom(E_{ij}, \pi^{(EI)})$\mbreak
+
+        $\{R_{ij}^* | \pi^{(IR)}, I_{ij}\} \widesim{ind}\ binom(I_{ij}, \pi^{(IR)})$\mbreak
+    }
+\subsection{Transition Probability Model}
+
+        While $\pi^{EI}$ and $\pi^{IR}$ can be easily parameterized with the usual exponential time assumption, more care must be given to the development 
+        of a model for the $\left\{\pi^{SE}_{ij} \right\}$. This set of parameters 
+        describes the actual infection process and must account for predictor variables as well as the 
+        spatial structure of $\left\{ s_i \right\}$. 
+
+\subsection{Infection Process - CAR Model Motivation}
+
+Consider the process by which people become infected with a communicable disease. 
+Namely, consider the situation in which a person `A' has contacted another person, `B', 
+who is infectious (for some suitable definition of contacted). The development below assumes contiguous and equivalently sized temporal intervals, 
+though it is readily extended to the heterogeneous case. 
+Let $p$ be the probability that person `A' becomes infected with the disease, and
+let $q=1-p$. Now we introduce a number of assumptions:
+
+\begin{itemize}
+
+    \item Assume that the number of `contacts' $K_i$ between a person of interest 
+    and other individuals within a spatial unit $s_i$ at a given time point follows a Poisson 
+    distribution:\\
+    \begin{center}
+        $K_j \sim Po(\lambda_i)$
+    \end{center}
+    \item Assume that when individuals travel to other spatial locations, their 
+        contact behavior is well modeled by the contact behavior of that spatial unit (when in Rome).  
+    \item Contact between spatial locations is proportional to some known function $f(d_{il})$
+        of the chosen distance metric between the centroids of $s_i$ and $s_l$
+\end{itemize}
+
+Define $\delta_{ij}$ to be the proportion of persons who are infectious in spatial unit $s_i$ 
+at time $t_j$. Then, letting $Inf(s_i, t_j)$ denote the event that a person becomes 
+infected from contact within spatial unit $s_i$ at time $t_j$ and $!Inf(s_i, t_j)$ denote it's compliment
+, we can derive:
+
+\begin{center}
+
+    $P(Inf(.,t_j)) = 1 - P(!Inf(s_i, t_j)) \cdot  P(!Inf(s_{-i}, t_j))$ \mbreak
+    where \mbreak 
+    $P(!Inf(s_i, t_j)) = E(!Inf(s_i, t_j)) = E(E(!Inf(s_i, t_j)|K_i=k_i))$  \mbreak 
+    $\displaystyle =E(((1-\delta_{ij})q)^{k_i})$  \mbreak 
+    $\displaystyle = \sum_{k=0}^{\infty} ((1-\delta_{ij})q)^k(\frac{\lambda_i^ke^{-\lambda_i}}{k!})$\mbreak
+    $\displaystyle =  \sum_{k=0}^{\infty} q_{ij}^k (\frac{\lambda_i^ke^{-\lambda_i}}{k!})$\mbreak
+    $\displaystyle = \frac{e^{-\lambda_i}}{e^{-q_{ij}\lambda_i}}(1)$
+    $ = e^{-\lambda_i\cdot(1-q_{ij})} $
+    $ = e^{-\lambda_i \cdot p_{ij}} $
+    $ = e^{-\lambda_i \cdot (\delta_{ij}p)}$ \mbreak
+    Therefore,  $P(Inf(s_i, t_j)) = 1 - e^{-\lambda_i \cdot (\delta_{ij}p)} $ \mbreak
+    Similarly,\mbreak
+    $\displaystyle P(!Inf(s_{-i}, t_j)) = \prod_{\left\{l \ne i\right\}}\left[P(!Inf(s_l, t_j)) \right]$ \mbreak
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[E(!Inf(s_{-i}, t_j))\right] $
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[E(E(!Inf(s_{-i}, t_j)|K_i=k_i)) \right]$  \mbreak 
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ E((1-\delta_{lj})q)^k )  \right]$\mbreak 
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ \sum_{k=0}^{\infty}(q_{lj}(i))^k\frac{(\lambda_l\cdot f(d_{il}))^ke^{-\lambda_l \cdot f(d_{il})}}{k!}    \right] $
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ \frac{e^{-\lambda_l \cdot f(d_{il})}}{e^{-q_{lj}\lambda_l f(d_{il})}}(1)  \right]$\mbreak
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ e^{-\lambda_l \cdot f(d_{il}) p_{lj}}  \right]$
+    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ e^{-\lambda_l\cdot f(d_{il}) \cdot (\delta_{lj}p) }  \right]$\mbreak
+    $\displaystyle = exp\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}$ \mbreak
+    Thus, for the probabilty of infection for a person living in $s_i$ at time $t_j$ we have: \mbreak 
+    $\displaystyle 1-\left(e^{-\lambda_i \cdot (\delta_{ij}p)}\right) \left( 
+        e^{\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}}\right)
+     $ \mbreak 
+
+    $\displaystyle = 1- exp\left\{-\delta_{ij}e^{\theta_{i}} - \sum_{\left\{ l \ne i  \right\}}
+        (f(d_{il})\delta_{il}e^{\theta_{l}})   \right\}$ 
+    , where $\theta_{v} = log(\lambda_{v}p)$
+ 
+\end{center}
+
+Currently, libspatialSEIR supports distance functions of the form:
+
+\begin{center}
+    $f(d_{il}) = \rho \cdot (d_{il})^{-\frac{1}{2}}$
+\end{center}
+
+For this analysis, the usual CAR model with a neighborhood matrix re-scaled to be row stochastic is employed with the autoregression 
+parameter $\rho$.
+
+ 
+\section{Basic Reproductive Number}
+The basic reproductive number, $\mathcal{R}_0$, is an important quantity in epidemiology. While the interpretation must be adapted to 
+the problem of interest, in general terms the basic reproductive number captures the expected number of secondary 
+infections produced by a single infected individual in an entirely susceptible population. 
+
+Using the next generation matrix approach to $\mathcal{R}_0$ calculation, we first define the matrix $G$ such 
+that $G_{i,l}(t_j)$ is the expected number of infections in spatial location $s_i$ caused by a single infected
+individual in location $s_l$ at time $t_j$.
+
+Defining the relevant infection event for a person indexed by $k$ to be: $I_k(s_i, s_l, t_j)$, we see that the expected number of such
+infections is:
+
+\begin{center}
+    $\displaystyle E\big[ \sum_{k=0}^{N_{i,j}}(I_k(s_i, s_l, t_j)) \big]$ \mbreak
+    $\displaystyle = \sum_{k=0}^{N_{i,j}}\cdot P(I_k(s_i, s_l, t_j)) = N_{i,j}\cdot P(I_k(s_i, s_l, t_j)) $ \mbreak 
+\end{center}
+
+    Where, as before: \mbreak
+
+\begin{center}
+    $ P(I_k(s_i, s_l, t_j)) = 1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}$ \mbreak
+\end{center}
+
+    This gives: \mbreak
+
+\begin{center}
+    $G_{i,l}(t_j) = \frac{N_{i,j}}{I_{l,j}}\cdot \left[1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}\right]$ \mbreak
+\end{center}
+
+    Additionally recall the diagonal case, where $d_{ii} = 0$ and $f(0) = 1$:\mbreak 
+
+\begin{center}
+    $G_{i,i}(t_j) = \frac{N_{i,j}}{I_{i,j}}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
+    $ = \delta_{ij}^{-1}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
+\end{center}
+
+With this matrix constructed, the basic reproductive number can be immediately calculated as the dominant eigenvalue. 
+
+
+\section{Final Notes}
+
+Variants of Metropolis sampling (not Metropolis-Hastings, as symmetric proposal distributions are employed) are used, in combination 
+with automatic tuning capabilities which enable libspatialSEIR to choose tuning parameters with reasonable acceptance rates. 
+
+\end{document}
