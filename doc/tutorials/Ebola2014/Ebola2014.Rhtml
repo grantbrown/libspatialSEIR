@@ -1388,7 +1388,6 @@ SierraLeone.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=2)
 
 figure11 = function()
 {
-  maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
   preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
                   nrow(chain1), predict.i)
   
@@ -1400,6 +1399,7 @@ figure11 = function()
   Guinea.Pred = preds[[1]]$I[,1]
   Liberia.Pred = preds[[1]]$I[,2]
   SierraLeone.Pred = preds[[1]]$I[,3]
+  
   
   breakpoint = mean(c(max(rptDate), min(pred.dates)))
   
@@ -1422,6 +1422,8 @@ figure11 = function()
   
   SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
   SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
+  
+  maxI = max(c(max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est)), Guinea.UB, Liberia.UB, SierraLeone.UB))
   
   ## Guinea 
   par(mfrow = c(3,1))
@@ -1476,7 +1478,8 @@ figure11 = function()
 end.rcode-->
 </div>
 <br/>
-<a id="analysis-2-convergence-sect" class="anchor"><h3>Convergence</h3></a>
+<br/>
+<h3><a id="analysis-2-convergence-sect" class="anchor">Convergence</a></h3>
 <p>Again, convergence looks quite good:</p>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure8()
@@ -1506,7 +1509,7 @@ end.rcode-->
 
 
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
-
+<br/>
 As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying of validating this tentative prediction, and as a result providing a demonstration of the benefits and potential drawbacks of the application of simple temporal modeling to complex international health problems. <br/>
 
 That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> <br/>

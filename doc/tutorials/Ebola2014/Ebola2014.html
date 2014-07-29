@@ -74,9 +74,16 @@
     <title>2014 Ebola Epidemic</title>
     <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="./css/ebola.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js' type='text/javascript'></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js"></script>
+    <script src="./datamaps.world.min.js"></script>
   </head>
 
-  <body>
+  <body ng-app ng-controller='rChartsCtrl'>
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -103,10 +110,10 @@
       <div class="row">
         <div class="col-sm-12">
           <h1>Estimating and Predicting Epidemic Behavior for the 2014 West African Ebola Outbreak</h1>
-          <h4>A Quick and Dirty Spatial SEIR Modeling Approach</h4>
+          <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 7/24/2014</h5>
+          <h5>Last Updated: 7/28/2014</h5>
         </div>
       </div>
     </div>
@@ -132,7 +139,15 @@
                 <li><a href="#analysis-1-prediction-sect">Prediction</a></li>
               </ul>
             </li>
-            <li><a href="#anchor-analysis-2-sect">Analysis 2: Natural Spline Basis</a></li>
+            <li><a href="#anchor-analysis-2-sect">Analysis 2: Natural Spline Basis</a>
+              <ul>
+                <li><a href="#analysis-2-set-up-sect">Set Up</a></li>
+                <li><a href="#analysis-2-convergence-sect">Convergence Diagnosis</a></li>
+                <li><a href="#analysis-2-r0-sect">Basic Reproductive Number</a></li>
+                <li><a href="#analysis-2-prediction-sect">Prediction</a></li>
+              </ul>
+            </li>
+            <li><a href="#conclusions-sect">Conclusions</a></li>
           </ol>
         </div>
       </div>
@@ -148,28 +163,43 @@
         <h3>The Outbreak</h3>
         </a>
           <p>
-          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, there aren't many specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of peer reivewed epidemic forecasts, this document explores a simple spatial SEIR model to make some initial forecasts. 
+          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, to our knowledge there aren't any specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of epidemic forecasts, this document explores a simple spatial SEIR model to make some initial predictions. 
           </p>
           <a id="intro-data-sect" class="anchor">
         <h3>The Data</h3>
         </a>
         <p>
-        A summary of the WHO case reports is very helpfully compiled on wikipedia for analysts who are too lazy to read the case reports themselves. Let's read it in with the xml library: 
+        A summary of the WHO case reports is very helpfully compiled on wikipedia. It can be easily read into R with the xml library: 
       </p>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
 <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(coda)</span>
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(coda)</span> <span class="hl com"># Load the coda library for MCMC convergence diagnosis</span>
 </pre></div>
 <div class="message"><pre class="knitr r">## Loading required package: lattice
 </pre></div>
-<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(spatialSEIR)</span>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(spatialSEIR)</span> <span class="hl com"># Load the spatialSEIR library to perform the modeling. </span>
 </pre></div>
 <div class="message"><pre class="knitr r">## Loading required package: Rcpp
 </pre></div>
-<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(XML)</span>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(XML)</span> <span class="hl com"># Load the XML library to read in data from Wikipedia</span>
+
+<span class="hl com">## Define Document Compilation Parameters</span>
+
+
+<span class="hl std">documentCompilationMode</span> <span class="hl kwb">=</span> <span class="hl str">&quot;release&quot;</span>
+<span class="hl com">#documentCompilationMode = &quot;debug&quot;</span>
+
+
+<span class="hl std">numConvergenceBatches</span> <span class="hl kwb">=</span> <span class="hl kwd">ifelse</span><span class="hl std">(documentCompilationMode</span> <span class="hl opt">==</span> <span class="hl str">&quot;release&quot;</span><span class="hl std">,</span> <span class="hl num">250</span><span class="hl std">,</span> <span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl std">convergenceBatchSize</span> <span class="hl kwb">=</span>  <span class="hl kwd">ifelse</span><span class="hl std">(documentCompilationMode</span> <span class="hl opt">==</span> <span class="hl str">&quot;release&quot;</span><span class="hl std">,</span> <span class="hl num">10000</span><span class="hl std">,</span> <span class="hl num">1000</span><span class="hl std">)</span>
+<span class="hl std">extraR0Iterations</span> <span class="hl kwb">=</span>     <span class="hl kwd">ifelse</span><span class="hl std">(documentCompilationMode</span> <span class="hl opt">==</span> <span class="hl str">&quot;release&quot;</span><span class="hl std">,</span> <span class="hl num">500</span><span class="hl std">,</span> <span class="hl num">50</span><span class="hl std">)</span>
+
+<span class="hl com">##</span>
+
+
 <span class="hl std">url</span> <span class="hl kwb">=</span> <span class="hl str">'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'</span>
 <span class="hl std">tbls</span> <span class="hl kwb">=</span> <span class="hl kwd">readHTMLTable</span><span class="hl std">(url)</span>
-<span class="hl std">dat</span> <span class="hl kwb">=</span> <span class="hl std">tbls[[</span><span class="hl num">2</span><span class="hl std">]]</span>
+<span class="hl std">dat</span> <span class="hl kwb">=</span> <span class="hl std">tbls[[</span><span class="hl num">3</span><span class="hl std">]]</span>
 
 <span class="hl std">rptDate</span> <span class="hl kwb">=</span> <span class="hl kwd">as.Date</span><span class="hl std">(dat[</span><span class="hl num">2</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(dat),</span><span class="hl num">1</span><span class="hl std">],</span> <span class="hl str">&quot;%d %b %Y&quot;</span><span class="hl std">)</span>
 <span class="hl std">original.rptDate</span> <span class="hl kwb">=</span> <span class="hl std">rptDate</span>
@@ -209,7 +239,7 @@ With data in hand, let's begin where every analysis should begin: graphs.
 
 <div class="chunk" id="unnamed-chunk-2"><div class="rimage center"><img src="figure/unnamed-chunk-2.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div></div>
 <p>
-These represent cumulative counts, but because case reports can be revised downward due to non-Ebola illnesses the graphs are not monotone. If someone would hire an intern to read all the case reports and compile their best guess as to actual case infection times, that would be pretty awesome. Instead, let's just "un-cumulate"* the data and bound it at zero to get a rough estimate of new case counts over time. 
+These represent cumulative counts, but because case reports can be revised downward due to non-Ebola illnesses the graphs are not monotone. A quick, but effective solution to this problem is to simply "un-cumulate"* the data and bound it at zero to get a rough estimate of new case counts over time. 
 <br/>
 
 <small> *Unlike uncumulate, decumulate is actually a word. Unfortunately it just means "to decrease", and so was unsuitable for use here. There should probably be a word for uncumulating things, perhaps uncumulate. </small></p>
@@ -225,27 +255,34 @@ These represent cumulative counts, but because case reports can be revised downw
                <span class="hl kwd">uncumulate</span><span class="hl std">(Liberia),</span>
                <span class="hl kwd">uncumulate</span><span class="hl std">(Sierra.Leone))</span>
 
+<span class="hl com"># Define the temporal offset vector to be the number of days reflected in each </span>
+<span class="hl com"># aggregated record (time between reports).</span>
+<span class="hl std">offsets</span> <span class="hl kwb">=</span> <span class="hl kwd">uncumulate</span><span class="hl std">(original.rptDate)</span>
+
+
+<span class="hl std">InfectionPerDay</span> <span class="hl kwb">=</span> <span class="hl std">I_star</span><span class="hl opt">/</span><span class="hl std">(</span><span class="hl kwd">cbind</span><span class="hl std">(offsets, offsets, offsets))</span>
 
 <span class="hl com"># Define figure 2 for next section</span>
-<span class="hl std">ylim</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl kwd">max</span><span class="hl std">(I_star))</span>
+<span class="hl std">ylim</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl kwd">max</span><span class="hl std">(InfectionPerDay)</span><span class="hl opt">*</span><span class="hl num">1.2</span><span class="hl std">)</span>
 <span class="hl std">figure2</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">()</span>
 <span class="hl std">{</span>
     <span class="hl kwd">layout</span><span class="hl std">(</span><span class="hl kwd">matrix</span><span class="hl std">(</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl num">2</span><span class="hl std">),</span> <span class="hl kwc">nrow</span> <span class="hl std">=</span> <span class="hl num">1</span><span class="hl std">),</span>
         <span class="hl kwc">widths</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">8</span><span class="hl std">,</span><span class="hl num">4</span><span class="hl std">),</span> <span class="hl kwc">heights</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">4</span><span class="hl std">,</span><span class="hl num">4</span><span class="hl std">))</span>
-    <span class="hl kwd">plot</span><span class="hl std">(rptDate, I_star[,</span><span class="hl num">1</span><span class="hl std">],</span> <span class="hl kwc">main</span> <span class="hl std">=</span> <span class="hl str">&quot;Crude Guess at New Case Counts Over Time&quot;</span><span class="hl std">,</span>
+    <span class="hl kwd">plot</span><span class="hl std">(rptDate, InfectionPerDay[,</span><span class="hl num">1</span><span class="hl std">],</span> <span class="hl kwc">main</span> <span class="hl std">=</span> <span class="hl str">&quot;Crude Guess at New Case Counts Over Time&quot;</span><span class="hl std">,</span>
          <span class="hl kwc">xlab</span> <span class="hl std">=</span> <span class="hl str">&quot;Date&quot;</span><span class="hl std">,</span>
          <span class="hl kwc">ylab</span> <span class="hl std">=</span> <span class="hl str">&quot;New Cases&quot;</span><span class="hl std">,</span>
-         <span class="hl kwc">pch</span> <span class="hl std">=</span> <span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">cex</span> <span class="hl std">=</span> <span class="hl num">2</span>
+         <span class="hl kwc">lty</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">lwd</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">,</span>
+         <span class="hl kwc">ylim</span> <span class="hl std">= ylim,</span> <span class="hl kwc">type</span> <span class="hl std">=</span> <span class="hl str">&quot;l&quot;</span>
          <span class="hl std">)</span>
     <span class="hl kwd">abline</span><span class="hl std">(</span><span class="hl kwc">h</span> <span class="hl std">=</span> <span class="hl kwd">seq</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwd">max</span><span class="hl std">(ylim),</span> <span class="hl num">10</span><span class="hl std">),</span> <span class="hl kwc">lty</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">,</span> <span class="hl kwc">col</span> <span class="hl std">=</span> <span class="hl str">&quot;lightgrey&quot;</span><span class="hl std">)</span>
-    <span class="hl kwd">points</span><span class="hl std">(rptDate, I_star[,</span><span class="hl num">2</span><span class="hl std">],</span> <span class="hl kwc">col</span> <span class="hl std">=</span> <span class="hl str">&quot;blue&quot;</span><span class="hl std">,</span> <span class="hl kwc">pch</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">,</span> <span class="hl kwc">cex</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
-    <span class="hl kwd">points</span><span class="hl std">(rptDate, I_star[,</span><span class="hl num">3</span><span class="hl std">],</span> <span class="hl kwc">col</span> <span class="hl std">=</span> <span class="hl str">&quot;red&quot;</span><span class="hl std">,</span> <span class="hl kwc">pch</span> <span class="hl std">=</span> <span class="hl num">3</span><span class="hl std">,</span> <span class="hl kwc">cex</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
+    <span class="hl kwd">lines</span><span class="hl std">(rptDate, InfectionPerDay[,</span><span class="hl num">2</span><span class="hl std">],</span> <span class="hl kwc">col</span> <span class="hl std">=</span> <span class="hl str">&quot;blue&quot;</span><span class="hl std">,</span><span class="hl kwc">lty</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">,</span> <span class="hl kwc">lwd</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
+    <span class="hl kwd">lines</span><span class="hl std">(rptDate, InfectionPerDay[,</span><span class="hl num">3</span><span class="hl std">],</span> <span class="hl kwc">col</span> <span class="hl std">=</span> <span class="hl str">&quot;red&quot;</span><span class="hl std">,</span> <span class="hl kwc">lty</span> <span class="hl std">=</span> <span class="hl num">3</span><span class="hl std">,</span> <span class="hl kwc">lwd</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
     <span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">xaxt</span><span class="hl std">=</span><span class="hl str">&quot;n&quot;</span><span class="hl std">)</span>
     <span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">yaxt</span><span class="hl std">=</span><span class="hl str">&quot;n&quot;</span><span class="hl std">)</span>
     <span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">bty</span><span class="hl std">=</span><span class="hl str">&quot;n&quot;</span><span class="hl std">)</span>
     <span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">xpd</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
     <span class="hl kwd">plot</span><span class="hl std">(</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl num">10</span><span class="hl std">),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">,</span><span class="hl num">10</span><span class="hl std">),</span> <span class="hl kwc">type</span> <span class="hl std">=</span> <span class="hl str">&quot;n&quot;</span><span class="hl std">,</span> <span class="hl kwc">main</span>  <span class="hl std">=</span><span class="hl str">&quot;&quot;</span><span class="hl std">,</span><span class="hl kwc">xlab</span><span class="hl std">=</span><span class="hl str">&quot;&quot;</span><span class="hl std">,</span><span class="hl kwc">ylab</span><span class="hl std">=</span><span class="hl str">&quot;&quot;</span><span class="hl std">)</span>
-    <span class="hl kwd">legend</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">,</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl num">10</span><span class="hl std">,</span> <span class="hl kwc">legend</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;Gunea&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Liberia&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Sierra Leone&quot;</span><span class="hl std">),</span> <span class="hl kwc">pch</span> <span class="hl std">=</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">3</span><span class="hl std">,</span>
+    <span class="hl kwd">legend</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">=</span><span class="hl opt">-</span><span class="hl num">2</span><span class="hl std">,</span><span class="hl kwc">y</span><span class="hl std">=</span><span class="hl num">10</span><span class="hl std">,</span> <span class="hl kwc">legend</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;Gunea&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Liberia&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Sierra Leone&quot;</span><span class="hl std">),</span> <span class="hl kwc">lty</span> <span class="hl std">=</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">3</span><span class="hl std">,</span><span class="hl kwc">lwd</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">,</span>
            <span class="hl kwc">col</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;black&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;blue&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;red&quot;</span><span class="hl std">))</span>
     <span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">xpd</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">)</span>
     <span class="hl kwd">par</span><span class="hl std">(</span><span class="hl kwc">xaxt</span><span class="hl std">=</span><span class="hl str">&quot;s&quot;</span><span class="hl std">)</span>
@@ -256,11 +293,1433 @@ These represent cumulative counts, but because case reports can be revised downw
 </div></div>
 </div>
 
+
 <p>
-  Here's a look at the "un-cumulated" counts. The process is a bit noisier from this perspective. 
+  For better graphical representation, the "un-cumulated" counts are scaled to represent average number of infections per day, and linearly interpolated. The process is a bit noisier from this perspective when compared to the original cumulative counts.  
 </p>
 
 <div class="chunk" id="unnamed-chunk-4"><div class="rimage center"><img src="figure/unnamed-chunk-4.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div></div>
+
+<br/>
+
+One can also represent this data geographically to get an idea of the spatial epidemic pattern, and to place the problem in a more relatable context. 
+
+<h4>Average Number of Infections Per Day:</h4>
+
+
+
+<div class='container' id ="zoom_map_container" style="position: relative; max-width: 100%; height:100%">
+  <div class = "row">
+    <div class="col-sm-3">
+      <input id='slider' type='range' min=1 max=119 ng-model='Day' width=200>
+      <span ng-bind='Day'></span>
+    </div>
+    <div class = "col-sm-7"></div>
+  </div>
+  <div class="row">
+    <div id='zoom_map' class='rChart datamaps col-sm-8 col-sm-offset-1' style="position: relative; max-width: 100%; height:100%"></div>  
+    <div class="col-sm-3"></div>
+  </div>
+</div>
+<script>
+  function rChartsCtrl($scope){
+    $scope.Day = 1;
+    $scope.$watch('Day', function(newDay){
+      zoom.updateChoropleth(alldata[newDay]);
+    })
+  }
+</script>    
+
+<script id='popup-template' type='text/x-handlebars-template'>
+</script>
+
+<script>
+var alldata = 
+{
+ "1": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"2": {
+ "GIN": {
+ "fillKey": "Col7" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"3": {
+ "GIN": {
+ "fillKey": "Col6" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"4": {
+ "GIN": {
+ "fillKey": "Col4" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"5": {
+ "GIN": {
+ "fillKey": "Col3" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"6": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"7": {
+ "GIN": {
+ "fillKey": "Col4" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"8": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"9": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"10": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"11": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"12": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"13": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"14": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"15": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"16": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"17": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"18": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"19": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"20": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"21": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"22": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"23": {
+ "GIN": {
+ "fillKey": "Col3" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"24": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"25": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"26": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"27": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"28": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"29": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"30": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"31": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"32": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"33": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"34": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"35": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"36": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"37": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"38": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"39": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"40": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"41": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"42": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"43": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"44": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"45": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"46": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"47": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"48": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"49": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"50": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"51": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"52": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"53": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"54": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"55": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"56": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"57": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"58": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"59": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"60": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"61": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"62": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"63": {
+ "GIN": {
+ "fillKey": "Col3" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"64": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"65": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"66": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"67": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"68": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col3" 
+} 
+},
+"69": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col3" 
+} 
+},
+"70": {
+ "GIN": {
+ "fillKey": "Col3" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col3" 
+} 
+},
+"71": {
+ "GIN": {
+ "fillKey": "Col5" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"72": {
+ "GIN": {
+ "fillKey": "Col7" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"73": {
+ "GIN": {
+ "fillKey": "Col6" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"74": {
+ "GIN": {
+ "fillKey": "Col5" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col3" 
+} 
+},
+"75": {
+ "GIN": {
+ "fillKey": "Col4" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"76": {
+ "GIN": {
+ "fillKey": "Col4" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"77": {
+ "GIN": {
+ "fillKey": "Col3" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"78": {
+ "GIN": {
+ "fillKey": "Col3" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"79": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"80": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"81": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"82": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"83": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"84": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"85": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"86": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+},
+"87": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col2" 
+} 
+},
+"88": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col3" 
+} 
+},
+"89": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col3" 
+} 
+},
+"90": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"91": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"92": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"93": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"94": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"95": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"96": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"97": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"98": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"99": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"100": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"101": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"102": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"103": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"104": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"105": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"106": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col2" 
+},
+"SLE": {
+ "fillKey": "Col6" 
+} 
+},
+"107": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col7" 
+} 
+},
+"108": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col6" 
+} 
+},
+"109": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col6" 
+} 
+},
+"110": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"111": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"112": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col4" 
+} 
+},
+"113": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"114": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col3" 
+},
+"SLE": {
+ "fillKey": "Col6" 
+} 
+},
+"115": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col4" 
+},
+"SLE": {
+ "fillKey": "Col8" 
+} 
+},
+"116": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col5" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"117": {
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col6" 
+},
+"SLE": {
+ "fillKey": "Col3" 
+} 
+},
+"118": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col5" 
+},
+"SLE": {
+ "fillKey": "Col5" 
+} 
+},
+"119": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col4" 
+},
+"SLE": {
+ "fillKey": "Col7" 
+} 
+},
+"120": {
+ "GIN": {
+ "fillKey": "Col2" 
+},
+"LBR": {
+ "fillKey": "Col4" 
+},
+"SLE": {
+ "fillKey": "Col9" 
+} 
+} 
+}
+
+
+var chartParams={"dom": "zoom_map",
+"scope": "world",
+"geographyConfig":{
+  "borderColor":"#cccccc",
+  "borderWidth":"2px"},
+"fills": 
+{
+ "defaultFill": "#ffffef",
+"Col1": "#ffffef",
+"Col2": "#fff7bf",
+"Col3": "#fee39f",
+"Col4": "#fec45f",
+"Col5": "#fe993f",
+"Col6": "#ec702f",
+"Col7": "#cc4c1f",
+"Col8": "#993402e",
+"Col9": "#662520" 
+}
+,
+"data":
+{
+ "GIN": {
+ "fillKey": "Col1" 
+},
+"LBR": {
+ "fillKey": "Col1" 
+},
+"SLE": {
+ "fillKey": "Col1" 
+} 
+}
+,"setProjection": function( element, options ) {
+    var path;
+    var projection = d3.geo.equirectangular()
+        .center([-5, 7])
+    	  .rotate([4.4, 0])
+  		  .scale(1600)
+  		  .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
+     
+    path = d3.geo.path()
+      .projection( projection );
+ 
+    return {path: path, projection: projection};
+  }
+}
+
+chartParams.element = document.getElementById('zoom_map')
+  
+  
+  var zoom = new Datamap(chartParams);
+  
+  if (chartParams.labels){
+    zoom.labels()
+  }
+  
+  if (chartParams.legend){
+    zoom.legend()
+  }
+
+
+</script>
 
       <a id="intro-compartment-sect" class="anchor">
       <h3>Compartmental Models</h3>
@@ -297,23 +1756,20 @@ We're not going to do anything fancy with demographic information or public heal
     There are some things we need to define before we can start fitting models and making predictions. 
   </p>
   <ol>
-    <li>The time points are not evenly spaced, so we need to define appropriate offset values to capture the ammount
-    of aggregation performed (time between reports).</li>
+    <li>The population sizes need to be determined.</li>
+    <li>Initial values for the four compartments must be determined.<li>
+    <li>The time points are not evenly spaced, so we need to define appropriate offset values to capture the ammount of aggregation performed (time between reports).</li>
     <li>We must define the spatial correlation structure.</li>
     <li>A set of basis functions needs to be chosen to capture the temporal trend.</li>
     <li>Prior parameters and parameter staring values must be specified for each <a href="http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">chain.</a></li>
     <li>A whole bunch of bookkeeping stuff for which I haven't yet programmed sensible default behavior needs to be set up.</li>
   </ol>
   <p>
-  More details are available in comments to the code below. 
+  Compartment starting values follow the usual convention of letting the entire initial population be divided into susceptibles and infectious individuals. The starting value for the number of infectious individuals was 86, the first infection count available in the data. Offsets are actually calculated in the first code block (above) as the differences between the report times. For temporal basis functions, orthogonal polynomials of degree three were used. Prior parameters for the E to I and I to R transitions were chosen based on well documented values for the average latent and infectious times, and the rest of the prior parameters were left vague. These decisions are addressed in more detail as comments to the code below. 
   </p>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Define the temporal offset vector to be the number of days reflected in each </span>
-<span class="hl com"># aggregated record (time between reports).</span>
-<span class="hl std">offsets</span> <span class="hl kwb">=</span> <span class="hl kwd">uncumulate</span><span class="hl std">(original.rptDate)</span>
-
-<span class="hl com"># Define the simple &quot;distance&quot; matrix. There are 3 countries, all of which </span>
+<div class="chunk" id="unnamed-chunk-9"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Define the simple &quot;distance&quot; matrix. There are 3 countries, all of which </span>
 <span class="hl com"># share borders. Therefore we simply define a 3x3 matrix with zero diagonals </span>
 <span class="hl com"># and 0.5 for the off diagonal values. 0.5 is used instead of 1 because</span>
 <span class="hl com"># this normalized choice makes the matrix row stochastic, which makes the gods </span>
@@ -480,7 +1936,7 @@ We're not going to do anything fancy with demographic information or public heal
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-6"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">SEIRmodels</span> <span class="hl kwb">=</span> <span class="hl kwd">list</span><span class="hl std">()</span>
+<div class="chunk" id="unnamed-chunk-10"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">SEIRmodels</span> <span class="hl kwb">=</span> <span class="hl kwd">list</span><span class="hl std">()</span>
 <span class="hl std">i</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl std">;</span>
 <span class="hl kwa">for</span> <span class="hl std">(seedVal</span> <span class="hl kwa">in</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">12345</span><span class="hl std">,</span><span class="hl num">543219</span><span class="hl std">,</span><span class="hl num">992134</span><span class="hl std">))</span>
 <span class="hl std">{</span>
@@ -528,13 +1984,13 @@ We're not going to do anything fancy with demographic information or public heal
 </pre></div>
 <div class="output"><pre class="knitr r">## Building Model.
 ##    Number of Locations: 3
-##    Number of Time Points: 26
+##    Number of Time Points: 27
 ## Building Model.
 ##    Number of Locations: 3
-##    Number of Time Points: 26
+##    Number of Time Points: 27
 ## Building Model.
 ##    Number of Locations: 3
-##    Number of Time Points: 26
+##    Number of Time Points: 27
 </pre></div>
 <div class="source"><pre class="knitr r"><span class="hl com"># Track the epidemc values in the output file for each location/time point. </span>
 <span class="hl com"># This will allow estmation and prediction, but in large data sets can result in</span>
@@ -574,12 +2030,12 @@ We're not going to do anything fancy with demographic information or public heal
       </div> 
 
 <p>
-  With the model objects created, let's do some short runs for each chain to try to choose sensible Metropolis tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
+  With the model objects created, we may perform some some short runs in order to choose sensible Metropolis tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
 </p>
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-7"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(SEIRmodels))</span>
+<div class="chunk" id="unnamed-chunk-11"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(SEIRmodels))</span>
 <span class="hl std">{</span>
     <span class="hl kwd">cat</span><span class="hl std">(</span><span class="hl kwd">paste</span><span class="hl std">(</span><span class="hl str">&quot;Burning in tuning params for chain &quot;</span><span class="hl std">, i,</span> <span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span><span class="hl str">&quot;&quot;</span><span class="hl std">))</span>
     <span class="hl kwd">runSimulation</span><span class="hl std">(SEIRmodels[[i]])</span>
@@ -590,52 +2046,51 @@ We're not going to do anything fancy with demographic information or public heal
 <div class="output"><pre class="knitr r">## Burning in tuning params for chain 1
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.228
-## I0:       0.198
-## E_star:   0.082
-## R_star:   0.139
-## beta:     0.165, 0.165, 0.165, 0.165, 0.165, 0.165, 
-## rho:      0.221
-## gamma_ei:     0.191
-## gamma_ir:     0.284
+## S0:       0.184
+## I0:       0.184
+## E_star:   0.359
+## R_star:   0.169
+## beta:     0.253, 0.253, 0.253, 0.253, 0.253, 0.253, 
+## rho:      0.216
+## gamma_ei:     0.209
+## gamma_ir:     0.258
 ## Burning in tuning params for chain 2
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.245
-## I0:       0.224
+## S0:       0.188
+## I0:       0.197
 ## E_star:   0.253
-## R_star:   0.252
-## beta:     0.308, 0.308, 0.308, 0.308, 0.308, 0.308, 
-## rho:      0.288
-## gamma_ei:     0.209
-## gamma_ir:     0.259
+## R_star:   0.382
+## beta:     0.289, 0.289, 0.289, 0.289, 0.289, 0.289, 
+## rho:      0.239
+## gamma_ei:     0.217
+## gamma_ir:     0.299
 ## Burning in tuning params for chain 3
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.207
-## I0:       0.268
-## E_star:   0.17
-## R_star:   0.167
-## beta:     0.242, 0.242, 0.242, 0.242, 0.242, 0.242, 
-## rho:      0.228
-## gamma_ei:     0.245
-## gamma_ir:     0.264
+## S0:       0.278
+## I0:       0.173
+## E_star:   0.174
+## R_star:   0.194
+## beta:     0.262, 0.262, 0.262, 0.262, 0.262, 0.262, 
+## rho:      0.224
+## gamma_ei:     0.214
+## gamma_ir:     0.203
 </pre></div>
 </div></div>
 </div>
       
-<p>Now we can run the three chains for longer in order to acheive convergence. 
-As before, we'll adjust the tuning parameters along the way. Astute readers may notice the frankly inconvenient number of samples requested
-, and will correctly infer that autocorrelation is currently a major problem for this library. This problem is being worked on.</p>  
+<p>Using these tuning parameters, we can now run the chains until convergence. 
+As before, we'll adjust the tuning parameters along the way. Astute readers may notice the frankly inconvenient number of samples requested, and will correctly infer that autocorrelation is currently a major problem for this library. While such autocorrelation does not impact the validity of estimates based on the converged chains, it does increase the required computation time. This is an area of active development for libspatialSEIR.</p>  
       
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-8"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(SEIRmodels))</span>
+<div class="chunk" id="unnamed-chunk-12"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(SEIRmodels))</span>
 <span class="hl std">{</span>
     <span class="hl kwd">cat</span><span class="hl std">(</span><span class="hl kwd">paste</span><span class="hl std">(</span><span class="hl str">&quot;Running chain &quot;</span><span class="hl std">, i,</span> <span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span><span class="hl str">&quot;&quot;</span><span class="hl std">))</span>
     <span class="hl std">tm</span> <span class="hl kwb">=</span> <span class="hl kwd">system.time</span><span class="hl std">(</span><span class="hl kwd">runSimulation</span><span class="hl std">(SEIRmodels[[i]],</span>
-                  <span class="hl kwc">numBatches</span><span class="hl std">=</span><span class="hl num">200</span><span class="hl std">,</span>
-                  <span class="hl kwc">batchSize</span><span class="hl std">=</span><span class="hl num">10000</span><span class="hl std">,</span>
+                  <span class="hl kwc">numBatches</span><span class="hl std">=numConvergenceBatches,</span>
+                  <span class="hl kwc">batchSize</span><span class="hl std">=convergenceBatchSize,</span>
                   <span class="hl kwc">targetAcceptanceRatio</span><span class="hl std">=</span><span class="hl num">0.2</span><span class="hl std">,</span>
                   <span class="hl kwc">tolerance</span><span class="hl std">=</span><span class="hl num">0.025</span><span class="hl std">,</span>
                   <span class="hl kwc">proportionChange</span> <span class="hl std">=</span> <span class="hl num">0.05</span><span class="hl std">))</span>
@@ -644,19 +2099,18 @@ As before, we'll adjust the tuning parameters along the way. Astute readers may 
 <span class="hl std">}</span>
 </pre></div>
 <div class="output"><pre class="knitr r">## Running chain 1
-## Time elapsed: 11.307 minutes
+## Time elapsed: 13.974 minutes
 ## Running chain 2
-## Time elapsed: 11.16 minutes
+## Time elapsed: 13.987 minutes
 ## Running chain 3
-## Time elapsed: 11.189 minutes
+## Time elapsed: 14.088 minutes
 </pre></div>
 </div></div>
 </div>
-
-<a id="analysis-1-convergence-sect" class="anchor">
-<h3>Convergence Diagnosis</h3>
-</a>
-
+<br/><br/>
+<div>
+<h3><a id="analysis-1-convergence-sect" class="anchor">Convergence Diagnosis</a></h3>
+</div>
 <p>As this is a Bayesian analysis in which the posterior distribution is sampled using MCMC techniques, we really need some
 indication that the samplers have indeed converged to the posterior distribution in order to make any inferences about the 
 problem at hand. In the code below, we'll read in the MCMC output files created so far, plot the three chains for each of 
@@ -665,7 +2119,7 @@ several important parameters, and take a look at the Gelman and Rubin convergenc
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-9"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Read in the output files created above</span>
+<div class="chunk" id="unnamed-chunk-13"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Read in the output files created above</span>
 <span class="hl std">chain1</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;chain_output_ebola_1.txt&quot;</span><span class="hl std">)</span>
 <span class="hl std">chain2</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;chain_output_ebola_2.txt&quot;</span><span class="hl std">)</span>
 <span class="hl std">chain3</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;chain_output_ebola_3.txt&quot;</span><span class="hl std">)</span>
@@ -733,21 +2187,23 @@ several important parameters, and take a look at the Gelman and Rubin convergenc
 </div></div>
 </div>
 
-<div class="chunk" id="unnamed-chunk-10"><div class="rimage center"><img src="figure/unnamed-chunk-10.png" title="plot of chunk unnamed-chunk-10" alt="plot of chunk unnamed-chunk-10" class="plot" /></div></div>
+<div class="chunk" id="unnamed-chunk-14"><div class="rimage center"><img src="figure/unnamed-chunk-14.png" title="plot of chunk unnamed-chunk-14" alt="plot of chunk unnamed-chunk-14" class="plot" /></div></div>
 
-<div class="chunk" id="unnamed-chunk-11"><div class="rimage center"><img src="figure/unnamed-chunk-11.png" title="plot of chunk unnamed-chunk-11" alt="plot of chunk unnamed-chunk-11" class="plot" /></div></div>
+<div class="chunk" id="unnamed-chunk-15"><div class="rimage center"><img src="figure/unnamed-chunk-15.png" title="plot of chunk unnamed-chunk-15" alt="plot of chunk unnamed-chunk-15" class="plot" /></div></div>
+
+<p>
+  The convergence looks quite reasonable, so let's dissect the estimates a bit. 
+</p>
 
 <a id="analysis-1-estimates-sect" class="anchor">
 <h3>Estimated Epidemic Behavior</h3>
 </a>
-<p>
-  The convergence looks reasonable, so let's dissect the estimates a bit. 
-</p>
+<br/>
 
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-12"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">c1</span> <span class="hl kwb">=</span> <span class="hl std">chain1[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(chain1)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(chain1),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">6</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">)]</span>
+<div class="chunk" id="unnamed-chunk-16"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">c1</span> <span class="hl kwb">=</span> <span class="hl std">chain1[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(chain1)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(chain1),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">6</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">)]</span>
 <span class="hl std">c2</span> <span class="hl kwb">=</span> <span class="hl std">chain2[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(chain2)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(chain2),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">6</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">)]</span>
 <span class="hl std">c3</span> <span class="hl kwb">=</span> <span class="hl std">chain3[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(chain3)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(chain3),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">6</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">)]</span>
 
@@ -773,50 +2229,66 @@ several important parameters, and take a look at the Gelman and Rubin convergenc
 </div></div>
 </div>
 
-<div class="chunk" id="unnamed-chunk-13"><div class="rcode"><div class="output"><pre class="knitr r">## Output from coda library summary:
+<div class="chunk" id="unnamed-chunk-17"><div class="rcode"><div class="output"><pre class="knitr r">## Output from coda library summary:
 ## ########################
 </pre></div>
 <div class="output"><pre class="knitr r">## 
-## Iterations = 1:1007
+## Iterations = 1:1257
 ## Thinning interval = 1 
 ## Number of chains = 3 
-## Sample size per chain = 1007 
+## Sample size per chain = 1257 
 ## 
 ## 1. Empirical mean and standard deviation for each variable,
 ##    plus standard error of the mean:
 ## 
 ##                                Mean      SD Naive SE Time-series SE
-## Guinea Intercept             -4.560 0.24577 0.004471       0.010948
-## Liberia Intercept            -2.649 0.21626 0.003935       0.008239
-## Sierra Leone Intercept       -3.291 0.21931 0.003990       0.008992
-## Linear Time Component         7.364 1.21508 0.022107       0.052472
-## Quadratic Time Component     -8.474 0.82822 0.015068       0.036330
-## Cubic Time Component          2.700 0.53675 0.009766       0.030400
-## Spatial Dependence Parameter  0.216 0.03330 0.000606       0.001096
-## E to I probability            0.121 0.00796 0.000145       0.000418
-## I to R probability            0.112 0.00950 0.000173       0.000576
+## Guinea Intercept             -4.530 0.22242 0.003622       0.009469
+## Liberia Intercept            -2.783 0.20219 0.003293       0.007337
+## Sierra Leone Intercept       -3.194 0.19833 0.003230       0.007151
+## Linear Time Component         8.364 1.16680 0.019001       0.060003
+## Quadratic Time Component     -8.658 0.77759 0.012663       0.036555
+## Cubic Time Component          3.867 0.51673 0.008415       0.047213
+## Spatial Dependence Parameter  0.203 0.02859 0.000466       0.001073
+## E to I probability            0.120 0.00769 0.000125       0.000414
+## I to R probability            0.113 0.00951 0.000155       0.000514
 ## 
 ## 2. Quantiles for each variable:
 ## 
-##                                 2.5%    25%    50%    75%  97.5%
-## Guinea Intercept              -5.046 -4.721 -4.559 -4.399 -4.075
-## Liberia Intercept             -3.077 -2.791 -2.649 -2.511 -2.225
-## Sierra Leone Intercept        -3.725 -3.435 -3.287 -3.141 -2.876
-## Linear Time Component          5.018  6.534  7.331  8.168  9.788
-## Quadratic Time Component     -10.121 -9.016 -8.460 -7.896 -6.902
-## Cubic Time Component           1.666  2.341  2.699  3.058  3.769
-## Spatial Dependence Parameter   0.158  0.193  0.214  0.237  0.290
-## E to I probability             0.106  0.116  0.121  0.127  0.137
-## I to R probability             0.095  0.106  0.112  0.118  0.133
+##                                  2.5%    25%    50%    75%  97.5%
+## Guinea Intercept              -4.9732 -4.679 -4.526 -4.374 -4.107
+## Liberia Intercept             -3.1780 -2.921 -2.779 -2.643 -2.393
+## Sierra Leone Intercept        -3.5853 -3.329 -3.191 -3.057 -2.813
+## Linear Time Component          6.1632  7.553  8.333  9.130 10.702
+## Quadratic Time Component     -10.2297 -9.168 -8.660 -8.116 -7.177
+## Cubic Time Component           2.8309  3.518  3.859  4.213  4.894
+## Spatial Dependence Parameter   0.1505  0.183  0.201  0.221  0.265
+## E to I probability             0.1065  0.115  0.120  0.125  0.137
+## I to R probability             0.0951  0.107  0.113  0.119  0.132
 </pre></div>
 </div></div>
 
 <p>The average time spent in a particular disease compartment is just one divided by the probability of 
-a transition between compartments. The units here are days, so we can see that the average infectious time is estimated to be
-(roughly) between 7 and 11 days, while the average latent time is (roughly) between 7 and 10 days. In reality, there is a lot 
+a transition between compartments. The units here are days, so we can see that the average infectious time is estimated to be between 
+
+ 7.6 
+
+and
+
+ 10.5 
+
+days, while the average latent time is most likely between
+
+
+ 7.3 
+
+and
+
+ 9.4 
+
+days. In reality, there is a lot 
 of variability in these times for Ebola, but these seem like reasonable estimates for the average values. <br/>
 
-We also notice that there is reasonably strong spatial dependence (the distribution of the spatial dependence parameter is well separated from zero), indicating reasonably strong mixing between the three populations. This is unsurprising, as the disease has in fact spread between all three nations. 
+We also notice that there is definitely non-zero spatial dependence (the distribution of the spatial dependence parameter is well separated from zero), indicating reasonably strong mixing between the populations. This is unsurprising, as the disease has in fact spread between all three nations. 
 <br/>
 
 It also appears that Guinea has the lowest estimated epidemic intensity, followed by Sierra Leone and Liberia, which have similar credible
@@ -826,7 +2298,7 @@ intervals for their intercept parameters.
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-14"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">getMeanAndCI</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">loc</span><span class="hl std">,</span><span class="hl kwc">tpt</span><span class="hl std">,</span><span class="hl kwc">baseStr</span><span class="hl std">=</span><span class="hl str">&quot;I_&quot;</span><span class="hl std">)</span>
+<div class="chunk" id="unnamed-chunk-22"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">getMeanAndCI</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">loc</span><span class="hl std">,</span><span class="hl kwc">tpt</span><span class="hl std">,</span><span class="hl kwc">baseStr</span><span class="hl std">=</span><span class="hl str">&quot;I_&quot;</span><span class="hl std">)</span>
 <span class="hl std">{</span>
     <span class="hl std">vec</span> <span class="hl kwb">=</span> <span class="hl std">chain1[[</span><span class="hl kwd">paste</span><span class="hl std">(baseStr, loc,</span> <span class="hl str">&quot;_&quot;</span><span class="hl std">, tpt,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span> <span class="hl str">&quot;&quot;</span><span class="hl std">)]]</span>
     <span class="hl std">vec</span> <span class="hl kwb">=</span> <span class="hl std">vec[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(vec)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(vec)]</span>
@@ -864,27 +2336,27 @@ intervals for their intercept parameters.
 </div></div>
 </div>
 
-<div class="chunk" id="unnamed-chunk-15"><div class="rimage center"><img src="figure/unnamed-chunk-15.png" title="plot of chunk unnamed-chunk-15" alt="plot of chunk unnamed-chunk-15" class="plot" /></div></div>
+<div class="chunk" id="unnamed-chunk-23"><div class="rimage center"><img src="figure/unnamed-chunk-23.png" title="plot of chunk unnamed-chunk-23" alt="plot of chunk unnamed-chunk-23" class="plot" /></div></div>
 
 <a id="analysis-1-r0-sect" class="anchor">
 <h3>Basic Reproductive Number Calculation</h3>
 </a>
 <p>
-A common tool for describing the development and containment of an epidemic is a quantity known as the basic reproductive numer, or the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections an infected individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect it to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity. <br/>
+A common tool for describing the development and containment of an epidemic is a quantity known as the basic reproductive numer, or the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections each infectious individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect the epidemic to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity. <br/>
 
-In addition to coming up with a point estimate of the ratio, it is helpful to quantify the uncertainty in the estimates obtained. Unfortunately, we can't just grab this from the MCMC output so far. Fortunately, we can just perform more samples and compute the ratio along the way as shown in the code below. 
+In addition to coming up with a point estimate of the ratio, it is helpful to quantify the uncertainty in the estimates obtained. The code below draws additional samples from the posterior distribution in order to estimate this uncertainty.
 </p>
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-16"><div class="rcode"><div class="source"><pre class="knitr r"> <span class="hl std">getR0</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">t</span><span class="hl std">)</span>
+<div class="chunk" id="unnamed-chunk-24"><div class="rcode"><div class="source"><pre class="knitr r"> <span class="hl std">getR0</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">t</span><span class="hl std">)</span>
   <span class="hl std">{</span>
     <span class="hl kwd">max</span><span class="hl std">(</span><span class="hl kwd">eigen</span><span class="hl std">(SEIRmodels[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">getGenerationMatrix</span><span class="hl std">(t))</span><span class="hl opt">$</span><span class="hl std">values)</span>
   <span class="hl std">}</span>
 
   <span class="hl std">R0_vec</span> <span class="hl kwb">=</span> <span class="hl kwd">sapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(SEIRmodels[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl std">I)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">), getR0)</span>
 
-  <span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">500</span><span class="hl std">)</span>
+  <span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">extraR0Iterations)</span>
   <span class="hl std">{</span>
       <span class="hl std">SEIRmodels[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">simulate</span><span class="hl std">(</span><span class="hl num">1000</span><span class="hl std">)</span>
       <span class="hl std">R0_vec</span> <span class="hl kwb">=</span> <span class="hl kwd">rbind</span><span class="hl std">(R0_vec,</span><span class="hl kwd">sapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(SEIRmodels[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl std">I)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">), getR0))</span>
@@ -898,7 +2370,7 @@ In addition to coming up with a point estimate of the ratio, it is helpful to qu
 <span class="hl std">figure6</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">()</span>
 <span class="hl std">{</span>
   <span class="hl kwd">plot</span><span class="hl std">(rptDate[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(rptDate)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">)], r0.meanvec ,</span> <span class="hl kwc">type</span> <span class="hl std">=</span> <span class="hl str">&quot;l&quot;</span><span class="hl std">,</span> <span class="hl kwc">xlab</span> <span class="hl std">=</span> <span class="hl str">&quot;Date&quot;</span><span class="hl std">,</span>
-       <span class="hl kwc">ylab</span> <span class="hl std">=</span> <span class="hl str">&quot;R0&quot;</span><span class="hl std">,</span>
+       <span class="hl kwc">ylab</span> <span class="hl std">=</span> <span class="hl kwd">expression</span><span class="hl std">(</span><span class="hl str">'R'</span><span class="hl std">[</span><span class="hl num">0</span><span class="hl std">]),</span>
        <span class="hl kwc">main</span> <span class="hl std">=</span> <span class="hl str">&quot;Estimated Basic Reproductive Number\n 90% Credible Interval&quot;</span><span class="hl std">,</span>
        <span class="hl kwc">ylim</span> <span class="hl std">= r0.ylim,</span> <span class="hl kwc">lwd</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
   <span class="hl kwd">lines</span><span class="hl std">(rptDate[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(rptDate)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">)], r0.LB,</span> <span class="hl kwc">lty</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
@@ -910,9 +2382,9 @@ In addition to coming up with a point estimate of the ratio, it is helpful to qu
 </div></div>
 </div>
 
-<div class="chunk" id="unnamed-chunk-17"><div class="rimage center"><img src="figure/unnamed-chunk-17.png" title="plot of chunk unnamed-chunk-17" alt="plot of chunk unnamed-chunk-17" class="plot" /></div></div>
+<div class="chunk" id="unnamed-chunk-25"><div class="rimage center"><img src="figure/unnamed-chunk-25.png" title="plot of chunk unnamed-chunk-25" alt="plot of chunk unnamed-chunk-25" class="plot" /></div></div>
 
-The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. Notice, on the other hand, the high variability during May. This is an interesting result, and perhaps reflects the seemingly contradicting information from Guinea (where the epidemic continued to spread) and Liberia (where the epidemic briefly disappeared).<br/>
+The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. Notice, on the other hand, the high variability in May. This is an interesting result, and perhaps reflects the seemingly contradicting information from Guinea (where the epidemic continued to spread) and Liberia (where the epidemic briefly disappeared).<br/>
 
 While the basic reproductive number is a useful quantity to know, it does not directly make any predictions about future epidemic behavior. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
  
@@ -922,13 +2394,13 @@ While the basic reproductive number is a useful quantity to know, it does not di
 </a>
 <p>
  
- Currently the simulation required for epidemic prediction must be done "manually", or by writing a bunch of R code (given below). As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
- We must be cautious when making predictions about a chaotic process this far into the future. We must be particularly cautious becase the basis chosen for the temporal trend in the epidemic intensity process was polynomial. While polynomial bases often provide a good fit to the data, they can behave unreasonably outside the range over which the model was fit (quadratic and cubic terms can get large very quickly). Analysis 2 will consider, in abbreviated fashion, the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
+ Currently the simulation required for epidemic prediction must be done "manually" by writing a bunch of R code. As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
+ We must be cautious when making predictions about a chaotic process this far into the future. We must be particularly cautious because the basis chosen for the temporal trend in the epidemic intensity process was polynomial. While polynomial bases often provide a good fit to the data, they can behave unreasonably outside the range over which the model was fit (quadratic and cubic terms can get large very quickly). 
 </p>
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-18"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Declare prediction functions</span>
+<div class="chunk" id="unnamed-chunk-26"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Declare prediction functions</span>
   <span class="hl std">predictEpidemic</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">beta.pred</span><span class="hl std">,</span>
                              <span class="hl kwc">X.pred</span><span class="hl std">,</span>
                              <span class="hl kwc">gamma.ei</span><span class="hl std">,</span>
@@ -1110,23 +2582,25 @@ While the basic reproductive number is a useful quantity to know, it does not di
 </div></div>
 </div>
 
-<div class="chunk" id="unnamed-chunk-19"><div class="rimage center"><img src="figure/unnamed-chunk-19.png" title="plot of chunk unnamed-chunk-19" alt="plot of chunk unnamed-chunk-19" class="plot" /></div></div>
+<div class="chunk" id="unnamed-chunk-27"><div class="rimage center"><img src="figure/unnamed-chunk-27.png" title="plot of chunk unnamed-chunk-27" alt="plot of chunk unnamed-chunk-27" class="plot" /></div></div>
 
-<p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. There is no data to support these large swings in epidemic behavior, so we can be fairly certain that these long term predictions are extrapolation errors. 
-<br/> On the other hand,</p>
+<p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. The behavior of the epidemic so far does not support these large swings in epidemic behavior, so we can be fairly certain that these long term predictions are extrapolation errors. Analysis 2 will consider the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
     </div>
     <div class="col-sm-1">
   </div>
  
   <a id="anchor-analysis-2-sect" class = "anchor">
   <h2>Analysis 2: Spline Basis</h2> </a>
+  
   <div class="row">
     <div class = "col-sm-10 col-sm-offset-1">
-      <p> Below is an abbreviated and concatenated modification of the code presented above. We won't be concerned with interpreting the model parameters, as the polynomial model was likely sufficient in terms of estimation.</p>
-      
+      <a id="analysis-2-set-up-sect" class="anchor"><h3>Set Up</h3></a>
+      <p> The problem with polynomial basis functions is that they extrapolate poorly, exhibiting extreme behavior under prediction. On the other hand, they often perform quite well for estimation purposes and prediction within the range of observed data. For this reason, and because spline basis coefficients are somewhat difficult to interpret, analysis 2 will not repeat the qualitative interpretation work presented above. Parameter estimates are available below for completeness.</p>
+      <br/>
+  <br/>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
-<div class="chunk" id="unnamed-chunk-20"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(splines)</span>
+<div class="chunk" id="unnamed-chunk-28"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(splines)</span>
 <span class="hl std">daysSinceJan.predict</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl kwd">max</span><span class="hl std">(daysSinceJan)</span> <span class="hl opt">+</span> <span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwd">max</span><span class="hl std">(daysSinceJan)</span>
                          <span class="hl opt">+</span> <span class="hl kwd">seq</span><span class="hl std">(</span><span class="hl num">10</span><span class="hl std">,</span><span class="hl num">60</span><span class="hl std">,</span><span class="hl num">10</span><span class="hl std">))</span>
 <span class="hl std">splineBasis</span> <span class="hl kwb">=</span> <span class="hl kwd">ns</span><span class="hl std">(daysSinceJan,</span> <span class="hl kwc">df</span> <span class="hl std">=</span> <span class="hl num">3</span><span class="hl std">)</span>
@@ -1196,13 +2670,13 @@ While the basic reproductive number is a useful quantity to know, it does not di
 </pre></div>
 <div class="output"><pre class="knitr r">## Building Model.
 ##    Number of Locations: 3
-##    Number of Time Points: 26
+##    Number of Time Points: 27
 ## Building Model.
 ##    Number of Locations: 3
-##    Number of Time Points: 26
+##    Number of Time Points: 27
 ## Building Model.
 ##    Number of Locations: 3
-##    Number of Time Points: 26
+##    Number of Time Points: 27
 </pre></div>
 <div class="source"><pre class="knitr r"><span class="hl std">SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">setTrace</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">)</span> <span class="hl com">#Guinea </span>
 </pre></div>
@@ -1227,43 +2701,43 @@ While the basic reproductive number is a useful quantity to know, it does not di
 <div class="output"><pre class="knitr r">## Burning in chain 1
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.261
-## I0:       0.203
-## E_star:   0.148
-## R_star:   0.147
-## beta:     0.269, 0.269, 0.269, 0.269, 0.269, 0.269, 
-## rho:      0.24
-## gamma_ei:     0.21
-## gamma_ir:     0.232
+## S0:       0.181
+## I0:       0.194
+## E_star:   0.276
+## R_star:   0.172
+## beta:     0.181, 0.181, 0.181, 0.181, 0.181, 0.181, 
+## rho:      0.245
+## gamma_ei:     0.224
+## gamma_ir:     0.234
 ## Burning in chain 2
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.262
-## I0:       0.224
-## E_star:   0.254
-## R_star:   0.31
-## beta:     0.23, 0.23, 0.23, 0.23, 0.23, 0.23, 
-## rho:      0.247
-## gamma_ei:     0.212
-## gamma_ir:     0.323
+## S0:       0.195
+## I0:       0.223
+## E_star:   0.097
+## R_star:   0.19
+## beta:     0.232, 0.232, 0.232, 0.232, 0.232, 0.232, 
+## rho:      0.205
+## gamma_ei:     0.23
+## gamma_ir:     0.28
 ## Burning in chain 3
 ## Total iterations so far: 11000
 ## Acceptance rates: 
-## S0:       0.211
-## I0:       0.251
-## E_star:   0.206
-## R_star:   0.149
-## beta:     0.256, 0.256, 0.256, 0.256, 0.256, 0.256, 
-## rho:      0.223
-## gamma_ei:     0.257
-## gamma_ir:     0.221
+## S0:       0.287
+## I0:       0.204
+## E_star:   0.237
+## R_star:   0.17
+## beta:     0.211, 0.211, 0.211, 0.211, 0.211, 0.211, 
+## rho:      0.282
+## gamma_ei:     0.18
+## gamma_ir:     0.168
 </pre></div>
 <div class="source"><pre class="knitr r"><span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(SEIRmodels.spline))</span>
 <span class="hl std">{</span>
     <span class="hl kwd">cat</span><span class="hl std">(</span><span class="hl kwd">paste</span><span class="hl std">(</span><span class="hl str">&quot;Running in chain &quot;</span><span class="hl std">, i,</span> <span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span><span class="hl str">&quot;&quot;</span><span class="hl std">))</span>
     <span class="hl std">tm</span> <span class="hl kwb">=</span> <span class="hl kwd">system.time</span><span class="hl std">(</span><span class="hl kwd">runSimulation</span><span class="hl std">(SEIRmodels.spline[[i]],</span>
-                  <span class="hl kwc">numBatches</span><span class="hl std">=</span><span class="hl num">200</span><span class="hl std">,</span>
-                  <span class="hl kwc">batchSize</span><span class="hl std">=</span><span class="hl num">10000</span><span class="hl std">,</span>
+                  <span class="hl kwc">numBatches</span><span class="hl std">=numConvergenceBatches,</span>
+                  <span class="hl kwc">batchSize</span><span class="hl std">=convergenceBatchSize,</span>
                   <span class="hl kwc">targetAcceptanceRatio</span><span class="hl std">=</span><span class="hl num">0.2</span><span class="hl std">,</span>
                   <span class="hl kwc">tolerance</span><span class="hl std">=</span><span class="hl num">0.025</span><span class="hl std">,</span>
                   <span class="hl kwc">proportionChange</span> <span class="hl std">=</span> <span class="hl num">0.05</span><span class="hl std">))</span>
@@ -1272,11 +2746,11 @@ While the basic reproductive number is a useful quantity to know, it does not di
 <span class="hl std">}</span>
 </pre></div>
 <div class="output"><pre class="knitr r">## Running in chain 1
-## Time elapsed: 11.531 minutes
+## Time elapsed: 14.077 minutes
 ## Running in chain 2
-## Time elapsed: 11.484 minutes
+## Time elapsed: 14.071 minutes
 ## Running in chain 3
-## Time elapsed: 11.538 minutes
+## Time elapsed: 14.002 minutes
 </pre></div>
 <div class="source"><pre class="knitr r"><span class="hl std">chain1</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;chain_output_ebola_4.txt&quot;</span><span class="hl std">)</span>
 <span class="hl std">chain2</span> <span class="hl kwb">=</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;chain_output_ebola_5.txt&quot;</span><span class="hl std">)</span>
@@ -1325,31 +2799,90 @@ While the basic reproductive number is a useful quantity to know, it does not di
              <span class="hl std">,</span> <span class="hl str">&quot;I to R Transition Probability&quot;</span><span class="hl std">)</span>
 <span class="hl std">}</span>
 
-<span class="hl com">## R0 stuff</span>
+<span class="hl com">## Parameter Estimates </span>
+
+
+<span class="hl std">c1</span> <span class="hl kwb">=</span> <span class="hl std">chain1[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(chain1)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(chain1),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">6</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">)]</span>
+<span class="hl std">c2</span> <span class="hl kwb">=</span> <span class="hl std">chain2[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(chain2)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(chain2),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">6</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">)]</span>
+<span class="hl std">c3</span> <span class="hl kwb">=</span> <span class="hl std">chain3[</span><span class="hl kwd">floor</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(chain3)</span><span class="hl opt">/</span><span class="hl num">2</span><span class="hl std">)</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(chain3),</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">6</span><span class="hl std">,</span><span class="hl num">8</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">)]</span>
+
+<span class="hl std">c1</span><span class="hl opt">$</span><span class="hl std">gamma_ei</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl opt">-</span><span class="hl kwd">exp</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl std">c1</span><span class="hl opt">$</span><span class="hl std">gamma_ei)</span>
+<span class="hl std">c1</span><span class="hl opt">$</span><span class="hl std">gamma_ir</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl opt">-</span><span class="hl kwd">exp</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl std">c1</span><span class="hl opt">$</span><span class="hl std">gamma_ir)</span>
+<span class="hl std">c2</span><span class="hl opt">$</span><span class="hl std">gamma_ei</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl opt">-</span><span class="hl kwd">exp</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl std">c2</span><span class="hl opt">$</span><span class="hl std">gamma_ei)</span>
+<span class="hl std">c2</span><span class="hl opt">$</span><span class="hl std">gamma_ir</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl opt">-</span><span class="hl kwd">exp</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl std">c2</span><span class="hl opt">$</span><span class="hl std">gamma_ir)</span>
+<span class="hl std">c3</span><span class="hl opt">$</span><span class="hl std">gamma_ei</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl opt">-</span><span class="hl kwd">exp</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl std">c3</span><span class="hl opt">$</span><span class="hl std">gamma_ei)</span>
+<span class="hl std">c3</span><span class="hl opt">$</span><span class="hl std">gamma_ir</span> <span class="hl kwb">=</span> <span class="hl num">1</span><span class="hl opt">-</span><span class="hl kwd">exp</span><span class="hl std">(</span><span class="hl opt">-</span><span class="hl std">c3</span><span class="hl opt">$</span><span class="hl std">gamma_ir)</span>
+<span class="hl kwd">colnames</span><span class="hl std">(c1)</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;Guinea Intercept&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Liberia Intercept&quot;</span><span class="hl std">,</span>
+                 <span class="hl str">&quot;Sierra Leone Intercept&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Linear Time Component&quot;</span><span class="hl std">,</span>
+                 <span class="hl str">&quot;Quadratic Time Component&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;Cubic Time Component&quot;</span><span class="hl std">,</span>
+                 <span class="hl str">&quot;Spatial Dependence Parameter&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;E to I probability&quot;</span><span class="hl std">,</span>
+                 <span class="hl str">&quot;I to R probability&quot;</span><span class="hl std">)</span>
+<span class="hl kwd">colnames</span><span class="hl std">(c2)</span> <span class="hl kwb">=</span> <span class="hl kwd">colnames</span><span class="hl std">(c1)</span>
+<span class="hl kwd">colnames</span><span class="hl std">(c3)</span> <span class="hl kwb">=</span> <span class="hl kwd">colnames</span><span class="hl std">(c1)</span>
+
+<span class="hl std">mcl</span> <span class="hl kwb">=</span> <span class="hl kwd">mcmc.list</span><span class="hl std">(</span><span class="hl kwd">as.mcmc</span><span class="hl std">(c1),</span>
+                <span class="hl kwd">as.mcmc</span><span class="hl std">(c2),</span>
+                <span class="hl kwd">as.mcmc</span><span class="hl std">(c3))</span>
+<span class="hl kwd">summary</span><span class="hl std">(mcl)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## 
+## Iterations = 1:1257
+## Thinning interval = 1 
+## Number of chains = 3 
+## Sample size per chain = 1257 
+## 
+## 1. Empirical mean and standard deviation for each variable,
+##    plus standard error of the mean:
+## 
+##                                 Mean      SD Naive SE Time-series SE
+## Guinea Intercept             -7.2897 0.58021 0.009448       0.025102
+## Liberia Intercept            -5.6357 0.56395 0.009184       0.024225
+## Sierra Leone Intercept       -6.0090 0.56304 0.009169       0.023759
+## Linear Time Component         3.2202 0.38896 0.006334       0.015402
+## Quadratic Time Component      8.3461 1.21109 0.019722       0.052679
+## Cubic Time Component         -0.0646 0.26238 0.004273       0.009625
+## Spatial Dependence Parameter  0.1983 0.02845 0.000463       0.000786
+## E to I probability            0.1218 0.00789 0.000128       0.000399
+## I to R probability            0.1123 0.00989 0.000161       0.000579
+## 
+## 2. Quantiles for each variable:
+## 
+##                                 2.5%    25%     50%    75%  97.5%
+## Guinea Intercept             -8.4353 -7.676 -7.2676 -6.884 -6.195
+## Liberia Intercept            -6.7245 -6.013 -5.6348 -5.241 -4.570
+## Sierra Leone Intercept       -7.1197 -6.385 -6.0016 -5.618 -4.931
+## Linear Time Component         2.4702  2.954  3.2135  3.482  3.999
+## Quadratic Time Component      5.9981  7.509  8.3401  9.175 10.745
+## Cubic Time Component         -0.5985 -0.235 -0.0667  0.109  0.449
+## Spatial Dependence Parameter  0.1476  0.179  0.1965  0.215  0.261
+## E to I probability            0.1071  0.116  0.1214  0.127  0.138
+## I to R probability            0.0933  0.106  0.1121  0.119  0.131
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">## R0 stuff</span>
 
 
 <span class="hl std">getR0</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">t</span><span class="hl std">)</span>
-  <span class="hl std">{</span>
-    <span class="hl kwd">max</span><span class="hl std">(</span><span class="hl kwd">eigen</span><span class="hl std">(SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">getGenerationMatrix</span><span class="hl std">(t))</span><span class="hl opt">$</span><span class="hl std">values)</span>
-  <span class="hl std">}</span>
+<span class="hl std">{</span>
+  <span class="hl kwd">max</span><span class="hl std">(</span><span class="hl kwd">eigen</span><span class="hl std">(SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">getGenerationMatrix</span><span class="hl std">(t))</span><span class="hl opt">$</span><span class="hl std">values)</span>
+<span class="hl std">}</span>
 
-  <span class="hl std">R0_vec</span> <span class="hl kwb">=</span> <span class="hl kwd">sapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl std">I)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">), getR0)</span>
+<span class="hl std">R0_vec</span> <span class="hl kwb">=</span> <span class="hl kwd">sapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl std">I)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">), getR0)</span>
 
-  <span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">500</span><span class="hl std">)</span>
-  <span class="hl std">{</span>
-      <span class="hl std">SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">simulate</span><span class="hl std">(</span><span class="hl num">1000</span><span class="hl std">)</span>
-      <span class="hl std">R0_vec</span> <span class="hl kwb">=</span> <span class="hl kwd">rbind</span><span class="hl std">(R0_vec,</span><span class="hl kwd">sapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl std">I)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">), getR0))</span>
-  <span class="hl std">}</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">extraR0Iterations)</span>
+<span class="hl std">{</span>
+    <span class="hl std">SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl kwd">simulate</span><span class="hl std">(</span><span class="hl num">1000</span><span class="hl std">)</span>
+    <span class="hl std">R0_vec</span> <span class="hl kwb">=</span> <span class="hl kwd">rbind</span><span class="hl std">(R0_vec,</span><span class="hl kwd">sapply</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">nrow</span><span class="hl std">(SEIRmodels.spline[[</span><span class="hl num">1</span><span class="hl std">]]</span><span class="hl opt">$</span><span class="hl std">I)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">), getR0))</span>
+<span class="hl std">}</span>
 
-  <span class="hl std">r0.ylim</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl kwd">min</span><span class="hl std">(R0_vec),</span> <span class="hl kwd">max</span><span class="hl std">(R0_vec))</span>
-  <span class="hl std">r0.meanvec</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(R0_vec,</span> <span class="hl num">2</span><span class="hl std">, mean)</span>
-  <span class="hl std">r0.LB</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(R0_vec,</span> <span class="hl num">2</span><span class="hl std">, quantile,</span> <span class="hl kwc">probs</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0.05</span><span class="hl std">))</span>
-  <span class="hl std">r0.UB</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(R0_vec,</span> <span class="hl num">2</span><span class="hl std">, quantile,</span> <span class="hl kwc">probs</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0.95</span><span class="hl std">))</span>
+<span class="hl std">r0.ylim</span> <span class="hl kwb">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl kwd">min</span><span class="hl std">(R0_vec),</span> <span class="hl kwd">max</span><span class="hl std">(R0_vec))</span>
+<span class="hl std">r0.meanvec</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(R0_vec,</span> <span class="hl num">2</span><span class="hl std">, mean)</span>
+<span class="hl std">r0.LB</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(R0_vec,</span> <span class="hl num">2</span><span class="hl std">, quantile,</span> <span class="hl kwc">probs</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0.05</span><span class="hl std">))</span>
+<span class="hl std">r0.UB</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(R0_vec,</span> <span class="hl num">2</span><span class="hl std">, quantile,</span> <span class="hl kwc">probs</span> <span class="hl std">=</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0.95</span><span class="hl std">))</span>
 
 <span class="hl std">figure10</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">()</span>
 <span class="hl std">{</span>
   <span class="hl kwd">plot</span><span class="hl std">(rptDate[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(rptDate)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">)], r0.meanvec ,</span> <span class="hl kwc">type</span> <span class="hl std">=</span> <span class="hl str">&quot;l&quot;</span><span class="hl std">,</span> <span class="hl kwc">xlab</span> <span class="hl std">=</span> <span class="hl str">&quot;Date&quot;</span><span class="hl std">,</span>
-       <span class="hl kwc">ylab</span> <span class="hl std">=</span> <span class="hl str">&quot;R0&quot;</span><span class="hl std">,</span>
+       <span class="hl kwc">ylab</span> <span class="hl std">=</span> <span class="hl kwd">expression</span><span class="hl std">(</span><span class="hl str">'R'</span><span class="hl std">[</span><span class="hl num">0</span><span class="hl std">]),</span>
        <span class="hl kwc">main</span> <span class="hl std">=</span> <span class="hl str">&quot;Estimated Basic Reproductive Number - Spline Model\n 90% Credible Interval&quot;</span><span class="hl std">,</span>
        <span class="hl kwc">ylim</span> <span class="hl std">= r0.ylim,</span> <span class="hl kwc">lwd</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
   <span class="hl kwd">lines</span><span class="hl std">(rptDate[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">(</span><span class="hl kwd">length</span><span class="hl std">(rptDate)</span><span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">)], r0.LB,</span> <span class="hl kwc">lty</span> <span class="hl std">=</span> <span class="hl num">2</span><span class="hl std">)</span>
@@ -1460,27 +2993,34 @@ While the basic reproductive number is a useful quantity to know, it does not di
 </pre></div>
 </div></div>
 </div>
+<br/>
+<br/>
+<h3><a id="analysis-2-convergence-sect" class="anchor">Convergence</a></h3>
+<p>Again, convergence looks quite good:</p>
+<div class="chunk" id="unnamed-chunk-29"><div class="rimage center"><img src="figure/unnamed-chunk-29.png" title="plot of chunk unnamed-chunk-29" alt="plot of chunk unnamed-chunk-29" class="plot" /></div></div>
 
-<div class="chunk" id="unnamed-chunk-21"><div class="rimage center"><img src="figure/unnamed-chunk-21.png" title="plot of chunk unnamed-chunk-21" alt="plot of chunk unnamed-chunk-21" class="plot" /></div></div>
+<div class="chunk" id="unnamed-chunk-30"><div class="rimage center"><img src="figure/unnamed-chunk-30.png" title="plot of chunk unnamed-chunk-30" alt="plot of chunk unnamed-chunk-30" class="plot" /></div></div>
 
-<div class="chunk" id="unnamed-chunk-22"><div class="rimage center"><img src="figure/unnamed-chunk-22.png" title="plot of chunk unnamed-chunk-22" alt="plot of chunk unnamed-chunk-22" class="plot" /></div></div>
+<br/>
 
-<div class="chunk" id="unnamed-chunk-23"><div class="rimage center"><img src="figure/unnamed-chunk-23.png" title="plot of chunk unnamed-chunk-23" alt="plot of chunk unnamed-chunk-23" class="plot" /></div></div>
+<p>The estimated basic reproductive number and associated variability is virtually unchanged:</p>
+<a id="analysis-2-r0-sect" class="anchor"><h3>Basic Reproductive Number Calculation</h3></a>
+<div class="chunk" id="unnamed-chunk-31"><div class="rimage center"><img src="figure/unnamed-chunk-31.png" title="plot of chunk unnamed-chunk-31" alt="plot of chunk unnamed-chunk-31" class="plot" /></div></div>
 
-<div class="chunk" id="unnamed-chunk-24"><div class="rimage center"><img src="figure/unnamed-chunk-24.png" title="plot of chunk unnamed-chunk-24" alt="plot of chunk unnamed-chunk-24" class="plot" /></div></div>
+<a id="analysis-2-prediction-sect" class="anchor"><h3>Epidemic Prediction</h3></a>
+<div class="chunk" id="unnamed-chunk-32"><div class="rimage center"><img src="figure/unnamed-chunk-32.png" title="plot of chunk unnamed-chunk-32" alt="plot of chunk unnamed-chunk-32" class="plot" /></div></div>
 
 
 
-<p>These predictions do appear more reasonable. As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady rate for at least the next few weeks, though we must still be careful projecting too far into the future. Still, if I had to bet, I'd bet on a steadily decreasing infection rate dropping towards zero in mid September.<br/>
+<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. </p>
+<br/>
 
-That wraps up the analyses for now, though of course there are numerous other hypotheses we could explore:
-<ul>
-  <li>Use time varying co-variates to track the effect of various public health interventions.</li>
-  <li>Explore other types of spline bases, as well as bases of different complexity (quartic etc.).</li>
-  <li>Obtain better information about population flows between the three countries, or obtain more finely geocoded data to 
-  examine the effect on the sub-regional level.</li>
-</ul>
-This document will continue to be updated as the epidemic progressesm and as the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Time permitting, some of the more nuanced analyses mentioned above will be explored as well. <br/>
+
+<a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
+<br/>
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying of validating this tentative prediction, and as a result providing a demonstration of the benefits and potential drawbacks of the application of simple temporal modeling to complex international health problems. <br/>
+
+That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> <br/>
 </p>      
       
       </div>
@@ -1490,8 +3030,7 @@ This document will continue to be updated as the epidemic progressesm and as the
   
 </div>
      <a id="dummy_anchor" class = "anchor"></a>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    
     <script type="text/javascript">
       $(".code-button").click(function(){
           $(this).next().animate({
@@ -1503,5 +3042,7 @@ This document will continue to be updated as the epidemic progressesm and as the
       });
       
     </script>
+    
+
   </body>
 </html>
