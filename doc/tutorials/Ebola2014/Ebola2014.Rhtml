@@ -1043,18 +1043,23 @@ While the basic reproductive number is a useful quantity to know, it does not di
              dataRow$BetaP_SE_3,
              dataRow$BetaP_SE_4,
              dataRow$BetaP_SE_5)
-    S0 = c(dataRow$S_0_26 - dataRow$E_star_0_26,
-           dataRow$S_1_26 - dataRow$E_star_1_26,
-           dataRow$S_2_26 - dataRow$E_star_2_26)
-    E0 = c(dataRow$E_0_26 + dataRow$E_star_0_26 - dataRow$I_star_0_26,
-           dataRow$E_1_26 + dataRow$E_star_1_26 - dataRow$I_star_1_26,
-           dataRow$E_2_26 + dataRow$E_star_2_26 - dataRow$I_star_2_26)
-    I0 = c(dataRow$I_0_26 + dataRow$I_star_0_26 - dataRow$R_star_0_26,
-           dataRow$I_1_26 + dataRow$I_star_1_26 - dataRow$R_star_1_26,
-           dataRow$I_2_26 + dataRow$I_star_2_26 - dataRow$R_star_2_26)
-    R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
-           dataRow$R_1_26 + dataRow$R_star_1_26,
-           dataRow$R_2_26 + dataRow$R_star_2_26)
+    #S0 = c(dataRow$S_0_26 - dataRow$E_star_0_26,
+    #       dataRow$S_1_26 - dataRow$E_star_1_26,
+    #       dataRow$S_2_26 - dataRow$E_star_2_26)
+    #E0 = c(dataRow$E_0_26 + dataRow$E_star_0_26 - dataRow$I_star_0_26,
+    #       dataRow$E_1_26 + dataRow$E_star_1_26 - dataRow$I_star_1_26,
+    #       dataRow$E_2_26 + dataRow$E_star_2_26 - dataRow$I_star_2_26)
+    #I0 = c(dataRow$I_0_26 + dataRow$I_star_0_26 - dataRow$R_star_0_26,
+    #       dataRow$I_1_26 + dataRow$I_star_1_26 - dataRow$R_star_1_26,
+    #       dataRow$I_2_26 + dataRow$I_star_2_26 - dataRow$R_star_2_26)
+    #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
+    #       dataRow$R_1_26 + dataRow$R_star_1_26,
+    #       dataRow$R_2_26 + dataRow$R_star_2_26)
+    S0 = c(dataRow$S_0_26,dataRow$S_1_26,dataRow$S_2_26)
+    E0 = c(dataRow$E_0_26,dataRow$E_1_26,dataRow$E_2_26)
+    I0 = c(dataRow$I_0_26,dataRow$I_1_26,dataRow$I_2_26)
+    R0 = c(dataRow$R_0_26,dataRow$R_1_26,dataRow$R_2_26)
+    
     return(predictEpidemic(beta,  
                            X.pred,
                            dataRow$gamma_ei,
@@ -1073,7 +1078,7 @@ While the basic reproductive number is a useful quantity to know, it does not di
 
 
 
-pred.dates = c(rptDate[(which.max(rptDate))] + 1, 
+pred.dates = c(rptDate[(which.max(rptDate))], 
                rptDate[(which.max(rptDate))] + seq(10,60,10))
 pred.xlim = c(min(rptDate), max(pred.dates))
 lastIdx = nrow(SEIRmodels[[1]]$I)
@@ -1400,7 +1405,7 @@ figure11 = function()
                   nrow(chain1), predict.i)
   
   
-  pred.dates = c(rptDate[(which.max(rptDate))] + 1,
+  pred.dates = c(rptDate[(which.max(rptDate))],
                  rptDate[(which.max(rptDate))] + seq(10,60,10))
   pred.xlim = c(min(rptDate), max(pred.dates))
   lastIdx = nrow(SEIRmodels.spline[[1]]$I)
