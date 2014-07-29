@@ -210,7 +210,7 @@ figure2 = function()
          lty=1, lwd = 2,
          ylim = ylim, type = "l"
          )
-    abline(h = seq(1, max(ylim), 10), lty = 2, col = "lightgrey")
+    abline(h = seq(0, 50, 5), lty = 2, col = "lightgrey")
     lines(rptDate, InfectionPerDay[,2], col = "blue",lty=2, lwd = 2)
     lines(rptDate, InfectionPerDay[,3], col = "red", lty = 3, lwd = 2)
     par(xaxt="n")
@@ -356,10 +356,12 @@ chartParams.element = document.getElementById('zoom_map')
       <h3>Compartmental Models</h3>
       </a>
       <p>
-        Now that we've got data read in and made a couple of plots to ensure we haven't done anything to terribly stupid with it
+        Now that the data is read in (and now that we have several plots to suggest that we haven't done anything to terribly stupid with it)
         , let's do some compartmental epidemic modeling. Not only has Ebola been <a href="http://www.ncbi.nlm.nih.gov/pubmed/17156292">well modeled in the past</a> using compartmental modeling techniques, but this author happens to be working on a software library designed to fit compartmental models in the spatial SEIRS family. What a strange coincidence! Specifically, we'll be using heirarchical Bayesian estimation methods to fit a spatial SEIR model to the data.  
+        </p>
         <br/>
-        
+        <br/>
+        <p>
         While a full treatment of this field of epidemic modeling is (far) beyond the scope of this writing, the basic idea is pretty intuitive. In order to come up with a simplified model of a disease process, discrete disease states (aka, compartments) are defined. The most common of these are S, E, I, and R which stand for:<br>
       </p>
       <ul>
@@ -369,8 +371,10 @@ chartParams.element = document.getElementById('zoom_map')
         <li><strong>R</strong>emoved or recovered</li>
       </ul>
   <p>
-    This sequence traversed by members of a population (S to E to I to R) forms what we might call the temporal process model of our analysis. This analysis belongs to the stochastic branch of the compartmental modeling family, which has its roots in deterministic systems of ordinary and partial differential equations. In this framework, transitions between the compartments occur according to unknown probabilities. It is the S to E probability, which captures infection activity, into which we introduce spatial structure. Some details of this are given as comments to the code below, and more information than you probably want on the statistical particulars is available in <a href="https://github.com/grantbrown/libspatialSEIR/blob/master/doc/models/SEIR_Algo.pdf">this pdf document</a>. For now, suffice it to say that we'll place a simple spatial structure on the epidemic process which simply allows disease to spread between the three nations involved, and we'll try to estimate the strength of that relationship. Many other potential structures are possible, limited primarily by the ammount of additional research and data compilation you are willing to do. <br/>
-We're not going to do anything fancy with demographic information or public health intervention dates. Demographic parameters are relatively difficult to estimate here, as there are only three spatial units which are all from the same region. Intervention dates are more promising, but their inclusion requires much more background research than we have time for here. In the interest of simplicity and estimability, we'll just fit a different disease intensity parameter for each of the three countries in addition to as a set of basis functions to capture the temporal trend. 
+    This sequence, traversed by members of a population (S to E to I to R), forms what we might call the temporal process model of our analysis. This analysis belongs to the stochastic branch of the compartmental modeling family, which has its roots in deterministic systems of ordinary and partial differential equations. In the stochastic framework, transitions between the compartments occur according to unknown probabilities. It is the S to E probability, which captures infection activity, into which we introduce spatial structure. Some details of this are given as comments to the code below, and more information than you probably want on the statistical particulars is available in <a href="https://github.com/grantbrown/libspatialSEIR/blob/master/doc/models/SEIR_Algo.pdf">this pdf document</a>. For now, suffice it to say that we'll place a simple spatial structure on the epidemic process which simply allows disease to spread between the three nations involved, and we'll try to estimate the strength of that relationship. Many other potential structures are possible, limited primarily by the amount of additional research and data compilation one is willing to do. </p><br/><br/>
+<p>
+For the purposes of this analysis, we will not do anything fancy with demographic information or public health intervention dates. Demographic parameters are relatively difficult to estimate here, as there are only three spatial units which are all from the same region. Intervention dates are more promising, but their inclusion requires much more background research than we have time for here. In the interest of simplicity and estimability, we'll just fit a different disease intensity parameter for each of the three countries to capture aggregate differences in Ebola susceptibility in addition to using a set of basis functions to capture the 
+temporal trend. 
   </p>
     </div>
     <div class="col-sm-1">
@@ -388,8 +392,8 @@ We're not going to do anything fancy with demographic information or public heal
   </p>
   <ol>
     <li>The population sizes need to be determined.</li>
-    <li>Initial values for the four compartments must be determined.<li>
-    <li>The time points are not evenly spaced, so we need to define appropriate offset values to capture the ammount of aggregation performed (time between reports).</li>
+    <li>Initial values for the four compartments must be determined.</li>
+    <li>The time points are not evenly spaced, so we need to define appropriate offset values to capture the amount of aggregation performed (time between reports).</li>
     <li>We must define the spatial correlation structure.</li>
     <li>A set of basis functions needs to be chosen to capture the temporal trend.</li>
     <li>Prior parameters and parameter staring values must be specified for each <a href="http://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">chain.</a></li>
@@ -398,6 +402,7 @@ We're not going to do anything fancy with demographic information or public heal
   <p>
   Compartment starting values follow the usual convention of letting the entire initial population be divided into susceptibles and infectious individuals. The starting value for the number of infectious individuals was 86, the first infection count available in the data. Offsets are actually calculated in the first code block (above) as the differences between the report times. For temporal basis functions, orthogonal polynomials of degree three were used. Prior parameters for the E to I and I to R transitions were chosen based on well documented values for the average latent and infectious times, and the rest of the prior parameters were left vague. These decisions are addressed in more detail as comments to the code below. 
   </p>
+  <br/>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
@@ -566,7 +571,7 @@ end.rcode-->
 <p>
   With the set up out of the way, we can finally build the models. In order to assess convergence, we'll make three model objects - one for each MCMC run. 
 </p>
-      
+<br/>  
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
@@ -651,7 +656,7 @@ end.rcode-->
 <p>
   With the model objects created, we may perform some some short runs in order to choose sensible Metropolis tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
 </p>
-      
+<br/>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
@@ -668,7 +673,7 @@ end.rcode-->
       
 <p>Using these tuning parameters, we can now run the chains until convergence. 
 As before, we'll adjust the tuning parameters along the way. Astute readers may notice the frankly inconvenient number of samples requested, and will correctly infer that autocorrelation is currently a major problem for this library. While such autocorrelation does not impact the validity of estimates based on the converged chains, it does increase the required computation time. This is an area of active development for libspatialSEIR.</p>  
-      
+ <br/>    
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
@@ -695,7 +700,7 @@ indication that the samplers have indeed converged to the posterior distribution
 problem at hand. In the code below, we'll read in the MCMC output files created so far, plot the three chains for each of 
 several important parameters, and take a look at the Gelman and Rubin convergence diagnostic (which should be close to 1 if the chains have converged.)
 </p>
-
+<br/>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
@@ -778,7 +783,7 @@ end.rcode-->
 <p>
   The convergence looks quite reasonable, so let's dissect the estimates a bit. 
 </p>
-
+<br/>
 <a id="analysis-1-estimates-sect" class="anchor">
 <h3>Estimated Epidemic Behavior</h3>
 </a>
@@ -847,12 +852,14 @@ and
 cat(paste(" ", round(1/mcl.summary$quantiles[8,1],1), " ", sep = ""))
 end.rcode-->
 
-days. In reality, there is a lot 
+ (95% credible intervals). In reality, there is a lot 
 of variability in these times for Ebola, but these seem like reasonable estimates for the average values. <br/>
-
-We also notice that there is definitely non-zero spatial dependence (the distribution of the spatial dependence parameter is well separated from zero), indicating reasonably strong mixing between the populations. This is unsurprising, as the disease has in fact spread between all three nations. 
-<br/>
-
+</p><br/>
+<p>
+We also notice that there is definitely non-zero spatial dependence (the distribution of the spatial dependence parameter is well separated from zero), indicating significant mixing between the populations. This is unsurprising, as the disease has in fact spread between all three nations. 
+</p>
+<br/><br/>
+<p>
 It also appears that Guinea has the lowest estimated epidemic intensity, followed by Sierra Leone and Liberia, which have similar credible
 intervals for their intercept parameters.
 </p>
@@ -907,8 +914,8 @@ end.rcode-->
 <h3>Basic Reproductive Number Calculation</h3>
 </a>
 <p>
-A common tool for describing the development and containment of an epidemic is a quantity known as the basic reproductive numer, or the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections each infectious individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect the epidemic to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity. <br/>
-
+A common tool for describing the evolution of an epidemic is a quantity known as the basic reproductive numer, the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections a single infectious individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect the epidemic to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity.</p> <br/><br/>
+<p>
 In addition to coming up with a point estimate of the ratio, it is helpful to quantify the uncertainty in the estimates obtained. The code below draws additional samples from the posterior distribution in order to estimate this uncertainty.
 </p>
 
@@ -951,7 +958,7 @@ end.rcode-->
 figure6()
 end.rcode-->
 
-The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. Notice, on the other hand, the high variability in May. This is an interesting result, and perhaps reflects the seemingly contradicting information from Guinea (where the epidemic continued to spread) and Liberia (where the epidemic briefly disappeared).<br/>
+The dip in recent days in the estimated basic reproductive ratio is definitely a hopeful sign that public health interventions and education efforts have begun to change the epidemic dynamics. Notice, on the other hand, the high variability throughout May. This is an interesting result, and perhaps reflects the seemingly contradicting information from Guinea (where the epidemic continued to spread) and Liberia (where the epidemic briefly disappeared).<br/>
 
 While the basic reproductive number is a useful quantity to know, it does not directly make any predictions about future epidemic behavior. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
  
@@ -961,7 +968,7 @@ While the basic reproductive number is a useful quantity to know, it does not di
 </a>
 <p>
  
- Currently the simulation required for epidemic prediction must be done "manually" by writing a bunch of R code. As the library develops, a simpler prediction interface is a high priority.  <br/> Below, we will attempt to predict the course of the epidemic through early fall. 
+ Currently the simulation required for epidemic prediction must be done "manually" by writing a bunch of R code. As the library develops, a simpler prediction interface is a high priority.  </p><br/><br/><p> Below, we will attempt to predict the course of the epidemic through early fall. 
  We must be cautious when making predictions about a chaotic process this far into the future. We must be particularly cautious because the basis chosen for the temporal trend in the epidemic intensity process was polynomial. While polynomial bases often provide a good fit to the data, they can behave unreasonably outside the range over which the model was fit (quadratic and cubic terms can get large very quickly). 
 </p>
 
@@ -1036,18 +1043,23 @@ While the basic reproductive number is a useful quantity to know, it does not di
              dataRow$BetaP_SE_3,
              dataRow$BetaP_SE_4,
              dataRow$BetaP_SE_5)
-    S0 = c(dataRow$S_0_23 - dataRow$E_star_0_23,
-           dataRow$S_1_23 - dataRow$E_star_1_23,
-           dataRow$S_2_23 - dataRow$E_star_2_23)
-    E0 = c(dataRow$E_0_23 + dataRow$E_star_0_23 - dataRow$I_star_0_23,
-           dataRow$E_1_23 + dataRow$E_star_1_23 - dataRow$I_star_1_23,
-           dataRow$E_2_23 + dataRow$E_star_2_23 - dataRow$I_star_2_23)
-    I0 = c(dataRow$I_0_23 + dataRow$I_star_0_23 - dataRow$R_star_0_23,
-           dataRow$I_1_23 + dataRow$I_star_1_23 - dataRow$R_star_1_23,
-           dataRow$I_2_23 + dataRow$I_star_2_23 - dataRow$R_star_2_23)
-    R0 = c(dataRow$R_0_23 + dataRow$R_star_0_23,
-           dataRow$R_1_23 + dataRow$R_star_1_23,
-           dataRow$R_2_23 + dataRow$R_star_2_23)
+    #S0 = c(dataRow$S_0_26 - dataRow$E_star_0_26,
+    #       dataRow$S_1_26 - dataRow$E_star_1_26,
+    #       dataRow$S_2_26 - dataRow$E_star_2_26)
+    #E0 = c(dataRow$E_0_26 + dataRow$E_star_0_26 - dataRow$I_star_0_26,
+    #       dataRow$E_1_26 + dataRow$E_star_1_26 - dataRow$I_star_1_26,
+    #       dataRow$E_2_26 + dataRow$E_star_2_26 - dataRow$I_star_2_26)
+    #I0 = c(dataRow$I_0_26 + dataRow$I_star_0_26 - dataRow$R_star_0_26,
+    #       dataRow$I_1_26 + dataRow$I_star_1_26 - dataRow$R_star_1_26,
+    #       dataRow$I_2_26 + dataRow$I_star_2_26 - dataRow$R_star_2_26)
+    #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
+    #       dataRow$R_1_26 + dataRow$R_star_1_26,
+    #       dataRow$R_2_26 + dataRow$R_star_2_26)
+    S0 = c(dataRow$S_0_26,dataRow$S_1_26,dataRow$S_2_26)
+    E0 = c(dataRow$E_0_26,dataRow$E_1_26,dataRow$E_2_26)
+    I0 = c(dataRow$I_0_26,dataRow$I_1_26,dataRow$I_2_26)
+    R0 = c(dataRow$R_0_26,dataRow$R_1_26,dataRow$R_2_26)
+    
     return(predictEpidemic(beta,  
                            X.pred,
                            dataRow$gamma_ei,
@@ -1066,7 +1078,7 @@ While the basic reproductive number is a useful quantity to know, it does not di
 
 
 
-pred.dates = c(rptDate[(which.max(rptDate))] + 1, 
+pred.dates = c(rptDate[(which.max(rptDate))], 
                rptDate[(which.max(rptDate))] + seq(10,60,10))
 pred.xlim = c(min(rptDate), max(pred.dates))
 lastIdx = nrow(SEIRmodels[[1]]$I)
@@ -1155,6 +1167,7 @@ figure7()
 end.rcode-->
 
 <p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. The behavior of the epidemic so far does not support these large swings in epidemic behavior, so we can be fairly certain that these long term predictions are extrapolation errors. Analysis 2 will consider the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
+</p><br/>
     </div>
     <div class="col-sm-1">
   </div>
@@ -1392,7 +1405,7 @@ figure11 = function()
                   nrow(chain1), predict.i)
   
   
-  pred.dates = c(rptDate[(which.max(rptDate))] + 1,
+  pred.dates = c(rptDate[(which.max(rptDate))],
                  rptDate[(which.max(rptDate))] + seq(10,60,10))
   pred.xlim = c(min(rptDate), max(pred.dates))
   lastIdx = nrow(SEIRmodels.spline[[1]]$I)
@@ -1491,13 +1504,14 @@ end.rcode-->
 
 <br/>
 
-<p>The estimated basic reproductive number and associated variability is virtually unchanged:</p>
 <a id="analysis-2-r0-sect" class="anchor"><h3>Basic Reproductive Number Calculation</h3></a>
+
+<p>The estimated basic reproductive number and associated variability is virtually unchanged:</p><br/>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure10()
 end.rcode-->
 
-<a id="analysis-2-prediction-sect" class="anchor"><h3>Epidemic Prediction</h3></a>
+<a id="analysis-2-prediction-sect" class="anchor"><h3>Epidemic Prediction</h3></a><br/>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure11()
 end.rcode-->
@@ -1510,19 +1524,19 @@ end.rcode-->
 
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 <br/>
-As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying of validating this tentative prediction, and as a result providing a demonstration of the benefits and potential drawbacks of the application of simple temporal modeling to complex international health problems. <br/>
+<p>
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying or validating this tentative prediction, and as a result providing a demonstration of the benefits and potential drawbacks of the application of simple temporal modeling to complex international health problems.</p> <br/>
 
-That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> <br/>
-</p>      
+<p>
+That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> 
+</p><br/>
       
       </div>
     <div class="col-sm-1">
     </div>
   </div>
-  
 </div>
-     <a id="dummy_anchor" class = "anchor"></a>
-    
+    <a id="dummy_anchor" class = "anchor"></a>  
     <script type="text/javascript">
       $(".code-button").click(function(){
           $(this).next().animate({
