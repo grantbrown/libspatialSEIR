@@ -113,13 +113,13 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-documentCompilationMode = "release"
-#documentCompilationMode = "debug"
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
 
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 1)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
-extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 50)
+extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
 ##
 
@@ -438,7 +438,7 @@ steadyStateConstraintPrecision = -1
 # iterationStride determines the delay between saving samples to the specified
 # output file As you can probably tell based on the high number chosen, 
 # autocorrelation is currently a big problem for this library
-iterationStride = 1000
+iterationStride = 250
 
 # We don't need no verbose or debug level output
 verbose = FALSE
@@ -603,10 +603,12 @@ end.rcode-->
 for (i in 1:length(SEIRmodels))
 {
     cat(paste("Burning in tuning params for chain ", i, "\n", sep =""))
+    SEIRmodels[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
     runSimulation(SEIRmodels[[i]])
     SEIRmodels[[i]]$simulate(1000)
     SEIRmodels[[i]]$printAcceptanceRates()
 }
+
 end.rcode-->
 </div>
       
@@ -994,10 +996,10 @@ While the basic reproductive number is a useful quantity to know, it does not di
     #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
     #       dataRow$R_1_26 + dataRow$R_star_1_26,
     #       dataRow$R_2_26 + dataRow$R_star_2_26)
-    S0 = c(dataRow$S_0_26,dataRow$S_1_26,dataRow$S_2_26)
-    E0 = c(dataRow$E_0_26,dataRow$E_1_26,dataRow$E_2_26)
-    I0 = c(dataRow$I_0_26,dataRow$I_1_26,dataRow$I_2_26)
-    R0 = c(dataRow$R_0_26,dataRow$R_1_26,dataRow$R_2_26)
+    S0 = c(dataRow$S_0_27,dataRow$S_1_27,dataRow$S_2_27)
+    E0 = c(dataRow$E_0_27,dataRow$E_1_27,dataRow$E_2_27)
+    I0 = c(dataRow$I_0_27,dataRow$I_1_27,dataRow$I_2_27)
+    R0 = c(dataRow$R_0_27,dataRow$R_1_27,dataRow$R_2_27)
     
     return(predictEpidemic(beta,  
                            X.pred,
@@ -1199,6 +1201,7 @@ SEIRmodels.spline[[1]]$setTrace(2) #Sierra Leone
 for (i in 1:length(SEIRmodels.spline))
 {
     cat(paste("Burning in chain ", i, "\n", sep =""))
+    SEIRmodels.spline[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
     runSimulation(SEIRmodels.spline[[i]])
     SEIRmodels.spline[[i]]$simulate(1000)
     SEIRmodels.spline[[i]]$printAcceptanceRates()
@@ -1338,44 +1341,47 @@ Guinea.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=0)
 Liberia.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=1)
 SierraLeone.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=2)
 
+preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
+                  nrow(chain1), predict.i)
+
+
+pred.dates = c(rptDate[(which.max(rptDate))],
+               rptDate[(which.max(rptDate))] + seq(10,60,10))
+pred.xlim = c(min(rptDate), max(pred.dates))
+lastIdx = nrow(SEIRmodels.spline[[1]]$I)
+Guinea.Pred = preds[[1]]$I[,1]
+Liberia.Pred = preds[[1]]$I[,2]
+SierraLeone.Pred = preds[[1]]$I[,3]
+
+
+breakpoint = mean(c(max(rptDate), min(pred.dates)))
+
+for (predIdx in 2:length(preds))
+{
+   Guinea.Pred = rbind(Guinea.Pred, preds[[predIdx]]$I[,1])
+   Liberia.Pred = rbind(Liberia.Pred, preds[[predIdx]]$I[,2])
+   SierraLeone.Pred = rbind(SierraLeone.Pred, preds[[predIdx]]$I[,3])
+}
+
+Guinea.mean = apply(Guinea.Pred, 2, mean)
+Liberia.mean = apply(Liberia.Pred, 2, mean)
+SierraLeone.mean = apply(SierraLeone.Pred, 2, mean)
+
+Guinea.LB = apply(Guinea.Pred, 2, quantile, probs = c(0.05))
+Guinea.UB = apply(Guinea.Pred, 2, quantile, probs = c(0.95))
+
+Liberia.LB = apply(Liberia.Pred, 2, quantile, probs = c(0.05))
+Liberia.UB = apply(Liberia.Pred, 2, quantile, probs = c(0.95))
+
+SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
+SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
+
+maxI = max(c(max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est)), Guinea.UB, Liberia.UB, SierraLeone.UB))
+
+
+
 figure11 = function()
 {
-  preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
-                  nrow(chain1), predict.i)
-  
-  
-  pred.dates = c(rptDate[(which.max(rptDate))],
-                 rptDate[(which.max(rptDate))] + seq(10,60,10))
-  pred.xlim = c(min(rptDate), max(pred.dates))
-  lastIdx = nrow(SEIRmodels.spline[[1]]$I)
-  Guinea.Pred = preds[[1]]$I[,1]
-  Liberia.Pred = preds[[1]]$I[,2]
-  SierraLeone.Pred = preds[[1]]$I[,3]
-  
-  
-  breakpoint = mean(c(max(rptDate), min(pred.dates)))
-  
-  for (predIdx in 2:length(preds))
-  {
-     Guinea.Pred = rbind(Guinea.Pred, preds[[predIdx]]$I[,1])
-     Liberia.Pred = rbind(Liberia.Pred, preds[[predIdx]]$I[,2])
-     SierraLeone.Pred = rbind(SierraLeone.Pred, preds[[predIdx]]$I[,3])
-  }
-  
-  Guinea.mean = apply(Guinea.Pred, 2, mean)
-  Liberia.mean = apply(Liberia.Pred, 2, mean)
-  SierraLeone.mean = apply(SierraLeone.Pred, 2, mean)
-  
-  Guinea.LB = apply(Guinea.Pred, 2, quantile, probs = c(0.05))
-  Guinea.UB = apply(Guinea.Pred, 2, quantile, probs = c(0.95))
-  
-  Liberia.LB = apply(Liberia.Pred, 2, quantile, probs = c(0.05))
-  Liberia.UB = apply(Liberia.Pred, 2, quantile, probs = c(0.95))
-  
-  SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
-  SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
-  
-  maxI = max(c(max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est)), Guinea.UB, Liberia.UB, SierraLeone.UB))
   
   ## Guinea 
   par(mfrow = c(3,1))
@@ -1476,7 +1482,9 @@ end.rcode-->
     <div class="col-sm-3"></div>
   </div>
 </div>
-
+<br/>
+<br/>
+<br/>
 
 
 
