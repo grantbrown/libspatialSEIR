@@ -12,16 +12,10 @@
     <title>2014 Ebola Epidemic</title>
     <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="./css/ebola.css" rel="stylesheet">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="./bootstrap/js/bootstrap.min.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="http://d3js.org/topojson.v1.min.js"></script>
-    <script src='http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js' type='text/javascript'></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js"></script>
-    <script src="./datamaps.world.min.js"></script>
+    
   </head>
 
-  <body ng-app ng-controller='rChartsCtrl'>
+  <body>
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -51,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 7/28/2014</h5>
+          <h5>Last Updated: 7/30/2014</h5>
         </div>
       </div>
     </div>
@@ -241,7 +235,7 @@ end.rcode-->
 
 One can also represent this data geographically to get an idea of the spatial epidemic pattern, and to place the problem in a more relatable context. 
 
-<h4>Average Number of Infections Per Day:</h4>
+<h4 align=center>Average Number of Infections Per Day:</h4>
 <!--begin.rcode echo=FALSE
 library(rCharts)
 library(stats)
@@ -252,105 +246,50 @@ liberia.interp = approx(x,InfectionPerDay[,2],xout = 0:max(x))
 sierraleone.interp = approx(x,InfectionPerDay[,3],xout = 0:max(x))
 
 interpMatrix = cbind(guinea.interp$y, liberia.interp$y,sierraleone.interp$y)
-interpMatrix.cut = matrix(as.numeric(cut(interpMatrix, breaks = 9)), nrow = nrow(interpMatrix))
+cutvals = cut(interpMatrix, breaks = 9)
+interpMatrix.cut = matrix(as.numeric(cutvals), nrow = nrow(interpMatrix))
 
 
-hcol = c("#ffffef", "#fff7bf", "#fee39f", "#fec45f", "#fe993f", "#ec702f", "#cc4c1f", "#993402e", "#662520")
+upperVals = as.numeric(lapply(strsplit(c(gsub("[(]", "", gsub("]", "", unique(as.character(cutvals))))), ","), function(x){return(x[2])}))
+upperVals = round(upperVals[order(upperVals)],0)
+
+
+hcol = c("#ffffef", "#fff7bf", "#fee39f", "#fec45f", "#fe993f", "#ec702f", "#cc4c1f", "#993402", "#662520")
 color.palette = c(hcol[1],hcol)
-fills = setNames(color.palette, c("defaultFill", paste("Col", 1:max(interpMatrix.cut), sep = "")))
+fills = setNames(color.palette, c("defaultFill", paste("lt", upperVals, sep = "")))
 
 
 # GIN, LBR, SLE
 outList = list()
 for (tpt in min(x):max(x))
 {
-    outList[[as.character(tpt+1)]] = list("GIN" = list("fillKey"=factor(paste("Col", interpMatrix.cut[tpt+1,1], sep =""), 
+    outList[[as.character(tpt+1)]] = list("GIN" = list("fillKey"=factor(paste("lt", upperVals[interpMatrix.cut[tpt+1,1]], sep =""), 
                                                         levels = names(fills))),
-                                          "LBR" = list("fillKey"=factor(paste("Col", interpMatrix.cut[tpt+1,2], sep = ""), 
+                                          "LBR" = list("fillKey"=factor(paste("lt", upperVals[interpMatrix.cut[tpt+1,2]], sep = ""), 
                                                         levels = names(fills))),
-                                          "SLE" = list("fillKey"=factor(paste("Col",interpMatrix.cut[tpt+1,3], sep = ""), 
+                                          "SLE" = list("fillKey"=factor(paste("lt",upperVals[interpMatrix.cut[tpt+1,3]], sep = ""), 
                                                         levels = names(fills))))
 }
 
 end.rcode-->
 
 
-<div class='container' id ="zoom_map_container" style="position: relative; max-width: 100%; height:100%">
+<div class='container' ng-app="data_app" ng-controller='rChartsCtrl' id ="zoom_map_container" style="position: relative; max-width: 100%; height:100%">
   <div class = "row">
     <div class="col-sm-3">
-      <input id='slider' type='range' min=1 max=119 ng-model='Day' width=200>
-      <span ng-bind='Day'></span>
+      <input id='zoom-map-slider' type='range' min=1 max=119 ng-model='Day' width=200>
+       <span>Day: <span id ="zoom-map-day-counter" ng-bind='Day'></span></span>
     </div>
-    <div class = "col-sm-7"></div>
+    <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play" type="button">Play</button></div>
+    <div class = "col-sm-6"></div>
   </div>
   <div class="row">
     <div id='zoom_map' class='rChart datamaps col-sm-8 col-sm-offset-1' style="position: relative; max-width: 100%; height:100%"></div>  
     <div class="col-sm-3"></div>
   </div>
 </div>
-<script>
-  function rChartsCtrl($scope){
-    $scope.Day = 1;
-    $scope.$watch('Day', function(newDay){
-      zoom.updateChoropleth(alldata[newDay]);
-    })
-  }
-</script>    
-
-<script id='popup-template' type='text/x-handlebars-template'>
-</script>
-
-<script>
-var alldata = 
-<!--begin.rcode echo=FALSE, results="asis"
-{cat(toJSON2(outList))}
-end.rcode-->
-
-
-var chartParams={"dom": "zoom_map",
-"scope": "world",
-"geographyConfig":{
-  "borderColor":"#cccccc",
-  "borderWidth":"2px"},
-"fills": 
-<!--begin.rcode echo=FALSE, results="asis"
-cat(toJSON2(fills))
-end.rcode-->
-,
-"data":
-<!--begin.rcode echo=FALSE, results="asis"
-cat(toJSON2(outList[[1]]))
-end.rcode-->
-,"setProjection": function( element, options ) {
-    var path;
-    var projection = d3.geo.equirectangular()
-        .center([-5, 7])
-    	  .rotate([4.4, 0])
-  		  .scale(1600)
-  		  .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
-     
-    path = d3.geo.path()
-      .projection( projection );
- 
-    return {path: path, projection: projection};
-  }
-}
-
-chartParams.element = document.getElementById('zoom_map')
-  
-  
-  var zoom = new Datamap(chartParams);
-  
-  if (chartParams.labels){
-    zoom.labels()
-  }
-  
-  if (chartParams.legend){
-    zoom.legend()
-  }
-
-
-</script>
+<br/>
+<br/>
 
       <a id="intro-compartment-sect" class="anchor">
       <h3>Compartmental Models</h3>
@@ -1488,6 +1427,8 @@ figure11 = function()
 }
 
 
+
+
 end.rcode-->
 </div>
 <br/>
@@ -1518,8 +1459,26 @@ end.rcode-->
 
 
 
-<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. </p>
+<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. Such data can also be visualized in map form:</p>
 <br/>
+<h4 align=center>Total Infection Size - Estimated and Predicted:</h4>
+<div class='container' id ="pred_app" style="position: relative; max-width: 100%; height:100%">
+  <div class = "row" ng-controller='rChartsCtrl_pred' >
+    <div class="col-sm-3">
+      <input id='zoom-map-slider-pred' type='range' min=1 max=179 ng-model='pred_Day' width=200>
+       <span>Day: <span id ="zoom-map-day-counter-pred" ng-bind='pred_Day'></span></span>
+    </div>
+    <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play-pred" type="button">Play</button></div>
+    <div class = "col-sm-6"></div>
+  </div>
+  <div class="row">
+    <div id='zoom_map_pred' class='rChart datamaps col-sm-8 col-sm-offset-1' style="position: relative; max-width: 100%; height:100%"></div>  
+    <div class="col-sm-3"></div>
+  </div>
+</div>
+
+
+
 
 
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
@@ -1537,7 +1496,281 @@ That wraps up the analyses for now. This document will continue to be updated as
   </div>
 </div>
     <a id="dummy_anchor" class = "anchor"></a>  
-    <script type="text/javascript">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js' type='text/javascript'></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js"></script>
+    <script src="./datamaps.world.min.js"></script>
+    
+    <script>
+  function rChartsCtrl($scope){
+    $scope.Day = 1;
+    $scope.$watch('Day', function(newDay){
+      zoom.updateChoropleth(alldata[newDay]);
+    })
+  }
+    </script>
+    <script>
+  function rChartsCtrl_pred($scope){
+    console.log("PredCalled.");
+    $scope.pred_Day = 1;
+    $scope.$watch('pred_Day', function(newDay){
+      zoom_pred.updateChoropleth(alldata_pred[newDay]);
+    })
+  }
+</script>    
+
+<script id='popup-template' type='text/x-handlebars-template'>
+</script>
+
+<script>
+var alldata = 
+<!--begin.rcode echo=FALSE, results="asis"
+{cat(toJSON2(outList))}
+end.rcode-->
+
+
+var chartParams={"dom": "zoom_map",
+"scope": "world",
+"legend":true,
+"geographyConfig":{
+  "borderColor":"#cccccc",
+  "borderWidth":"2px"},
+"fills": 
+<!--begin.rcode echo=FALSE, results="asis"
+cat(toJSON2(fills))
+end.rcode-->
+,
+"data":
+<!--begin.rcode echo=FALSE, results="asis"
+cat(toJSON2(outList[[1]]))
+end.rcode-->
+,"setProjection": function( element, options ) {
+    var path;
+    var projection = d3.geo.equirectangular()
+        .center([-5, 7])
+        .rotate([4.4, 0])
+  		  .scale(1600)
+  		  .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
+     
+    path = d3.geo.path()
+      .projection( projection );
+ 
+    return {path: path, projection: projection};
+  }
+}
+
+chartParams.element = document.getElementById('zoom_map')
+  
+  
+  var zoom = new Datamap(chartParams);
+  
+  if (chartParams.labels){
+    zoom.labels()
+  }
+  
+  if (chartParams.legend){
+    zoom.legend()
+  }
+
+
+</script>
+<script type="text/javascript">
+var playing_pred=false;
+
+function intervalFunction_pred(slider,counter,sliderVal){
+    if (eval(slider.val()) >= eval(slider.attr("max")))
+    {
+      slider.val(1);
+      counter.text(1);
+      zoom_pred.updateChoropleth(alldata_pred[1]);
+      playing_pred = false;
+      clearInterval(intervalVariable_pred);
+      $("#zoom-map-play-pred").text("Play");
+    }
+    else if (!playing_pred)
+    {
+      clearInterval(intervalVariable_pred);
+      $("#zoom-map-play-pred").text("Play");
+    }
+    else
+    {
+      sliderVal = eval(slider.val()) + 1;
+      slider.val(sliderVal);
+      if (sliderVal > 119){
+        counter.text(sliderVal + " (predicted)");
+      }
+      else
+      {
+        counter.text(sliderVal);
+      }
+      zoom_pred.updateChoropleth(alldata_pred[sliderVal]);
+    }
+}
+
+
+
+$("#zoom-map-play-pred").click(function(){
+    var slider = $("#zoom-map-slider-pred");
+    var counter = $("#zoom-map-day-counter-pred");
+    var sliderVal = 0;
+    if (playing_pred)
+    {
+      playing_pred = false;
+    }
+    else
+    {
+      playing_pred = true;
+      $("#zoom-map-play-pred").text("Pause");
+      intervalVariable_pred = setInterval(function(){intervalFunction_pred(slider,counter,sliderVal)},100);
+    }
+});
+</script>
+
+<script type="text/javascript">
+var playing=false;
+
+function intervalFunction(slider,counter,sliderVal){
+    if (eval(slider.val()) >= eval(slider.attr("max")))
+    {
+      console.log("Exit Case 1.");
+      slider.val(1);
+      counter.text(1);
+      zoom.updateChoropleth(alldata[1]);
+      playing = false;
+      clearInterval(intervalVariable);
+      $("#zoom-map-play").text("Play");
+    }
+    else if (!playing)
+    {
+      console.log("Exit Case 2.");
+      clearInterval(intervalVariable);
+      $("#zoom-map-play").text("Play");
+    }
+    else
+    {
+      sliderVal = eval(slider.val()) + 1;
+      console.log("Run Case: " + sliderVal);
+      slider.val(sliderVal);
+      counter.text(sliderVal);
+      zoom.updateChoropleth(alldata[sliderVal]);
+    }
+}
+
+
+
+$("#zoom-map-play").click(function(){
+    var slider = $("#zoom-map-slider");
+    var counter = $("#zoom-map-day-counter");
+    var sliderVal = 0;
+    if (playing)
+    {
+      playing = false;
+    }
+    else
+    {
+      playing = true;
+      $("#zoom-map-play").text("Pause");
+      intervalVariable = setInterval(function(){intervalFunction(slider,counter,sliderVal)},100);
+    }
+});
+</script>
+
+
+<script>
+var alldata_pred = 
+<!--begin.rcode echo=FALSE, results="asis"
+
+# pred  means
+
+Guinea.pred.vec = c(Guinea.I.Est[1,], Guinea.mean[2:length(Guinea.mean)])
+Liberia.pred.vec = c(Liberia.I.Est[1,], Liberia.mean[2:length(Guinea.mean)]) 
+SierraLeone.pred.vec = c(SierraLeone.I.Est[1,], SierraLeone.mean[2:length(Guinea.mean)])
+
+x = c(rptDate, pred.dates[2:length(Guinea.mean)]) - min(rptDate) 
+guinea.interp.pred = approx(x,Guinea.pred.vec,xout = 0:max(x))
+liberia.interp.pred = approx(x,Liberia.pred.vec,xout = 0:max(x))
+sierraleone.interp.pred = approx(x,SierraLeone.pred.vec,xout = 0:max(x))
+
+interpMatrix = cbind(guinea.interp.pred$y, liberia.interp.pred$y,sierraleone.interp.pred$y)
+
+
+cutvals = cut(interpMatrix, breaks = 9)
+interpMatrix.cut = matrix(as.numeric(cutvals), nrow = nrow(interpMatrix))
+upperVals = as.numeric(lapply(strsplit(c(gsub("[(]", "", gsub("]", "", unique(as.character(cutvals))))), ","), function(x){return(x[2])}))
+upperVals = round(upperVals[order(upperVals)],0)
+
+hcol = c("#ffffef", "#fff7bf", "#fee39f", "#fec45f", "#fe993f", "#ec702f", "#cc4c1f", "#993402", "#662520")
+color.palette = c(hcol[1],hcol)
+fills.pred = setNames(color.palette, c("defaultFill", paste("lt", upperVals, sep = "")))
+
+# GIN, LBR, SLE
+outList.pred = list()
+for (tpt in min(x):max(x))
+{
+    outList.pred[[as.character(tpt+1)]] = list("GIN" = list("fillKey"=factor(paste("lt", upperVals[interpMatrix.cut[tpt+1,1]], sep =""), 
+                                                        levels = names(fills.pred))),
+                                          "LBR" = list("fillKey"=factor(paste("lt", upperVals[interpMatrix.cut[tpt+1,2]], sep = ""), 
+                                                        levels = names(fills.pred))),
+                                          "SLE" = list("fillKey"=factor(paste("lt",upperVals[interpMatrix.cut[tpt+1,3]], sep = ""), 
+                                                        levels = names(fills.pred))))
+}
+
+{cat(toJSON2(outList.pred))}
+end.rcode-->
+
+
+var chartParams_pred={"dom": "zoom_map_pred",
+"scope": "world",
+"legend":true,
+"geographyConfig":{
+  "borderColor":"#cccccc",
+  "borderWidth":"2px"},
+"fills": 
+<!--begin.rcode echo=FALSE, results="asis"
+cat(toJSON2(fills.pred))
+end.rcode-->
+,
+"data":
+<!--begin.rcode echo=FALSE, results="asis"
+cat(toJSON2(outList.pred[[1]]))
+end.rcode-->
+,"setProjection": function( element, options ) {
+    var path;
+    var projection = d3.geo.equirectangular()
+        .center([-5, 7])
+        .rotate([4.4, 0])
+    	  .scale(1600)
+  		  .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
+     
+    path = d3.geo.path()
+      .projection( projection );
+ 
+    return {path: path, projection: projection};
+  }
+}
+
+chartParams_pred.element = document.getElementById('zoom_map_pred')
+
+var zoom_pred = new Datamap(chartParams_pred);
+
+if (chartParams_pred.labels){
+  zoom_pred.labels()
+}
+
+if (chartParams_pred.legend){
+  zoom_pred.legend()
+}
+</script>
+<script type="text/javascript">
+  var data_app = angular.module('data_app', []);
+  var pred_app = angular.module('pred_app', []);
+  angular.bootstrap(document.getElementById("pred_app"), ['data_app']);
+</script>
+
+<script type="text/javascript">
       $(".code-button").click(function(){
           $(this).next().animate({
             opacity: 1,
@@ -1548,7 +1781,6 @@ That wraps up the analyses for now. This document will continue to be updated as
       });
       
     </script>
-    
-
+  
   </body>
 </html>
