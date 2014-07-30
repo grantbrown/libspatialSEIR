@@ -40,6 +40,8 @@ namespace SpatialSEIR
     class RandomNumberProvider;
     class OCLProvider;
 
+    /** The sampler class is the parent class for all MCMC sampler objects, and guarantees that the same high level API
+     * applies to all such objects.*/
     class Sampler
     {
         public:
@@ -48,7 +50,8 @@ namespace SpatialSEIR
             virtual int getSamplerType() = 0;
     };
 
-    // Samplers for CompartmentalModelMatrix classes
+    /** The CompartmentMetropolisSampler class is child of the Sampler class which draws samples from the 
+     * posterior distribution of the various transition compartments using a full compartment Metropolis proposal. */
     class CompartmentMetropolisSampler : public Sampler
     {
         public: 
@@ -64,6 +67,9 @@ namespace SpatialSEIR
             int** compartmentData;
     };
 
+    /** The CompartmentMetropolisSampler_OCL class is child of the Sampler class which draws samples from the 
+     * posterior distribution of the various transition compartments using a full compartment Metropolis proposal. This 
+     * version of the Metropolis sampler uses the available OpenCL features of libspatialSEIR.*/
     class CompartmentMetropolisSampler_OCL : public Sampler
     {
         public: 
@@ -79,6 +85,10 @@ namespace SpatialSEIR
             int** compartmentData;
     };
 
+    /** The IndexedCompartmentMetropolisSampler class is child of the Sampler class which draws samples from the 
+     * posterior distribution of the various transition compartments using a partial Metropolis proposal, with 
+     * proposal indices determined by the ModelContext to which it belongs. This sampler is designed to reduce
+     * autocorrelation by letting all compartments move together using the same indices. */
     class IndexedCompartmentMetropolisSampler : public Sampler
     {
         public: 
@@ -95,7 +105,10 @@ namespace SpatialSEIR
             int** compartmentData;
             int** indexList;
     };
-
+    /** The IndexedCompartmentSliceSampler class is child of the Sampler class which draws samples from the 
+     * posterior distribution of the various transition compartments using a partial slice sampling proposal, with 
+     * proposal indices determined by the ModelContext to which it belongs. This sampler is designed to reduce
+     * autocorrelation by letting all compartments move together using the same indices. */
     class IndexedCompartmentSliceSampler : public Sampler
     {
         public: 
@@ -113,7 +126,8 @@ namespace SpatialSEIR
             int** indexList;
     };
 
-    // Samplers for InitCompartment classes 
+    /** The InitCompartmentMetropolisSampler functions identically to the CompartmentMetropolisSampler class, but for 
+     * the vector of initial values of each CompartmentalModelMatrix.*/
     class InitCompartmentMetropolisSampler : public Sampler
     {
         public:
@@ -129,6 +143,8 @@ namespace SpatialSEIR
             int** initCompartmentData;
     };
 
+    /** The InitCompartmentMetropolisSampler_OCL functions identically to the CompartmentMetropolisSampler_OCL class, but for 
+     * the vector of initial values of each CompartmentalModelMatrix. This class makes use of the OpenCL functionality of libspatialSEIR*/
     class InitCompartmentMetropolisSampler_OCL : public Sampler
     {
         public:
@@ -144,6 +160,7 @@ namespace SpatialSEIR
             int** initCompartmentData;
     };
 
+    /** The IndexedInitCompartmentMetropolisSampler is depricated.*/
     class IndexedInitCompartmentMetropolisSampler : public Sampler
     {
         public:
@@ -161,6 +178,8 @@ namespace SpatialSEIR
             int** initCompartmentData;
 
     };
+
+    /** The IndexedInitCompartmentSliceSampler is depricated.*/
     class IndexedInitCompartmentSliceSampler : public Sampler
     {
         public:
@@ -178,7 +197,9 @@ namespace SpatialSEIR
             int** initCompartmentData;
     };
     
-    // Samplers for non-compartmental parameters.
+    /** The ParameterSingleMetropolisSampler uses Metropolis proposals of size one to 
+     * sample non CompartmentalMatrix parameters. 
+     * */
     class ParameterSingleMetropolisSampler : public Sampler
     {
         public:
@@ -193,7 +214,10 @@ namespace SpatialSEIR
             ModelContext** context;
             ParameterFullConditional** paramFC;
     };
-    
+
+     /** The ParameterJointMetropolisSampler uses full vector Metropolis proposals to 
+     * sample non CompartmentalMatrix parameters. 
+     * */
     class ParameterJointMetropolisSampler : public Sampler
     {
         public:
@@ -209,6 +233,10 @@ namespace SpatialSEIR
             ParameterFullConditional** paramFC;
     };
 
+     /** The ParameterJointMetropolisSampler_OCL uses full vector Metropolis proposals to 
+     * sample non CompartmentalMatrix parameters. This class makes use of the OpenCL Capabilities
+     * of libspatialSEIR.
+     * */
     class ParameterJointMetropolisSampler_OCL : public Sampler
     {
         public:
@@ -224,6 +252,9 @@ namespace SpatialSEIR
             ParameterFullConditional** paramFC;
     };
 
+     /** The ParameterJointSliceSampler uses full vector slice sampling proposals to 
+     * sample non CompartmentalMatrix parameters. 
+     * */
     class ParameterJointSliceSampler : public Sampler
     {
         public:
@@ -239,6 +270,8 @@ namespace SpatialSEIR
             ParameterFullConditional** paramFC;
     };
 
+    /** The decorrelation sampler functions identically to the ParameterJointMetropolisSampler class, 
+     * except that proposals are drawn from the null space of the relevant design matrix. */
     class ParameterDecorrelationSampler : public Sampler
     {
         public:
@@ -254,17 +287,7 @@ namespace SpatialSEIR
             ModelContext** context;
             ParameterFullConditional** paramFC;
             CovariateMatrix** proposalMatrix;
-    };
-
-    
-
-
-
-
-
-
-
-
+    }; 
 
 }
 #endif
