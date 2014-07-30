@@ -124,75 +124,14 @@ as a Case Study'', with the addition of a simple conditionally autoregressive sp
 
 \subsection{Infection Process - CAR Model Motivation}
 
-Consider the process by which people become infected with a communicable disease. 
-Namely, consider the situation in which a person `A' has contacted another person, `B', 
-who is infectious (for some suitable definition of contacted). The development below assumes contiguous and equivalently sized temporal intervals, 
-though it is readily extended to the heterogeneous case. 
-Let $p$ be the probability that person `A' becomes infected with the disease, and
-let $q=1-p$. Now we introduce a number of assumptions:
-
-\begin{itemize}
-
-    \item Assume that the number of `contacts' $K_i$ between a person of interest 
-    and other individuals within a spatial unit $s_i$ at a given time point follows a Poisson 
-    distribution:\\
-    \begin{center}
-        $K_j \sim Po(\lambda_i)$
-    \end{center}
-    \item Assume that when individuals travel to other spatial locations, their 
-        contact behavior is well modeled by the contact behavior of that spatial unit (when in Rome).  
-    \item Contact between spatial locations is proportional to some known function $f(d_{il})$
-        of the chosen distance metric between the centroids of $s_i$ and $s_l$
-\end{itemize}
-
 Define $\delta_{ij}$ to be the proportion of persons who are infectious in spatial unit $s_i$ 
-at time $t_j$. Then, letting $Inf(s_i, t_j)$ denote the event that a person becomes 
-infected from contact within spatial unit $s_i$ at time $t_j$ and $!Inf(s_i, t_j)$ denote it's compliment
-, we can derive:
+at time $t_j$. Then, letting $\rho f(d_{il})$ denote the scaled standardized neighborhood matrix component for spatial 
+locations $s_i$ and $s_l$, we can derive (with minimal further assumptions):
 
 \begin{center}
-
-    $P(Inf(.,t_j)) = 1 - P(!Inf(s_i, t_j)) \cdot  P(!Inf(s_{-i}, t_j))$ \mbreak
-    where \mbreak 
-    $P(!Inf(s_i, t_j)) = E(!Inf(s_i, t_j)) = E(E(!Inf(s_i, t_j)|K_i=k_i))$  \mbreak 
-    $\displaystyle =E(((1-\delta_{ij})q)^{k_i})$  \mbreak 
-    $\displaystyle = \sum_{k=0}^{\infty} ((1-\delta_{ij})q)^k(\frac{\lambda_i^ke^{-\lambda_i}}{k!})$\mbreak
-    $\displaystyle =  \sum_{k=0}^{\infty} q_{ij}^k (\frac{\lambda_i^ke^{-\lambda_i}}{k!})$\mbreak
-    $\displaystyle = \frac{e^{-\lambda_i}}{e^{-q_{ij}\lambda_i}}(1)$
-    $ = e^{-\lambda_i\cdot(1-q_{ij})} $
-    $ = e^{-\lambda_i \cdot p_{ij}} $
-    $ = e^{-\lambda_i \cdot (\delta_{ij}p)}$ \mbreak
-    Therefore,  $P(Inf(s_i, t_j)) = 1 - e^{-\lambda_i \cdot (\delta_{ij}p)} $ \mbreak
-    Similarly,\mbreak
-    $\displaystyle P(!Inf(s_{-i}, t_j)) = \prod_{\left\{l \ne i\right\}}\left[P(!Inf(s_l, t_j)) \right]$ \mbreak
-    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[E(!Inf(s_{-i}, t_j))\right] $
-    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[E(E(!Inf(s_{-i}, t_j)|K_i=k_i)) \right]$  \mbreak 
-    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ E((1-\delta_{lj})q)^k )  \right]$\mbreak 
-    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ \sum_{k=0}^{\infty}(q_{lj}(i))^k\frac{(\lambda_l\cdot f(d_{il}))^ke^{-\lambda_l \cdot f(d_{il})}}{k!}    \right] $
-    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ \frac{e^{-\lambda_l \cdot f(d_{il})}}{e^{-q_{lj}\lambda_l f(d_{il})}}(1)  \right]$\mbreak
-    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ e^{-\lambda_l \cdot f(d_{il}) p_{lj}}  \right]$
-    $\displaystyle = \prod_{\left\{ l \ne i \right\}}\left[ e^{-\lambda_l\cdot f(d_{il}) \cdot (\delta_{lj}p) }  \right]$\mbreak
-    $\displaystyle = exp\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}$ \mbreak
-    Thus, for the probabilty of infection for a person living in $s_i$ at time $t_j$ we have: \mbreak 
-    $\displaystyle 1-\left(e^{-\lambda_i \cdot (\delta_{ij}p)}\right) \left( 
-        e^{\left\{\sum_{\left\{ l \ne i \right\}}\left[p\lambda_l\delta_{jl}f(d_{il})   \right] \right\}}\right)
-     $ \mbreak 
-
-    $\displaystyle = 1- exp\left\{-\delta_{ij}e^{\theta_{i}} - \sum_{\left\{ l \ne i  \right\}}
+    $\displaystyle \pi^{(SE)}_{ij} = 1- exp\left\{-\delta_{ij}e^{\theta_{i}} - \rho \sum_{\left\{ l \ne i  \right\}}
         (f(d_{il})\delta_{il}e^{\theta_{l}})   \right\}$ 
-    , where $\theta_{v} = log(\lambda_{v}p)$
- 
 \end{center}
-
-Currently, libspatialSEIR supports distance functions of the form:
-
-\begin{center}
-    $f(d_{il}) = \rho \cdot (d_{il})^{-\frac{1}{2}}$
-\end{center}
-
-For this analysis, the usual CAR model with a neighborhood matrix re-scaled to be row stochastic is employed with the autoregression 
-parameter $\rho$.
-
  
 \section{Basic Reproductive Number}
 The basic reproductive number, $\mathcal{R}_0$, is an important quantity in epidemiology. While the interpretation must be adapted to 
@@ -203,39 +142,12 @@ Using the next generation matrix approach to $\mathcal{R}_0$ calculation, we fir
 that $G_{i,l}(t_j)$ is the expected number of infections in spatial location $s_i$ caused by a single infected
 individual in location $s_l$ at time $t_j$.
 
-Defining the relevant infection event for a person indexed by $k$ to be: $I_k(s_i, s_l, t_j)$, we see that the expected number of such
-infections is:
-
-\begin{center}
-    $\displaystyle E\big[ \sum_{k=0}^{N_{i,j}}(I_k(s_i, s_l, t_j)) \big]$ \mbreak
-    $\displaystyle = \sum_{k=0}^{N_{i,j}}\cdot P(I_k(s_i, s_l, t_j)) = N_{i,j}\cdot P(I_k(s_i, s_l, t_j)) $ \mbreak 
-\end{center}
-
-    Where, as before: \mbreak
-
-\begin{center}
-    $ P(I_k(s_i, s_l, t_j)) = 1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}$ \mbreak
-\end{center}
-
-    This gives: \mbreak
-
-\begin{center}
-    $G_{i,l}(t_j) = \frac{N_{i,j}}{I_{l,j}}\cdot \left[1-exp\left\{-f(d_{il})\delta_{lj}e^{\theta_{l}} \right\}\right]$ \mbreak
-\end{center}
-
-    Additionally recall the diagonal case, where $d_{ii} = 0$ and $f(0) = 1$:\mbreak 
-
-\begin{center}
-    $G_{i,i}(t_j) = \frac{N_{i,j}}{I_{i,j}}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
-    $ = \delta_{ij}^{-1}\cdot \left[1-exp\left\{-\delta_{ij}e^{\theta_{i}} \right\}\right]$ \mbreak
-\end{center}
-
 With this matrix constructed, the basic reproductive number can be immediately calculated as the dominant eigenvalue. 
 
 
 \section{Final Notes}
 
-Variants of Metropolis sampling (not Metropolis-Hastings, as symmetric proposal distributions are employed) are used, in combination 
-with automatic tuning capabilities which enable libspatialSEIR to choose tuning parameters with reasonable acceptance rates. 
+The sampling scheme uses variants of Metropolis sampling (not Metropolis-Hastings, as symmetric proposal distributions are employed) 
+are used, in combination with automatic tuning capabilities which enable libspatialSEIR to choose tuning parameters with reasonable acceptance rates. 
 
 \end{document}
