@@ -126,7 +126,7 @@ extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[3]]
+dat = tbls[[2]]
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 original.rptDate = rptDate
