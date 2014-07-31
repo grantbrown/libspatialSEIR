@@ -559,6 +559,7 @@ for (seedVal in c(12345,543219,992134))
                       reinfectionMode,
                       scaleDistanceMode)
   SEIRmodels[[i]]$setRandomSeed(seedVal)
+  SEIRmodels[[i]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
   i = i + 1;
 }
 
@@ -1190,6 +1191,7 @@ for (seedVal in c(12345,543219,992134))
                       reinfectionMode,
                       scaleDistanceMode)
   SEIRmodels.spline[[i-3]]$setRandomSeed(seedVal)
+  SEIRmodels.spline[[i-3]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
   i = i + 1;
 }
 

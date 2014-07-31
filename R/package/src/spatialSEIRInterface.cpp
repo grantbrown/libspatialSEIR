@@ -1070,7 +1070,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     modelConfig.reinfectionMode = reinfectMode[0];
     modelConfig.compartmentSamplingMode = COMPARTMENT_METROPOLIS_SAMPLER;
     modelConfig.parameterSamplingMode = PARAMETER_JOINT_METROPOLIS_SAMPLER;
-    modelConfig.indexLength = std::floor(0.25*(*(xPrsArgs.inRow_x))); // Update 25% per iteration. 
+    modelConfig.indexLength = std::floor(0.25*compartmentDimensions[0]*compartmentDimensions[1]); // Update 25% per iteration. 
+    Rcpp::Rcout << "Setting index length to be: " << (modelConfig.indexLength) << "\n";
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];
