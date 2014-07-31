@@ -113,8 +113,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-#documentCompilationMode = "release"
-documentCompilationMode = "debug"
+documentCompilationMode = "release"
+#documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
@@ -603,7 +603,7 @@ end.rcode-->
 for (i in 1:length(SEIRmodels))
 {
     cat(paste("Burning in tuning params for chain ", i, "\n", sep =""))
-    SEIRmodels[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
+    #SEIRmodels[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
     runSimulation(SEIRmodels[[i]])
     SEIRmodels[[i]]$simulate(1000)
     SEIRmodels[[i]]$printAcceptanceRates()
@@ -1201,7 +1201,7 @@ SEIRmodels.spline[[1]]$setTrace(2) #Sierra Leone
 for (i in 1:length(SEIRmodels.spline))
 {
     cat(paste("Burning in chain ", i, "\n", sep =""))
-    SEIRmodels.spline[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
+    #SEIRmodels.spline[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
     runSimulation(SEIRmodels.spline[[i]])
     SEIRmodels.spline[[i]]$simulate(1000)
     SEIRmodels.spline[[i]]$printAcceptanceRates()
@@ -1492,7 +1492,8 @@ end.rcode-->
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 <br/>
 <p>
-As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Even so, the current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out. The next few weeks will be critical in falsifying or validating this tentative prediction, and as a result providing a demonstration of the benefits and potential drawbacks of the application of simple temporal modeling to complex international health problems.</p> <br/>
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Unfortunately, the most recent data had a fairly pronounced effect on the variability of these estimates. From early July through the data released on the 23rd, the models predicted a temporary continuation of epidemic activity followed by a decrease into the fall. While these predictions are still encompased by the observed variability, the situation on the ground is clearly evolving quickly. The current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out, but our best predictions no longer place a high weight on such a possibility. The next few weeks are likely to be highly dynamic, and will hopefully narrow down the large space of probable epidemic patterns. In the meantime, we may hope for the best for the people of West Africa, and support the efforts of governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> <br/>
+
 
 <p>
 That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> 
