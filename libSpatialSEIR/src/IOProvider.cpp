@@ -35,6 +35,21 @@ namespace SpatialSEIR
         std::cout << "Warning: you may be requesting a LOT of data.\n";
         int i;
         int nTpts = *((*context) -> S_star -> nrow);
+        unsigned int j;
+        bool alreadyTraced = false;
+        for (j = 0; j < locationTraces -> size(); j++)
+        {
+            if (((*locationTraces)[j]) -> locationIndex == locationIndex)
+            {
+                alreadyTraced = true;
+            }
+        }
+        if (!alreadyTraced)
+        {
+            LocationTrace* newTrace = new LocationTrace();
+            (newTrace -> locationIndex) = locationIndex;
+            (*locationTraces).push_back(newTrace); 
+        }
         for (i = 0; i < nTpts; i++)
         {
             setTrace(locationIndex, i);
@@ -65,6 +80,8 @@ namespace SpatialSEIR
 
         while ((timeLocationTraces -> size() != 0)){delete timeLocationTraces -> back(); timeLocationTraces -> pop_back();}
         delete timeLocationTraces;
+        while ((locationTraces -> size() != 0)){delete locationTraces -> back(); locationTraces -> pop_back();}
+        delete locationTraces;
         delete startTime;
         delete timer;
         delete iterationStride;
@@ -79,6 +96,7 @@ namespace SpatialSEIR
     {
         context = new ModelContext*;
         timeLocationTraces = new std::vector<TimeLocationTrace*>();
+        locationTraces = new std::vector<LocationTrace*>();
         iterationStride = new int;
         outFilePath = new std::string; 
         *context = _context; 
@@ -157,17 +175,28 @@ namespace SpatialSEIR
         // Write gamma_ir header
         (*outFileStream) << "gamma_ir" << ",";
 
-        // Write header for any time-location traces 
-       
+
+        unsigned int nTpts = *((*context) -> S_star -> nrow);
+        for (i = 0; i < nTpts; i++)
+        {
+            (*outFileStream)  << "P_RS_" << i << ", ";
+        }
+
+        // Write header for any location and time-location traces 
+        LocationTrace lTrace; 
         TimeLocationTrace tlTrace;
+        for (i = 0; i < locationTraces -> size(); i++)
+        {
+            lTrace = (*((*locationTraces)[i]));
+            (*outFileStream)  << "S0_" << lTrace.locationIndex << ", ";
+            (*outFileStream)  << "E0_" << lTrace.locationIndex << ", ";
+            (*outFileStream)  << "I0_" << lTrace.locationIndex << ", ";
+            (*outFileStream)  << "R0_" << lTrace.locationIndex << ", ";
+        }
         for (i = 0; i < timeLocationTraces -> size(); i++)
         {
-           tlTrace = (*(*timeLocationTraces)[i]); 
+           tlTrace = (*((*timeLocationTraces)[i])); 
 
-           (*outFileStream)  << "S0_" << tlTrace.locationIndex << ", ";
-           (*outFileStream)  << "E0_" << tlTrace.locationIndex << ", ";
-           (*outFileStream)  << "I0_" << tlTrace.locationIndex << ", ";
-           (*outFileStream)  << "R0_" << tlTrace.locationIndex << ", ";
            (*outFileStream)  << "S_" << tlTrace.locationIndex << "_" << tlTrace.timeIndex << ", ";
            (*outFileStream)  << "E_" << tlTrace.locationIndex << "_" << tlTrace.timeIndex << ", ";
            (*outFileStream)  << "I_" << tlTrace.locationIndex << "_" << tlTrace.timeIndex << ", ";
@@ -177,7 +206,6 @@ namespace SpatialSEIR
            (*outFileStream)  << "I_star_" << tlTrace.locationIndex << "_" << tlTrace.timeIndex << ", ";
            (*outFileStream)  << "R_star_" << tlTrace.locationIndex << "_" << tlTrace.timeIndex << ", ";
            (*outFileStream)  << "P_SE_" << tlTrace.locationIndex << "_" << tlTrace.timeIndex << ", ";
-           (*outFileStream)  << "P_RS_" << tlTrace.timeIndex << ", ";
         }
 
         (*outFileStream) << "Iteration,Time\n";
@@ -224,18 +252,35 @@ namespace SpatialSEIR
         // Write gamma_ir
         (*outFileStream) << *((*context) -> gamma_ir) << ",";        
 
+        unsigned int nTpts = *((*context) -> S_star -> nrow);
+        for (i = 0; i < nTpts; i++)
+        {
+           (*outFileStream)  << ((*context) -> p_rs)[i] << ", ";
+        }
+
+
+
+        LocationTrace lTrace; 
+        TimeLocationTrace tlTrace;
+
+        for (i = 0; i < locationTraces -> size(); i++)
+        {
+            lTrace = (*(*locationTraces)[i]);
+
+            (*outFileStream)  << ((*context) -> A0 -> S0)[lTrace.locationIndex] << ", ";
+            (*outFileStream)  << ((*context) -> A0 -> E0)[lTrace.locationIndex] << ", ";
+            (*outFileStream)  << ((*context) -> A0 -> I0)[lTrace.locationIndex] << ", ";
+            (*outFileStream)  << ((*context) -> A0 -> R0)[lTrace.locationIndex] << ", ";
+        }
+
+
+
         // Write any time-location traces 
        
-        TimeLocationTrace tlTrace;
+
         for (i = 0; i < timeLocationTraces -> size(); i++)
         {
-           tlTrace = *((*timeLocationTraces)[i]); 
-
-        
-           (*outFileStream)  << ((*context) -> A0 -> S0)[tlTrace.locationIndex] << ", ";
-           (*outFileStream)  << ((*context) -> A0 -> E0)[tlTrace.locationIndex] << ", ";
-           (*outFileStream)  << ((*context) -> A0 -> I0)[tlTrace.locationIndex] << ", ";
-           (*outFileStream)  << ((*context) -> A0 -> R0)[tlTrace.locationIndex] << ", ";
+           tlTrace = *((*timeLocationTraces)[i]);  
            (*outFileStream)  << ((*context) -> S -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
            (*outFileStream)  << ((*context) -> E -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
            (*outFileStream)  << ((*context) -> I -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
@@ -245,8 +290,6 @@ namespace SpatialSEIR
            (*outFileStream)  << ((*context) -> I_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
            (*outFileStream)  << ((*context) -> R_star -> data)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
            (*outFileStream)  << ((*context) -> p_se)[tlTrace.locationIndex*nTpt + tlTrace.timeIndex] << ", ";
-           (*outFileStream)  << ((*context) -> p_rs)[tlTrace.timeIndex] << ", ";
-
         }
 
         (*outFileStream) << iteration << "," << difftime(time(&*timer), *startTime)  <<"\n";

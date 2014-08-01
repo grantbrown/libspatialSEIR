@@ -12,6 +12,11 @@ namespace SpatialSEIR
     //Forward declare required classes
     class ModelContext;
 
+    struct LocationTrace
+    {
+        int locationIndex;
+    };
+
     struct TimeLocationTrace
     {
         int locationIndex;
@@ -47,6 +52,7 @@ namespace SpatialSEIR
             time_t* timer;
             time_t* startTime;
             std::vector<TimeLocationTrace*> *timeLocationTraces;
+            std::vector<LocationTrace*> *locationTraces;
             std::ofstream* outFileStream;
             std::string* outFilePath;
     };
