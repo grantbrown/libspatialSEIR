@@ -4,6 +4,10 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <cblas.h>
+#include <LSS_FullConditional.hpp>
+#include <Eigen/Core>
+#include <Eigen/LU>
 
 namespace SpatialSEIR
 {
@@ -22,6 +26,8 @@ namespace SpatialSEIR
 
         X = new double[numToAlloc_x];
         Z = new double[numToAlloc_z];
+        int numVariables = (*incol_x)+(*incol_z);
+        decorrelationProjectionMatrix = new double[numVariables*numVariables];
 
         nrow_x = new int;
         ncol_x = new int;
@@ -42,7 +48,111 @@ namespace SpatialSEIR
         {
             Z[i] = indata_z[i];
         }
+        buildDecorrelationProjectionMatrix();
         return(0);
+    }
+
+    void CovariateMatrix::buildDecorrelationProjectionMatrix()
+    {
+        // There's no use parallelizing this. Even though it might be 
+        // computationally intensive, this operation only needs to be done once per 
+        // chain per covariate matrix. 
+
+        // Combine X and Z appropriately to one large covariate matrix X
+        // We want a projection onto N(X'X)
+        // C(X'X) = C(X'), so N(X'X) = N(X') because N() and C() are orthogonal compliments. 
+
+        // The projection onto the column space of X' = P(X') = (X') %*% ((XX')^(-1)) %*% (X)
+        // The projection onto the null space of X' is then I - P(X')
+
+        // The steps to compute I-P(X') are therefore:
+        // 1. Calculate A = (XX')
+        // 2. Set A = A^(-1)
+        // 3. Set A = X' %*% A
+        // 4. Set A = A %*% X
+        // 5. Set A = P(X') = I - A
+
+
+        // Step 0. Create big matrix X.  
+        int numVariables = (*ncol_x)+(*ncol_z);
+        double *bigX;
+        int matrixRows;
+        int i;
+        // Case 1: X matrix only, time varying. 
+        if (*nrow_z == 0)
+        {
+            matrixRows = *nrow_x;
+            bigX = new double[numVariables*(matrixRows)];
+            memcpy(bigX, X, numVariables*(*nrow_x)*sizeof(double));    
+        }
+        // Case 2: X and Z matrices, fixed and time varying
+        else
+        {
+            matrixRows = *nrow_z;
+            bigX = new double[numVariables*(matrixRows)];
+            memset(bigX, 0, numVariables*(*nrow_z)*sizeof(double));    
+
+            int numLoc = *nrow_x;
+            int numTpt = (*nrow_z)/numLoc;
+            int xCol, xRow;
+            int idx1, idx2;
+            // Load up fixed covariates
+            for (xCol = 0; xCol < (*ncol_x); xCol++)
+            {
+                for (xRow = 0; xRow < numLoc; xRow ++)
+                {
+                    for (i = 0; i < numTpt; i++)
+                    {
+                        idx1 = xCol*(*nrow_z) + xRow*numTpt + i;
+                        idx2 = xCol*numLoc + xRow;
+                        bigX[idx1] = X[idx2];
+                    }
+                }
+            }
+            // Load up time varying covariates
+            int zCol, zRow;
+            for (zCol = 0; zCol < (*ncol_z); zCol ++)
+            {
+                for (zRow = 0; zRow < (*nrow_z); zRow ++) 
+                {
+                    idx1 = (*ncol_x + zCol)*(*nrow_z) + zRow;
+                    idx2 = zCol*(*nrow_z) + zRow;
+                    bigX[idx1] = Z[idx2];
+                }
+            } 
+        }
+
+        // Step 1. Calculate A = (XX')
+        double* A = bigX;
+        double* B = new double[numVariables*(matrixRows)];
+        double* C = new double[(matrixRows)*(matrixRows)];
+        memcpy(B, A, numVariables*(matrixRows)*sizeof(double));
+        memset(C, 0, (matrixRows)*(matrixRows)*sizeof(double));
+        
+
+        typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> MatrixType;
+        typedef Eigen::Map<MatrixType, Eigen::ColMajor> MatrixMapType;
+
+        MatrixMapType Amap(A, matrixRows, numVariables);
+        MatrixMapType Bmap(B, matrixRows, numVariables);
+        MatrixMapType Cmap(C, matrixRows, matrixRows);
+
+        Cmap.noalias() += Amap * (Bmap.transpose());
+ 
+        // Step 2. Set A = A^(-1)
+
+        // Step 3. Set A = X' %*% A
+
+        // Step 4. Set A = A %*% X
+
+        // Step 5. Set A = P(X') = I - A
+
+
+ 
+        delete[] bigX;
+        delete[] B;
+        delete[] C;
+         
     }
 
     int CovariateMatrix::calculate_fixed_eta_CPU(double *eta, double *beta)
@@ -125,6 +235,7 @@ namespace SpatialSEIR
     {
         delete[] X;
         delete[] Z;
+        delete[] decorrelationProjectionMatrix;
         delete nrow_x;
         delete ncol_x;
         delete nrow_z;

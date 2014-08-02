@@ -25,9 +25,6 @@ namespace SpatialSEIR
     int matMult(double* output, double * A, double * B, int Arow, int Acol, 
             int Brow, int Bcol, bool TransA, bool TransB, int ldA, int ldB, int ldC)
     {
-        // Use BLAS to matrix multiply, assume column major, non transposing.
-        // Double check this code when I have internet access. 
-
         if ((TransA ? Arow : Acol) != (TransB ? Bcol : Brow))
         {
             std::cerr << "Invalid Matrix Dimensions: " << std::endl;

@@ -30,6 +30,8 @@ While a CRAN friendly version of libspatialSEIR is tentatively planned, the proj
 4. Boost random >= 1.4.9 
 5. An OpenCL distribution
 6. (preferably) R >= 3.0
+7. Eigen 3
+8. A BLAS capable library (probably to be removed once the switch to Eigen is complete)
 
 
 

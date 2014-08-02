@@ -43,10 +43,13 @@ namespace SpatialSEIR
             int calculate_eta_CPU(double *eta, double *beta);
             int calculate_eta_OCL(double *eta, double *beta); 
 
+            void buildDecorrelationProjectionMatrix();
+
             ~CovariateMatrix();
             // Attributes
             double *X; // Time invariant covariates
             double *Z; // Time varying covariates
+            double *decorrelationProjectionMatrix;
             double *offset;
             int *offsetLength;
             std::vector<std::string>* varnames;
