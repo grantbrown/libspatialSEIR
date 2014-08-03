@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 8/2/2014</h5>
+          <h5>Last Updated: 8/3/2014</h5>
         </div>
       </div>
     </div>
@@ -126,7 +126,7 @@ extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[2]]
+dat = tbls[[3]] # This line changes depending on the page formatting.
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 original.rptDate = rptDate
@@ -413,7 +413,7 @@ zDim = dim(Z)
 # Declare prior parameters for the E to I and I to R probabilities. 
 priorAlpha_gammaEI = 25;
 priorBeta_gammaEI = 100;
-priorAlpha_gammaIR = 140;
+priorAlpha_gammaIR = 14;
 priorBeta_gammaIR = 100;
 
 # Declare prior precision for exposure model paramters
