@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 7/30/2014</h5>
+          <h5>Last Updated: 8/2/2014</h5>
         </div>
       </div>
     </div>
@@ -113,11 +113,11 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-#documentCompilationMode = "release"
-documentCompilationMode = "debug"
+documentCompilationMode = "release"
+#documentCompilationMode = "debug"
 
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 300, 50)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
 extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
@@ -411,10 +411,10 @@ xDim = dim(X)
 zDim = dim(Z)
     
 # Declare prior parameters for the E to I and I to R probabilities. 
-priorAlpha_gammaEI = 250;
-priorBeta_gammaEI = 1000;
+priorAlpha_gammaEI = 25;
+priorBeta_gammaEI = 100;
 priorAlpha_gammaIR = 140;
-priorBeta_gammaIR = 1000;
+priorBeta_gammaIR = 100;
 
 # Declare prior precision for exposure model paramters
 betaPriorPrecision = 0.1
@@ -438,7 +438,7 @@ steadyStateConstraintPrecision = -1
 # iterationStride determines the delay between saving samples to the specified
 # output file As you can probably tell based on the high number chosen, 
 # autocorrelation is currently a big problem for this library
-iterationStride = 250
+iterationStride = 1000
 
 # We don't need no verbose or debug level output
 verbose = FALSE
@@ -559,7 +559,7 @@ for (seedVal in c(12345,543219,992134))
                       reinfectionMode,
                       scaleDistanceMode)
   SEIRmodels[[i]]$setRandomSeed(seedVal)
-  SEIRmodels[[i]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
+  #SEIRmodels[[i]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
   i = i + 1;
 }
 
@@ -997,10 +997,10 @@ While the basic reproductive number is a useful quantity to know, it does not di
     #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
     #       dataRow$R_1_26 + dataRow$R_star_1_26,
     #       dataRow$R_2_26 + dataRow$R_star_2_26)
-    S0 = c(dataRow$S_0_27,dataRow$S_1_27,dataRow$S_2_27)
-    E0 = c(dataRow$E_0_27,dataRow$E_1_27,dataRow$E_2_27)
-    I0 = c(dataRow$I_0_27,dataRow$I_1_27,dataRow$I_2_27)
-    R0 = c(dataRow$R_0_27,dataRow$R_1_27,dataRow$R_2_27)
+    S0 = c(dataRow$S_0_28,dataRow$S_1_28,dataRow$S_2_28)
+    E0 = c(dataRow$E_0_28,dataRow$E_1_28,dataRow$E_2_28)
+    I0 = c(dataRow$I_0_28,dataRow$I_1_28,dataRow$I_2_28)
+    R0 = c(dataRow$R_0_28,dataRow$R_1_28,dataRow$R_2_28)
     
     return(predictEpidemic(beta,  
                            X.pred,
@@ -1191,7 +1191,7 @@ for (seedVal in c(12345,543219,992134))
                       reinfectionMode,
                       scaleDistanceMode)
   SEIRmodels.spline[[i-3]]$setRandomSeed(seedVal)
-  SEIRmodels.spline[[i-3]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
+  #SEIRmodels.spline[[i-3]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
   i = i + 1;
 }
 
