@@ -10,10 +10,16 @@
 #ifndef MODEL_CONTEXT_INC
 #define MODEL_CONTEXT_INC
 
+#include<Eigen/Core>
 namespace SpatialSEIR
 {
     using std::cout;
     using std::endl;
+
+    typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> DoubleMatrixType;
+    typedef Eigen::Map<DoubleMatrixType, Eigen::ColMajor> DoubleMatrixMapType;
+    typedef Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> IntMatrixType;
+    typedef Eigen::Map<IntMatrixType, Eigen::ColMajor> IntMatrixMapType;
 
     class FullConditional;
     class IterationTask;

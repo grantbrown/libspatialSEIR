@@ -12,6 +12,7 @@
 
 #ifndef COMPARTMENTAL_MODEL_MATRIX_INC
 #define COMPARTMENTAL_MODEL_MATRIX_INC
+#include<ModelContext.hpp>
 
 namespace SpatialSEIR
 {
@@ -31,7 +32,6 @@ namespace SpatialSEIR
         public:
             // Methods
             
-            int genFromText(std::string filename);
             int genFromDataStream(int *indata, int *inrow, int *incol);
             int createEmptyCompartment(int *inrow, int *incol);
             long unsigned int marginSum(int margin, int slice);
@@ -42,9 +42,8 @@ namespace SpatialSEIR
             int *data;
             int *nrow;
             int *ncol;
+            IntMatrixMapType* dataMatrix;
 
-        private:
-            int readDataFile(const char fn[]);
     };
 }
 
