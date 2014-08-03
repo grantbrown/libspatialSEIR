@@ -13,6 +13,8 @@
 #include<vector>
 #endif
 
+#ifdef ENABLE_OPEN_CL
+
 #include <CL/cl.hpp>
 #include <ModelContext.hpp>
 #include <clBLAS.h>
@@ -114,5 +116,46 @@ namespace SpatialSEIR
             cl::CommandQueue* gpuQueue;
     };
 }
+
+#endif
+
+
+#ifndef ENABLE_OPEN_CL
+
+namespace SpatialSEIR
+{
+    using std::cout;
+    using std::endl;
+
+    class OCLProvider
+    {
+        public:  
+            //Methods 
+            OCLProvider();
+            void setDevice(int platformId, int deviceId);
+            void printSummary();
+
+            ~OCLProvider();
+
+            // FC Methods
+            int test(); 
+            double FC_R_Star(int nLoc, 
+                             int nTpts,
+                             int* S_star,
+                             int* E_star,
+                             int* R_star,
+                             int* S,
+                             int* I,
+                             int* R,
+                             double* p_se,
+                             double* p_rs,
+                             double* p_ir);
+
+            void calculateP_SE(ModelContext* ctx);
+    };
+}
+
+
+#endif
 
 #endif

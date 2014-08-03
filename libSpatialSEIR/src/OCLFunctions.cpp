@@ -2,6 +2,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #endif
 
+#ifdef ENABLE_OPEN_CL
+
 #include <CL/cl.hpp>
 #include <cmath>
 #include <cblas.h>
@@ -515,4 +517,6 @@ namespace SpatialSEIR
     }
 
 }
+
+#endif
 

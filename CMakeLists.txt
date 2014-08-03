@@ -1,27 +1,46 @@
 cmake_minimum_required(VERSION 2.8.7)
 
+####################################
+## General Configuration Options  ##
+####################################
+
+
+# Compile libspatialSEIR with OpenCL support?
+SET(OPEN_CL_SUPPORT false)
+
+# libspatialSEIR requires the eigen3 library, so here we must 
+# specify the location. 
+# TODO: Add platform specific logic here to handle default eigen location
+SET(EIGEN3_INCLUDE_DIR "/usr/local/include/eigen3")
 
 project(libSpatialSEIR)
-include(ExternalProject)
-ExternalProject_Add(clBLAS
-                    SOURCE_DIR "${CMAKE_SOURCE_DIR}/clBLAS/src"
-                    BUILD_COMMAND make
-                    UPDATE_COMMAND ""
-                    INSTALL_DIR lib
-                    )
 
-install (FILES "${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so"
-               "${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2"
-               "${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2.1.0"
-               DESTINATION lib)
+if (OPEN_CL_SUPPORT)
+    add_definitions( -DENABLE_OPEN_CL="true" )
+    include(ExternalProject)
+    ExternalProject_Add(clBLAS
+                        SOURCE_DIR "${CMAKE_SOURCE_DIR}/clBLAS/src"
+                        BUILD_COMMAND make
+                        UPDATE_COMMAND ""
+                        INSTALL_DIR lib
+                        )
+
+    install (FILES "${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so"
+                   "${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2"
+                   "${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2.1.0"
+                   DESTINATION lib)
+endif()
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
+
+## Configure Boost
 set(Boost_USE_STATIC_LIBS OFF) 
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
 find_package(Boost 1.49.0 COMPONENTS random REQUIRED) 
 
+## Configure BLAS
 set(BLA_STATIC OFF)
 find_package(BLAS)
 if (BLAS_FOUND)
@@ -32,8 +51,9 @@ else()
     message("Error: Blas not found.")
 endif()
 
-set(SpatialSEIR_Boost_LIBRARIES   )
-set(SpatialSEIR_Boost_INCLUDE_DIRS   )
+## Require Boost Message
+set(SpatialSEIR_Boost_LIBRARIES)
+set(SpatialSEIR_Boost_INCLUDE_DIRS)
 if(Boost_FOUND)
 	set(SpatialSEIR_Boost_LIBRARIES ${Boost_LIBRARIES})
 	set(SpatialSEIR_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
@@ -52,9 +72,7 @@ include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS"
                     "."
 					"${SpatialSEIR_Boost_INCLUDE_DIRS}"
-                    )
-
-
+                    "${EIGEN3_INCLUDE_DIR}")
 
 add_library(SpatialSEIR SHARED 
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/RandomNumberProvider.cpp"
@@ -125,32 +143,30 @@ add_library(SpatialSEIR SHARED
     "${BLAS_LIBRARIES}"
 	)
 
-add_library(CLBLAS1 SHARED IMPORTED)
-add_library(CLBLAS2 SHARED IMPORTED)
-add_library(CLBLAS3 SHARED IMPORTED)
-set_property(TARGET CLBLAS1 PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so)
-set_property(TARGET CLBLAS2 PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2)
-set_property(TARGET CLBLAS3 PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2.1.0)
+if (OPEN_CL_SUPPORT)
+    add_library(CLBLAS1 SHARED IMPORTED)
+    add_library(CLBLAS2 SHARED IMPORTED)
+    add_library(CLBLAS3 SHARED IMPORTED)
+    set_property(TARGET CLBLAS1 PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so)
+    set_property(TARGET CLBLAS2 PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2)
+    set_property(TARGET CLBLAS3 PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/clBLAS-prefix/src/clBLAS-build/package/lib64/libclBLAS.so.2.1.0)
 
-target_link_libraries(SpatialSEIR CLBLAS1)
-target_link_libraries(SpatialSEIR CLBLAS2)
-target_link_libraries(SpatialSEIR CLBLAS3)
+    target_link_libraries(SpatialSEIR CLBLAS1)
+    target_link_libraries(SpatialSEIR CLBLAS2)
+    target_link_libraries(SpatialSEIR CLBLAS3)
 
-add_dependencies(SpatialSEIR clBLAS1)
-add_dependencies(SpatialSEIR clBLAS2)
-add_dependencies(SpatialSEIR clBLAS3)
-add_dependencies(CLBLAS1 clBLAS)
-add_dependencies(CLBLAS2 clBLAS)
-add_dependencies(CLBLAS3 clBLAS)
+    add_dependencies(SpatialSEIR clBLAS1)
+    add_dependencies(SpatialSEIR clBLAS2)
+    add_dependencies(SpatialSEIR clBLAS3)
+    add_dependencies(CLBLAS1 clBLAS)
+    add_dependencies(CLBLAS2 clBLAS)
+    add_dependencies(CLBLAS3 clBLAS)
 
-
-
-
+endif()
 
 add_definitions( -DLSS_KERNEL_DIRECTORY="${CMAKE_BINARY_DIR}/libSpatialSEIR_Kernels/" )
 
 install (TARGETS SpatialSEIR DESTINATION lib)
-
 install (FILES 
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/RandomNumberProvider.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures/CompartmentalModelMatrix.hpp"

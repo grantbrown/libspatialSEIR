@@ -1,14 +1,16 @@
 #define __CL_ENABLE_EXCEPTIONS
 
-#include <CL/cl.hpp>
-#include <OCLProvider.hpp>
 #include<iostream>
 #include<fstream>
 #include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
+#include <ModelContext.hpp>
+#include <OCLProvider.hpp>
 
+#ifdef ENABLE_OPEN_CL
+#include <CL/cl.hpp>
 
 SpatialSEIR::DeviceContainer::DeviceContainer(cl::Device *inDevice, cl::Context *inContext)
 {
@@ -335,6 +337,58 @@ cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFil
 
     return(kernels[0]);
 }
+#endif
+#ifndef ENABLE_OPEN_CL
 
+SpatialSEIR::OCLProvider::OCLProvider()
+{
+    // Do Nothing
+}
+
+void SpatialSEIR::OCLProvider::setDevice(int platformId, int deviceId)
+{
+    std::cout << "OpenCL not supported.\n";
+    throw(-1);
+}
+
+void SpatialSEIR::OCLProvider::printSummary()
+{
+    std::cout << "OpenCL not supported.\n";
+    throw(-1);
+}
+
+int SpatialSEIR::OCLProvider::test()
+{
+    std::cout << "OpenCL not supported.\n";
+    throw(-1);
+}
+
+double SpatialSEIR::OCLProvider::FC_R_Star(int nLoc, int nTpts, int* S_star, 
+                                    int* E_star, int* R_star, int* S,
+                                    int* I, int* R, double* p_se,
+                                    double* p_rs, double* p_ir)
+{
+    std::cout << "OpenCL not supported.\n";
+    throw(-1);
+}
+
+void SpatialSEIR::OCLProvider::calculateP_SE(ModelContext* ctx)
+{
+    std::cout << "OpenCL not supported.\n";
+    throw(-1);
+}
+
+SpatialSEIR::OCLProvider::~OCLProvider()
+{
+    // Do nothing
+}
+
+
+
+
+
+
+
+#endif
 
 
