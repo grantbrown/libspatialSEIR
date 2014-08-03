@@ -117,7 +117,7 @@ documentCompilationMode = "release"
 #documentCompilationMode = "debug"
 
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 300, 50)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 50)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
 extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
@@ -411,10 +411,10 @@ xDim = dim(X)
 zDim = dim(Z)
     
 # Declare prior parameters for the E to I and I to R probabilities. 
-priorAlpha_gammaEI = 25;
-priorBeta_gammaEI = 100;
-priorAlpha_gammaIR = 14;
-priorBeta_gammaIR = 100;
+priorAlpha_gammaEI = 250;
+priorBeta_gammaEI = 1000;
+priorAlpha_gammaIR = 140;
+priorBeta_gammaIR = 1000;
 
 # Declare prior precision for exposure model paramters
 betaPriorPrecision = 0.1
@@ -1494,7 +1494,9 @@ end.rcode-->
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 <br/>
 <p>
-As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Unfortunately, the most recent data had a fairly pronounced effect on the variability of these estimates. From early July through the data released on the 23rd, the models predicted a temporary continuation of epidemic activity followed by a decrease into the fall. While these predictions are still encompased by the observed variability, the situation on the ground is clearly evolving quickly. The current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out, but our best predictions no longer place a high weight on such a possibility. The next few weeks are likely to be highly dynamic, and will hopefully narrow down the large space of probable epidemic patterns. In the meantime, we may hope for the best for the people of West Africa, and support the efforts of governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> <br/>
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Unfortunately, the most recent data had a fairly pronounced effect on the variability of these estimates. From early July through the data released on the 23rd, the models predicted a temporary continuation of epidemic activity followed by a decrease into the fall. While the predictions for the near future have not changed much, the situation on the ground is clearly evolving quickly. The report released on the 27th of June opened up the range of probable epidemic trends to include increases and decreases in infection activity, and the data released on the 30th appears to place a higher weight of probability on worsening epidemic behavior for the forseeable future (especially in Liberia). <br/>
+
+On the other hand, it's important to keep in mind that these simple models don't have any mechanism with which to capture the impact of current and future public health interventions, which is particularly important given recent developments on that front. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> <br/>
 
 
 <p>
