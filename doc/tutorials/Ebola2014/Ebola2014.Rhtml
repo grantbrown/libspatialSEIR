@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 7/30/2014</h5>
+          <h5>Last Updated: 8/3/2014</h5>
         </div>
       </div>
     </div>
@@ -95,7 +95,7 @@
         <h3>The Outbreak</h3>
         </a>
           <p>
-          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Gunea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, to our knowledge there aren't any specific predicitons about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of epidemic forecasts, this document explores a simple spatial SEIR model to make some initial predictions. 
+          The 2014 Ebola outbreak in West Africa is an ongoing public health crisis, which has killed hundreds of people so far. The cross-border nature of this epidemic, which has emerged in Guinea, Liberia and Sierra Leone has complicated mitigation efforts, as has the poor health infrastructure in the region. While there has been much analysis and speculation about the factors at play in the spread of the virus, to our knowledge there aren't any specific predictions about the expected duration and severity of this particular epidemic. In the (certainly temporary) absence of epidemic forecasts, this document explores a simple spatial SEIR model to make some initial predictions. 
           </p>
           <a id="intro-data-sect" class="anchor">
         <h3>The Data</h3>
@@ -117,7 +117,7 @@ documentCompilationMode = "release"
 #documentCompilationMode = "debug"
 
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 50)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
 extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
@@ -126,7 +126,7 @@ extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[3]]
+dat = tbls[[3]] # This line changes depending on the page formatting.
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 original.rptDate = rptDate
@@ -212,7 +212,7 @@ figure2 = function()
     par(bty="n")
     par(xpd=TRUE)
     plot(c(0,10),c(0,10), type = "n", main  ="",xlab="",ylab="")
-    legend(x=-2,y=10, legend = c("Gunea", "Liberia", "Sierra Leone"), lty = 1:3,lwd=2, 
+    legend(x=-2,y=10, legend = c("Guinea", "Liberia", "Sierra Leone"), lty = 1:3,lwd=2, 
            col = c("black", "blue", "red"))
     par(xpd=FALSE)
     par(xaxt="s")
@@ -295,7 +295,7 @@ end.rcode-->
       <h3>Compartmental Models</h3>
       </a>
       <p>
-        Now that the data is read in (and now that we have several plots to suggest that we haven't done anything to terribly stupid with it)
+        Now that the data is read in (and now that we have several plots to suggest that we haven't done anything too terribly stupid with it)
         , let's do some compartmental epidemic modeling. Not only has Ebola been <a href="http://www.ncbi.nlm.nih.gov/pubmed/17156292">well modeled in the past</a> using compartmental modeling techniques, but this author happens to be working on a software library designed to fit compartmental models in the spatial SEIRS family. What a strange coincidence! Specifically, we'll be using heirarchical Bayesian estimation methods to fit a spatial SEIR model to the data.  
         </p>
         <br/>
@@ -438,7 +438,7 @@ steadyStateConstraintPrecision = -1
 # iterationStride determines the delay between saving samples to the specified
 # output file As you can probably tell based on the high number chosen, 
 # autocorrelation is currently a big problem for this library
-iterationStride = 250
+iterationStride = 1000
 
 # We don't need no verbose or debug level output
 verbose = FALSE
@@ -559,6 +559,7 @@ for (seedVal in c(12345,543219,992134))
                       reinfectionMode,
                       scaleDistanceMode)
   SEIRmodels[[i]]$setRandomSeed(seedVal)
+  #SEIRmodels[[i]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
   i = i + 1;
 }
 
@@ -996,10 +997,10 @@ While the basic reproductive number is a useful quantity to know, it does not di
     #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
     #       dataRow$R_1_26 + dataRow$R_star_1_26,
     #       dataRow$R_2_26 + dataRow$R_star_2_26)
-    S0 = c(dataRow$S_0_27,dataRow$S_1_27,dataRow$S_2_27)
-    E0 = c(dataRow$E_0_27,dataRow$E_1_27,dataRow$E_2_27)
-    I0 = c(dataRow$I_0_27,dataRow$I_1_27,dataRow$I_2_27)
-    R0 = c(dataRow$R_0_27,dataRow$R_1_27,dataRow$R_2_27)
+    S0 = c(dataRow$S_0_28,dataRow$S_1_28,dataRow$S_2_28)
+    E0 = c(dataRow$E_0_28,dataRow$E_1_28,dataRow$E_2_28)
+    I0 = c(dataRow$I_0_28,dataRow$I_1_28,dataRow$I_2_28)
+    R0 = c(dataRow$R_0_28,dataRow$R_1_28,dataRow$R_2_28)
     
     return(predictEpidemic(beta,  
                            X.pred,
@@ -1107,7 +1108,7 @@ end.rcode-->
 figure7()
 end.rcode-->
 
-<p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. The behavior of the epidemic so far does not support these large swings in epidemic behavior, so we can be fairly certain that these long term predictions are extrapolation errors. Analysis 2 will consider the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
+<p>It looks like our worries about polynomial basis functions were well founded. While these predictions are likely acceptable for several days or weeks after the currently available data, they clearly become dominated by higher order polynomial terms as time goes on. The behavior of the epidemic so far does not support these large swings in infection counts, so we can be fairly certain that these long term predictions are extrapolation errors. Analysis 2 will consider the results of using a natural spline basis for this process instead. Spline bases extrapolate linearly, and so are less prone to extreme extrapolation errors. 
 </p><br/>
     </div>
     <div class="col-sm-1">
@@ -1190,6 +1191,7 @@ for (seedVal in c(12345,543219,992134))
                       reinfectionMode,
                       scaleDistanceMode)
   SEIRmodels.spline[[i-3]]$setRandomSeed(seedVal)
+  #SEIRmodels.spline[[i-3]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
   i = i + 1;
 }
 
@@ -1492,7 +1494,9 @@ end.rcode-->
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 <br/>
 <p>
-As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Unfortunately, the most recent data had a fairly pronounced effect on the variability of these estimates. From early July through the data released on the 23rd, the models predicted a temporary continuation of epidemic activity followed by a decrease into the fall. While these predictions are still encompased by the observed variability, the situation on the ground is clearly evolving quickly. The current evidence is <i>not inconsistent</i> with the possibility that the disease will soon start the slow process of dying out, but our best predictions no longer place a high weight on such a possibility. The next few weeks are likely to be highly dynamic, and will hopefully narrow down the large space of probable epidemic patterns. In the meantime, we may hope for the best for the people of West Africa, and support the efforts of governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> <br/>
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Unfortunately, the most recent data had a fairly pronounced effect on the variability of these estimates. From early July through the data released on the 23rd, the models predicted a temporary continuation of epidemic activity followed by a decrease into the fall. While the predictions for the near future have not changed much, the situation on the ground is clearly evolving quickly. The report released on the 27th of June opened up the range of probable epidemic trends to include increases and decreases in infection activity, and the data released on the 30th appears to place a higher weight of probability on worsening epidemic behavior for the forseeable future (especially in Liberia). <br/>
+
+On the other hand, it's important to keep in mind that these simple models don't have any mechanism with which to capture the impact of current and future public health interventions, which is particularly important given recent developments on that front. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> <br/>
 
 
 <p>
