@@ -61,7 +61,7 @@ namespace SpatialSEIR
 
         if (! std::isfinite(initVal))
         {
-            std::cerr << "Compartment sampler starting from value of zero probability.\n";
+            std::cerr << "Parameter sampler starting from value of zero probability.\n";
             throw(-1);
         }
         for (i = 0; i < totalPoints; i++)
