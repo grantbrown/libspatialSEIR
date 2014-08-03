@@ -1,0 +1,10 @@
+PKG_CPPFLAGS=-I/usr/local/include/eigen3 ./LSS/include ./LSS/include/DataStructures ./LSS/include/FullConditionals 
+
+SOURCES=$(wildcard LSS/src/*.cpp LSS/src/FullConditionals/*.cpp LSS/src/IterationTasks/*.cpp LSS/src/Samplers/*/*.cpp ./*.cpp)
+
+OBJECTS = $(SOURCES:.cpp=.o)
+
+all: $(SHLIB)
+
+clean:
+	@rm -f $(OBJECTS)
