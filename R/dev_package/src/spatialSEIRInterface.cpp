@@ -12,6 +12,15 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
+struct LSSCout {};
+extern LSSCout lssCout;
+
+template <typename T>
+    LSSCout& operator<< (LSSCout &s, const T &x){
+        Rcpp::Rcout << x;
+        return s;
+    }
+
 class spatialSEIRInterface
 {
 
