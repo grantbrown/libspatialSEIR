@@ -1,0 +1,527 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>2014 Ebola Epidemic</title>
+    <link href="./bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/ebola.css" rel="stylesheet">
+    
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://grantbrown.github.io/libspatialSEIR/">libspatialSEIR</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="#toc-section-anchor">TOC</a></li>
+            <li><a href="http://grantbrown.github.io/libspatialSEIR/doc/tutorials/Ebola2014/Ebola2014.html">Initial Analyses</a></li>
+            <li><a href="http://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology">Compartmental Models</a></li>
+            <li><a href="http://en.wikipedia.org/wiki/2014_Guinea_Ebola_outbreak">More on the Outbreak</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  
+  
+    <div id = "title-section" class = "container">
+      <div class="row">
+        <div class="col-sm-12">
+          <h1>Estimating and Predicting Epidemic Behavior for the 2014 West African Ebola Outbreak</h1>
+          <h4>A Quick Stochastic Spatial SEIR Modeling Approach - Prediction Performance so Far</h4>
+          <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
+          <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
+          <h5>Last Updated: 8/4/2014</h5>
+        </div>
+      </div>
+    </div>
+    <a id="toc-section-anchor" class="anchor"></a>
+    <div id="toc-section" class="container">
+      <h2>Table of Contents</h2>
+      <div class = "row">
+        <div class="col-sm-11 col-sm-offset-1">
+          <ol>
+            <li><a href="#introduction-sect">Introduction</a></li>
+            <li><a href="#analysis-1-sect">Analyses</a></li>
+            <li><a href="#conclusions-sect">Conclusions</a></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <a id="introduction-sect" class="anchor">
+      <h2>Introduction</h2>
+      </a>
+      <div class="row">
+        <div class = "col-sm-10 col-sm-offset-1">
+        
+<button class="btn btn-default code-button">Show/Hide Code Block</button>
+<div class="code-and-output-block" style="display:none">
+<!--begin.rcode
+library(coda) # Load the coda library for MCMC convergence diagnosis
+library(spatialSEIR) # Load the spatialSEIR library to perform the modeling. 
+library(XML) # Load the XML library to read in data from Wikipedia
+library(splines) # Load the splines library to build the temporal basis. 
+
+
+############################################
+## Define Document Compilation Parameters ##
+############################################
+
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
+
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 50)
+convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
+extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
+
+url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
+tbls = readHTMLTable(url)
+dat = tbls[[3]] # This line changes depending on the page formatting.
+
+rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
+original.rptDate = rptDate
+ascendingOrder = order(rptDate)
+rptDate = rptDate[ascendingOrder][2:length(rptDate)]
+original.rptDate = original.rptDate[ascendingOrder]
+Guinea = as.numeric(as.character(dat$V4[2:nrow(dat)]))[ascendingOrder]
+Guinea = ifelse(is.na(Guinea), 0, Guinea)
+Liberia = as.numeric(as.character(dat$V6[2:nrow(dat)]))[ascendingOrder]
+Liberia = ifelse(is.na(Liberia), 0, Liberia)
+Sierra.Leone = as.numeric(as.character(dat$V8[2:nrow(dat)]))[ascendingOrder]
+Sierra.Leone = ifelse(is.na(Sierra.Leone), 0,Sierra.Leone)
+
+uncumulate = function(x)
+{
+    out = c(x[2:length(x)]-x[1:(length(x)-1)])
+    ifelse(out >= 0, out, 0)
+}
+
+
+makePrediction = function(maxIdx, seedVal=123123)
+{
+  # Define the data matrix. 
+  I_star = cbind(uncumulate(Guinea[1:maxIdx]), 
+                 uncumulate(Liberia[1:maxIdx]), 
+                 uncumulate(Sierra.Leone[1:maxIdx]))
+  
+  # Define the temporal offset vector to be the number of days reflected in each 
+  # aggregated record (time between reports).
+  offsets = uncumulate(original.rptDate[1:maxIdx])
+  rptDate_sub = rptDate[2:maxIdx]
+  
+  # Define the simple "distance" matrix. There are 3 countries, all of which 
+  # share borders. Therefore we simply define a 3x3 matrix with zero diagonals 
+  # and 0.5 for the off diagonal values. 0.5 is used instead of 1 because
+  # this normalized choice makes the matrix row stochastic, which makes the gods 
+  # of proper posterior distributions happy. 
+  DM = 0.5*(1-diag(3))
+  
+  # Define population sizes for the three countries of interest. This data also 
+  # from Wikipedia. 
+  
+  # Guinea, Liberia, Sierra Leone
+  N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, 
+             byrow=TRUE)
+  
+  # Currently, the fixed and time varying co-variates driving the exposure 
+  # process must be specified separately This saves computer memory, but 
+  # makes things a bit more complicated. I might change this at some point. 
+  
+  # For the fixed covariates, just fit a separate intercept for each location. 
+  X = diag(3)
+    
+  # For the time varying covariates, we first need to define a temporal index
+  daysSinceJan = as.numeric(rptDate_sub - as.Date("2014-01-01"))
+  daysSinceJan_whole = as.numeric(rptDate - as.Date("2014-01-01"))
+  
+  daysSinceJan.predict = c(daysSinceJan_whole[(length(daysSinceJan)+2):length(daysSinceJan_whole)], max(daysSinceJan_whole) 
+                           + seq(10,60,10))
+  
+  splineBasis = ns(daysSinceJan, df = 3)
+  splineBasis.predict = predict(splineBasis, daysSinceJan.predict)
+  
+  # Guinea, Liberia, Sierra Leone
+  N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, 
+             byrow=TRUE)
+  
+  X.predict = cbind(diag(3))
+  Z = splineBasis
+  Z.predict = splineBasis.predict
+  
+  # These co-variates are the same for each spatial location, 
+  # so duplicate them row-wise. 
+  Z = Z[rep(1:nrow(Z), nrow(X)),]
+  Z.predict = Z.predict[rep(1:nrow(Z.predict), nrow(X)),]
+  
+  # For convenience, let's combine X and Z for prediction.
+  X.pred = cbind(X.predict[rep(1:nrow(X.predict), 
+                               each = nrow(Z.predict)/nrow(X)),], Z.predict)
+  # Define prediction offsets. 
+  offset.pred = uncumulate(c(daysSinceJan[length(daysSinceJan)], daysSinceJan.predict))
+    
+  # There's no reinfection process for Ebola, but we still need to provide dummy
+  # values for the reinfection terms. This will be changed (along with most of 
+  # the R level API) Dummy covariate matrix:
+  X_p_rs = matrix(0)
+  # Dummy covariate matrix dimension. Why, exactly, am I not just grabbing this 
+  # kind of thing from Rcpp? No good reason at all: this will be fixed. 
+  xPrsDim = dim(X_p_rs)
+  # Dummy value for reinfection params
+  beta_p_rs = rep(0, ncol(X_p_rs))
+  # Dummy value for reinfection params prior precision
+  betaPrsPriorPrecision = 0.5
+  
+  # Get object dimensions. Again, this will be done automatically in the future
+  compMatDim = dim(I_star)
+  xDim = dim(X)
+  zDim = dim(Z)
+      
+  # Declare prior parameters for the E to I and I to R probabilities. 
+  priorAlpha_gammaEI = 250;
+  priorBeta_gammaEI = 1000;
+  priorAlpha_gammaIR = 140;
+  priorBeta_gammaIR = 1000;
+  
+  # Declare prior precision for exposure model paramters
+  betaPriorPrecision = 0.1
+  
+  # Set the reinfection mode to 3, which indicates that S_star, or the newly 
+  # susceptibles, must remain zero. People are very unlikely to get ebola twice.
+  # How were you to know that "3" denotes a traditional SEIR model as opposed to
+  # a serial SEIR or SEIRS model? No good reason at all, actually. The planned R 
+  # API will make the distinction between SEIRmodel SEIRSmodel and 
+  # SerialSEIRmodel objects, so in the future you won't have to worry about this
+  # unless you're digging into the c++ code. 
+  reinfectionMode = 3
+  
+  # steadyStateConstraintPrecision is a loose constraint on net flows
+  # between compartments. Setting it to a negative value eliminates
+  # the constraint, but it can help with identifiability in cases where 
+  # there should be a long term equilibrium (endemic disease, for example).
+  # We do not need this parameter here. 
+  steadyStateConstraintPrecision = -1
+  
+  # iterationStride determines the delay between saving samples to the specified
+  # output file As you can probably tell based on the high number chosen, 
+  # autocorrelation is currently a big problem for this library
+  iterationStride = 1000
+  
+  # We don't need no verbose or debug level output
+  verbose = FALSE
+  debug = FALSE
+  
+  # Declare initial tuning parameters for MCMC sampling
+  mcmcTuningParams = c(1, # S_star
+                       1, # E_star
+                       1,  # R_star
+                       1,  # S_0
+                       1,  # I_0
+                       0.05,  # beta
+                       0.0,  # beta_p_rs, fixed in this case
+                       0.01, # rho
+                       0.01, # gamma_ei
+                       0.01) # gamma_ir
+  
+  
+  # We don't want to re-scale the distance matrix. 
+  scaleDistanceMode = 0
+  
+    # Declare a function which can come up with several different starting values 
+    # for the model parameters. This will allow us to assess convergence. 
+    proposeParameters = function(seedVal, chainNumber)
+    {
+        set.seed(seedVal)   
+        # 2 to 21 day incubation period according to who
+        p_ei = 0.25 + rnorm(1, 0, 0.02) 
+        # Up to 7 weeks even after recovery
+        p_ir = 0.14 + rnorm(1, 0, 0.01) 
+        gamma_ei=-log(1-p_ei)
+        gamma_ir=-log(1-p_ir)
+          
+        # Starting value for exposure regression parameters
+        beta = rep(0, ncol(X) + ncol(Z))
+        beta[1] = 2.5 + rnorm(1,0,0.5)
+        
+        rho = 0.1 + rnorm(1,0,0.01) # spatial dependence parameter
+      
+        outFileName = paste("./chain_output_ebola_", chainNumber ,".txt", sep = "")
+        
+        # Make a crude guess as to the true compartments:
+        # S_star, E_star, R_star, and thus S,E,I and R
+        proposal = generateCompartmentProposal(I_star, N, 
+                                               S0 = N[1,]-I_star[1,] - c(86,0,0),
+                                               I0 = c(86,0,0), 
+                                               p_ir = 0.5, 
+                                               p_rs = 0.00)
+        
+        return(list(S0=proposal$S0,
+                    E0=proposal$E0,
+                    I0=proposal$I0,
+                    R0=proposal$R0,
+                    S_star=proposal$S_star,
+                    E_star=proposal$E_star,
+                    I_star=proposal$I_star,
+                    R_star=proposal$R_star,
+                    rho=rho,
+                    beta=beta,
+                    gamma_ei=gamma_ei,
+                    gamma_ir=gamma_ir,
+                    outFileName=outFileName))
+  }
+  
+  # Make a helper function to run each chain, as well as update the metropolis 
+  # tuning parameters. 
+  runSimulation = function(modelObject,
+                           numBatches=500, 
+                           batchSize=20, 
+                           targetAcceptanceRatio=0.2,
+                           tolerance=0.05,
+                           proportionChange = 0.1
+                          )
+  {
+      for (batch in 1:numBatches)
+      {
+          modelObject$simulate(batchSize)
+          modelObject$updateSamplingParameters(targetAcceptanceRatio, 
+                                               tolerance, 
+                                               proportionChange)
+      }
+  }
+  
+  predictEpidemic = function(beta.pred, 
+                               X.pred,
+                               gamma.ei,
+                               gamma.ir,
+                               S0,
+                               E0,
+                               I0,
+                               R0,
+                               rho,
+                               offsets.pred)
+    {
+        N = (S0+E0+I0+R0)
+        p_se_components = matrix(exp(X.pred %*% beta.pred), ncol=length(S0))
+        p_se = matrix(0, ncol = length(S0), nrow = nrow(p_se_components))
+        p_ei = 1-exp(-gamma.ei*offsets.pred)
+        p_ir = 1-exp(-gamma.ir*offsets.pred)
+        S_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        E_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        I_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        R_star = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        S = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        E = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        I = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        R = matrix(0, ncol=length(S0),nrow = nrow(p_se_components))
+        S[1,] = S0
+        E[1,] = E0
+        I[1,] = I0
+        R[1,] = R0
+        S_star[1,] = rbinom(rep(1, length(S0)), R0, 0)
+        p_se[1,] = 1-exp(-offsets.pred[1]*(I[1,]/N*p_se_components[1,] + 
+                              rho*(DM %*% (I[1,]/N*p_se_components[1,]))))
+        E_star[1,] = rbinom(rep(1, length(S0)), S0, p_se[1,])
+        I_star[1,] = rbinom(rep(1, length(S0)), E0, p_ei[1])
+        R_star[1,] = rbinom(rep(1, length(S0)), I0, p_ir[1])
+        
+        for (i in 2:nrow(S))
+        {
+        
+          S[i,] = S[i-1,] + S_star[i-1,] - E_star[i-1,]
+          E[i,] = E[i-1,] + E_star[i-1,] - I_star[i-1,]
+          I[i,] = I[i-1,] + I_star[i-1,] - R_star[i-1,]
+          R[i,] = R[i-1,] + R_star[i-1,] - S_star[i-1,]
+          
+          p_se[i,] = 1-exp(-offsets.pred[i]*(I[i,]/N*p_se_components[i,] + 
+                              rho*(DM %*% (I[i,]/N*p_se_components[i,]))))
+          S_star[i,] = rbinom(rep(1, length(S0)), R[i,], 0)
+          E_star[i,] = rbinom(rep(1, length(S0)), S[i,], p_se[i,])
+          I_star[i,] = rbinom(rep(1, length(S0)), E[i,], p_ei[i])
+          R_star[i,] = rbinom(rep(1, length(S0)), I[i,], p_ir[i])
+        }
+        return(list(S=S,E=E,I=I,R=R,
+                    S_star=S_star,E_star=E_star,
+                    I_star=I_star,R_star=R_star,
+                    p_se=p_se,p_ei=p_ei,p_ir=p_ir))
+    }
+  
+  predict.i = function(i,chainFile,maxIdx)
+  {
+    dataRow = chainFile[i,]
+    rho = dataRow$rho
+    beta = c(dataRow$BetaP_SE_0,
+             dataRow$BetaP_SE_1,
+             dataRow$BetaP_SE_2,
+             dataRow$BetaP_SE_3,
+             dataRow$BetaP_SE_4,
+             dataRow$BetaP_SE_5)
+    
+    S0 = c(dataRow[[paste("S_0_", maxIdx-2, sep = "")]],
+           dataRow[[paste("S_1_", maxIdx-2, sep = "")]],
+           dataRow[[paste("S_2_", maxIdx-2, sep = "")]])
+    E0 = c(dataRow[[paste("E_0_", maxIdx-2, sep = "")]],
+           dataRow[[paste("E_1_", maxIdx-2, sep = "")]],
+           dataRow[[paste("E_2_", maxIdx-2, sep = "")]])
+    I0 = c(dataRow[[paste("I_0_", maxIdx-2, sep = "")]],
+           dataRow[[paste("I_1_", maxIdx-2, sep = "")]],
+           dataRow[[paste("I_2_", maxIdx-2, sep = "")]])
+    R0 = c(dataRow[[paste("R_0_", maxIdx-2, sep = "")]],
+           dataRow[[paste("R_1_", maxIdx-2, sep = "")]],
+           dataRow[[paste("R_2_", maxIdx-2, sep = "")]])
+    
+    return(predictEpidemic(beta,  
+                           X.pred,
+                           dataRow$gamma_ei,
+                           dataRow$gamma_ir,
+                           S0,
+                           E0,
+                           I0,
+                           R0,
+                           rho,
+                           offset.pred
+                           ))
+  }
+  
+  # Make model object
+  proposal = proposeParameters(seedVal, maxIdx)
+  SEIRmodel.spline = spatialSEIRModel(compMatDim,
+                      xDim,
+                      zDim,
+                      xPrsDim,
+                      proposal$S0,
+                      proposal$E0,
+                      proposal$I0,
+                      proposal$R0,
+                      proposal$S_star,
+                      proposal$E_star,
+                      proposal$I_star,
+                      proposal$R_star,
+                      offsets,
+                      X,
+                      Z,
+                      X_p_rs,
+                      DM,
+                      proposal$rho,
+                      priorAlpha_gammaEI,
+                      priorBeta_gammaEI,
+                      priorAlpha_gammaIR,
+                      priorBeta_gammaIR,
+                      proposal$beta,
+                      betaPriorPrecision,
+                      beta_p_rs,
+                      betaPrsPriorPrecision,
+                      proposal$gamma_ei,
+                      proposal$gamma_ir,
+                      N,
+                      proposal$outFileName,
+                      iterationStride,
+                      steadyStateConstraintPrecision,
+                      verbose,
+                      debug,
+                      mcmcTuningParams,
+                      reinfectionMode,
+                      scaleDistanceMode)
+  SEIRmodel.spline$setRandomSeed(seedVal)
+  SEIRmodel.spline$setTrace(0) #Guinea 
+  SEIRmodel.spline$setTrace(1) #Liberia
+  SEIRmodel.spline$setTrace(2) #Sierra Leone
+
+  runSimulation(SEIRmodel.spline)
+  SEIRmodel.spline$simulate(1000)
+  tm = system.time(runSimulation(SEIRmodel.spline, 
+                  numBatches=numConvergenceBatches, 
+                  batchSize=convergenceBatchSize, 
+                  targetAcceptanceRatio=0.2,
+                  tolerance=0.025,
+                  proportionChange = 0.05))
+  cat(paste("Time elapsed for convergence run: ", round(tm[3]/60,3), " minutes\n", sep = ""))  
+
+  chain = read.csv(paste("chain_output_ebola_", maxIdx, ".txt", sep = ""))
+  c1 = chain[floor(nrow(chain)/2):nrow(chain),c(1:6,8:10)]
+  
+    
+  # Guinea, Liberia, Sierra Leone
+  getMeanAndCI = function(loc,tpt,baseStr="I_")
+  {
+      vec = chain[[paste(baseStr, loc, "_", tpt, sep = "")]]
+      vec = vec[floor(length(vec)/2):length(vec)]
+      return(c(mean(vec), quantile(vec, probs = c(0.05, 0.95))))
+  }
+  
+  Guinea.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=0)
+  Liberia.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=1)
+  SierraLeone.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=2)
+
+  preds = lapply((nrow(chain) - floor(nrow(chain)/2)):
+                    nrow(chain), predict.i, maxIdx = maxIdx, chainFile=chain)  
+  
+  return(preds)
+}
+
+
+maxIdxList = lapply(c(15,20, 25), makePrediction)
+
+
+
+end.rcode-->
+      </div>
+    </div>
+    <div class="col-sm-1">
+    </div>
+  </div>
+
+  <a id="analysis-1-sect" class="anchor">
+  <h2>Analyses</h2>
+  </a>
+  <div class="row">
+    <div class = "col-sm-10 col-sm-offset-1">
+
+    </div>
+    <div class="col-sm-1">
+    </div>
+  </div>
+
+<a id="conclusions-sect" class="anchor">
+  <h2>Conclusions</h2>
+  </a>
+  <div class="row">
+    <div class = "col-sm-10 col-sm-offset-1">
+      <p></p> 
+      <br/>
+    </div>
+    <div class="col-sm-1">
+    </div>
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="./bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+      $(".code-button").click(function(){
+          $(this).next().animate({
+            opacity: 1,
+            left: "+=100",
+            height: "toggle"
+          }, 100, function() {
+          });
+      });
+</script>
+  
+</body>
+</html>
