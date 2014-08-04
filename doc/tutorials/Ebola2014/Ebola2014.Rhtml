@@ -57,6 +57,7 @@
           <ol>
             <li><a href="#introduction-sect">Introduction</a>
               <ul>
+                <li><a href="#intro-abstract-sect">About This Document</li>
                 <li><a href="#intro-outbreak-sect">The Outbreak</li>
                 <li><a href="#intro-data-sect">The Data</li>
                 <li><a href="#intro-compartment-sect">Compartmental Models</li>
@@ -91,6 +92,38 @@
       </a>
       <div class="row">
         <div class = "col-sm-10 col-sm-offset-1">
+        <a id="intro-abstract-sect" class="anchor">
+        <h3>About this document.</h3>
+        </a>
+        <p>This is a living document, as the Ebola epidemic is rapidly evolving. Presented below is a preliminary modeling approach to the 
+        crisis, originally conceived as an illustration of the spatial SEIR model family generally and the capabilities of the rapidly developing 
+        (and totally unfinished) libspatialSEIR software library particularly. This is not yet peer reviewed research, or even a particularly complete analysis. 
+        Nevertheless, we hope that the initial exploration given below is instructive and useful</p>
+        <br/>
+        <p>
+        All revisions of and changes to this document are saved on the 
+        <a href="https://github.com/grantbrown/libspatialSEIR/commits/gh-pages">gh-pages branch</a> of the <a href="https://github.com/grantbrown/libspatialSEIR">libspatialSEIR git repository</a>. Time permitting, we will post archived versions of the analyses here for easier viewing. In the meantime,
+        those with experience using the git version control software can easily browse the file history on their own machines:
+        </p>
+          <pre>
+            # Clone the repository
+            git clone https://github.com/grantbrown/libspatialSEIR.git
+            # Switch to the website branch
+            git checkout gh-pages
+            # Optionally, choose a particular commit. Commit labels can 
+            # be found by typing "git log" Below is a version updated on Jul 30
+            git checkout e72fd18
+            # Change to the directory with this analysis document
+            cd doc/tutorials/Ebola2014/
+            # Open the file "Ebola2014.html", which is located in this folder 
+            # using your favorite web browser. 
+          </pre>
+        <p>Any additional exploratory analyses and predictions will be linked in this section, and progress on the underlying 
+        software library can be tracked on the github page linked above. A high priority at this time is making the library
+        more portable and easier to use.</p>
+        </div>
+        <br/>
+        <div class = "col-sm-10 col-sm-offset-1">
         <a id="intro-outbreak-sect" class="anchor">
         <h3>The Outbreak</h3>
         </a>
@@ -113,8 +146,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-documentCompilationMode = "release"
-#documentCompilationMode = "debug"
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 50)
@@ -997,10 +1030,10 @@ While the basic reproductive number is a useful quantity to know, it does not di
     #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
     #       dataRow$R_1_26 + dataRow$R_star_1_26,
     #       dataRow$R_2_26 + dataRow$R_star_2_26)
-    S0 = c(dataRow$S_0_28,dataRow$S_1_28,dataRow$S_2_28)
-    E0 = c(dataRow$E_0_28,dataRow$E_1_28,dataRow$E_2_28)
-    I0 = c(dataRow$I_0_28,dataRow$I_1_28,dataRow$I_2_28)
-    R0 = c(dataRow$R_0_28,dataRow$R_1_28,dataRow$R_2_28)
+    S0 = c(dataRow$S_0_29,dataRow$S_1_29,dataRow$S_2_29)
+    E0 = c(dataRow$E_0_29,dataRow$E_1_29,dataRow$E_2_29)
+    I0 = c(dataRow$I_0_29,dataRow$I_1_29,dataRow$I_2_29)
+    R0 = c(dataRow$R_0_29,dataRow$R_1_29,dataRow$R_2_29)
     
     return(predictEpidemic(beta,  
                            X.pred,
@@ -1390,6 +1423,8 @@ figure11 = function()
   plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), xlim = pred.xlim,
        main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, ylab = "Infectious Count", xlab = "Date")
+  abline(h = seq(0,10000,100), lty = 2, col = "lightgrey")
+  lines(rptDate, Guinea.I.Est[1,], lty = 2)
   lines(rptDate, Guinea.I.Est[2,], lty = 2)
   lines(rptDate, Guinea.I.Est[3,], lty = 2)
   
@@ -1406,6 +1441,8 @@ figure11 = function()
        main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "blue", ylab = "Infectious Count", 
        xlab = "Date")
+  abline(h = seq(0,10000,100), lty = 2, col = "lightgrey")
+  lines(rptDate, Liberia.I.Est[1,], lty = 2, col = "blue")
   lines(rptDate, Liberia.I.Est[2,], lty = 2, col = "blue")
   lines(rptDate, Liberia.I.Est[3,], lty = 2, col = "blue")
   
@@ -1422,6 +1459,8 @@ figure11 = function()
        main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "red",ylab = "Infectious Count", 
        xlab = "Date")
+  abline(h = seq(0,10000,100), lty = 2, col = "lightgrey")
+  lines(rptDate, SierraLeone.I.Est[1,], lty = 2, col = "red")
   lines(rptDate, SierraLeone.I.Est[2,], lty = 2, col = "red")
   lines(rptDate, SierraLeone.I.Est[3,], lty = 2, col ="red")
   
