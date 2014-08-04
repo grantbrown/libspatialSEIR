@@ -11,7 +11,7 @@ Description: Compartmental epidemic models are flexible and intuitive tools for
   greatly for large, or highly interconnected, spatial domains. This package 
   aims to provide a fast method of fitting such models by shifting as much 
   of the computational burden as possible to graphics processors using OpenCL. 
-Depends: R (>= 3.0), Rcpp
+Depends: R (>= 3.0), Rcpp, methods
 LinkingTo: Rcpp
 RcppModules: mod_spatialSEIRInterface
 License: GPL-3 
