@@ -23,6 +23,37 @@ namespace SpatialSEIR
         int timeIndex;
     };
 
+
+    struct LSSCout {};
+
+    extern LSSCout lssCout;
+
+#ifdef LSS_USE_STDIO
+    template <typename T>
+        LSSCout& operator<< (LSSCout &s, const T &x) {
+                std::cout << x;
+                return s;
+        }
+#endif
+#ifndef LSS_USE_STDIO
+    #include <Rcpp.h>
+    template <typename T>
+        LSSCout& operator<< (LSSCout &s, const T &x) {
+                Rcpp::Rcout << x;
+                return s;
+        }
+
+#endif
+
+
+
+
+
+
+
+
+
+
     class IOProvider
     {
         public:

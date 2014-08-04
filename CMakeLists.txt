@@ -15,6 +15,9 @@ SET(EIGEN3_INCLUDE_DIR "/usr/local/include/eigen3")
 
 project(libSpatialSEIR)
 
+# Use stdio instead of Rcpp::Rcout
+add_definitions( -DLSS_USE_STDIO="true" )
+
 if (OPEN_CL_SUPPORT)
     add_definitions( -DENABLE_OPEN_CL="true" )
     include(ExternalProject)

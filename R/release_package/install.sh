@@ -1,7 +1,7 @@
 # Obtain a copy of the development package
 cp ../dev_package/* ./ -r
 # Create a folder for the libspatialSEIR code. 
-mkdir ./src/LSS
+mkdir -p ./src/LSS
 # Copy libspatialSEIR code 
 cp ../../libSpatialSEIR/* ./src/LSS/ -r
 # Replace Makevars

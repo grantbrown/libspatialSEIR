@@ -20,8 +20,7 @@
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
+    LSSCout lssCout;
 
     ModelContext::ModelContext()
     {
@@ -32,7 +31,7 @@ namespace SpatialSEIR
 
     void ModelContext::setRandomSeed(unsigned int seedValue)
     {
-        std::cout << "Setting seed.\n";
+        lssCout << "Setting seed.\n";
         delete random;
         random = new RandomNumberProvider(seedValue);
     }
@@ -431,7 +430,7 @@ namespace SpatialSEIR
         }
         if ((model -> size()) != 0)
         {
-            std::cout << "Error clearing model.\n";
+            lssCout << "Error clearing model.\n";
             throw(-1);
         }
 
@@ -492,19 +491,19 @@ namespace SpatialSEIR
         {
             if ((S_star -> data)[i] > (R -> data)[i])
             {
-                std::cout << "S_star too big: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
+                lssCout << "S_star too big: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
                 err = 1;
                 break;
             }
             if ((S_star -> data)[i] < 0)
             {
-                std::cout << "S_star <0: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
+                lssCout << "S_star <0: " << i << ", val:"<< S_star_fc -> getValue() << " \n";
                 err = 1;
                 break;
             }
             if ((S -> data)[i] < 0)
             {
-                std::cout << "S <0: " << i << " \n";
+                lssCout << "S <0: " << i << " \n";
                 err = 1;
                 break;
             }
@@ -514,19 +513,19 @@ namespace SpatialSEIR
         {
             if ((E_star -> data)[i] > (S -> data)[i])
             {
-                std::cout << "E_star too big: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
+                lssCout << "E_star too big: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
                 err = 1;
                 break;
             }
             if ((E_star -> data)[i] < 0)
             {
-                std::cout << "E_star <0: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
+                lssCout << "E_star <0: " << i << ", val:"<< E_star_fc -> getValue() << " \n";
                 err = 1;
                 break;
             }
             if ((E -> data)[i] < 0)
             {
-                std::cout << "E <0: " << i << " \n";
+                lssCout << "E <0: " << i << " \n";
                 err = 1;
                 break;
             }
@@ -536,20 +535,20 @@ namespace SpatialSEIR
         {
             if ((I_star -> data)[i] > (E -> data)[i])
             {
-                std::cout << "I_star too big: " << i << "\n";
+                lssCout << "I_star too big: " << i << "\n";
                 err = 1;
                 break;
             }
             if ((I_star -> data)[i] < 0)
             {
-                std::cout << "I_star <0: " << i << ", val: \n";
+                lssCout << "I_star <0: " << i << ", val: \n";
                 err = 1;
                 break;
             }
 
             if ((I -> data)[i] < 0)
             {
-                std::cout << "I_star <0: " << i << " \n";
+                lssCout << "I_star <0: " << i << " \n";
                 err = 1;
                 break;
             }
@@ -560,19 +559,19 @@ namespace SpatialSEIR
             if ((R_star -> data)[i] > (I -> data)[i])
             {
                 
-                std::cout << "R_star too big: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
+                lssCout << "R_star too big: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
                 err = 1;
                 break;
             }
             if ((R_star -> data)[i] < 0)
             {
-                std::cout << "R_star <0: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
+                lssCout << "R_star <0: " << i << ", val:"<< R_star_fc -> getValue() << " \n";
                 err = 1;
                 break;
             }
             if ((R -> data)[i] < 0)
             {
-                std::cout << "R <0: " << i << " \n";
+                lssCout << "R <0: " << i << " \n";
                 err = 1;
                 break;
             }
@@ -584,7 +583,7 @@ namespace SpatialSEIR
             {
                 if (p_rs[i] <= 0 || p_rs[i] >= 1)
                 {
-                    std::cout << "Invalid P_RS Value at Index" << i << "\n";
+                    lssCout << "Invalid P_RS Value at Index" << i << "\n";
                     err = 1;
                 }
             }
@@ -609,24 +608,24 @@ namespace SpatialSEIR
         }
         E_star_fc -> evalCPU();
         R_star_fc -> evalCPU();
-        std::cout << "  FC Values:\n";
-        std::cout << "    Beta: " << beta_fc ->getValue() << "\n";
+        lssCout << "  FC Values:\n";
+        lssCout << "    Beta: " << beta_fc ->getValue() << "\n";
         if (config -> reinfectionMode == 1)
         {
-            std::cout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
+            lssCout << "    betaPrs: " << betaPrs_fc -> getValue() << "\n";
         }
-        std::cout << "    p_ei: " << gamma_ei_fc ->getValue() << "\n";
-        std::cout << "    p_ir: " << gamma_ir_fc ->getValue() << "\n";
+        lssCout << "    p_ei: " << gamma_ei_fc ->getValue() << "\n";
+        lssCout << "    p_ir: " << gamma_ir_fc ->getValue() << "\n";
         if (!(*singleLocation))
         {
-            std::cout << "    rho: " << rho_fc ->getValue() << "\n";
+            lssCout << "    rho: " << rho_fc ->getValue() << "\n";
         }
         if (config -> reinfectionMode <= 2)
         {
-            std::cout << "    S_star: " << S_star_fc -> getValue() << "\n";
+            lssCout << "    S_star: " << S_star_fc -> getValue() << "\n";
         }
-        std::cout << "    E_star: " << E_star_fc -> getValue() << "\n";
-        std::cout << "    R_star: " << R_star_fc -> getValue() << "\n";
+        lssCout << "    E_star: " << E_star_fc -> getValue() << "\n";
+        lssCout << "    R_star: " << R_star_fc -> getValue() << "\n";
     }
 
     void ModelContext::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
@@ -645,15 +644,15 @@ namespace SpatialSEIR
             this -> printFCValues();
             this -> checkCompartmentBounds();
 
-            std::cout << "S: " << S -> marginSum(3,-1) << "\n";
-            std::cout << "E: " << E -> marginSum(3,-1) << "\n";
-            std::cout << "I: " << I -> marginSum(3,-1) << "\n";
-            std::cout << "R: " << R -> marginSum(3,-1) << "\n";
+            lssCout << "S: " << S -> marginSum(3,-1) << "\n";
+            lssCout << "E: " << E -> marginSum(3,-1) << "\n";
+            lssCout << "I: " << I -> marginSum(3,-1) << "\n";
+            lssCout << "R: " << R -> marginSum(3,-1) << "\n";
 
-            std::cout << "S_star: " << S_star -> marginSum(3,-1) << "\n";
-            std::cout << "E_star: " << E_star -> marginSum(3,-1) << "\n";
-            std::cout << "I_star: " << I_star -> marginSum(3,-1) << "\n";
-            std::cout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
+            lssCout << "S_star: " << S_star -> marginSum(3,-1) << "\n";
+            lssCout << "E_star: " << E_star -> marginSum(3,-1) << "\n";
+            lssCout << "I_star: " << I_star -> marginSum(3,-1) << "\n";
+            lssCout << "R_star: " << R_star -> marginSum(3,-1) << "\n";
         }
 
         unsigned int i;
@@ -680,7 +679,7 @@ namespace SpatialSEIR
         {
             if (verbose)
             {
-                std::cout << "Iteration: " << i << "\n";
+                lssCout << "Iteration: " << i << "\n";
             }
             this -> simulationIter(verbose, debug);
             this -> fileProvider -> catIter(i);
