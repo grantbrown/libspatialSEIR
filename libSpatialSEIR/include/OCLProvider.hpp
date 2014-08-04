@@ -6,8 +6,6 @@
 #ifndef SPATIALSEIR_INCLUDEFILES
 #define SPATIALSEIR_INCLUDEFILES
 
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -21,8 +19,6 @@
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
 
     struct P_SE_Calculation_KernelData
     {
@@ -124,9 +120,6 @@ namespace SpatialSEIR
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     class OCLProvider
     {
         public:  

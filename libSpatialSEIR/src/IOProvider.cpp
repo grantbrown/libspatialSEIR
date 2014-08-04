@@ -6,11 +6,9 @@
 #include<time.h>
 
 
-
+LSSCout lssCout;
 namespace SpatialSEIR
 {
-
-    LSSCout lssCout;
 
     IOProvider::IOProvider()
     {

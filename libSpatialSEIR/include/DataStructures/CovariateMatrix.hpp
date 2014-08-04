@@ -15,8 +15,6 @@
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
 
     struct covariateArgs
     {

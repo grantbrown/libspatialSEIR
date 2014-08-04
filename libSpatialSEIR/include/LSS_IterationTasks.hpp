@@ -1,8 +1,6 @@
 #ifndef SPATIALSEIR_INCLUDEFILES
 #define SPATIALSEIR_INCLUDEFILES
 
-#include<iostream>
-#include<stdio.h>
 #include<cstring>
 #include<vector>
 #endif
@@ -14,8 +12,6 @@
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
 
     class ModelContext;
 

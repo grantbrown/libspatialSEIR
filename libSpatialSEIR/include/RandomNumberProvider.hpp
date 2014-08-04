@@ -1,8 +1,6 @@
 #ifndef SPATIALSEIR_INCLUDEFILES
 #define SPATIALSEIR_INCLUDEFILES
 
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>

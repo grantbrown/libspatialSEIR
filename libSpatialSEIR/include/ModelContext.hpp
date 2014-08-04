@@ -1,8 +1,6 @@
 #ifndef SPATIALSEIR_INCLUDEFILES
 #define SPATIALSEIR_INCLUDEFILES
 
-#include<iostream>
-#include<stdio.h>
 #include<cstring>
 #include<vector>
 #endif
@@ -13,8 +11,6 @@
 #include<Eigen/Core>
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
 
     typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> DoubleMatrixType;
     typedef Eigen::Map<DoubleMatrixType, Eigen::ColMajor> DoubleMatrixMapType;

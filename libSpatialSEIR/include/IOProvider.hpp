@@ -7,6 +7,34 @@
 #ifndef IO_PROVIDER_INC
 #define IO_PROVIDER_INC
 
+
+/** LSSCout wraps either std::cout or Rcpp::Rcout, depending on the build time variable "LSS USE STDIO"*/
+#ifdef LSS_USE_STDIO
+
+struct LSSCout {};
+extern LSSCout lssCout;
+
+template <typename T>
+    LSSCout& operator<< (LSSCout &s, const T &x) {
+            std::cout << x;
+            return s;
+    }
+#endif
+#ifndef LSS_USE_STDIO
+#include <Rcpp.h>
+
+struct LSSCout {};
+extern LSSCout lssCout;
+
+template <typename T>
+    LSSCout& operator<< (LSSCout &s, const T &x) {
+            Rcpp::Rcout << x;
+            return s;
+    }
+
+#endif
+
+
 namespace SpatialSEIR
 {
     //Forward declare required classes
@@ -22,38 +50,6 @@ namespace SpatialSEIR
         int locationIndex;
         int timeIndex;
     };
-
-
-    /** LSSCout wraps either std::cout or Rcpp::Rcout, depending on the build time variable "LSS USE STDIO"*/
-    struct LSSCout {};
-
-    extern LSSCout lssCout;
-
-#ifdef LSS_USE_STDIO
-    template <typename T>
-        LSSCout& operator<< (LSSCout &s, const T &x) {
-                std::cout << x;
-                return s;
-        }
-#endif
-#ifndef LSS_USE_STDIO
-    #include <Rcpp.h>
-    template <typename T>
-        LSSCout& operator<< (LSSCout &s, const T &x) {
-                Rcpp::Rcout << x;
-                return s;
-        }
-
-#endif
-
-
-
-
-
-
-
-
-
 
     class IOProvider
     {

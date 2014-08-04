@@ -4,9 +4,6 @@
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     class ModelContext;
     class CompartmentalModelMatrix;
     class CovariateMatrix;
