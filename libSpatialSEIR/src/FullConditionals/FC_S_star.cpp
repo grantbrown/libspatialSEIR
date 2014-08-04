@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,13 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
     /*
      *
      * Implement the full conditional distribution for S_star
@@ -228,7 +223,7 @@ namespace SpatialSEIR
 
     void FC_S_Star::printDebugInfo(int startLoc, int startTime)
     {
-        std::cout << "S_star debug info, location " << startLoc << ", time " << startTime << "\n";     
+        lssCout << "S_star debug info, location " << startLoc << ", time " << startTime << "\n";     
 
         int i,compIdx,Sstar_val,Estar_val,S_val,R_val;
         double p_se_val, p_rs_val;
@@ -252,11 +247,11 @@ namespace SpatialSEIR
                     Sstar_val > R_val ||
                     Estar_val > S_val)
                 {
-                    std::cout << "Bounds Error Detected at time " << i << "\n";
-                    std::cout << "S_star: " << Sstar_val << "\n";
-                    std::cout << "E_star: " << Estar_val << "\n";
-                    std::cout << "R: " << R_val << "\n";
-                    std::cout << "S: " << S_val << "\n";
+                    lssCout << "Bounds Error Detected at time " << i << "\n";
+                    lssCout << "S_star: " << Sstar_val << "\n";
+                    lssCout << "E_star: " << Estar_val << "\n";
+                    lssCout << "R: " << R_val << "\n";
+                    lssCout << "S: " << S_val << "\n";
                     return;
                 }
                 else
@@ -266,13 +261,13 @@ namespace SpatialSEIR
                 }
                 if (! std::isfinite(output))
                 {
-                    std::cout << "Calculation Error Detected at time " << i << "\n";
-                    std::cout << "S_star: " << Sstar_val << "\n";
-                    std::cout << "E_star: " << Estar_val << "\n";
-                    std::cout << "R: " << R_val << "\n";
-                    std::cout << "S: " << S_val << "\n";
-                    std::cout << "p_se: " << p_se_val << "\n";
-                    std::cout << "p_rs: " << p_rs_val << "\n"; 
+                    lssCout << "Calculation Error Detected at time " << i << "\n";
+                    lssCout << "S_star: " << Sstar_val << "\n";
+                    lssCout << "E_star: " << Estar_val << "\n";
+                    lssCout << "R: " << R_val << "\n";
+                    lssCout << "S: " << S_val << "\n";
+                    lssCout << "p_se: " << p_se_val << "\n";
+                    lssCout << "p_rs: " << p_rs_val << "\n"; 
                     return;
                 }
                 compIdx ++; 
@@ -287,15 +282,15 @@ namespace SpatialSEIR
 
         if (!std::isfinite(output))
         {
-            std::cout << "Combinatorics Error Detected\n";
-            std::cout << "S_star: " << Sstar_val << "\n";
-            std::cout << "E_star: " << Estar_val << "\n";
-            std::cout << "R: " << R_val << "\n";
-            std::cout << "S: " << S_val << "\n";
-            std::cout << "p_se: " << p_se_val << "\n";
-            std::cout << "p_rs: " << p_rs_val << "\n"; 
-            std::cout << "S_star_sum: " << S_star_sum << "\n";
-            std::cout << "R_star_sum: " << R_star_sum << "\n";
+            lssCout << "Combinatorics Error Detected\n";
+            lssCout << "S_star: " << Sstar_val << "\n";
+            lssCout << "E_star: " << Estar_val << "\n";
+            lssCout << "R: " << R_val << "\n";
+            lssCout << "S: " << S_val << "\n";
+            lssCout << "p_se: " << p_se_val << "\n";
+            lssCout << "p_rs: " << p_rs_val << "\n"; 
+            lssCout << "S_star_sum: " << S_star_sum << "\n";
+            lssCout << "R_star_sum: " << R_star_sum << "\n";
             return;
         }
         return;
@@ -330,7 +325,7 @@ namespace SpatialSEIR
 
     void FC_S_Star::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling S_star\n";}
+        if (verbose){lssCout << "Sampling S_star\n";}
         (*currentSampler) -> drawSample();
     }
 

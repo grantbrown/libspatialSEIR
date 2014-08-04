@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,13 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
     FC_Rho::FC_Rho(ModelContext *_context,
                    CompartmentalModelMatrix *_E_star,  
                    CompartmentalModelMatrix *_S,
@@ -136,7 +131,7 @@ namespace SpatialSEIR
 
     void FC_Rho::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling rho\n";}
+        if (verbose){lssCout << "Sampling rho\n";}
         (*currentSampler) -> drawSample();
     }
 

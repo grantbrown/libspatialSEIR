@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     /*
      * Helper functions
      */
@@ -27,10 +23,10 @@ namespace SpatialSEIR
     {
         if ((TransA ? Arow : Acol) != (TransB ? Bcol : Brow))
         {
-            std::cerr << "Invalid Matrix Dimensions: " << std::endl;
-            std::cerr << "A: " <<  Arow << " x " << Acol << std::endl;
-            std::cerr << "B: " <<  Brow << " x " << Bcol << std::endl;
-            std::cerr << "Transpose: " << TransA << ", " << TransB << std::endl;
+            lssCout << "Invalid Matrix Dimensions: " << "\n";
+            lssCout << "A: " <<  Arow << " x " << Acol << "\n";
+            lssCout << "B: " <<  Brow << " x " << Bcol << "\n";
+            lssCout << "Transpose: " << TransA << ", " << TransB << "\n";
             throw(-1);
         }
         cblas_dgemm(CblasColMajor,
@@ -115,7 +111,7 @@ namespace SpatialSEIR
                 return;
             }
         }
-        std::cout << "Sampler type not found.\n";
+        lssCout << "Sampler type not found.\n";
         throw(-1);
     }
 
@@ -156,7 +152,7 @@ namespace SpatialSEIR
         }
         if (proportionChange <= 0 || proportionChange >= 1)
         {
-            std::cerr << "Invalid Proportion: " << proportionChange << "\n";
+            lssCout << "Invalid Proportion: " << proportionChange << "\n";
             throw(-1);
         }
         int i;
@@ -186,7 +182,7 @@ namespace SpatialSEIR
         }
         if (proportionChange <= 0 || proportionChange >= 1)
         {
-            std::cerr << "Invalid Proportion: " << proportionChange << "\n";
+            lssCout << "Invalid Proportion: " << proportionChange << "\n";
             throw(-1);
         }
         double currentRatio = (this -> acceptanceRatio());
@@ -212,7 +208,7 @@ namespace SpatialSEIR
         }
         if (proportionChange <= 0 || proportionChange >= 1)
         {
-            std::cerr << "Invalid Proportion: " << proportionChange << "\n";
+            lssCout << "Invalid Proportion: " << proportionChange << "\n";
             throw(-1);
         }
         double currentRatio = (this -> acceptanceRatio());

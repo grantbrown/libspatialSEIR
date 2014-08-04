@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -16,9 +14,6 @@
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     SetCompartmentSamplingIndicesTask::SetCompartmentSamplingIndicesTask(ModelContext* context_)
     {
         context = new ModelContext*;

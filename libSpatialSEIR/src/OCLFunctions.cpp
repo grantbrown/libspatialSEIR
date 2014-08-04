@@ -12,6 +12,7 @@
 #include <CovariateMatrix.hpp>
 #include <CompartmentalModelMatrix.hpp>
 #include <DistanceMatrix.hpp>
+#include <IOProvider.hpp>
 
 #include <unistd.h>
 namespace SpatialSEIR
@@ -89,13 +90,13 @@ namespace SpatialSEIR
             (p_se_args -> globalSize) = globalSize; 
 
             /*
-            std::cout << "Total Work Units: " << totalWorkUnits << "\n";
-            std::cout << "Local Mem Per Core: " << localMemPerCore << "\n";
-            std::cout << "Local Size Multiple: " << localSizeMultiple << "\n";
-            std::cout << "Reported Maximum Size: " << deviceMaxSize << "\n";
-            std::cout << "Max Local Size: " << maxLocalSize << "\n";
-            std::cout << "Work Group Size: " << workGroupSize << "\n";
-            std::cout << "Global Size: " << globalSize << "\n";
+            lssCout::cout << "Total Work Units: " << totalWorkUnits << "\n";
+            lssCout::cout << "Local Mem Per Core: " << localMemPerCore << "\n";
+            lssCout::cout << "Local Size Multiple: " << localSizeMultiple << "\n";
+            lssCout::cout << "Reported Maximum Size: " << deviceMaxSize << "\n";
+            lssCout::cout << "Max Local Size: " << maxLocalSize << "\n";
+            lssCout::cout << "Work Group Size: " << workGroupSize << "\n";
+            lssCout::cout << "Global Size: " << globalSize << "\n";
             */
         }
         else
@@ -219,7 +220,7 @@ namespace SpatialSEIR
            
             if (multErr != CL_SUCCESS)
             { 
-                std::cout << "clBLAS Error Encountered: " << multErr << "\n";
+                lssCout::cout << "clBLAS Error Encountered: " << multErr << "\n";
                 throw(-1);
             }
         
@@ -249,7 +250,7 @@ namespace SpatialSEIR
             err |= p_se_kernel2 -> setArg(6, workGroupSize*sizeof(double), NULL); // p_se loc
             if (err < 0)
             {
-                std::cout << "Error setting kernel args \n";
+                lssCout::cout << "Error setting kernel args \n";
             }
         }
         catch(cl::Error e)

@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,14 +11,11 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
      /*
      *
      * Implement the full conditional distribution for the regression
@@ -156,7 +151,7 @@ namespace SpatialSEIR
 
     void FC_Beta::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling Beta \n";}
+        if (verbose){lssCout << "Sampling Beta \n";}
         (*currentSampler) -> drawSample();
     }
 

@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,13 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
     /*
      *
      * Implement full conditional for I0
@@ -343,7 +338,7 @@ namespace SpatialSEIR
 
     void FC_I0::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling I0\n";}
+        if (verbose){lssCout << "Sampling I0\n";}
         (*currentSampler) -> drawSample();
     }
 
@@ -384,7 +379,7 @@ namespace SpatialSEIR
 
     void FC_I0::printDebugInfo(int startLoc)
     {
-        std::cout << "Error Sampling I0, location: " << startLoc << ", value: " << ((*A0) -> I0)[startLoc] << "\n";
+        lssCout << "Error Sampling I0, location: " << startLoc << ", value: " << ((*A0) -> I0)[startLoc] << "\n";
 
         int i,j, compIdx;
         int nTpts = *((*R) -> nrow);
@@ -400,7 +395,7 @@ namespace SpatialSEIR
         if (((*A0) -> I0)[startLoc] < 0 || 
             ((*A0) -> R0)[startLoc] < 0)
         {
-            std::cout << "I0 < 0: " << (((*A0) -> I0)[startLoc]) << "\n"; 
+            lssCout << "I0 < 0: " << (((*A0) -> I0)[startLoc]) << "\n"; 
             throw(-1);
         }
         compIdx = startLoc*nTpts;
@@ -420,11 +415,11 @@ namespace SpatialSEIR
                 if (Rstar_val > I_val || 
                         Sstar_val > R_val)
                 {
-                    std::cout << "Bounds error detected at time " << j << "\n";
-                    std::cout << "R_star: " << Rstar_val << "\n";
-                    std::cout << "I: " << I_val << "\n";
-                    std::cout << "S_star: " << Sstar_val << "\n";
-                    std::cout << "R: " << R_val << "\n";
+                    lssCout << "Bounds error detected at time " << j << "\n";
+                    lssCout << "R_star: " << Rstar_val << "\n";
+                    lssCout << "I: " << I_val << "\n";
+                    lssCout << "S_star: " << Sstar_val << "\n";
+                    lssCout << "R: " << R_val << "\n";
                     throw(-1) ;
                 }
                 else
@@ -434,12 +429,12 @@ namespace SpatialSEIR
                                 ((*context) -> random -> choose(I_val, Rstar_val)));
                     if (!std::isfinite(output))
                     {
-                        std::cout << "Computation error detected at time " << j << "\n";
-                        std::cout << "S_star: " << Sstar_val << "\n";
-                        std::cout << "R_star: " << Rstar_val << "\n";
-                        std::cout << "R: " << R_val << "\n";
-                        std::cout << "I: " << I_val << "\n";
-                        std::cout << "p_rs: " << p_rs_val << "\n";
+                        lssCout << "Computation error detected at time " << j << "\n";
+                        lssCout << "S_star: " << Sstar_val << "\n";
+                        lssCout << "R_star: " << Rstar_val << "\n";
+                        lssCout << "R: " << R_val << "\n";
+                        lssCout << "I: " << I_val << "\n";
+                        lssCout << "p_rs: " << p_rs_val << "\n";
                         throw(-1);
                     }
                 }
@@ -456,7 +451,7 @@ namespace SpatialSEIR
 
                 if (Rstar_val > I_val)
                 {
-                    std::cout << "Bounds error detected at time " << j << "\n";
+                    lssCout << "Bounds error detected at time " << j << "\n";
                     throw(-1);
                 }
                 else
@@ -465,10 +460,10 @@ namespace SpatialSEIR
                                 ((*context) -> random -> choose(I_val, Rstar_val)));
                     if (!std::isfinite(output))
                     {
-                        std::cout << "Computation error detected at time " << j << "\n";
-                        std::cout << "R_star: " << Rstar_val << "\n";
-                        std::cout << "R: " << R_val << "\n";
-                        std::cout << "I: " << I_val << "\n";
+                        lssCout << "Computation error detected at time " << j << "\n";
+                        lssCout << "R_star: " << Rstar_val << "\n";
+                        lssCout << "R: " << R_val << "\n";
+                        lssCout << "I: " << I_val << "\n";
                         throw(-1);
                     }
 
@@ -491,17 +486,17 @@ namespace SpatialSEIR
                 S_val = ((*S)->data)[compIdx];
                 if (p_se_val > 1 || p_se_val < 0)
                 {
-                    std::cout << "p_se bounds error detected at time " << j << ": " << p_se_val << "\n";
+                    lssCout << "p_se bounds error detected at time " << j << ": " << p_se_val << "\n";
                     throw(-1);
                 }
 
                 output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
                 if (!std::isfinite(output))
                 {
-                    std::cout << "p_se computation error detected at time " << j << "\n";
-                    std::cout << "S: " << S_val << "\n";
-                    std::cout << "E_star: " << Estar_val << "\n";
-                    std::cout << "p_se: " << p_se_val << "\n";
+                    lssCout << "p_se computation error detected at time " << j << "\n";
+                    lssCout << "S: " << S_val << "\n";
+                    lssCout << "E_star: " << Estar_val << "\n";
+                    lssCout << "p_se: " << p_se_val << "\n";
                 }
                 compIdx ++; 
             }

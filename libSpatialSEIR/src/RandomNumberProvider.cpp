@@ -1,11 +1,9 @@
 #include <RandomNumberProvider.hpp>
 #include <boost/math/distributions/gamma.hpp>
+#include <IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-
-    
-
     RandomNumberProvider::RandomNumberProvider(unsigned int seed)
     {
         generator.seed(seed);
@@ -179,8 +177,8 @@ namespace SpatialSEIR
     {
         if (a < 0 || b < 0)
         {
-            std::cerr << "Invalid (negative) Paramter Values to RandomNumberProvider::beta.\n";
-            std::cout << "(a,b): (" << a << ", " << b << ")\n";
+            lssCout << "Invalid (negative) Paramter Values to RandomNumberProvider::beta.\n";
+            lssCout << "(a,b): (" << a << ", " << b << ")\n";
             throw(-1);
         }
         double v1 = gamma(a); 

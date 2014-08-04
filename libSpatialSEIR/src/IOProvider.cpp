@@ -10,6 +10,7 @@
 namespace SpatialSEIR
 {
 
+    LSSCout lssCout;
 
     IOProvider::IOProvider()
     {

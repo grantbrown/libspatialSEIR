@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     IndexedInitCompartmentMetropolisSampler::IndexedInitCompartmentMetropolisSampler(ModelContext* context_,
                                                                InitCompartmentFullConditional* initCompartmentFC_,
                                                                int* initCompartmentData_)
@@ -64,7 +60,7 @@ namespace SpatialSEIR
         initVal = (*initCompartmentFC) -> getValue();
         if (! std::isfinite(initVal))
         {
-            std::cerr << "Compartment sampler starting from value of zero probability.\n";
+            lssCout << "Compartment sampler starting from value of zero probability.\n";
             throw(-1);
         }
         for (i = 0; i < **indexLength; i++)
@@ -92,7 +88,7 @@ namespace SpatialSEIR
         }
         if (! std::isfinite((*initCompartmentFC) -> getValue()))
         {
-            std::cout << "Impossible value selected.\n";
+            lssCout << "Impossible value selected.\n";
             throw(-1);
         } 
 

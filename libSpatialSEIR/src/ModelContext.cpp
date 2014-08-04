@@ -20,8 +20,6 @@
 
 namespace SpatialSEIR
 {
-    LSSCout lssCout;
-
     ModelContext::ModelContext()
     {
         //random = new RandomNumberProvider(static_cast<unsigned int>(std::time(0)));

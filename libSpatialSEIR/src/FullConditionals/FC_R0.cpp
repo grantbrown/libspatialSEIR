@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,13 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
     /*
      *
      *
@@ -284,7 +279,7 @@ namespace SpatialSEIR
 
     void FC_R0::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling R0\n";}
+        if (verbose){lssCout << "Sampling R0\n";}
         (*currentSampler) -> drawSample();
     }
 
@@ -319,6 +314,6 @@ namespace SpatialSEIR
 
     void FC_R0::printDebugInfo(int loc)
     {
-        std::cout << "Error Sampling R0, location: " << loc << ", value: " << ((*A0) -> R0)[loc] << "\n";
+        lssCout << "Error Sampling R0, location: " << loc << ", value: " << ((*A0) -> R0)[loc] << "\n";
     }
 }

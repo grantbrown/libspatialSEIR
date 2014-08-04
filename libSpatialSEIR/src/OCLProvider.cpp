@@ -1,13 +1,11 @@
 #define __CL_ENABLE_EXCEPTIONS
 
-#include<iostream>
-#include<fstream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
 #include <ModelContext.hpp>
 #include <OCLProvider.hpp>
+#include <IOProvider.hpp>
 
 #ifdef ENABLE_OPEN_CL
 #include <CL/cl.hpp>
@@ -20,11 +18,11 @@ SpatialSEIR::DeviceContainer::DeviceContainer(cl::Device *inDevice, cl::Context 
 }
 SpatialSEIR::DeviceContainer::~DeviceContainer()
 {
-    std::cout << "Deleting DeviceContainer.\n";
+    lssCout << "Deleting DeviceContainer.\n";
     delete commandQueue;
-    std::cout << "1\n";
+    lssCout << "1\n";
     delete device;
-    std::cout << "2\n";
+    lssCout << "2\n";
 }
 
 SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
@@ -55,7 +53,7 @@ SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
     {
        if (e.err() == -1) 
        {
-           std::cout << "...no OpenCL CPU devices found\n";
+           lssCout << "...no OpenCL CPU devices found\n";
        }
        else
        {
@@ -74,7 +72,7 @@ SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
     {
        if (e.err() == -1) 
        {
-           std::cout << "...no OpenCL GPU devices found\n";
+           lssCout << "...no OpenCL GPU devices found\n";
        }
        else
        {
@@ -90,26 +88,26 @@ SpatialSEIR::PlatformContainer::PlatformContainer(cl::Platform *inPlatform)
     DeviceContainer* newDevice;
     for (i = 0; i < cpuDevices -> size(); i++)
     {  
-        std::cout << "Adding CPU Device: ";
+        lssCout << "Adding CPU Device: ";
         newDevice = new DeviceContainer(&(*cpuDevices)[i], context);
         devices -> push_back(newDevice);
         clExt = (*(newDevice -> device)) -> getInfo<CL_DEVICE_EXTENSIONS>();
         doublePrecision -> push_back((clExt.find("cl_khr_fp64") != std::string::npos));
         deviceTypes -> push_back("CPU");
         deviceNames -> push_back((*(newDevice -> device)) -> getInfo<CL_DEVICE_NAME>());
-        std::cout << (*deviceNames)[deviceNames -> size() - 1] << "\n";
+        lssCout << (*deviceNames)[deviceNames -> size() - 1] << "\n";
 
     }
     for (i = 0; i < gpuDevices -> size(); i++)
     {   
-        std::cout << "Adding GPU Device: ";
+        lssCout << "Adding GPU Device: ";
         newDevice = new DeviceContainer(&((*gpuDevices)[i]), context);
         devices -> push_back(newDevice);
         clExt = (*(newDevice -> device)) -> getInfo<CL_DEVICE_EXTENSIONS>();
         doublePrecision -> push_back((clExt.find("cl_khr_fp64") != std::string::npos));
         deviceTypes -> push_back("GPU");
         deviceNames -> push_back((*(newDevice -> device)) -> getInfo<CL_DEVICE_NAME>());
-        std::cout << (*deviceNames)[deviceNames -> size() - 1] << "\n";
+        lssCout << (*deviceNames)[deviceNames -> size() - 1] << "\n";
     }
 }
 
@@ -129,7 +127,7 @@ SpatialSEIR::PlatformContainer::~PlatformContainer()
 
 SpatialSEIR::OCLProvider::OCLProvider()
 {
-    std::cout << "Setting up OpenCL Interface\n";
+    lssCout << "Setting up OpenCL Interface\n";
     try
     {
         // Allocate space for platforms and current config
@@ -169,7 +167,7 @@ SpatialSEIR::OCLProvider::OCLProvider()
         clblasStatus err = clblasSetup();
         if (err != CL_SUCCESS)
         {
-            std::cout << "Error setting up clBLAS library: " << err << "\n";
+            lssCout << "Error setting up clBLAS library: " << err << "\n";
             throw(-1);
         }
 
@@ -205,26 +203,26 @@ void SpatialSEIR::OCLProvider::printSummary()
     unsigned int i,j;
     if (platforms -> size() == 0)
     {
-        std::cout << "No OpenCL Platforms Detected\n";
+        lssCout << "No OpenCL Platforms Detected\n";
         return;
     }
     for (i = 0; i < (platforms -> size()); i++)
     {
-        std::cout << "Platform " << i << ": "  << (*(((*platforms)[i]) -> platform)) -> getInfo<CL_PLATFORM_NAME>() << "\n";
-        std::cout << "  Devices: \n";
+        lssCout << "Platform " << i << ": "  << (*(((*platforms)[i]) -> platform)) -> getInfo<CL_PLATFORM_NAME>() << "\n";
+        lssCout << "  Devices: \n";
         for (j = 0; j < (((*(platforms))[i]) -> devices) -> size(); j++)
         {
-            std::cout << "  " << j << ". " <<  (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_NAME>() << "\n";
-            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << "Type: " << 
+            lssCout << "  " << j << ". " <<  (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_NAME>() << "\n";
+            lssCout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << "Type: " << 
                 ((*(((*(platforms))[i]) -> deviceTypes))[j])  << "\n";
-            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << "Supports Double Precision: " << 
+            lssCout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << "Supports Double Precision: " << 
                 ((*(((*(platforms))[i]) -> doublePrecision))[j])  << "\n";
-            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
+            lssCout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
                 "Preferred double vector width: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> 
                 getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() << "\n";
-            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
+            lssCout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
                 "Local Memory: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_LOCAL_MEM_SIZE>() << "\n";
-            std::cout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
+            lssCout << (j < 10 ? " " : (j < 100 ? "  " : (j < 1000 ? "   " : "   "))) << "    " << 
                 "Max Compute Units: " << (*(((*(((*(platforms))[i]) -> devices))[j]) -> device)) -> getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << "\n";
         }
 
@@ -310,15 +308,15 @@ cl::Kernel SpatialSEIR::OCLProvider::buildProgramForKernel(std::string kernelFil
         log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
         if (log.find("warning") != std::string::npos)
         {
-            std::cout << "Warnings generated while building kernel.\n";
-            std::cout << "CL_PROGRAM_BUILD_LOG: \n" << log << "\n";
+            lssCout << "Warnings generated while building kernel.\n";
+            lssCout << "CL_PROGRAM_BUILD_LOG: \n" << log << "\n";
         }
         program.createKernels(&kernels);
     }
     catch(cl::Error e)
     {
-        std::cout << "CL Error in: " << e.what()<< "\n";
-        std::cout << "CL Error: " << e.err()<< "\n";
+        lssCout << "CL Error in: " << e.what()<< "\n";
+        lssCout << "CL Error: " << e.err()<< "\n";
         log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
         err = e.err();
     }
@@ -347,19 +345,19 @@ SpatialSEIR::OCLProvider::OCLProvider()
 
 void SpatialSEIR::OCLProvider::setDevice(int platformId, int deviceId)
 {
-    std::cout << "OpenCL not supported.\n";
+    lssCout << "OpenCL not supported.\n";
     throw(-1);
 }
 
 void SpatialSEIR::OCLProvider::printSummary()
 {
-    std::cout << "OpenCL not supported.\n";
+    lssCout << "OpenCL not supported.\n";
     throw(-1);
 }
 
 int SpatialSEIR::OCLProvider::test()
 {
-    std::cout << "OpenCL not supported.\n";
+    lssCout << "OpenCL not supported.\n";
     throw(-1);
 }
 
@@ -368,13 +366,13 @@ double SpatialSEIR::OCLProvider::FC_R_Star(int nLoc, int nTpts, int* S_star,
                                     int* I, int* R, double* p_se,
                                     double* p_rs, double* p_ir)
 {
-    std::cout << "OpenCL not supported.\n";
+    lssCout << "OpenCL not supported.\n";
     throw(-1);
 }
 
 void SpatialSEIR::OCLProvider::calculateP_SE(ModelContext* ctx)
 {
-    std::cout << "OpenCL not supported.\n";
+    lssCout << "OpenCL not supported.\n";
     throw(-1);
 }
 

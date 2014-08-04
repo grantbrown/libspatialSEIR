@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,13 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
     /*
      *
      * Implement Full Conditional for S0
@@ -203,7 +198,7 @@ namespace SpatialSEIR
 
     void FC_S0::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling S0\n";}
+        if (verbose){lssCout << "Sampling S0\n";}
         (*currentSampler) -> drawSample();
     }
 
@@ -241,7 +236,7 @@ namespace SpatialSEIR
 
     void FC_S0::printDebugInfo(int startLoc)
     {
-        std::cout << "Error Sampling S0, location: " << startLoc << ", value: " << ((*A0) -> S0)[startLoc] << "\n";
+        lssCout << "Error Sampling S0, location: " << startLoc << ", value: " << ((*A0) -> S0)[startLoc] << "\n";
         int j, compIdx;
         int nTpts = *((*S) -> nrow); 
         double p_se_val, p_ei_val;
@@ -251,7 +246,7 @@ namespace SpatialSEIR
         if (((*A0) -> S0)[startLoc] < 0 || 
             ((*A0) -> E0)[startLoc] < 0)
         {
-            std::cout << "Invalid Value.\n";
+            lssCout << "Invalid Value.\n";
             return;
         }
 
@@ -266,11 +261,11 @@ namespace SpatialSEIR
             p_se_val = (*p_se)[compIdx];
             if (Estar_val > S_val || Istar_val > E_val)
             {
-                std::cout << "Bounds error detected, time point: " << j << "\n";
-                std::cout << "S: " << S_val << "\n";
-                std::cout << "E: " << E_val << "\n";
-                std::cout << "E_star: " << Estar_val << "\n";
-                std::cout << "I_star: " << Istar_val << "\n";
+                lssCout << "Bounds error detected, time point: " << j << "\n";
+                lssCout << "S: " << S_val << "\n";
+                lssCout << "E: " << E_val << "\n";
+                lssCout << "E_star: " << Estar_val << "\n";
+                lssCout << "I_star: " << Istar_val << "\n";
                 return;
             }
             else
@@ -280,7 +275,7 @@ namespace SpatialSEIR
 
                 if (!std::isfinite(output))
                 {
-                    std::cout << "Calculation Error Detected, time point: " << j << "\n";
+                    lssCout << "Calculation Error Detected, time point: " << j << "\n";
                     return;
                 }
             }

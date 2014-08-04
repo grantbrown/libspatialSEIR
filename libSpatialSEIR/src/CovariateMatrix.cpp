@@ -1,19 +1,15 @@
 /*Copyright 2014, Grant Brown*/
 
 #include <CovariateMatrix.hpp>
-#include <iostream>
-#include <sstream>
 #include <cmath>
 #include <cblas.h>
 #include <LSS_FullConditional.hpp>
 #include <Eigen/Core>
 #include <Eigen/LU>
+#include <IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     int CovariateMatrix::genFromDataStream(double *indata_x,
                                            double *indata_z, 
                                            int *inrow_x, 
@@ -177,7 +173,7 @@ namespace SpatialSEIR
         }
         catch(int e)
         {
-            std::cout << "Error calculating eta, code: " << e << std::endl;
+            lssCout << "Error calculating eta, code: " << e << "\n";
             return(-1);
         }
         return(0);
@@ -225,7 +221,7 @@ namespace SpatialSEIR
         }
         catch(int e)
         {
-            std::cout << "Error calculating eta, code: " << e << std::endl;
+            lssCout << "Error calculating eta, code: " << e << "\n";
             return(-1);
         }
         return(0);

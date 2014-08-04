@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,9 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
-
+#include<IOProvider.hpp>
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     IndexedCompartmentSliceSampler::IndexedCompartmentSliceSampler(ModelContext* context_,
                                                                CompartmentFullConditional* compartmentFC_,
                                                                int* compartmentData_)
@@ -52,7 +47,7 @@ namespace SpatialSEIR
 
     void IndexedCompartmentSliceSampler::drawSample()
     {
-        std::cerr << "Block slice sampling not yet implemented.\n";
+        lssCout << "Block slice sampling not yet implemented.\n";
         throw(-1); 
     }
 }

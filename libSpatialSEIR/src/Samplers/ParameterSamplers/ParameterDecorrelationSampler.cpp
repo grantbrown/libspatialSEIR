@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     ParameterDecorrelationSampler::ParameterDecorrelationSampler(ModelContext* context_,
                                                                        ParameterFullConditional* paramFC_,
                                                                        double* param_,
@@ -50,7 +46,7 @@ namespace SpatialSEIR
 
     void ParameterDecorrelationSampler::drawSample()
     {
-        std::cout << "Decorrelation sampler not yet implemented\n";
+        lssCout << "Decorrelation sampler not yet implemented\n";
         throw(-1); 
     }
 }

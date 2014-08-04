@@ -1,15 +1,11 @@
 /*Copyright 2014, Grant Brown*/
 
-#include <iostream>
-#include <fstream>
 #include <cmath>
 #include <DistanceMatrix.hpp>
+#include <IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     DistanceMatrix::DistanceMatrix()
     {
         this -> hasAlloc = new int;
@@ -73,7 +69,7 @@ namespace SpatialSEIR
     {
         if (*hasAlloc!=1)
         {
-            std::cout << "Distance Matrix: no data to standardize.\n";
+            lssCout << "Distance Matrix: no data to standardize.\n";
             throw(-1);
         }
         int i,j;

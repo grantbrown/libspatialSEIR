@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     double dbeta(double x, double a, double b)
     {
         double out = (a-1)*std::log(x) + 
@@ -142,7 +138,7 @@ namespace SpatialSEIR
 
     void FC_Gamma_IR::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling gamma_IR  \n";}
+        if (verbose){lssCout << "Sampling gamma_IR  \n";}
         (*currentSampler) -> drawSample();
     }
 

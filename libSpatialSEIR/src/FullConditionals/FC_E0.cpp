@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     /*
      *
      * Implement full conditional for E0
@@ -240,7 +236,7 @@ namespace SpatialSEIR
 
     void FC_E0::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling E0\n";}
+        if (verbose){lssCout << "Sampling E0\n";}
         (*currentSampler) -> drawSample();
     }
 

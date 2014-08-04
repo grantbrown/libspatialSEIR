@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     ParameterJointMetropolisSampler_OCL::ParameterJointMetropolisSampler_OCL(ModelContext* context_,
                                                                        ParameterFullConditional* paramFC_,
                                                                        double* param_) 
@@ -58,7 +54,7 @@ namespace SpatialSEIR
         initVal = (*paramFC) -> getValue();
         if (! std::isfinite(initVal))
         {
-            std::cerr << "Compartment sampler starting from value of zero probability.\n";
+            lssCout << "Compartment sampler starting from value of zero probability.\n";
             throw(-1);
         }
         for (i = 0; i < totalPoints; i++)
@@ -89,7 +85,7 @@ namespace SpatialSEIR
         }
         if (! std::isfinite((*paramFC) -> getValue()))
         {
-            std::cout << "Impossible value selected.\n";
+            lssCout << "Impossible value selected.\n";
             throw(-1);
         } 
         

@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,13 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
     /*
      *
      * Implement the full conditional for the R->S transition 
@@ -156,7 +151,7 @@ namespace SpatialSEIR
 
     void FC_Beta_P_RS::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling Beta_P_RS\n";}
+        if (verbose){lssCout << "Sampling Beta_P_RS\n";}
         (*currentSampler) -> drawSample();
     }
 

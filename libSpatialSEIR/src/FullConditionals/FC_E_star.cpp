@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,10 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
+#include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     /*
      *
      * Implement the full conditional distribution for E_Star
@@ -226,8 +222,8 @@ namespace SpatialSEIR
 
     void FC_E_Star::printDebugInfo(int loc, int tpt)
     {
-        std::cout << "E_star debug info, location " << loc << ", time " << tpt << "\n";     
-        std::cout << "...looking for problems\n";
+        lssCout << "E_star debug info, location " << loc << ", time " << tpt << "\n";     
+        lssCout << "...looking for problems\n";
 
         int j, compIdx;
         int nTpts = *((*S) -> nrow); 
@@ -243,7 +239,7 @@ namespace SpatialSEIR
         compIdx = loc*nTpts + tpt;
         for (j = tpt; j < nTpts; j++)
         {
-            std::cout << "time " << j << "\n";
+            lssCout << "time " << j << "\n";
             p_ei_val = (*p_ei)[j];    
             Estar_val = ((*E_star) -> data)[compIdx];
             S_val = ((*S) -> data)[compIdx];
@@ -255,10 +251,10 @@ namespace SpatialSEIR
                     Istar_val > E_val)
 
             {
-                std::cout << "Bounds Error Detected:\n";
-                std::cout << "E_star: " << Estar_val << "\n";
-                std::cout << "S: " << S_val << "\n";
-                std::cout << "I_star: " << Istar_val << "\n";
+                lssCout << "Bounds Error Detected:\n";
+                lssCout << "E_star: " << Estar_val << "\n";
+                lssCout << "S: " << S_val << "\n";
+                lssCout << "I_star: " << Istar_val << "\n";
                 return;
             }
             else
@@ -268,13 +264,13 @@ namespace SpatialSEIR
                        
                 if (!std::isfinite(output))
                 {
-                    std::cout << "Computation Error Detected: " << tpt << "\n";
-                    std::cout << "E_star: " << Estar_val << "\n";
-                    std::cout << "S: " << S_val << "\n";
-                    std::cout << "E: " << E_val << "\n";
-                    std::cout << "I_star: " << Istar_val << "\n";
-                    std::cout << "p_se: " << p_se_val << "\n";
-                    std::cout << "p_ei: " << p_ei_val << "\n";
+                    lssCout << "Computation Error Detected: " << tpt << "\n";
+                    lssCout << "E_star: " << Estar_val << "\n";
+                    lssCout << "S: " << S_val << "\n";
+                    lssCout << "E: " << E_val << "\n";
+                    lssCout << "I_star: " << Istar_val << "\n";
+                    lssCout << "p_se: " << p_se_val << "\n";
+                    lssCout << "p_ei: " << p_ei_val << "\n";
                     return; 
                 }
             }
@@ -291,16 +287,16 @@ namespace SpatialSEIR
 
         if (!std::isfinite(output))
         {
-            std::cout << "Combinatorics Error Detectd:\n";
-            std::cout << "Computation Error Detected:\n";
-            std::cout << "E_star: " << Estar_val << "\n";
-            std::cout << "S: " << S_val << "\n";
-            std::cout << "E: " << E_val << "\n";
-            std::cout << "I_star: " << Istar_val << "\n";
-            std::cout << "p_se: " << p_se_val << "\n";
-            std::cout << "p_ei: " << p_ei_val << "\n";
-            std::cout << "E_star_sum: " << E_star_sum << "\n";
-            std::cout << "I_star_sum: " << I_star_sum << "\n";
+            lssCout << "Combinatorics Error Detectd:\n";
+            lssCout << "Computation Error Detected:\n";
+            lssCout << "E_star: " << Estar_val << "\n";
+            lssCout << "S: " << S_val << "\n";
+            lssCout << "E: " << E_val << "\n";
+            lssCout << "I_star: " << Istar_val << "\n";
+            lssCout << "p_se: " << p_se_val << "\n";
+            lssCout << "p_ei: " << p_ei_val << "\n";
+            lssCout << "E_star_sum: " << E_star_sum << "\n";
+            lssCout << "I_star_sum: " << I_star_sum << "\n";
             return;
         }    
        return;
@@ -332,7 +328,7 @@ namespace SpatialSEIR
 
     void FC_E_Star::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling E_star\n";}
+        if (verbose){lssCout << "Sampling E_star\n";}
         (*currentSampler) -> drawSample();
     }
 

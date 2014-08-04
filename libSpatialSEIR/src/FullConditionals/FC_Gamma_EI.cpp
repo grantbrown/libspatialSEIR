@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,7 +11,7 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
-
+#include<IOProvider.hpp>
 
 double dbeta(double x, double a, double b)
 {
@@ -26,10 +24,6 @@ double dbeta(double x, double a, double b)
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
-
 
     FC_Gamma_EI::FC_Gamma_EI(ModelContext *_context,
                      CompartmentalModelMatrix *_I_star,
@@ -141,7 +135,7 @@ namespace SpatialSEIR
 
     void FC_Gamma_EI::sample(int verbose)
     {
-        if (verbose){std::cout << "Sampling gamma_EI\n";}
+        if (verbose){lssCout << "Sampling gamma_EI\n";}
         (*currentSampler) -> drawSample();
     }
 

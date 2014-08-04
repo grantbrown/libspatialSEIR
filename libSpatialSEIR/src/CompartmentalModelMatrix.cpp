@@ -1,13 +1,10 @@
 /*Copyright 2014, Grant Brown*/
-#include <iostream>
-#include <fstream>
 #include <stdint.h>
 #include <CompartmentalModelMatrix.hpp>
+#include <IOProvider.hpp>
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
 
     int CompartmentalModelMatrix::genFromDataStream(int *indata,
                                                     int *inrow, 

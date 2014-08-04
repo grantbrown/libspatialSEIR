@@ -1,5 +1,3 @@
-#include<iostream>
-#include<stdio.h>
 #include<math.h>
 #include<cstring>
 #include<vector>
@@ -13,12 +11,9 @@
 #include<CompartmentalModelMatrix.hpp>
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
-
+#include<IOProvider.hpp>
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
-
     ParameterSingleMetropolisSampler::ParameterSingleMetropolisSampler(ModelContext* context_,
                                                                        ParameterFullConditional* paramFC_,
                                                                        double* param_) 

@@ -18,8 +18,6 @@
 
 namespace SpatialSEIR
 {
-    using std::cout;
-    using std::endl;
     int ModelContext::totalS()
     {
         return(this->S->marginSum(3,-1));
