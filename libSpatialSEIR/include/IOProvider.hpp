@@ -24,6 +24,7 @@ namespace SpatialSEIR
     };
 
 
+    /** LSSCout wraps either std::cout or Rcpp::Rcout, depending on the build time variable "LSS USE STDIO"*/
     struct LSSCout {};
 
     extern LSSCout lssCout;
