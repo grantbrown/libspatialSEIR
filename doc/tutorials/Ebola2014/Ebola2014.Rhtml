@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 8/3/2014</h5>
+          <h5>Last Updated: 8/4/2014</h5>
         </div>
       </div>
     </div>
@@ -122,7 +122,17 @@
         software library can be tracked on the github page linked above. A high priority at this time is making the library
         more portable and easier to use.</p>
         </div>
+        <div class="col-sm-1"></div>
         <br/>
+        <div class = "col-sm-10 col-sm-offset-1">
+          <a id="intro-abstract-sect" class="anchor">
+          <h3>Summary of Recent Changes</h3>
+          </a>
+          <p>The epidemic is evolving rapidly.</p>
+        </div>
+        <div class="col-sm-1"></div>
+        
+        
         <div class = "col-sm-10 col-sm-offset-1">
         <a id="intro-outbreak-sect" class="anchor">
         <h3>The Outbreak</h3>
@@ -150,11 +160,9 @@ library(XML) # Load the XML library to read in data from Wikipedia
 documentCompilationMode = "debug"
 
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 50)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
 extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
-
-##
 
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
@@ -406,13 +414,13 @@ daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
 # For this analysis, let's use orthogonal polynomials of degree 3 for the 
 # temporal basis. Analysis 2 will compare the prediction performance of the 
 # polynomial based model to a spline basis. 
-Z = poly(daysSinceJan, degree=3)
+Z = poly(daysSinceJan, degree=4)
 
 # We're going to want to do prediction, so let's generate the fixed and time 
 # varying prediction covariate matrices now as well
 X.predict = cbind(diag(3))
 Z.predict = predict.poly(Z, c(max(daysSinceJan) + 1, 
-                              max(daysSinceJan) + seq(10,60,10)))
+                              max(daysSinceJan) + seq(2,10,2)))
 
 # The time varying covariates are the same for each spatial location for this
 # analysis, so we just duplicate them row-wise
@@ -424,7 +432,7 @@ X.pred = cbind(X.predict[rep(1:nrow(X.predict),
                              each = nrow(Z.predict)/nrow(X)),], Z.predict)
 
 # Define prediction offsets. 
-offset.pred = c(1,rep(10, 6))
+offset.pred = c(1,seq(2,10,2))
 
 # There's no reinfection process for Ebola, but we still need to provide dummy
 # values for the reinfection terms. This will be changed (along with most of 
@@ -769,9 +777,9 @@ end.rcode-->
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
 
-c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:6,8:10)]
-c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:6,8:10)]
-c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:6,8:10)]
+c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:7,9:11)]
+c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:7,9:11)]
+c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:7,9:11)]
 
 c1$gamma_ei = 1-exp(-c1$gamma_ei)
 c1$gamma_ir = 1-exp(-c1$gamma_ir)
@@ -1017,7 +1025,8 @@ While the basic reproductive number is a useful quantity to know, it does not di
              dataRow$BetaP_SE_2,
              dataRow$BetaP_SE_3,
              dataRow$BetaP_SE_4,
-             dataRow$BetaP_SE_5)
+             dataRow$BetaP_SE_5,
+             dataRow$BetaP_SE_6)
     #S0 = c(dataRow$S_0_26 - dataRow$E_star_0_26,
     #       dataRow$S_1_26 - dataRow$E_star_1_26,
     #       dataRow$S_2_26 - dataRow$E_star_2_26)
@@ -1054,7 +1063,7 @@ While the basic reproductive number is a useful quantity to know, it does not di
 
 
 pred.dates = c(rptDate[(which.max(rptDate))], 
-               rptDate[(which.max(rptDate))] + seq(10,60,10))
+               rptDate[(which.max(rptDate))] + seq(2,10,2))
 pred.xlim = c(min(rptDate), max(pred.dates))
 lastIdx = nrow(SEIRmodels[[1]]$I)
 Guinea.Pred = preds[[1]]$I[,1]
@@ -1161,8 +1170,8 @@ end.rcode-->
 <!--begin.rcode
 library(splines)
 daysSinceJan.predict = c(max(daysSinceJan) + 1, max(daysSinceJan) 
-                         + seq(10,60,10))
-splineBasis = ns(daysSinceJan, df = 3)
+                         + seq(2,10,2))
+splineBasis = ns(daysSinceJan, df = 4)
 splineBasis.predict = predict(splineBasis, daysSinceJan.predict)
 
 # Guinea, Liberia, Sierra Leone
@@ -1306,9 +1315,9 @@ figure9 = function()
 ## Parameter Estimates 
 
 
-c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:6,8:10)]
-c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:6,8:10)]
-c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:6,8:10)]
+c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:7,9:11)]
+c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:7,9:11)]
+c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:7,9:11)]
 
 c1$gamma_ei = 1-exp(-c1$gamma_ei)
 c1$gamma_ir = 1-exp(-c1$gamma_ir)
@@ -1381,7 +1390,7 @@ preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
 
 
 pred.dates = c(rptDate[(which.max(rptDate))],
-               rptDate[(which.max(rptDate))] + seq(10,60,10))
+               rptDate[(which.max(rptDate))] + seq(2,10,2))
 pred.xlim = c(min(rptDate), max(pred.dates))
 lastIdx = nrow(SEIRmodels.spline[[1]]$I)
 Guinea.Pred = preds[[1]]$I[,1]
@@ -1423,7 +1432,7 @@ figure11 = function()
   plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), xlim = pred.xlim,
        main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, ylab = "Infectious Count", xlab = "Date")
-  abline(h = seq(0,10000,100), lty = 2, col = "lightgrey")
+  abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
   lines(rptDate, Guinea.I.Est[1,], lty = 2)
   lines(rptDate, Guinea.I.Est[2,], lty = 2)
   lines(rptDate, Guinea.I.Est[3,], lty = 2)
@@ -1441,7 +1450,7 @@ figure11 = function()
        main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "blue", ylab = "Infectious Count", 
        xlab = "Date")
-  abline(h = seq(0,10000,100), lty = 2, col = "lightgrey")
+  abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
   lines(rptDate, Liberia.I.Est[1,], lty = 2, col = "blue")
   lines(rptDate, Liberia.I.Est[2,], lty = 2, col = "blue")
   lines(rptDate, Liberia.I.Est[3,], lty = 2, col = "blue")
@@ -1459,7 +1468,7 @@ figure11 = function()
        main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "red",ylab = "Infectious Count", 
        xlab = "Date")
-  abline(h = seq(0,10000,100), lty = 2, col = "lightgrey")
+  abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
   lines(rptDate, SierraLeone.I.Est[1,], lty = 2, col = "red")
   lines(rptDate, SierraLeone.I.Est[2,], lty = 2, col = "red")
   lines(rptDate, SierraLeone.I.Est[3,], lty = 2, col ="red")
@@ -1512,7 +1521,7 @@ end.rcode-->
 <div class='container' id ="pred_app" style="position: relative; max-width: 100%; height:100%">
   <div class = "row" ng-controller='rChartsCtrl_pred' >
     <div class="col-sm-3">
-      <input id='zoom-map-slider-pred' type='range' min=1 max=179 ng-model='pred_Day' width=200>
+      <input id='zoom-map-slider-pred' type='range' min=1 max=39 ng-model='pred_Day' width=200>
        <span>Day: <span id ="zoom-map-day-counter-pred" ng-bind='pred_Day'></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play-pred" type="button">Play</button></div>
