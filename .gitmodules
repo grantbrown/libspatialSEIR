@@ -1,3 +1,6 @@
 [submodule "clBLAS"]
 	path = clBLAS
 	url = https://github.com/grantbrown/clBLAS.git
+[submodule "eigen"]
+	path = eigen
+	url = https://github.com/grantbrown/eigen.git
