@@ -11,7 +11,7 @@ SET(OPEN_CL_SUPPORT false)
 # libspatialSEIR requires the eigen3 library, so here we must 
 # specify the location. 
 # TODO: Add platform specific logic here to handle default eigen location
-SET(EIGEN3_INCLUDE_DIR "/usr/local/include/eigen3")
+SET(EIGEN3_INCLUDE_DIR "./eigen/")
 
 project(libSpatialSEIR)
 
