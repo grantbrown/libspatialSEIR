@@ -471,12 +471,45 @@ makePrediction = function(maxIdx, seedVal=123123)
   preds = lapply((nrow(chain) - floor(nrow(chain)/2)):
                     nrow(chain), predict.i, maxIdx = maxIdx, chainFile=chain)  
   
-  return(preds)
+    
+  Guinea.Pred = preds[[1]]$I[,1]
+  Liberia.Pred = preds[[1]]$I[,2]
+  SierraLeone.Pred = preds[[1]]$I[,3]
+
+  for (predIdx in 2:length(preds))
+  {
+     Guinea.Pred = rbind(Guinea.Pred, preds[[predIdx]]$I[,1])
+     Liberia.Pred = rbind(Liberia.Pred, preds[[predIdx]]$I[,2])
+     SierraLeone.Pred = rbind(SierraLeone.Pred, preds[[predIdx]]$I[,3])
+  }
+  
+  Guinea.mean = apply(Guinea.Pred, 2, mean)
+  Liberia.mean = apply(Liberia.Pred, 2, mean)
+  SierraLeone.mean = apply(SierraLeone.Pred, 2, mean)
+  
+  Guinea.LB = apply(Guinea.Pred, 2, quantile, probs = c(0.05))
+  Guinea.UB = apply(Guinea.Pred, 2, quantile, probs = c(0.95))
+  
+  Liberia.LB = apply(Liberia.Pred, 2, quantile, probs = c(0.05))
+  Liberia.UB = apply(Liberia.Pred, 2, quantile, probs = c(0.95))
+  
+  SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
+  SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
+
+
+  return(list("Guinea" = list("Est" = Guinea.I.Est, "Pred" = cbind(Guinea.mean, Guinea.LB, Guinea.UB)),
+              "Liberia" = list("Est" = Liberia.I.Est, "Pred" = cbind(Liberia.mean, Liberia.LB, Liberia.UB)),
+              "SierraLeone" = list("Est" = SierraLeone.I.Est, "Pred" = cbind(SierraLeone.mean, SierraLeone.LB, SierraLeone.UB))))
+  
 }
 
 
 maxIdxList = lapply(c(15,20, 25), makePrediction)
 
+plotPredictions = functions(prediction)
+{
+    
+}
 
 
 end.rcode-->
