@@ -128,7 +128,17 @@
           <a id="intro-abstract-sect" class="anchor">
           <h3>Summary of Recent Changes</h3>
           </a>
-          <p>The epidemic is evolving rapidly.</p>
+          <ul>
+            <li><Strong>July 30</strong> Previous predictions of mid-fall resolution of epidemic begin to shift.</li>
+            <li><Strong>Aug 3</strong> Predicted epidmic curves start to strongly favor a uniformly worsening situation.</li>
+            <li><Strong>Aug 5</strong> Models begin to show catastrophic predictions. Epidemic is changing too quickly for these simple models.</li>
+            <ul>
+              <li>Shorten prediction window</li>
+              <li>Increase intensity process flexibility (quartic rather than cubic)</li>
+              <li>Recall that these models can't account for changing inteventions, of which there are many. The predictions are therefore under the assumption that
+              the epidemic will continue to evolve according to the same process it has so far.</li>
+            </ul>
+          </ul>
         </div>
         <div class="col-sm-1"></div>
         
@@ -156,8 +166,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-#documentCompilationMode = "release"
-documentCompilationMode = "debug"
+documentCompilationMode = "release"
+#documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
@@ -790,6 +800,7 @@ c3$gamma_ir = 1-exp(-c3$gamma_ir)
 colnames(c1) = c("Guinea Intercept", "Liberia Intercept", 
                  "Sierra Leone Intercept", "Linear Time Component", 
                  "Quadratic Time Component", "Cubic Time Component",
+                 "Quartic Time Component",
                  "Spatial Dependence Parameter", "E to I probability", 
                  "I to R probability")
 colnames(c2) = colnames(c1)
@@ -1328,6 +1339,7 @@ c3$gamma_ir = 1-exp(-c3$gamma_ir)
 colnames(c1) = c("Guinea Intercept", "Liberia Intercept", 
                  "Sierra Leone Intercept", "Linear Time Component", 
                  "Quadratic Time Component", "Cubic Time Component",
+                 "Quartic Time Component",
                  "Spatial Dependence Parameter", "E to I probability", 
                  "I to R probability")
 colnames(c2) = colnames(c1)
@@ -1760,7 +1772,7 @@ interpMatrix = cbind(guinea.interp.pred$y, liberia.interp.pred$y,sierraleone.int
 
 cutvals = cut(interpMatrix, breaks = 9)
 interpMatrix.cut = matrix(as.numeric(cutvals), nrow = nrow(interpMatrix))
-upperVals = as.numeric(lapply(strsplit(c(gsub("[(]", "", gsub("]", "", unique(as.character(cutvals))))), ","), function(x){return(x[2])}))
+upperVals = as.numeric(lapply(strsplit(c(gsub("[(]", "", gsub("]", "", unique(as.character(levels(cutvals)))))), ","), function(x){return(x[2])}))
 upperVals = round(upperVals[order(upperVals)],0)
 
 hcol = c("#ffffef", "#fff7bf", "#fee39f", "#fec45f", "#fe993f", "#ec702f", "#cc4c1f", "#993402", "#662520")

@@ -87,9 +87,8 @@ library(splines) # Load the splines library to build the temporal basis.
 #documentCompilationMode = "release"
 documentCompilationMode = "debug"
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 50)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
-extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
@@ -112,7 +111,6 @@ uncumulate = function(x)
     out = c(x[2:length(x)]-x[1:(length(x)-1)])
     ifelse(out >= 0, out, 0)
 }
-
 
 makePrediction = function(maxIdx, seedVal=123123)
 {
@@ -152,7 +150,8 @@ makePrediction = function(maxIdx, seedVal=123123)
   daysSinceJan_whole = as.numeric(rptDate - as.Date("2014-01-01"))
   
   daysSinceJan.predict = c(daysSinceJan_whole[(length(daysSinceJan)+2):length(daysSinceJan_whole)], max(daysSinceJan_whole) 
-                           + seq(10,60,10))
+                           + c(1,seq(10,60,10)))
+  daysSinceJan.predict = ((max(daysSinceJan)+1):max(daysSinceJan.predict))[1:14]
   
   splineBasis = ns(daysSinceJan, df = 3)
   splineBasis.predict = predict(splineBasis, daysSinceJan.predict)
@@ -497,23 +496,104 @@ makePrediction = function(maxIdx, seedVal=123123)
   SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
 
 
-  return(list("Guinea" = list("Est" = Guinea.I.Est, "Pred" = cbind(Guinea.mean, Guinea.LB, Guinea.UB)),
+  
+  
+  return(list("Dates" = list("Est"=daysSinceJan + as.Date("2014-01-01"), "Pred" = daysSinceJan.predict + as.Date("2014-01-01")), 
+              "Data" = list("Guinea" = list("Est" = Guinea.I.Est, "Pred" = cbind(Guinea.mean, Guinea.LB, Guinea.UB)),
               "Liberia" = list("Est" = Liberia.I.Est, "Pred" = cbind(Liberia.mean, Liberia.LB, Liberia.UB)),
-              "SierraLeone" = list("Est" = SierraLeone.I.Est, "Pred" = cbind(SierraLeone.mean, SierraLeone.LB, SierraLeone.UB))))
+              "SierraLeone" = list("Est" = SierraLeone.I.Est, "Pred" = cbind(SierraLeone.mean, SierraLeone.LB, SierraLeone.UB))),
+            "maxIdx" = maxIdx))
   
 }
 
 
-maxIdxList = lapply(c(15,20, 25), makePrediction)
+maxIdxList = lapply(20:30, makePrediction)
 
-plotPredictions = functions(prediction)
+plotPredictions = function(prediction, main="PredPlot")
 {
+     graphDates = c(prediction$Dates$Est, prediction$Dates$Pred)
+     breakpoint = mean(c(max(prediction$Dates$Est), min(prediction$Dates$Pred)))
+     pred.xlim = c(min(graphDates), max(graphDates))
+     pred.dates = prediction$Dates$Pred
+     ylim = c(0, max(c(max(prediction$Data$Guinea$Est),
+                 max(prediction$Data$Guinea$Pred),
+                 max(prediction$Data$Liberia$Est),
+                 max(prediction$Data$Liberia$Pred),
+                 max(prediction$Data$SierraLeone$Est),
+                 max(prediction$Data$SierraLeone$Pred))))
+     ## Guinea 
+    par(mfrow = c(3,1))
+    plot(prediction$Dates$Est, prediction$Data$Guinea$Est[1,], ylim = ylim, xlim = pred.xlim,
+         main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
+         type = "l", lwd = 2, ylab = "Infectious Count", xlab = "Date")
+    abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
+    lines(prediction$Dates$Est, prediction$Data$Guinea$Est[1,], lty = 2)
+    lines(prediction$Dates$Est, prediction$Data$Guinea$Est[2,], lty = 2)
+    lines(prediction$Dates$Est, prediction$Data$Guinea$Est[3,], lty = 2)
     
+    lines(prediction$Dates$Pred,prediction$Data$Guinea$Pred[,1], 
+            lty=1, col = "black", lwd = 1)
+    lines(prediction$Dates$Pred,prediction$Data$Guinea$Pred[,2], 
+            lty=2, col = "black", lwd = 1)
+    lines(prediction$Dates$Pred,prediction$Data$Guinea$Pred[,3], 
+            lty=2, col = "black", lwd = 1)
+    abline(v = breakpoint, lty = 3, col= "lightgrey")
+    
+    ## Liberia 
+    plot(prediction$Dates$Est, prediction$Data$Liberia$Est[1,], ylim = ylim,  xlim = pred.xlim,
+         main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
+         type = "l", lwd = 2, col = "blue", ylab = "Infectious Count", 
+         xlab = "Date")
+    abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
+    lines(prediction$Dates$Est, prediction$Data$Liberia$Est[1,], lty = 2, col = "blue")
+    lines(prediction$Dates$Est, prediction$Data$Liberia$Est[2,], lty = 2, col = "blue")
+    lines(prediction$Dates$Est, prediction$Data$Liberia$Est[3,], lty = 2, col = "blue")
+    
+    lines(pred.dates,prediction$Data$Liberia$Pred[,1], 
+            lty=1, col = "blue", lwd = 1)
+    lines(pred.dates,prediction$Data$Liberia$Pred[,2], 
+            lty=2, col = "blue", lwd = 1)
+    lines(pred.dates,prediction$Data$Liberia$Pred[,3], 
+            lty=2, col = "blue", lwd = 1)
+    abline(v = breakpoint, lty = 3, col= "lightgrey")
+    
+    ## Sierra Leone
+    plot(prediction$Dates$Est, prediction$Data$SierraLeone$Est[1,], ylim = ylim,  xlim = pred.xlim,
+         main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
+         type = "l", lwd = 2, col = "red",ylab = "Infectious Count", 
+         xlab = "Date")
+    abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
+    lines(prediction$Dates$Est, prediction$Data$SierraLeone$Est[1,], lty = 2, col = "red")
+    lines(prediction$Dates$Est, prediction$Data$SierraLeone$Est[2,], lty = 2, col = "red")
+    lines(prediction$Dates$Est, prediction$Data$SierraLeone$Est[3,], lty = 2, col ="red")
+    
+    lines(pred.dates,prediction$Data$SierraLeone$Pred[,1], 
+            lty=1, col = "red", lwd = 1)
+    lines(pred.dates,prediction$Data$SierraLeone$Pred[,2], 
+            lty=2, col = "red", lwd = 1)
+    lines(pred.dates,prediction$Data$SierraLeone$Pred[,3], 
+            lty=2, col = "red", lwd = 1)
+    abline(v = breakpoint, lty = 3, col= "lightgrey")
 }
 
 
 end.rcode-->
       </div>
+<div class='container' ng-app="data_app" ng-controller='imgController'>
+<input id='zoom-map-slider' type='range' min=20 max=30 ng-model='DateIdx' width=200>
+<span>Date: <span id ="zoom-map-day-counter" ng-bind='DateIdx'></span></span>
+
+<!--begin.rcode echo=FALSE, dpi=150, results='asis'
+for (i in 1:length(maxIdxList))
+{
+  cat(paste("<div id=plot_", i , ">\n", sep = ""))
+  cat(paste("<h3>Predictions as of", rptDate[maxIdxList[[i]]$maxIdx], "</h3>",sep =" "))
+  plotPredictions(maxIdxList[[i]])
+  cat("</div>\n")
+}
+end.rcode-->
+</div>
+
     </div>
     <div class="col-sm-1">
     </div>
@@ -545,6 +625,16 @@ end.rcode-->
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="./bootstrap/js/bootstrap.min.js"></script>
+<script src='http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js' type='text/javascript'></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js"></script>
+<script type="text/javascript">
+<!--begin.rcode echo=FALSE, results='asis'
+  library(rCharts)
+  outdates = lapply(rptDate[20:30],I)
+  names(outdates) = 1:11 
+  cat("var dateIdx = ", toJSON2(outdates), ";\n")
+end.rcode-->
+</script>
 <script type="text/javascript">
       $(".code-button").click(function(){
           $(this).next().animate({
