@@ -1,6 +1,6 @@
-PKG_CPPFLAGS=-I/usr/local/include/eigen3 ./LSS/include ./LSS/include/DataStructures ./LSS/include/FullConditionals 
+PKG_CPPFLAGS=-I../../../eigen ./LSS/include ./LSS/include/DataStructures ./LSS/include/FullConditionals 
 
-SOURCES=$(./*.cpp wildcard LSS/src/*.cpp LSS/src/FullConditionals/*.cpp LSS/src/IterationTasks/*.cpp LSS/src/Samplers/*/*.cpp)
+SOURCES=$(wildcard ./*.cpp LSS/src/*.cpp LSS/src/FullConditionals/*.cpp LSS/src/IterationTasks/*.cpp LSS/src/Samplers/*/*.cpp)
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
