@@ -102,25 +102,16 @@
         <br/>
         <p>
         All revisions of and changes to this document are saved on the 
-        <a href="https://github.com/grantbrown/libspatialSEIR/commits/gh-pages">gh-pages branch</a> of the <a href="https://github.com/grantbrown/libspatialSEIR">libspatialSEIR git repository</a>. Time permitting, we will post archived versions of the analyses here for easier viewing. In the meantime,
-        those with experience using the git version control software can easily browse the file history on their own machines:
-        </p>
-          <pre>
-            # Clone the repository
-            git clone https://github.com/grantbrown/libspatialSEIR.git
-            # Switch to the website branch
-            git checkout gh-pages
-            # Optionally, choose a particular commit. Commit labels can 
-            # be found by typing "git log" Below is a version updated on Jul 30
-            git checkout e72fd18
-            # Change to the directory with this analysis document
-            cd doc/tutorials/Ebola2014/
-            # Open the file "Ebola2014.html", which is located in this folder 
-            # using your favorite web browser. 
-          </pre>
-        <p>Any additional exploratory analyses and predictions will be linked in this section, and progress on the underlying 
-        software library can be tracked on the github page linked above. A high priority at this time is making the library
-        more portable and easier to use.</p>
+        <a href="https://github.com/grantbrown/libspatialSEIR/commits/gh-pages">gh-pages branch</a> of the <a href="https://github.com/grantbrown/libspatialSEIR">libspatialSEIR git repository</a>. Several past versions are also cached in an external repository: 
+        <ul>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Aug_03_2014/Ebola2014/Ebola2014.html">Aug 3, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_30_2014/Ebola2014/Ebola2014.html">Jul 30, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_29_2014/Ebola2014/Ebola2014.html">Jul 29, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_25_2014/Ebola2014/Ebola2014.html">Jul 25, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_24_2014/Ebola2014/Ebola2014.html">Jul 25, 2014</a></li>
+        <ul>
+        
+        <p>Additional analyses are underway. An <a href = "">informal look at prediction performance over time</a> is now available.</p>
         </div>
         <div class="col-sm-1"></div>
         <br/>
@@ -135,8 +126,8 @@
             <ul>
               <li>Shorten prediction window</li>
               <li>Increase intensity process flexibility (quartic rather than cubic)</li>
-              <li>Recall that these models can't account for changing inteventions, of which there are many. The predictions are therefore under the assumption that
-              the epidemic will continue to evolve according to the same process it has so far.</li>
+              <li>Recall that these models can't account for changing inteventions, of which there are many. The predictions are therefore made
+              under the assumption that the epidemic will continue to evolve according to the same process it has so far.</li>
             </ul>
           </ul>
         </div>
@@ -166,8 +157,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-documentCompilationMode = "release"
-#documentCompilationMode = "debug"
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
@@ -1527,7 +1518,7 @@ end.rcode-->
 
 
 
-<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. Such data can also be visualized in map form:</p>
+<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. Such data can also be visualized in map form, though the recent surge in predicted cases has the effect of swamping the earlier dynamics:</p>
 <br/>
 <h4 align=center>Total Infection Size - Estimated and Predicted:</h4>
 <div class='container' id ="pred_app" style="position: relative; max-width: 100%; height:100%">
@@ -1549,15 +1540,10 @@ end.rcode-->
 <br/>
 
 
-
-
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 <br/>
 <p>
-As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Unfortunately, the most recent data had a fairly pronounced effect on the variability of these estimates. From early July through the data released on the 23rd, the models predicted a temporary continuation of epidemic activity followed by a decrease into the fall. While the predictions for the near future have not changed much, the situation on the ground is clearly evolving quickly. The report released on the 27th of July opened up the range of probable epidemic trends to include increases and decreases in infection activity, and the data released on the 30th appears to place a higher weight of probability on worsening epidemic behavior for the forseeable future (especially in Liberia). <br/>
-
-On the other hand, it's important to keep in mind that these simple models don't have any mechanism with which to capture the impact of current and future public health interventions, which is particularly important given recent developments on that front. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> <br/>
-
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue to get worse for at least the next few weeks, though we must still be careful projecting too far into the future. This caution is especially important given the increased national and international response seen in recent days, as these simple models don't have any mechanism with which to capture the impact of current and future public health interventions. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> In the meantime, the short term predictions largely agree with what the media has been reporting: the epidemic is likely to worsen. <br/>
 
 <p>
 That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> 
