@@ -1,10 +1,14 @@
-PKG_CPPFLAGS=-I../../../eigen ./LSS/include ./LSS/include/DataStructures ./LSS/include/FullConditionals 
+PKG_CPPFLAGS=-I../../../eigen ../../../libSpatialSEIR/include ../../../libSpatialSEIR/include/DataStructures ../../../libSpatialSEIR/include/FullConditionals 
 
-SOURCES=$(wildcard ./*.cpp LSS/src/*.cpp LSS/src/FullConditionals/*.cpp LSS/src/IterationTasks/*.cpp LSS/src/Samplers/*/*.cpp)
+PKG_LIBS = -L./LSS -lspatialSEIR $(BLAS_LIBS)
 
-OBJECTS = $(SOURCES:.cpp=.o)
+libSpatialSEIR.so:
+	@(cd LSS && $(MAKE) all)
 
-all: $(SHLIB)
+$(SHLIB): LSS/libSpatialSEIR.so
 
-clean:
-	@rm -f $(OBJECTS)
+
+
+
+
+

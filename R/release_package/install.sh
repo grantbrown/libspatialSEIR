@@ -2,8 +2,10 @@
 cp ../dev_package/* ./ -r
 # Create a folder for the libspatialSEIR code. 
 mkdir -p ./src/LSS
-# Copy libspatialSEIR code 
-cp ../../libSpatialSEIR/* ./src/LSS/ -r
+# Create appropriate makefile using cmake.
+cd ./src/LSS
+cmake ../../../../
+cd ../../
 # Replace Makevars
 mv ./src/Makevars_release ./src/Makevars
 # Move up one directory and install
