@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 8/3/2014</h5>
+          <h5>Last Updated: 8/6/2014</h5>
         </div>
       </div>
     </div>
@@ -57,6 +57,7 @@
           <ol>
             <li><a href="#introduction-sect">Introduction</a>
               <ul>
+                <li><a href="#intro-abstract-sect">About This Document</li>
                 <li><a href="#intro-outbreak-sect">The Outbreak</li>
                 <li><a href="#intro-data-sect">The Data</li>
                 <li><a href="#intro-compartment-sect">Compartmental Models</li>
@@ -91,6 +92,49 @@
       </a>
       <div class="row">
         <div class = "col-sm-10 col-sm-offset-1">
+        <a id="intro-abstract-sect" class="anchor">
+        <h3>About this document.</h3>
+        </a>
+        <p>This is a living document, as the Ebola epidemic is rapidly evolving. Presented below is a preliminary modeling approach to the 
+        crisis, originally conceived as an illustration of the spatial SEIR model family generally and the capabilities of the rapidly developing 
+        (and totally unfinished) libspatialSEIR software library particularly. This is not yet peer reviewed research, or even a particularly complete analysis. 
+        Nevertheless, we hope that the initial exploration given below is instructive and useful</p>
+        <br/>
+        <p>
+        All revisions of and changes to this document are saved on the 
+        <a href="https://github.com/grantbrown/libspatialSEIR/commits/gh-pages">gh-pages branch</a> of the <a href="https://github.com/grantbrown/libspatialSEIR">libspatialSEIR git repository</a>. Several past versions are also cached in an external repository: 
+        <ul>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Aug_03_2014/Ebola2014/Ebola2014.html">Aug 3, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_30_2014/Ebola2014/Ebola2014.html">Jul 30, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_29_2014/Ebola2014/Ebola2014.html">Jul 29, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_25_2014/Ebola2014/Ebola2014.html">Jul 25, 2014</a></li>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_24_2014/Ebola2014/Ebola2014.html">Jul 25, 2014</a></li>
+        <ul>
+        
+        <p>Additional analyses are underway. An <a href = "http://grantbrown.github.io/libspatialSEIR/doc/tutorials/Ebola2014/Ebola2014_PastPred.html">informal look at prediction performance over time</a> is now available.</p>
+        </div>
+        <div class="col-sm-1"></div>
+        <br/>
+        <div class = "col-sm-10 col-sm-offset-1">
+          <a id="intro-abstract-sect" class="anchor">
+          <h3>Summary of Recent Changes</h3>
+          </a>
+          <ul>
+            <li><Strong>July 30</strong> Previous predictions of mid-fall resolution of epidemic begin to shift.</li>
+            <li><Strong>Aug 3</strong> Predicted epidmic curves start to strongly favor a uniformly worsening situation.</li>
+            <li><Strong>Aug 5</strong> Models begin to show catastrophic predictions. Epidemic is changing too quickly for these simple models.</li>
+            <ul>
+              <li>Shorten prediction window</li>
+              <li>Increase intensity process flexibility (quartic rather than cubic)</li>
+              <li>Recall that these models can't account for changing inteventions, of which there are many. The predictions are therefore made
+              under the assumption that the epidemic will continue to evolve according to the same process it has so far.</li>
+            </ul>
+          </ul>
+        </div>
+        <div class="col-sm-1"></div>
+        
+        
+        <div class = "col-sm-10 col-sm-offset-1">
         <a id="intro-outbreak-sect" class="anchor">
         <h3>The Outbreak</h3>
         </a>
@@ -117,11 +161,9 @@ documentCompilationMode = "release"
 #documentCompilationMode = "debug"
 
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 50)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
 extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
-
-##
 
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
@@ -277,7 +319,7 @@ end.rcode-->
 <div class='container' ng-app="data_app" ng-controller='rChartsCtrl' id ="zoom_map_container" style="position: relative; max-width: 100%; height:100%">
   <div class = "row">
     <div class="col-sm-3">
-      <input id='zoom-map-slider' type='range' min=1 max=119 ng-model='Day' width=200>
+      <input id='zoom-map-slider' type='range' min=1 max=131 ng-model='Day' width=200>
        <span>Day: <span id ="zoom-map-day-counter" ng-bind='Day'></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play" type="button">Play</button></div>
@@ -373,13 +415,13 @@ daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
 # For this analysis, let's use orthogonal polynomials of degree 3 for the 
 # temporal basis. Analysis 2 will compare the prediction performance of the 
 # polynomial based model to a spline basis. 
-Z = poly(daysSinceJan, degree=3)
+Z = poly(daysSinceJan, degree=4)
 
 # We're going to want to do prediction, so let's generate the fixed and time 
 # varying prediction covariate matrices now as well
 X.predict = cbind(diag(3))
 Z.predict = predict.poly(Z, c(max(daysSinceJan) + 1, 
-                              max(daysSinceJan) + seq(10,60,10)))
+                              max(daysSinceJan) + seq(2,10,2)))
 
 # The time varying covariates are the same for each spatial location for this
 # analysis, so we just duplicate them row-wise
@@ -391,7 +433,7 @@ X.pred = cbind(X.predict[rep(1:nrow(X.predict),
                              each = nrow(Z.predict)/nrow(X)),], Z.predict)
 
 # Define prediction offsets. 
-offset.pred = c(1,rep(10, 6))
+offset.pred = c(1,seq(2,10,2))
 
 # There's no reinfection process for Ebola, but we still need to provide dummy
 # values for the reinfection terms. This will be changed (along with most of 
@@ -736,9 +778,9 @@ end.rcode-->
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
 
-c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:6,8:10)]
-c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:6,8:10)]
-c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:6,8:10)]
+c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:7,9:11)]
+c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:7,9:11)]
+c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:7,9:11)]
 
 c1$gamma_ei = 1-exp(-c1$gamma_ei)
 c1$gamma_ir = 1-exp(-c1$gamma_ir)
@@ -749,6 +791,7 @@ c3$gamma_ir = 1-exp(-c3$gamma_ir)
 colnames(c1) = c("Guinea Intercept", "Liberia Intercept", 
                  "Sierra Leone Intercept", "Linear Time Component", 
                  "Quadratic Time Component", "Cubic Time Component",
+                 "Quartic Time Component",
                  "Spatial Dependence Parameter", "E to I probability", 
                  "I to R probability")
 colnames(c2) = colnames(c1)
@@ -984,7 +1027,8 @@ While the basic reproductive number is a useful quantity to know, it does not di
              dataRow$BetaP_SE_2,
              dataRow$BetaP_SE_3,
              dataRow$BetaP_SE_4,
-             dataRow$BetaP_SE_5)
+             dataRow$BetaP_SE_5,
+             dataRow$BetaP_SE_6)
     #S0 = c(dataRow$S_0_26 - dataRow$E_star_0_26,
     #       dataRow$S_1_26 - dataRow$E_star_1_26,
     #       dataRow$S_2_26 - dataRow$E_star_2_26)
@@ -997,10 +1041,10 @@ While the basic reproductive number is a useful quantity to know, it does not di
     #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
     #       dataRow$R_1_26 + dataRow$R_star_1_26,
     #       dataRow$R_2_26 + dataRow$R_star_2_26)
-    S0 = c(dataRow$S_0_28,dataRow$S_1_28,dataRow$S_2_28)
-    E0 = c(dataRow$E_0_28,dataRow$E_1_28,dataRow$E_2_28)
-    I0 = c(dataRow$I_0_28,dataRow$I_1_28,dataRow$I_2_28)
-    R0 = c(dataRow$R_0_28,dataRow$R_1_28,dataRow$R_2_28)
+    S0 = c(dataRow$S_0_30,dataRow$S_1_30,dataRow$S_2_30)
+    E0 = c(dataRow$E_0_30,dataRow$E_1_30,dataRow$E_2_30)
+    I0 = c(dataRow$I_0_30,dataRow$I_1_30,dataRow$I_2_30)
+    R0 = c(dataRow$R_0_30,dataRow$R_1_30,dataRow$R_2_30)
     
     return(predictEpidemic(beta,  
                            X.pred,
@@ -1021,7 +1065,7 @@ While the basic reproductive number is a useful quantity to know, it does not di
 
 
 pred.dates = c(rptDate[(which.max(rptDate))], 
-               rptDate[(which.max(rptDate))] + seq(10,60,10))
+               rptDate[(which.max(rptDate))] + seq(2,10,2))
 pred.xlim = c(min(rptDate), max(pred.dates))
 lastIdx = nrow(SEIRmodels[[1]]$I)
 Guinea.Pred = preds[[1]]$I[,1]
@@ -1128,8 +1172,8 @@ end.rcode-->
 <!--begin.rcode
 library(splines)
 daysSinceJan.predict = c(max(daysSinceJan) + 1, max(daysSinceJan) 
-                         + seq(10,60,10))
-splineBasis = ns(daysSinceJan, df = 3)
+                         + seq(2,10,2))
+splineBasis = ns(daysSinceJan, df = 4)
 splineBasis.predict = predict(splineBasis, daysSinceJan.predict)
 
 # Guinea, Liberia, Sierra Leone
@@ -1273,9 +1317,9 @@ figure9 = function()
 ## Parameter Estimates 
 
 
-c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:6,8:10)]
-c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:6,8:10)]
-c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:6,8:10)]
+c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:7,9:11)]
+c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:7,9:11)]
+c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:7,9:11)]
 
 c1$gamma_ei = 1-exp(-c1$gamma_ei)
 c1$gamma_ir = 1-exp(-c1$gamma_ir)
@@ -1286,6 +1330,7 @@ c3$gamma_ir = 1-exp(-c3$gamma_ir)
 colnames(c1) = c("Guinea Intercept", "Liberia Intercept", 
                  "Sierra Leone Intercept", "Linear Time Component", 
                  "Quadratic Time Component", "Cubic Time Component",
+                 "Quartic Time Component",
                  "Spatial Dependence Parameter", "E to I probability", 
                  "I to R probability")
 colnames(c2) = colnames(c1)
@@ -1348,7 +1393,7 @@ preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
 
 
 pred.dates = c(rptDate[(which.max(rptDate))],
-               rptDate[(which.max(rptDate))] + seq(10,60,10))
+               rptDate[(which.max(rptDate))] + seq(2,10,2))
 pred.xlim = c(min(rptDate), max(pred.dates))
 lastIdx = nrow(SEIRmodels.spline[[1]]$I)
 Guinea.Pred = preds[[1]]$I[,1]
@@ -1390,6 +1435,8 @@ figure11 = function()
   plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), xlim = pred.xlim,
        main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, ylab = "Infectious Count", xlab = "Date")
+  abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
+  lines(rptDate, Guinea.I.Est[1,], lty = 2)
   lines(rptDate, Guinea.I.Est[2,], lty = 2)
   lines(rptDate, Guinea.I.Est[3,], lty = 2)
   
@@ -1406,6 +1453,8 @@ figure11 = function()
        main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "blue", ylab = "Infectious Count", 
        xlab = "Date")
+  abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
+  lines(rptDate, Liberia.I.Est[1,], lty = 2, col = "blue")
   lines(rptDate, Liberia.I.Est[2,], lty = 2, col = "blue")
   lines(rptDate, Liberia.I.Est[3,], lty = 2, col = "blue")
   
@@ -1422,6 +1471,8 @@ figure11 = function()
        main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "red",ylab = "Infectious Count", 
        xlab = "Date")
+  abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
+  lines(rptDate, SierraLeone.I.Est[1,], lty = 2, col = "red")
   lines(rptDate, SierraLeone.I.Est[2,], lty = 2, col = "red")
   lines(rptDate, SierraLeone.I.Est[3,], lty = 2, col ="red")
   
@@ -1467,13 +1518,13 @@ end.rcode-->
 
 
 
-<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. Such data can also be visualized in map form:</p>
+<p>Here we see the most prominant difference between the two approaches. Namely, these predictions appear more reasonable. Such data can also be visualized in map form, though the recent surge in predicted cases has the effect of swamping the earlier dynamics:</p>
 <br/>
 <h4 align=center>Total Infection Size - Estimated and Predicted:</h4>
 <div class='container' id ="pred_app" style="position: relative; max-width: 100%; height:100%">
   <div class = "row" ng-controller='rChartsCtrl_pred' >
     <div class="col-sm-3">
-      <input id='zoom-map-slider-pred' type='range' min=1 max=179 ng-model='pred_Day' width=200>
+      <input id='zoom-map-slider-pred' type='range' min=1 max=142 ng-model='pred_Day' width=200>
        <span>Day: <span id ="zoom-map-day-counter-pred" ng-bind='pred_Day'></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play-pred" type="button">Play</button></div>
@@ -1489,15 +1540,10 @@ end.rcode-->
 <br/>
 
 
-
-
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 <br/>
 <p>
-As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue at a steady or slightly increasing rate for at least the next few weeks, though we must still be careful projecting too far into the future. Unfortunately, the most recent data had a fairly pronounced effect on the variability of these estimates. From early July through the data released on the 23rd, the models predicted a temporary continuation of epidemic activity followed by a decrease into the fall. While the predictions for the near future have not changed much, the situation on the ground is clearly evolving quickly. The report released on the 27th of July opened up the range of probable epidemic trends to include increases and decreases in infection activity, and the data released on the 30th appears to place a higher weight of probability on worsening epidemic behavior for the forseeable future (especially in Liberia). <br/>
-
-On the other hand, it's important to keep in mind that these simple models don't have any mechanism with which to capture the impact of current and future public health interventions, which is particularly important given recent developments on that front. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> <br/>
-
+As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue to get worse for at least the next few weeks, though we must still be careful projecting too far into the future. This caution is especially important given the increased national and international response seen in recent days, as these simple models don't have any mechanism with which to capture the impact of current and future public health interventions. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> In the meantime, the short term predictions largely agree with what the media has been reporting: the epidemic is likely to worsen. <br/>
 
 <p>
 That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> 
@@ -1612,7 +1658,7 @@ function intervalFunction_pred(slider,counter,sliderVal){
     {
       sliderVal = eval(slider.val()) + 1;
       slider.val(sliderVal);
-      if (sliderVal > 119){
+      if (sliderVal > 131){
         counter.text(sliderVal + " (predicted)");
       }
       else
@@ -1712,7 +1758,7 @@ interpMatrix = cbind(guinea.interp.pred$y, liberia.interp.pred$y,sierraleone.int
 
 cutvals = cut(interpMatrix, breaks = 9)
 interpMatrix.cut = matrix(as.numeric(cutvals), nrow = nrow(interpMatrix))
-upperVals = as.numeric(lapply(strsplit(c(gsub("[(]", "", gsub("]", "", unique(as.character(cutvals))))), ","), function(x){return(x[2])}))
+upperVals = as.numeric(lapply(strsplit(c(gsub("[(]", "", gsub("]", "", unique(as.character(levels(cutvals)))))), ","), function(x){return(x[2])}))
 upperVals = round(upperVals[order(upperVals)],0)
 
 hcol = c("#ffffef", "#fff7bf", "#fee39f", "#fec45f", "#fe993f", "#ec702f", "#cc4c1f", "#993402", "#662520")
