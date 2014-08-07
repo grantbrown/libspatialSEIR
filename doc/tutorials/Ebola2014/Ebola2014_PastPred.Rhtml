@@ -78,7 +78,7 @@ library(splines) # Load the splines library to build the temporal basis.
 ############################################
 
 documentCompilationMode = "release"
-documentCompilationMode = "debug"
+#documentCompilationMode = "debug"
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 100) 
