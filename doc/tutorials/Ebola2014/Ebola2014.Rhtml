@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 8/4/2014</h5>
+          <h5>Last Updated: 8/6/2014</h5>
         </div>
       </div>
     </div>
@@ -157,8 +157,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-#documentCompilationMode = "release"
-documentCompilationMode = "debug"
+documentCompilationMode = "release"
+#documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
@@ -319,7 +319,7 @@ end.rcode-->
 <div class='container' ng-app="data_app" ng-controller='rChartsCtrl' id ="zoom_map_container" style="position: relative; max-width: 100%; height:100%">
   <div class = "row">
     <div class="col-sm-3">
-      <input id='zoom-map-slider' type='range' min=1 max=119 ng-model='Day' width=200>
+      <input id='zoom-map-slider' type='range' min=1 max=131 ng-model='Day' width=200>
        <span>Day: <span id ="zoom-map-day-counter" ng-bind='Day'></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play" type="button">Play</button></div>
@@ -1041,10 +1041,10 @@ While the basic reproductive number is a useful quantity to know, it does not di
     #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
     #       dataRow$R_1_26 + dataRow$R_star_1_26,
     #       dataRow$R_2_26 + dataRow$R_star_2_26)
-    S0 = c(dataRow$S_0_29,dataRow$S_1_29,dataRow$S_2_29)
-    E0 = c(dataRow$E_0_29,dataRow$E_1_29,dataRow$E_2_29)
-    I0 = c(dataRow$I_0_29,dataRow$I_1_29,dataRow$I_2_29)
-    R0 = c(dataRow$R_0_29,dataRow$R_1_29,dataRow$R_2_29)
+    S0 = c(dataRow$S_0_30,dataRow$S_1_30,dataRow$S_2_30)
+    E0 = c(dataRow$E_0_30,dataRow$E_1_30,dataRow$E_2_30)
+    I0 = c(dataRow$I_0_30,dataRow$I_1_30,dataRow$I_2_30)
+    R0 = c(dataRow$R_0_30,dataRow$R_1_30,dataRow$R_2_30)
     
     return(predictEpidemic(beta,  
                            X.pred,
@@ -1524,7 +1524,7 @@ end.rcode-->
 <div class='container' id ="pred_app" style="position: relative; max-width: 100%; height:100%">
   <div class = "row" ng-controller='rChartsCtrl_pred' >
     <div class="col-sm-3">
-      <input id='zoom-map-slider-pred' type='range' min=1 max=39 ng-model='pred_Day' width=200>
+      <input id='zoom-map-slider-pred' type='range' min=1 max=142 ng-model='pred_Day' width=200>
        <span>Day: <span id ="zoom-map-day-counter-pred" ng-bind='pred_Day'></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play-pred" type="button">Play</button></div>
@@ -1658,7 +1658,7 @@ function intervalFunction_pred(slider,counter,sliderVal){
     {
       sliderVal = eval(slider.val()) + 1;
       slider.val(sliderVal);
-      if (sliderVal > 119){
+      if (sliderVal > 131){
         counter.text(sliderVal + " (predicted)");
       }
       else

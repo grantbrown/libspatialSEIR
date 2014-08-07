@@ -1,4 +1,8 @@
 
+<!--begin.rcode global_options, include=FALSE
+opts_knit$set(base.dir='./pastPredFigure')
+end.rcode-->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -62,6 +66,7 @@
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
 <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
+
 library(coda) # Load the coda library for MCMC convergence diagnosis
 library(spatialSEIR) # Load the spatialSEIR library to perform the modeling. 
 library(XML) # Load the XML library to read in data from Wikipedia
@@ -72,7 +77,7 @@ library(splines) # Load the splines library to build the temporal basis.
 ## Define Document Compilation Parameters ##
 ############################################
 
-#documentCompilationMode = "release"
+documentCompilationMode = "release"
 documentCompilationMode = "debug"
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
