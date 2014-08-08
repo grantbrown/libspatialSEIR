@@ -119,7 +119,6 @@ namespace SpatialSEIR
 
         // Step 1. Calculate A = (XX')
         double* A = bigX;
-        memcpy(B, A, numVariables*(matrixRows)*sizeof(double));
         
         typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> MatrixType;
         typedef Eigen::Map<MatrixType, Eigen::ColMajor> MatrixMapType;
