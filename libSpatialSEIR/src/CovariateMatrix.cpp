@@ -56,17 +56,16 @@ namespace SpatialSEIR
 
         // Combine X and Z appropriately to one large covariate matrix X
         // We want a projection onto N(X'X)
-        // C(X'X) = C(X'), so N(X'X) = N(X') because N() and C() are orthogonal compliments. 
+        //
+        // The projection onto the column space of A= X'X = P(A) = (A) %*% (A'A)^(-1)) %*% (A')
 
-        // The projection onto the column space of X' = P(X') = (X') %*% ((XX')^(-1)) %*% (X)
-        // The projection onto the null space of X' is then I - P(X')
+        // The projection onto the null space of X' is then I - P(A)
 
-        // The steps to compute I-P(X') are therefore:
-        // 1. Calculate A = (XX')
-        // 2. Set A = A^(-1)
-        // 3. Set A = X' %*% A
-        // 4. Set A = A %*% X
-        // 5. Set A = P(X') = I - A
+        // The steps to compute I-P(A) are therefore:
+        // 1. Calculate B = (A'A)
+        // 2. Calculate C = B^(-1)
+        // 3. Calculate D= A'CA
+        // 5. Calculate E = I - D
 
 
         // Step 0. Create big matrix X.  
@@ -120,35 +119,22 @@ namespace SpatialSEIR
 
         // Step 1. Calculate A = (XX')
         double* A = bigX;
-        double* B = new double[numVariables*(matrixRows)];
-        double* C = new double[(matrixRows)*(matrixRows)];
         memcpy(B, A, numVariables*(matrixRows)*sizeof(double));
-        memset(C, 0, (matrixRows)*(matrixRows)*sizeof(double));
         
-
         typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> MatrixType;
         typedef Eigen::Map<MatrixType, Eigen::ColMajor> MatrixMapType;
 
         MatrixMapType Amap(A, matrixRows, numVariables);
-        MatrixMapType Bmap(B, matrixRows, numVariables);
-        MatrixMapType Cmap(C, matrixRows, matrixRows);
-
-        Cmap.noalias() += Amap * (Bmap.transpose());
- 
-        // Step 2. Set A = A^(-1)
-
-        // Step 3. Set A = X' %*% A
-
-        // Step 4. Set A = A %*% X
-
-        // Step 5. Set A = P(X') = I - A
+        MatrixMapType outMap(decorrelationProjectionMatrix, numVariables, numVariables);
 
 
+        MatrixType Bmat = ((Amap.transpose() * Amap));
+        MatrixType Cmat = (Bmat.transpose() * Bmat);
+        MatrixType Dmat = (Bmat * Cmat.inverse() * Bmat.transpose()); 
+        MatrixType Emat = Eigen::MatrixXd::Identity(Dmat.rows(), Dmat.cols()) - Dmat;         
+        outMap.noalias() = Emat;
  
         delete[] bigX;
-        delete[] B;
-        delete[] C;
-         
     }
 
     int CovariateMatrix::calculate_fixed_eta_CPU(double *eta, double *beta)
