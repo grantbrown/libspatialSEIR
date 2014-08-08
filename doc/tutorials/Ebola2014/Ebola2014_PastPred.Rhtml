@@ -85,7 +85,7 @@ convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 100)
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[3]] # This line changes depending on the page formatting.
+dat = tbls[[2]] # This line changes depending on the page formatting.
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 original.rptDate = rptDate
@@ -498,7 +498,7 @@ makePrediction = function(maxIdx, seedVal=123123)
 }
 
 
-maxIdxList = lapply(20:31, makePrediction)
+maxIdxList = lapply(20:32, makePrediction)
 
 plotPredictions = function(prediction, main="PredPlot")
 {
@@ -605,8 +605,8 @@ end.rcode-->
 <script type="text/javascript">
 <!--begin.rcode echo=FALSE, results='asis'
   library(rCharts)
-  outdates = lapply(as.character(rptDate[20:31]),I)
-  names(outdates) = 0:11 
+  outdates = lapply(as.character(rptDate[20:32]),I)
+  names(outdates) = 0:12 
   cat("var dateIdx = ", toJSON2(outdates), ";\n")
 end.rcode-->
 </script>
