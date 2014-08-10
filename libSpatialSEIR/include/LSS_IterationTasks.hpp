@@ -43,5 +43,19 @@ namespace SpatialSEIR
             int** index;
             int** indexLength;
     };
+
+    class PerformDecorrelationStep : public IterationTask
+    {
+        public:
+            PerformDecorrelationStep(ModelContext* context, 
+                                        int iterationCount);
+            ~PerformDecorrelationStep();
+            void executeTask();
+            int getTaskType();
+
+            ModelContext** context;
+            int* iterationCount;
+            int* currentIteration;
+    };
 }
 #endif 
