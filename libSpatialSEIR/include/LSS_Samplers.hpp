@@ -279,6 +279,7 @@ namespace SpatialSEIR
             ~ParameterDecorrelationSampler();
 
             double** param;
+            double* proposalCache;
             ModelContext** context;
             ParameterFullConditional** paramFC;
             CovariateMatrix** proposalMatrix;
