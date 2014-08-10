@@ -85,7 +85,7 @@ convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 100)
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[3]] # This line changes depending on the page formatting.
+dat = tbls[[2]] # This line changes depending on the page formatting.
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 original.rptDate = rptDate
@@ -498,7 +498,7 @@ makePrediction = function(maxIdx, seedVal=123123)
 }
 
 
-maxIdxList = lapply(20:31, makePrediction)
+maxIdxList = lapply(20:32, makePrediction)
 
 plotPredictions = function(prediction, main="PredPlot")
 {
@@ -572,7 +572,7 @@ end.rcode-->
       </div>
 <div class='container' ng-app ng-controller='imgController'>
 <div>
-<div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=11 ng-model='DateIdx' width=40 ng-keyup="update1()"></div>
+<div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=12 ng-model='DateIdx' width=40 ng-keyup="update1()"></div>
 <div class="col-sm-8"><h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter"></span></span></h4></div>
 
 <!--begin.rcode echo=FALSE, dpi=150, results='asis'
@@ -584,7 +584,7 @@ end.rcode-->
 
 
 <div class="col-sm-3">
-<input id='pred-slider2' type='range' min=0 max=11 ng-model='DateIdx' width=40 ng-keyup="update2()">
+<input id='pred-slider2' type='range' min=0 max=12 ng-model='DateIdx' width=40 ng-keyup="update2()">
 </div>
 <div class="col-sm-8">
 <h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter2"></span></span></h4>
@@ -605,8 +605,8 @@ end.rcode-->
 <script type="text/javascript">
 <!--begin.rcode echo=FALSE, results='asis'
   library(rCharts)
-  outdates = lapply(as.character(rptDate[20:31]),I)
-  names(outdates) = 0:11 
+  outdates = lapply(as.character(rptDate[20:32]),I)
+  names(outdates) = 0:12 
   cat("var dateIdx = ", toJSON2(outdates), ";\n")
 end.rcode-->
 </script>

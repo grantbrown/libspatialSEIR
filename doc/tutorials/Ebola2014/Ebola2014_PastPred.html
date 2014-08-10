@@ -149,7 +149,7 @@
 
 <span class="hl std">url</span> <span class="hl kwb">=</span> <span class="hl str">'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'</span>
 <span class="hl std">tbls</span> <span class="hl kwb">=</span> <span class="hl kwd">readHTMLTable</span><span class="hl std">(url)</span>
-<span class="hl std">dat</span> <span class="hl kwb">=</span> <span class="hl std">tbls[[</span><span class="hl num">3</span><span class="hl std">]]</span> <span class="hl com"># This line changes depending on the page formatting.</span>
+<span class="hl std">dat</span> <span class="hl kwb">=</span> <span class="hl std">tbls[[</span><span class="hl num">2</span><span class="hl std">]]</span> <span class="hl com"># This line changes depending on the page formatting.</span>
 
 <span class="hl std">rptDate</span> <span class="hl kwb">=</span> <span class="hl kwd">as.Date</span><span class="hl std">(dat[</span><span class="hl num">2</span><span class="hl opt">:</span><span class="hl kwd">nrow</span><span class="hl std">(dat),</span><span class="hl num">1</span><span class="hl std">],</span> <span class="hl str">&quot;%d %b %Y&quot;</span><span class="hl std">)</span>
 <span class="hl std">original.rptDate</span> <span class="hl kwb">=</span> <span class="hl std">rptDate</span>
@@ -562,68 +562,73 @@
 <span class="hl std">}</span>
 
 
-<span class="hl std">maxIdxList</span> <span class="hl kwb">=</span> <span class="hl kwd">lapply</span><span class="hl std">(</span><span class="hl num">20</span><span class="hl opt">:</span><span class="hl num">31</span><span class="hl std">, makePrediction)</span>
+<span class="hl std">maxIdxList</span> <span class="hl kwb">=</span> <span class="hl kwd">lapply</span><span class="hl std">(</span><span class="hl num">20</span><span class="hl opt">:</span><span class="hl num">32</span><span class="hl std">, makePrediction)</span>
 </pre></div>
 <div class="output"><pre class="knitr r">## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 19
 ## Setting index length to be: 14
-## Time elapsed for convergence run: 15.356 minutes
+## Time elapsed for convergence run: 13.48 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 20
 ## Setting index length to be: 15
-## Time elapsed for convergence run: 15.816 minutes
+## Time elapsed for convergence run: 15.769 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 21
 ## Setting index length to be: 15
-## Time elapsed for convergence run: 16.908 minutes
+## Time elapsed for convergence run: 16.223 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 22
 ## Setting index length to be: 16
-## Time elapsed for convergence run: 15.93 minutes
+## Time elapsed for convergence run: 17.165 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 23
 ## Setting index length to be: 17
-## Time elapsed for convergence run: 16.393 minutes
+## Time elapsed for convergence run: 18.524 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 24
 ## Setting index length to be: 18
-## Time elapsed for convergence run: 41.964 minutes
+## Time elapsed for convergence run: 19.578 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 25
 ## Setting index length to be: 18
-## Time elapsed for convergence run: 22.629 minutes
+## Time elapsed for convergence run: 20.62 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 26
 ## Setting index length to be: 19
-## Time elapsed for convergence run: 22.696 minutes
+## Time elapsed for convergence run: 20.858 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 27
 ## Setting index length to be: 20
-## Time elapsed for convergence run: 21.627 minutes
+## Time elapsed for convergence run: 18.969 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 28
 ## Setting index length to be: 21
-## Time elapsed for convergence run: 20.459 minutes
+## Time elapsed for convergence run: 20.773 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 29
 ## Setting index length to be: 21
-## Time elapsed for convergence run: 22.543 minutes
+## Time elapsed for convergence run: 19.232 minutes
 ## Building Model.
 ##    Number of Locations: 3
 ##    Number of Time Points: 30
 ## Setting index length to be: 22
-## Time elapsed for convergence run: 24.493 minutes
+## Time elapsed for convergence run: 20.958 minutes
+## Building Model.
+##    Number of Locations: 3
+##    Number of Time Points: 31
+## Setting index length to be: 23
+## Time elapsed for convergence run: 23.632 minutes
 </pre></div>
 <div class="source"><pre class="knitr r"><span class="hl std">plotPredictions</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">prediction</span><span class="hl std">,</span> <span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;PredPlot&quot;</span><span class="hl std">)</span>
 <span class="hl std">{</span>
@@ -696,7 +701,7 @@
       </div>
 <div class='container' ng-app ng-controller='imgController'>
 <div>
-<div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=11 ng-model='DateIdx' width=40 ng-keyup="update1()"></div>
+<div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=12 ng-model='DateIdx' width=40 ng-keyup="update1()"></div>
 <div class="col-sm-8"><h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter"></span></span></h4></div>
 
 </div><div class="rimage default"><img src="pastPredFigure/figure/unnamed-chunk-21.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div><div class="rcode">
@@ -711,11 +716,12 @@
 </div><div class="rimage default"><img src="pastPredFigure/figure/unnamed-chunk-210.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div><div class="rcode">
 </div><div class="rimage default"><img src="pastPredFigure/figure/unnamed-chunk-211.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div><div class="rcode">
 </div><div class="rimage default"><img src="pastPredFigure/figure/unnamed-chunk-212.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div><div class="rcode">
+</div><div class="rimage default"><img src="pastPredFigure/figure/unnamed-chunk-213.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" class="plot" /></div><div class="rcode">
 
 
 
 <div class="col-sm-3">
-<input id='pred-slider2' type='range' min=0 max=11 ng-model='DateIdx' width=40 ng-keyup="update2()">
+<input id='pred-slider2' type='range' min=0 max=12 ng-model='DateIdx' width=40 ng-keyup="update2()">
 </div>
 <div class="col-sm-8">
 <h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter2"></span></span></h4>
@@ -746,7 +752,8 @@ var dateIdx =  {
 "8": [ "2014-07-27" ],
 "9": [ "2014-07-30" ],
 "10": [ "2014-08-01" ],
-"11": [ "2014-08-04" ] 
+"11": [ "2014-08-04" ],
+"12": [ "2014-08-06" ] 
 } ;
 
 </script>
