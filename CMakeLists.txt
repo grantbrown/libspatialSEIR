@@ -99,6 +99,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_EI.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_IR.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/SetCompartmentSamplingIndicesTask.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformDecorrelationStep.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentMetropolisSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentMetropolisSampler_OCL.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/IndexedCompartmentMetropolisSampler.cpp"
