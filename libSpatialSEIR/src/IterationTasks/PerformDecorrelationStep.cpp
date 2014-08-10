@@ -50,6 +50,7 @@ namespace SpatialSEIR
                 iterationCount < 1000)
         {
             (*context) -> beta_fc -> sample(0);
+            iterationCount += 1;
         }
         if (*((*context) -> beta_fc -> accepted) == betaAccepted)
         {
@@ -60,6 +61,7 @@ namespace SpatialSEIR
                 iterationCount < 1000)
         {
             (*context) -> betaPrs_fc -> sample(0);
+            iterationCount += 1;
         }
         if (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted)
         {

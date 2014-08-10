@@ -24,13 +24,13 @@ namespace SpatialSEIR
         context = new ModelContext*;
         paramFC = new ParameterFullConditional*;
         param = new double*;
-        proposalCache = new double[*((*paramFC) -> varLen)];
         proposalMatrix = new CovariateMatrix*;
-
         *context = context_;    
         *paramFC = paramFC_;
         *param = param_;
         *proposalMatrix = proposalMatrix_;
+        proposalCache = new double[*((*paramFC) -> varLen)];
+        proposalCache2 = new double[*((*paramFC) -> varLen)];
     }
 
     ParameterDecorrelationSampler::~ParameterDecorrelationSampler()
@@ -40,6 +40,7 @@ namespace SpatialSEIR
         delete context;
         delete proposalMatrix;
         delete[] proposalCache;
+        delete[] proposalCache2;
     }
 
     int ParameterDecorrelationSampler::getSamplerType()
@@ -55,6 +56,7 @@ namespace SpatialSEIR
         int i;
         int totalPoints = *((*paramFC) -> varLen);
         memcpy((*context) -> compartmentCache, *param, totalPoints*sizeof(double));
+        memset(proposalCache2, 0, totalPoints*sizeof(double));
         (*paramFC) -> calculateRelevantCompartments(); 
         (*paramFC) -> evalCPU();
         initVal = (*paramFC) -> getValue();
@@ -80,20 +82,19 @@ namespace SpatialSEIR
                     proposalCache,
                     1,
                     0.0,
-                    proposalCache,
+                    proposalCache2,
                     1);
 
-        // End updates.
         double proposalCacheSize = 0.;
         for (i = 0; i < totalPoints; i++)
         {
-            proposalCacheSize += (proposalCache[i])*(proposalCache[i]);
+            proposalCacheSize += (proposalCache2[i])*(proposalCache2[i]);
         }
         proposalCacheSize = std::sqrt(proposalCacheSize);
         for (i = 0; i < totalPoints; i++)
         {
-            proposalCache[i] /= (proposalCacheSize/sliceWidth);
-            (*param)[i] += proposalCache[i];
+            proposalCache2[i] /= (proposalCacheSize/sliceWidth);
+            (*param)[i] += proposalCache2[i];
         }
 
         (*paramFC) -> calculateRelevantCompartments(); 

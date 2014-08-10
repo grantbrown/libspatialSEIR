@@ -260,6 +260,8 @@ namespace SpatialSEIR
         // Set up iteration tasks
         setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
 
+        decorrelationStepTask = new PerformDecorrelationStep(this, 100);
+
         // Wire up the full conditional classes 
         S0_fc = new FC_S0(this,
                           S,
@@ -405,13 +407,17 @@ namespace SpatialSEIR
         unsigned int i, sz;
         sz = iterationTasks -> size();
         for (i = 0; i < sz; i++){iterationTasks -> pop_back();}
-        // Currently, the only defined iteration task is to update the 
-        // compartment sampling indices.
         if  ((config -> compartmentSamplingMode) == COMPARTMENT_IDX_METROPOLIS_SAMPLER || 
              (config -> compartmentSamplingMode) == COMPARTMENT_IDX_SLICE_SAMPLER)
         {
             iterationTasks -> push_back(setSamplingIndicesTask);
         } 
+
+        if  ((config -> useDecorrelation) != 0) 
+        {
+            iterationTasks -> push_back(decorrelationStepTask);
+        }
+
     }
 
     void ModelContext::buildModel()

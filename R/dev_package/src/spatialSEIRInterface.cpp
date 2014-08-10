@@ -137,11 +137,36 @@ class spatialSEIRInterface
         virtual int getVerbose();
         virtual void setVerbose(int verbose_);
 
+        virtual int getUseDecorrelation();
+        virtual void setUseDecorrelation(int val);
+
         virtual void standardizeDistanceMatrix();
  
         //Destructor
         ~spatialSEIRInterface();
 };
+
+int spatialSEIRInterface::getUseDecorrelation()
+{
+    if (*(context -> isPopulated))
+    {
+        return((context -> config -> useDecorrelation));
+    }
+    Rcpp::Rcout << "Context Not populated\n";
+    return(-1);
+}
+
+void spatialSEIRInterface::setUseDecorrelation(int val)
+{
+    if (*(context -> isPopulated))
+    {
+        ((context -> config ->useDecorrelation) = val);
+        (context -> configureIterationTasks());
+        return;
+    }
+    Rcpp::Rcout << "Context Not populated\n";
+    return; 
+}
 
 int spatialSEIRInterface::setRandomSeed(int seedVal)
 {
@@ -1080,6 +1105,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     modelConfig.compartmentSamplingMode = COMPARTMENT_METROPOLIS_SAMPLER;
     modelConfig.parameterSamplingMode = PARAMETER_JOINT_METROPOLIS_SAMPLER;
     modelConfig.indexLength = std::floor(0.25*compartmentDimensions[0]*compartmentDimensions[1]); // Update 25% per iteration. 
+    modelConfig.useDecorrelation = 0;
     Rcpp::Rcout << "Setting index length to be: " << (modelConfig.indexLength) << "\n";
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
@@ -1218,6 +1244,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
             &spatialSEIRInterface::setCompartmentSamplingMode, "Type of sampler used for disease compartments.")
     .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")
+    .property("useDecorrelation", &spatialSEIRInterface::getUseDecorrelation, &spatialSEIRInterface::setUseDecorrelation, "Use decorrelation sampling?")
     ;
 
 }

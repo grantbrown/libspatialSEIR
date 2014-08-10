@@ -20,6 +20,7 @@ namespace SpatialSEIR
     class FullConditional;
     class IterationTask;
     class SetCompartmentSamplingIndicesTask;
+    class PerformDecorrelationStep;
     class FC_S0;
     class FC_E0;
     class FC_I0;
@@ -58,6 +59,7 @@ namespace SpatialSEIR
         int compartmentSamplingMode; 
         int parameterSamplingMode; 
         int indexLength;
+        int useDecorrelation;
     };
 
 
@@ -419,6 +421,8 @@ namespace SpatialSEIR
 
             /** Pointer to the sampling indices task.*/
             SetCompartmentSamplingIndicesTask* setSamplingIndicesTask;
+            /** Pointer to the decorrelation step task*/
+            PerformDecorrelationStep* decorrelationStepTask;
 
             //Data
             /** Pointer to the CompartmentalModelMatrix data structure storing the S compartment.*/ 
@@ -498,6 +502,7 @@ namespace SpatialSEIR
             int* singleLocation;
             /** Number of MCMC samples so far.*/
             int* numIterations;
+            /** Flag to indicate whether or not decorrelation should be used. */
     };
 }
 #endif

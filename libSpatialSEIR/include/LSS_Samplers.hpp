@@ -280,6 +280,7 @@ namespace SpatialSEIR
 
             double** param;
             double* proposalCache;
+            double* proposalCache2;
             ModelContext** context;
             ParameterFullConditional** paramFC;
             CovariateMatrix** proposalMatrix;
