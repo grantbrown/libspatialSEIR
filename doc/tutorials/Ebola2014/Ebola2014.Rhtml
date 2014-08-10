@@ -130,6 +130,7 @@
               <li>Recall that these models can't account for changing inteventions, of which there are many. The predictions are therefore made
               under the assumption that the epidemic will continue to evolve according to the same process it has so far.</li>
             </ul>
+            <li><strong>Aug 10</strong> Predictions remain much the same, though perhaps not so immediately catestrophic as the August 5 predictions. </li>
           </ul>
         </div>
         <div class="col-sm-1"></div>
@@ -158,8 +159,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-#documentCompilationMode = "release"
-documentCompilationMode = "debug"
+documentCompilationMode = "release"
+#documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
