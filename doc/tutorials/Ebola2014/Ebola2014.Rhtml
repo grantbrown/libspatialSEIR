@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 8/6/2014</h5>
+          <h5>Last Updated: 8/12/2014</h5>
         </div>
       </div>
     </div>
@@ -104,6 +104,7 @@
         All revisions of and changes to this document are saved on the 
         <a href="https://github.com/grantbrown/libspatialSEIR/commits/gh-pages">gh-pages branch</a> of the <a href="https://github.com/grantbrown/libspatialSEIR">libspatialSEIR git repository</a>. Several past versions are also cached in an external repository: 
         <ul>
+          <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Aug_10_2014/Ebola2014/Ebola2014.html">Aug 10, 2014</a></li>
           <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Aug_05_2014/Ebola2014/Ebola2014.html">Aug 5, 2014</a></li>
           <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Aug_03_2014/Ebola2014/Ebola2014.html">Aug 3, 2014</a></li>
           <li><a href="http://grantbrown.github.io/Ebola-2014-Analysis-Archive/Jul_30_2014/Ebola2014/Ebola2014.html">Jul 30, 2014</a></li>
@@ -131,6 +132,8 @@
               under the assumption that the epidemic will continue to evolve according to the same process it has so far.</li>
             </ul>
             <li><strong>Aug 10</strong> Predictions remain much the same, though perhaps not so immediately catestrophic as the August 5 predictions. </li>
+            <li><strong>Aug 12</strong> TBD. </li>
+          
           </ul>
         </div>
         <div class="col-sm-1"></div>
@@ -159,8 +162,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-documentCompilationMode = "release"
-#documentCompilationMode = "debug"
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
@@ -321,7 +324,7 @@ end.rcode-->
 <div class='container' ng-app="data_app" ng-controller='rChartsCtrl' id ="zoom_map_container" style="position: relative; max-width: 100%; height:100%">
   <div class = "row">
     <div class="col-sm-3">
-      <input id='zoom-map-slider' type='range' min=1 max=134 ng-model='Day' width=200>
+      <input id='zoom-map-slider' type='range' min=1 max=137 ng-model='Day' width=200>
        <span>Day: <span id ="zoom-map-day-counter" ng-bind='Day'></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play" type="button">Play</button></div>
@@ -1031,22 +1034,17 @@ While the basic reproductive number is a useful quantity to know, it does not di
              dataRow$BetaP_SE_4,
              dataRow$BetaP_SE_5,
              dataRow$BetaP_SE_6)
-    #S0 = c(dataRow$S_0_26 - dataRow$E_star_0_26,
-    #       dataRow$S_1_26 - dataRow$E_star_1_26,
-    #       dataRow$S_2_26 - dataRow$E_star_2_26)
-    #E0 = c(dataRow$E_0_26 + dataRow$E_star_0_26 - dataRow$I_star_0_26,
-    #       dataRow$E_1_26 + dataRow$E_star_1_26 - dataRow$I_star_1_26,
-    #       dataRow$E_2_26 + dataRow$E_star_2_26 - dataRow$I_star_2_26)
-    #I0 = c(dataRow$I_0_26 + dataRow$I_star_0_26 - dataRow$R_star_0_26,
-    #       dataRow$I_1_26 + dataRow$I_star_1_26 - dataRow$R_star_1_26,
-    #       dataRow$I_2_26 + dataRow$I_star_2_26 - dataRow$R_star_2_26)
-    #R0 = c(dataRow$R_0_26 + dataRow$R_star_0_26,
-    #       dataRow$R_1_26 + dataRow$R_star_1_26,
-    #       dataRow$R_2_26 + dataRow$R_star_2_26)
-    S0 = c(dataRow$S_0_30,dataRow$S_1_31,dataRow$S_2_31)
-    E0 = c(dataRow$E_0_30,dataRow$E_1_31,dataRow$E_2_31)
-    I0 = c(dataRow$I_0_30,dataRow$I_1_31,dataRow$I_2_31)
-    R0 = c(dataRow$R_0_30,dataRow$R_1_31,dataRow$R_2_31)
+             #dataRow$BetaP_SE_6,
+             #dataRow$BetaP_SE_7,
+             #dataRow$BetaP_SE_8,
+             #dataRow$BetaP_SE_9,
+             #dataRow$BetaP_SE_10,
+             #dataRow$BetaP_SE_11,
+             #dataRow$BetaP_SE_12)
+    S0 = c(dataRow$S_0_32,dataRow$S_1_32,dataRow$S_2_32)
+    E0 = c(dataRow$E_0_32,dataRow$E_1_32,dataRow$E_2_32)
+    I0 = c(dataRow$I_0_32,dataRow$I_1_32,dataRow$I_2_32)
+    R0 = c(dataRow$R_0_32,dataRow$R_1_32,dataRow$R_2_32)
     
     return(predictEpidemic(beta,  
                            X.pred,
@@ -1526,7 +1524,7 @@ end.rcode-->
 <div class='container' id ="pred_app" style="position: relative; max-width: 100%; height:100%">
   <div class = "row" ng-controller='rChartsCtrl_pred' >
     <div class="col-sm-3">
-      <input id='zoom-map-slider-pred' type='range' min=1 max=144 ng-model='pred_Day' width=200>
+      <input id='zoom-map-slider-pred' type='range' min=1 max=147 ng-model='pred_Day' width=200>
        <span>Day: <span id ="zoom-map-day-counter-pred" ng-bind='pred_Day'></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play-pred" type="button">Play</button></div>
