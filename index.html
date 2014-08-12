@@ -62,39 +62,60 @@ addressing the current outbreak of Ebola in West Africa.
 <li>CMake</li>
 <li>An appropriate C++ compiler </li>
 <li>Boost random &gt;= 1.4.9 </li>
-<li>An OpenCL distribution</li>
-<li>(preferably) R &gt;= 3.0</li>
-</ol><h3>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
+<li>R &gt;= 3.0</li>
+<li>A BLAS capable library</li>
+</ol>
+In addition, if you would like to enable OpenCL support, you must install the appropriate OpenCL SDK for your hardware. This 
+will also require that you tweak the CMakeLists.txt file present in the project root directory.
+
+<h3>
+<a name="installation-nix" class="anchor" href="#installation-nix"><span class="octicon octicon-link"></span></a>Installation - Linux</h3>
 
 <p>The installation process is still very much in "development" mode. As of now, it has only been tested on Linux Mint, but similar instructions 
 should apply for other platforms. After installing the appropriate pre-requisites, clone a copy of the repository. In order to make sure you 
-get a copy of the embedded version of clBLAS, be sure to clone the repository recursively:</p>
+get a copy of the embedded version of clBLAS (if you're using OpenCL) and Eigen3 (no matter what), be sure to clone the repository recursively:</p>
 
 <pre><code>    git clone https://github.com/grantbrown/libspatialSEIR.git --recursive
 </code></pre>
 
-<p>Once you have a copy of the code, change to the project directory and create a build folder. Use CMake to generate the 
-appropriate build files. </p>
+<p>Once you have a copy of the code, the easiest way to install the library is to run the install script in the R/release_package folder:</p>
 
-<pre><code>    cd libspatialSEIR
+<pre><code>    
+    cd R 
+    cd release_package
+    ./install.sh
+</code></pre>
+
+<p>Assuming this step completed correctly, you're ready to use the library from R. Should you wish to contribute to the development of the
+C++ library, it's probably better to use the "dev_package" instead:
+</p>
+
+
+<pre><code>   
     mkdir build
     cd build
     cmake ../
-</code></pre>
-
-<p>Assuming this step completed correctly, make and install the library. At some point it should be feasible to just make the library
-and link to it, but first I need to figure out how to make R play nice with shared objects being placed in non-standard directories. </p>
-
-<pre><code>    make
+    make
     sudo make install
+
+    cd ../R
+    R CMD INSTALL dev_package
+
 </code></pre>
 
-<p>Next you'll need to build the R package itself. </p>
+<p>This allows you to re-build the C++ shared library without re-compiling the R package (unless you make API changes, in which case both need to be 
+re-compiled). Thi process may also be useful for troubleshooting errors encountered in the build process. </p>
 
-<pre><code>    cd ../R
-    R CMD INSTALL package
-</code></pre>
+<a name="installation-win" class="anchor" href="#installation-win"><span class="octicon octicon-link"></span></a>Installation - Windows</h3>
+
+<p>I'm currently working on getting a good build process for Windows, and plan to eventually release pre-compiled binaries. In the meantime, if you happen to be a CMake wizard, you should probably be able t adapt the above steps to suit your needs. </p>
+
+<a name="installation-osx" class="anchor" href="#installation-osx"><span class="octicon octicon-link"></span></a>Installation - OSX</h3>
+
+<p>Without access to an OSX machine, I can't troubleshoot the install process. This is planned for the future, though as a unix-alike the build
+process should closely resemble that of linux machines. </p>
+
+
 
 <p>That should be it, though as previously mentioned this is still very much a work in progress. Assuming it worked, you could try out some of
 the example scripts. </p>
@@ -104,10 +125,7 @@ the example scripts. </p>
     &gt; source("./singleLocationTest.R")
 </code></pre>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+
       </section>
     </div>
 
