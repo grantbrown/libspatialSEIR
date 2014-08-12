@@ -51,6 +51,11 @@ namespace SpatialSEIR
         int timeIndex;
     };
 
+    /** The IOProvider class handles file output operations. You might expect 
+     * given the name that it handled file input operations as well, but you 
+     * would be mistaken. Mainly it writes MCMC sample output. The user 
+     * shouldn't really need to interact with it, as ModelContext handles the
+     * basics. */
     class IOProvider
     {
         public:
@@ -66,7 +71,10 @@ namespace SpatialSEIR
                          std::string* outFilePath,
                          int* iterationStride);
             //Methods
-            void setTrace(int locationIndex);
+            /** Keep track of compartment and transition probability information for location locationIndex */
+            void setTrace(int locationIndex); 
+            /** Keep track of compartment and transition probability information for location locationIndex 
+             * and time point timeIndex*/
             void setTrace(int locationIndex, int timeIndex);
             int close();
             int fileInit();
