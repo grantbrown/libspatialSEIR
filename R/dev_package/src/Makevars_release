@@ -4,8 +4,8 @@ OBJECTS = ./RcppExports.o ./spatialSEIRInterface.o
 PKG_CPPFLAGS=-I../../../eigen ../../../libSpatialSEIR/include ../../../libSpatialSEIR/include/DataStructures ../../../libSpatialSEIR/include/FullConditionals 
 PKG_LIBS = -L./LSS -lSpatialSEIR $(BLAS_LIBS)
 
-$(SHLIB): LSS/libSpatialSEIR.so
-
-libSpatialSEIR.so:
+libSpatialSEIR.so: $(SHLIB)
 	@(cd LSS && $(MAKE) all)
+
+all: libSpatialSEIR.so $(SHLIB) 
 
