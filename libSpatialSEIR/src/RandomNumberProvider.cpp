@@ -212,63 +212,67 @@ namespace SpatialSEIR
     }
     int RandomNumberProvider::uniform_int(int a, int b)
     {
-        return(0);
+        return(std::floor(R::runif(a,b+1)));
     }
     int RandomNumberProvider::poisson(int mu)
     {
-        return(0);
+        return(R::rpois(mu));
     }
     double RandomNumberProvider::normal(double mu, double sd)
     {
-        return(0.0);
+        return(R::rnorm(mu,sd));
     }
     double RandomNumberProvider::dnorm(double x, double mu, double sd)
     {
-        return(0.0);
+        return(R::dnorm(x,mu,sd,1));
     }
     double RandomNumberProvider::dpois(int x, double mu)
     {
-        return(0.0);
+        return(R::dpois(x, mu, 1));
     }
     double RandomNumberProvider::dbinom(int x, int n, double p)
     {
-        return(0.0);
+        return(R::dbinom(x, n, p, 1));
     }
     double RandomNumberProvider::dgamma(double x, double a, double b)
     {
-        return(0.0);
+        return(R::dgamma(x,a,b,1));
     }
     double* RandomNumberProvider::uniform(int n)
     {
-        double* output = new double; *output =0.0; 
-        return(output);
+        // We're not actually using this. Depricate.
+        throw(-1);
+        return(new double);
     }
     double* RandomNumberProvider::uniform(int n, double* output)
     {
-        *output = 0.0; 
+        // We're not actually using this. Depricate.
+        throw(-1);
         return(output);
     }
     double RandomNumberProvider::gamma()
     {
-        return(0.0);
+        return(R::rgamma(1.0,1.0));
     }
     double RandomNumberProvider::gamma(double a)
     {
-        return(0.0);
+        return(R::rgamma(a,1.0));
     }
     double* RandomNumberProvider::gamma(int n)
     {
-        double* output = new double; *output =0.0; 
-        return(output);
+        // We're not actually using this. Depricate.
+        throw(-1);
+        return(new double);
     }
     double* RandomNumberProvider::gamma(int n, double* output)
     {
-        *output = 0.0; 
+        // We're not actually using this. Depricate.
+        throw(-1);
         return(output);
     }
     double RandomNumberProvider::beta(double a, double b)
     {
-        return(0.0);
+        return(R::rbeta(a, b));
     }
     RandomNumberProvider::~RandomNumberProvider()
     {
