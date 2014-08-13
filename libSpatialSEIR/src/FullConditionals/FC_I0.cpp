@@ -104,7 +104,7 @@ namespace SpatialSEIR
         
         double p_se_val;
         double p_rs_val;
-        double 1m_p_ir_val;
+        double _1m_p_ir_val;
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
 
         // Is p_rs meaningful?
@@ -121,7 +121,7 @@ namespace SpatialSEIR
                 compIdx = i*nTpts;
                 for (j = 0; j < nTpts; j++)
                 {
-                    1m_p_ir_val = 1.0-(*p_ir)[j]; 
+                    _1m_p_ir_val = 1.0-(*p_ir)[j]; 
                     Estar_val = ((*E_star) -> data)[compIdx];
                     Rstar_val = ((*R_star) -> data)[compIdx];
                     Sstar_val = ((*S_star)->data)[compIdx];
@@ -142,7 +142,7 @@ namespace SpatialSEIR
                     else
                     {
                         output +=  (((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
-                                    ((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val)) + 
+                                    ((*context) -> random -> dbinom(Rstar_val, I_val, _1m_p_ir_val)) + 
                                     ((*context) -> random -> dbinom(Estar_val,S_val, p_se_val)));
                     }
                     compIdx++;
@@ -169,7 +169,7 @@ namespace SpatialSEIR
                     R_val = ((*R) ->data)[compIdx];
                     p_se_val = (*p_se)[compIdx];
                     Estar_val = ((*E_star) -> data)[compIdx];
-                    1m_p_ir_val = 1.0-(*p_ir)[j]; 
+                    _1m_p_ir_val = 1.0-(*p_ir)[j]; 
 
 
                     if (Rstar_val > I_val || p_se_val > 1 || p_se_val < 0)
@@ -179,7 +179,7 @@ namespace SpatialSEIR
                     }
                     else
                     {
-                        output +=  (((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val)) + 
+                        output +=  (((*context) -> random -> dbinom(Rstar_val, I_val, _1m_p_ir_val)) + 
                                     ((*context) -> random -> dbinom(Estar_val,S_val, p_se_val)));
                     }
                     compIdx++;
@@ -210,7 +210,7 @@ namespace SpatialSEIR
         
         double p_se_val;
         double p_rs_val;
-        double 1m_p_ir_val;
+        double _1m_p_ir_val;
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
  
         if (((*A0) -> I0)[startLoc] < 0 || 
@@ -231,7 +231,7 @@ namespace SpatialSEIR
                 R_val = ((*R) ->data)[compIdx];
                 I_val = ((*I) ->data)[compIdx];
                 p_rs_val = (*p_rs)[j];
-                1m_p_ir_val = 1.0-(*p_ir)[j];
+                _1m_p_ir_val = 1.0-(*p_ir)[j];
                 if (Rstar_val > I_val || 
                         Sstar_val > R_val)
                 {
@@ -240,7 +240,7 @@ namespace SpatialSEIR
                 }
                 else
                 {
-                    output +=  (((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val)) + 
+                    output +=  (((*context) -> random -> dbinom(Rstar_val, I_val, _1m_p_ir_val)) + 
                                 ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
                 }
                 compIdx++;
@@ -253,7 +253,7 @@ namespace SpatialSEIR
                 Rstar_val = ((*R_star) -> data)[compIdx];
                 R_val = ((*R) ->data)[compIdx];
                 I_val = ((*I) ->data)[compIdx];
-                1m_p_ir_val = 1.0-(*p_ir)[j];
+                _1m_p_ir_val = 1.0-(*p_ir)[j];
 
                 if (Rstar_val > I_val)
                 {
@@ -262,7 +262,7 @@ namespace SpatialSEIR
                 }
                 else
                 {
-                    output += ((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val));
+                    output += ((*context) -> random -> dbinom(Rstar_val, I_val, _1m_p_ir_val));
                 }
                 compIdx++;
             } 
