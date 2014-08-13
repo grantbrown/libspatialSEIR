@@ -611,8 +611,8 @@ ng-model='DateIdx' width=40 ng-keyup="update2()">
 <script type="text/javascript">
 <!--begin.rcode echo=FALSE, results='asis'
   library(rCharts)
-  outdates = lapply(as.character(rptDate[20:33]),I)
-  names(outdates) = 0:13
+  outdates = lapply(as.character(rptDate[20:numObs]),I)
+  names(outdates) = 0:(numObs-startIdx)
   cat("var dateIdx = ", toJSON2(outdates), ";\n")
 end.rcode-->
 </script>
