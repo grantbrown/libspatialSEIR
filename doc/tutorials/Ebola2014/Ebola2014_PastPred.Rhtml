@@ -80,7 +80,7 @@ library(splines) # Load the splines library to build the temporal basis.
 documentCompilationMode = "release"
 #documentCompilationMode = "debug"
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 250, 50)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 400, 50)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 100) 
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
