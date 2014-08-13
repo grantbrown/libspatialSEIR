@@ -1,7 +1,8 @@
 #include <RandomNumberProvider.hpp>
-#include <boost/math/distributions/gamma.hpp>
 #include <IOProvider.hpp>
 
+#ifdef  LSS_USE_BOOST
+#include <boost/math/distributions/gamma.hpp>
 namespace SpatialSEIR
 {
     RandomNumberProvider::RandomNumberProvider(unsigned int seed)
@@ -191,3 +192,89 @@ namespace SpatialSEIR
         delete[] logFactorialMemo;
     }
 }
+
+#endif
+#ifndef LSS_USE_BOOST
+using namespace Rcpp;
+namespace SpatialSEIR
+{
+    RandomNumberProvider::RandomNumberProvider(unsigned int seed)
+    {
+        // Do nothing, we rely on R for the seed. 
+    }
+    double RandomNumberProvider::uniform()
+    {
+        return(R::runif(0,1)); 
+    }
+    int RandomNumberProvider::uniform_int()
+    {
+        return(std::floor(R::runif(0,2)));
+    }
+    int RandomNumberProvider::uniform_int(int a, int b)
+    {
+        return(0);
+    }
+    int RandomNumberProvider::poisson(int mu)
+    {
+        return(0);
+    }
+    double RandomNumberProvider::normal(double mu, double sd)
+    {
+        return(0.0);
+    }
+    double RandomNumberProvider::dnorm(double x, double mu, double sd)
+    {
+        return(0.0);
+    }
+    double RandomNumberProvider::dpois(int x, double mu)
+    {
+        return(0.0);
+    }
+    double RandomNumberProvider::dbinom(int x, int n, double p)
+    {
+        return(0.0);
+    }
+    double RandomNumberProvider::dgamma(double x, double a, double b)
+    {
+        return(0.0);
+    }
+    double* RandomNumberProvider::uniform(int n)
+    {
+        double* output = new double; *output =0.0; 
+        return(output);
+    }
+    double* RandomNumberProvider::uniform(int n, double* output)
+    {
+        *output = 0.0; 
+        return(output);
+    }
+    double RandomNumberProvider::gamma()
+    {
+        return(0.0);
+    }
+    double RandomNumberProvider::gamma(double a)
+    {
+        return(0.0);
+    }
+    double* RandomNumberProvider::gamma(int n)
+    {
+        double* output = new double; *output =0.0; 
+        return(output);
+    }
+    double* RandomNumberProvider::gamma(int n, double* output)
+    {
+        *output = 0.0; 
+        return(output);
+    }
+    double RandomNumberProvider::beta(double a, double b)
+    {
+        return(0.0);
+    }
+    RandomNumberProvider::~RandomNumberProvider()
+    {
+        // Do nothing
+    }
+}
+
+
+#endif

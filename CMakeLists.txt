@@ -4,9 +4,15 @@ cmake_minimum_required(VERSION 2.8.7)
 ## General Configuration Options  ##
 ####################################
 
+# Where are R.h and Rcpp.h located? If you plan to use Boost, don't worry about this. 
+SET(RCPP_INCLUDE_DIR "/home/grantbrown/R/x86_64-pc-linux-gnu-library/3.0/Rcpp/include/")
+SET(R_INCLUDE_DIR "/usr/share/R/include/")
 
 # Compile libspatialSEIR with OpenCL support?
 SET(OPEN_CL_SUPPORT false)
+
+# Use Boost? Alternative is to fall back and try to link to R
+SET(USE_BOOST false)
 
 # libspatialSEIR requires the eigen3 library, so here we must 
 # specify the location. 
@@ -34,14 +40,44 @@ if (OPEN_CL_SUPPORT)
                    DESTINATION lib)
 endif()
 
+if (USE_BOOST)
+    add_definitions( -DLSS_USE_BOOST="true" )
+    ## Configure Boost
+    SET(RCPP_INCLUDE_DIR ".")
+    SET(R_INCLUDE_DIR ".")
+    SET(Boost_USE_STATIC_LIBS OFF) 
+    SET(Boost_USE_MULTITHREADED ON)  
+    SET(Boost_USE_STATIC_RUNTIME OFF) 
+    find_package(Boost 1.49.0 COMPONENTS random REQUIRED) 
+
+    set(SpatialSEIR_Boost_LIBRARIES)
+    set(SpatialSEIR_Boost_INCLUDE_DIRS)
+    if(Boost_FOUND)
+        set(SpatialSEIR_Boost_LIBRARIES ${Boost_LIBRARIES})
+        set(SpatialSEIR_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    else()
+        message("Error: Boost was not found on the system. If you think this 
+        is a mistake, you might try setting BOOST_ROOT etc (there are probably other 
+        messages on your screen right now to the same effect). If you think 
+        this is a mistake and are using windows, may the force be with you
+        (here be dragons).")
+    endif()
+
+else()
+    if ("${RCPP_INCLUDE_DIR}" STREQUAL "")
+        message("ERROR: if not using boost, you must set the location of Rcpp.h via RCPP_INCLUDE_DIR")
+    endif()
+    if ("${R_INCLUDE_DIR}" STREQUAL "")
+        message("ERROR: if not using boost, you must set the location of R.h via R_INCLUDE_DIR")
+    endif()
+
+
+    set(SpatialSEIR_Boost_LIBRARIES ".")
+    set(SpatialSEIR_Boost_INCLUDE_DIRS ".")
+endif()
+
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
-
-## Configure Boost
-set(Boost_USE_STATIC_LIBS OFF) 
-set(Boost_USE_MULTITHREADED ON)  
-set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.49.0 COMPONENTS random REQUIRED) 
 
 ## Configure BLAS
 set(BLA_STATIC OFF)
@@ -55,27 +91,16 @@ else()
 endif()
 
 ## Require Boost Message
-set(SpatialSEIR_Boost_LIBRARIES)
-set(SpatialSEIR_Boost_INCLUDE_DIRS)
-if(Boost_FOUND)
-	set(SpatialSEIR_Boost_LIBRARIES ${Boost_LIBRARIES})
-	set(SpatialSEIR_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-else()
-    message("Error: Boost was not found on the system. This dependency 
-             will be relaxed in the release version of libSpatialSEIR,
-             which will allow the required random number generation
-             to be supplied by R, or potentially an embedded version
-             of the boost random library.")
-endif()
-
-
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS"
                     "."
 					"${SpatialSEIR_Boost_INCLUDE_DIRS}"
-                    "${EIGEN3_INCLUDE_DIR}")
+                    "${EIGEN3_INCLUDE_DIR}"
+                    "${RCPP_INCLUDE_DIR}"
+                    "${R_INCLUDE_DIR}")
+
 
 add_library(SpatialSEIR SHARED 
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/RandomNumberProvider.cpp"

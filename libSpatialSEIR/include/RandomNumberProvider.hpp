@@ -10,12 +10,7 @@
 #define RANDOM_NUMBER_PROVIDER_INC
 
 
-// Include logic about boost availability needs 
-// to go here. The library should try to find boost, 
-// but fall back on R. Expandin the CMake scripts
-// should help with this by using the appropriate
-// FIND_BOOST macros and setting appropriate 
-// preprocessor directives. 
+#ifdef LSS_USE_BOOST
 
 #include<boost/random/mersenne_twister.hpp>
 #include<boost/random/uniform_real.hpp>
@@ -71,5 +66,42 @@ namespace SpatialSEIR
             ~RandomNumberProvider();
     };
 }
+#endif
+#ifndef LSS_USE_BOOST
 
+#include<Rcpp.h>
+
+namespace SpatialSEIR
+{
+    class RandomNumberProvider
+    {
+        public:
+            //Random Methods
+            RandomNumberProvider(unsigned int seed);
+            double uniform();   
+            int uniform_int();
+            int uniform_int(int a, int b);
+            int poisson(int mu);
+            double normal(double mu, double sd);
+            double* uniform(int n);
+            double* uniform(int n, double* output);
+            double gamma();
+            double gamma(double a);
+            double* gamma(int n);
+            double* gamma(int n, double* output);
+            double beta(double a, double b);
+
+
+            //Density Functions
+            double dpois(int x, double mu);
+            double dnorm(double x, double mu, double sd);
+            double dbinom(int x, int n, double p);
+            double dgamma(double x, double a, double b);
+
+            ~RandomNumberProvider();
+    };
+}
+
+
+#endif
 #endif
