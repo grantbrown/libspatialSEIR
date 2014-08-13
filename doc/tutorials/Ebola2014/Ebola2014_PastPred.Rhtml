@@ -1,8 +1,3 @@
-
-<!--begin.rcode global_options, include=FALSE
-opts_knit$set(base.dir='./pastPredFigure')
-end.rcode-->
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -65,7 +60,7 @@ end.rcode-->
         <br/>
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
 <div class="code-and-output-block" style="display:none">
-<!--begin.rcode
+<!--begin.rcode fig.path='./pastPredFigure/'
 
 library(coda) # Load the coda library for MCMC convergence diagnosis
 library(spatialSEIR) # Load the spatialSEIR library to perform the modeling. 
@@ -77,11 +72,11 @@ library(splines) # Load the splines library to build the temporal basis.
 ## Define Document Compilation Parameters ##
 ############################################
 
-documentCompilationMode = "release"
-#documentCompilationMode = "debug"
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
 
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 400, 50)
-convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 100) 
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 400, 10)
+convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 50) 
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
@@ -98,6 +93,9 @@ Liberia = as.numeric(as.character(dat$V6[2:nrow(dat)]))[ascendingOrder]
 Liberia = ifelse(is.na(Liberia), 0, Liberia)
 Sierra.Leone = as.numeric(as.character(dat$V8[2:nrow(dat)]))[ascendingOrder]
 Sierra.Leone = ifelse(is.na(Sierra.Leone), 0,Sierra.Leone)
+
+numObs=length(Sierra.Leone)-1
+startIdx = 20
 
 uncumulate = function(x)
 {
@@ -498,7 +496,7 @@ makePrediction = function(maxIdx, seedVal=123123)
 }
 
 
-maxIdxList = lapply(20:33, makePrediction)
+maxIdxList = lapply(startIdx:numObs, makePrediction)
 
 plotPredictions = function(prediction, main="PredPlot")
 {
@@ -572,10 +570,14 @@ end.rcode-->
       </div>
 <div class='container' ng-app ng-controller='imgController'>
 <div>
-<div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=13 ng-model='DateIdx' width=40 ng-keyup="update1()"></div>
+<div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=
+<!--begin.rcode echo=FALSE, results='asis'
+cat(numObs-startIdx)
+end.rcode-->
+ng-model='DateIdx' width=40 ng-keyup="update1()"></div>
 <div class="col-sm-8"><h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter"></span></span></h4></div>
 
-<!--begin.rcode echo=FALSE, dpi=150, results='asis'
+<!--begin.rcode echo=FALSE, dpi=150, results='asis', fig.path='./pastPredFigure/'
 for (i in 1:length(maxIdxList))
 {
   plotPredictions(maxIdxList[[i]])
@@ -584,7 +586,11 @@ end.rcode-->
 
 
 <div class="col-sm-3">
-<input id='pred-slider2' type='range' min=0 max=12 ng-model='DateIdx' width=40 ng-keyup="update2()">
+<input id='pred-slider2' type='range' min=0 max=
+<!--begin.rcode echo=FALSE, results='asis'
+cat(numObs-startIdx)
+end.rcode-->
+ng-model='DateIdx' width=40 ng-keyup="update2()">
 </div>
 <div class="col-sm-8">
 <h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter2"></span></span></h4>
