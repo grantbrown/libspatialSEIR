@@ -12,7 +12,7 @@ SET(R_INCLUDE_DIR "/usr/share/R/include/")
 SET(OPEN_CL_SUPPORT false)
 
 # Use Boost? Alternative is to fall back and try to link to R
-SET(USE_BOOST false)
+SET(USE_BOOST true)
 
 # libspatialSEIR requires the eigen3 library, so here we must 
 # specify the location. 
