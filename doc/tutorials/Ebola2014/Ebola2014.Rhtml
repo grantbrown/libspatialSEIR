@@ -132,7 +132,7 @@
               under the assumption that the epidemic will continue to evolve according to the same process it has so far.</li>
             </ul>
             <li><strong>Aug 10</strong> Predictions remain much the same, though perhaps not so immediately catestrophic as the August 5 predictions. </li>
-            <li><strong>Aug 12</strong> TBD. </li>
+            <li><strong>Aug 12</strong> Liberia continues to worsen, though Sierra Leone appears to have leveled off. Guinea might be worsening slightly. </li>
           
           </ul>
         </div>
@@ -162,8 +162,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 ## Define Document Compilation Parameters
 
 
-#documentCompilationMode = "release"
-documentCompilationMode = "debug"
+documentCompilationMode = "release"
+#documentCompilationMode = "debug"
 
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
@@ -1543,7 +1543,7 @@ end.rcode-->
 <a id = "conclusions-sect" class="anchor"><h3>Conclusions</h3></a>
 <br/>
 <p>
-As the two sets of basis functions give similar answers in the near future, it seems likely that the epidemic will continue to get worse for at least the next few weeks, though we must still be careful projecting too far into the future. This caution is especially important given the increased national and international response seen in recent days, as these simple models don't have any mechanism with which to capture the impact of current and future public health interventions. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p> In the meantime, the short term predictions largely agree with what the media has been reporting: the epidemic is likely to worsen. <br/>
+This epidemic is evolving extremely rapidly. As of 8/12, it looks like the situation in Liberia is set to continue worsening, and that Guinea is at risk of the same (though not to nearly the same degree). On the other hand, the epidemic in Sierra Leone appears to be leveling off (though not disappearing). The past few weeks have shown that it is not wise to put too much stock in these predictions, and that we must remember that these models are driven by SEIR dynamics and simple functions of time - they can not anticipate public health interventions and sudden changes in governmental policy and individual behavior. We may hope that the these efforts will be successful in the coming months, and that recent international attention will provide support for the efforts of involved governmental and non-governmental organizations like the <a href="http://www.who.int/en/">WHO</a> and <a href="http://www.doctorswithoutborders.org/about-us">MSF</a></p><br/>
 
 <p>
 That wraps up the analyses for now. This document will continue to be updated as the epidemic progresses, reflecting new data and perhaps additional analysis techniques. As the document is tracked via source control it will be easy to see how well past predictions held up and how they change in response to new information. Questions and comments can be shared <a href="https://github.com/grantbrown/libspatialSEIR/issues/1">here</a> 
