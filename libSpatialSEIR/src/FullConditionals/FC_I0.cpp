@@ -104,15 +104,8 @@ namespace SpatialSEIR
         
         double p_se_val;
         double p_rs_val;
-        double ln_1m_p_ir;
+        double 1m_p_ir_val;
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
-
-        // Cache ln_1m_p_ir to prevent work duplication
-        // Need to revert this before exit.
-        for (j = 0; j<nTpts; j++)
-        {
-            (*p_ir)[j] = std::log(1-(*p_ir)[j]);
-        }
 
         // Is p_rs meaningful?
         if ((*context) -> config -> reinfectionMode <= 2)
@@ -123,13 +116,12 @@ namespace SpatialSEIR
                     ((*A0) -> R0)[i] < 0)
                 {
                     *value = -INFINITY;
-                    (*context) -> calculateP_IR_CPU();
                     return(-1);
                 }
                 compIdx = i*nTpts;
                 for (j = 0; j < nTpts; j++)
                 {
-                    ln_1m_p_ir = (*p_ir)[j]; 
+                    1m_p_ir_val = 1.0-(*p_ir)[j]; 
                     Estar_val = ((*E_star) -> data)[compIdx];
                     Rstar_val = ((*R_star) -> data)[compIdx];
                     Sstar_val = ((*S_star)->data)[compIdx];
@@ -145,14 +137,12 @@ namespace SpatialSEIR
                             p_se_val > 1 || p_se_val < 0)
                     {
                         *value = -INFINITY;
-                        (*context) -> calculateP_IR_CPU();
                         return(-1);
                     }
                     else
                     {
-                        output +=  (ln_1m_p_ir*(I_val) +
-                                    ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
-                                    ((*context) -> random -> choose(I_val, Rstar_val)) + 
+                        output +=  (((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
+                                    ((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val)) + 
                                     ((*context) -> random -> dbinom(Estar_val,S_val, p_se_val)));
                     }
                     compIdx++;
@@ -168,7 +158,6 @@ namespace SpatialSEIR
                     ((*A0) -> R0)[i] < 0)
                 {
                     *value = -INFINITY;
-                    (*context) -> calculateP_IR_CPU();
                     return(-1);
                 }
 
@@ -180,26 +169,23 @@ namespace SpatialSEIR
                     R_val = ((*R) ->data)[compIdx];
                     p_se_val = (*p_se)[compIdx];
                     Estar_val = ((*E_star) -> data)[compIdx];
-                    ln_1m_p_ir = (*p_ir)[j]; 
+                    1m_p_ir_val = 1.0-(*p_ir)[j]; 
 
 
                     if (Rstar_val > I_val || p_se_val > 1 || p_se_val < 0)
                     {
                         *value = -INFINITY;
-                        (*context) -> calculateP_IR_CPU();
                         return(-1);
                     }
                     else
                     {
-                        output +=  (ln_1m_p_ir*(I_val) +
-                                    ((*context) -> random -> choose(I_val, Rstar_val)) + 
+                        output +=  (((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val)) + 
                                     ((*context) -> random -> dbinom(Estar_val,S_val, p_se_val)));
                     }
                     compIdx++;
                 } 
             }
         }
-        (*context) -> calculateP_IR_CPU();
         if (!std::isfinite(output))
         {
             *value = -INFINITY;   
@@ -224,7 +210,7 @@ namespace SpatialSEIR
         
         double p_se_val;
         double p_rs_val;
-        double ln_1m_p_ir;
+        double 1m_p_ir_val;
         int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
  
         if (((*A0) -> I0)[startLoc] < 0 || 
@@ -234,15 +220,7 @@ namespace SpatialSEIR
             return(-1);
         }
 
-        // Cache ln_1m_p_ir to prevent work duplication
-        // Need to revert this before exit.
-        for (j = 0; j<nTpts; j++)
-        {
-            (*p_ir)[j] = std::log(1-(*p_ir)[j]);
-        }
-
         compIdx = startLoc*nTpts;
-
         // Is p_rs meaningful?
         if ((*context) -> config -> reinfectionMode <= 2)
         {
@@ -253,19 +231,17 @@ namespace SpatialSEIR
                 R_val = ((*R) ->data)[compIdx];
                 I_val = ((*I) ->data)[compIdx];
                 p_rs_val = (*p_rs)[j];
-                ln_1m_p_ir = (*p_ir)[j];
+                1m_p_ir_val = 1.0-(*p_ir)[j];
                 if (Rstar_val > I_val || 
                         Sstar_val > R_val)
                 {
                     *value = -INFINITY;
-                    (*context) -> calculateP_IR_CPU();
                     return(-1);
                 }
                 else
                 {
-                    output +=  (ln_1m_p_ir*(I_val) +
-                                ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)) + 
-                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                    output +=  (((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val)) + 
+                                ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
                 }
                 compIdx++;
             } 
@@ -277,18 +253,16 @@ namespace SpatialSEIR
                 Rstar_val = ((*R_star) -> data)[compIdx];
                 R_val = ((*R) ->data)[compIdx];
                 I_val = ((*I) ->data)[compIdx];
-                ln_1m_p_ir = (*p_ir)[j];
+                1m_p_ir_val = 1.0-(*p_ir)[j];
 
                 if (Rstar_val > I_val)
                 {
                     *value = -INFINITY;
-                    (*context) -> calculateP_IR_CPU();
                     return(-1);
                 }
                 else
                 {
-                    output +=  (ln_1m_p_ir*(I_val) +
-                                ((*context) -> random -> choose(I_val, Rstar_val)));
+                    output += ((*context) -> random -> dbinom(Rstar_val, I_val, 1m_p_ir_val));
                 }
                 compIdx++;
             } 
@@ -308,7 +282,6 @@ namespace SpatialSEIR
                 if (p_se_val > 1 || p_se_val < 0)
                 {
                     *value = -INFINITY;
-                    (*context) -> calculateP_IR_CPU();
                     return(-1);
                 }
 
@@ -316,7 +289,6 @@ namespace SpatialSEIR
                 compIdx ++; 
             }
         }
-        (*context) -> calculateP_IR_CPU();
         if (!std::isfinite(output))
         {
             *value = -INFINITY;   
