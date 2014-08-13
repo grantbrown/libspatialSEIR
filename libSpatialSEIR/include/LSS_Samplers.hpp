@@ -266,7 +266,8 @@ namespace SpatialSEIR
     };
 
     /** The decorrelation sampler functions identically to the ParameterJointMetropolisSampler class, 
-     * except that proposals are drawn from the null space of the relevant design matrix. */
+     * except that proposals are drawn from the null space of the relevant design matrix. This can
+     * be useful when the explanatory variables are correlated.*/
     class ParameterDecorrelationSampler : public Sampler
     {
         public:
