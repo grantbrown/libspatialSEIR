@@ -154,80 +154,6 @@ namespace SpatialSEIR
         return(0);
     }
 
-    
-    int FC_E0::evalCPU(int startLoc)
-    {
-        int i,j,compIdx,S_val,E_val,I_val,Istar_val,Estar_val,Rstar_val;
-        double p_ei_val, p_ir_val, p_se_val;
-        int nLoc = *((*E)->ncol);
-        int nTpts = *((*E)->nrow);
-        long double output = 0.0;
-
-        if (((*A0) -> E0)[startLoc] < 0 || 
-            ((*A0) -> I0)[startLoc] < 0)
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-
-        compIdx = startLoc*nTpts;
-        for (i = 0; i < nTpts; i++)
-        {
-
-                p_ei_val = (*p_ei)[i];
-                p_ir_val = (*p_ir)[i];
-                Rstar_val = ((*R_star)->data)[compIdx]; 
-                Istar_val = ((*I_star)->data)[compIdx];
-                E_val = ((*E)->data)[compIdx];
-                I_val = ((*I)->data)[compIdx];
-                if (Istar_val > E_val ||
-                    Rstar_val > I_val)
-                {
-                    *value = -INFINITY;
-                    return(-1);
-                }
-                else
-                { 
-                    output += (((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val)) + 
-                               ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)));
-                }
-                compIdx ++; 
-        }
-
-        // p_se changes, so need to look at p_se component for all locations and 
-        // time points after 0
-        for (i = 0; i < nLoc; i++)
-        {
-            compIdx = i*nTpts;
-            for (j = 0; j< nTpts; j++)
-            {
-                p_se_val = (*p_se)[compIdx];
-                Estar_val = ((*E_star) -> data)[compIdx];
-                S_val = ((*S)->data)[compIdx];
-                if (p_se_val > 1 || p_se_val < 0)
-                {
-                    *value = -INFINITY;
-                    return(-1);
-                }
-
-                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
-                compIdx ++; 
-            }
-        }
-
-
-        if (!std::isfinite(output))
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        else
-        {
-            *value = output;
-        }
-        return(0);
-    }
-
     int FC_E0::evalOCL()
     {
         // Not Implemented
@@ -264,18 +190,5 @@ namespace SpatialSEIR
         (*context) -> calculateI_givenR_CPU();
         (*context) -> calculateP_SE_OCL();
         return(0);
-    }
-
-    int FC_E0::calculateRelevantCompartments(int startLoc)
-    {
-        (*context) -> calculateE_CPU(startLoc, 0);
-        (*context) -> calculateI_givenR_CPU(startLoc,0);
-        (*context) -> calculateP_SE_CPU(startLoc,0);
-        return(0);
-    }
-
-    void FC_E0::printDebugInfo(int loc)
-    {
-        std::cout << "Error Sampling E0, location: " << loc << ", value: " << ((*A0) -> E0)[loc] << "\n";
     }
 }

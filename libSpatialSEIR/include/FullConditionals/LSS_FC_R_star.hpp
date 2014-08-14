@@ -34,7 +34,6 @@ namespace SpatialSEIR
                       double sliceWidth);
             ~FC_R_Star();
 
-            virtual int evalCPU(int startLoc, int startTime);
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);
@@ -42,8 +41,6 @@ namespace SpatialSEIR
             virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments_OCL();
-            virtual int calculateRelevantCompartments(int startLoc, int startTime);
-            virtual void printDebugInfo(int loc, int tpt);
             ModelContext **context;
             CompartmentalModelMatrix **R_star;
             CompartmentalModelMatrix **R;

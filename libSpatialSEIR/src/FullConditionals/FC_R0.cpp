@@ -187,90 +187,6 @@ namespace SpatialSEIR
         return 0;
     }
 
-    int FC_R0::evalCPU(int startLoc)
-    {
-
-        int j, compIdx;
-        int nTpts = *((*R) -> nrow);
-
-        long double output = 0.0;
-        
-        double p_se_val;
-        double p_rs_val;
-        int Sstar_val, Estar_val, R_val, S_val;   
-
-        if (((*A0) -> S0)[startLoc] < 0 || 
-            ((*A0) -> R0)[startLoc] < 0)
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-
-        compIdx = startLoc*nTpts;
-
-        // Is p_rs meaningful?
-        if ((*context) -> config -> reinfectionMode <= 2)
-        {
-            for (j = 0; j < nTpts; j++)
-            {
-                Estar_val = ((*E_star) -> data)[compIdx];
-                Sstar_val = ((*S_star)->data)[compIdx];
-                R_val = ((*R) ->data)[compIdx];
-                S_val = ((*S) ->data)[compIdx];
-                p_rs_val = (*p_rs)[j];
-
-                if (Estar_val > S_val || 
-                        Sstar_val > R_val)
-                {
-                    *value = -INFINITY;
-                    return(-1);
-                }
-                else
-                {
-                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) + 
-                               ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
-
-                }
-                compIdx++;
-            } 
-        }
-        else 
-        {
-            for (j = 0; j < nTpts; j++)
-            {
-                Estar_val = ((*E_star) -> data)[compIdx];
-                R_val = ((*R) ->data)[compIdx];
-                S_val = ((*S) ->data)[compIdx];
-                p_rs_val = (*p_rs)[j];
-
-                if (Estar_val > S_val)
-                {
-                    *value = -INFINITY;
-                    return(-1);
-                }
-                else
-                {
-                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)));
-
-                }
-                compIdx++;
-            } 
-
-        }
-
-        if (!std::isfinite(output))
-        {
-            *value = -INFINITY;   
-            return(-1);
-        }
-        else
-        {
-            *value = output;
-        }
-
-        return 0;
-    }
-
     int FC_R0::evalOCL()
     {
         // Not Implemented
@@ -304,16 +220,5 @@ namespace SpatialSEIR
         (*context) -> calculateR_CPU();
         (*context) -> calculateS_givenE_CPU();
         return(0);
-    }
-    int FC_R0::calculateRelevantCompartments(int startLoc)
-    {
-        (*context) -> calculateR_CPU(startLoc, 0);
-        (*context) -> calculateS_givenE_CPU(startLoc,0);
-        return(0);
-    }
-
-    void FC_R0::printDebugInfo(int loc)
-    {
-        lssCout << "Error Sampling R0, location: " << loc << ", value: " << ((*A0) -> R0)[loc] << "\n";
     }
 }

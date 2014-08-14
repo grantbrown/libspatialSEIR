@@ -121,15 +121,12 @@ namespace SpatialSEIR
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
             virtual int evalCPU() = 0;
-            virtual int evalCPU(int startLoc, int startTime) = 0;
             virtual int evalOCL() = 0;
             virtual void sample(int verbose) = 0;
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
-            virtual int calculateRelevantCompartments(int startLoc, int startTime) = 0;
-            virtual void printDebugInfo(int loc, int tpt) = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
             /** Identify as compartment full conditional*/
@@ -184,16 +181,13 @@ namespace SpatialSEIR
 
             virtual ~InitCompartmentFullConditional(){}; 
             virtual int evalCPU() = 0;
-            virtual int evalCPU(int startLoc) = 0;
             virtual int evalOCL() = 0;
             virtual void sample(int verbose) = 0;
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
-            virtual int calculateRelevantCompartments(int startLoc) = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
-            virtual void printDebugInfo(int loc) = 0;
 
 
             /** Identify as init compartment full conditional*/

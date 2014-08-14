@@ -32,15 +32,12 @@ namespace SpatialSEIR
                       double sliceWidth);
             virtual ~FC_I0(); 
             virtual int evalCPU();
-            virtual int evalCPU(int startLoc);
             virtual int evalOCL() ;
             virtual void sample(int verbose);
             virtual long double getValue();
             virtual void setValue(long double value);
             virtual int calculateRelevantCompartments();
             virtual int calculateRelevantCompartments_OCL();
-            virtual int calculateRelevantCompartments(int startLoc);
-            virtual void printDebugInfo(int loc);
 
             ModelContext** context;
             CompartmentalModelMatrix** S;

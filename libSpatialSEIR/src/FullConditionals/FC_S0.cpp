@@ -135,60 +135,6 @@ namespace SpatialSEIR
         return 0;
     }
 
-
-
-    int FC_S0::evalCPU(int startLoc)
-    {
-
-        int j, compIdx;
-        int nTpts = *((*S) -> nrow); 
-        double p_se_val, p_ei_val;
-        int S_val, E_val, Istar_val, Estar_val;
-        long double output = 0.0;
-        
-        if (((*A0) -> S0)[startLoc] < 0 || 
-            ((*A0) -> E0)[startLoc] < 0)
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-
-        compIdx = startLoc*nTpts;
-        for (j = 0; j < nTpts; j++)
-        {
-            p_ei_val = (*p_ei)[j];
-            S_val = ((*S) -> data)[compIdx];
-            E_val = ((*E) -> data)[compIdx];
-            Istar_val = ((*I_star)-> data)[compIdx];
-            Estar_val = ((*E_star) -> data)[compIdx];
-            p_se_val = (*p_se)[compIdx];
-            if (Estar_val > S_val || Istar_val > E_val)
-            {
-                *value = -INFINITY;
-                return(-1);
-            }
-            else
-            {
-                output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
-                            ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)));
-
-            }
-            compIdx++;
-        }
-
-        if (!std::isfinite(output))
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        else
-        {
-            *value = output;
-        }
-    
-       return 0;
-    }
-
     int FC_S0::evalOCL()
     {
         // Not Implemented
@@ -225,62 +171,5 @@ namespace SpatialSEIR
         (*context) -> calculateS_CPU();
         (*context) -> calculateE_givenI_CPU(); 
         return(0);
-    }
-
-    int FC_S0::calculateRelevantCompartments(int startLoc)
-    {
-        (*context) -> calculateS_CPU(startLoc,0);
-        (*context) -> calculateE_givenI_CPU(startLoc,0);
-        return(0);
-    }
-
-    void FC_S0::printDebugInfo(int startLoc)
-    {
-        lssCout << "Error Sampling S0, location: " << startLoc << ", value: " << ((*A0) -> S0)[startLoc] << "\n";
-        int j, compIdx;
-        int nTpts = *((*S) -> nrow); 
-        double p_se_val, p_ei_val;
-        int S_val, E_val, Istar_val, Estar_val;
-        long double output = 0.0;
-        
-        if (((*A0) -> S0)[startLoc] < 0 || 
-            ((*A0) -> E0)[startLoc] < 0)
-        {
-            lssCout << "Invalid Value.\n";
-            return;
-        }
-
-        compIdx = startLoc*nTpts;
-        for (j = 0; j < nTpts; j++)
-        {
-            p_ei_val = (*p_ei)[j];
-            S_val = ((*S) -> data)[compIdx];
-            E_val = ((*E) -> data)[compIdx];
-            Istar_val = ((*I_star)-> data)[compIdx];
-            Estar_val = ((*E_star) -> data)[compIdx];
-            p_se_val = (*p_se)[compIdx];
-            if (Estar_val > S_val || Istar_val > E_val)
-            {
-                lssCout << "Bounds error detected, time point: " << j << "\n";
-                lssCout << "S: " << S_val << "\n";
-                lssCout << "E: " << E_val << "\n";
-                lssCout << "E_star: " << Estar_val << "\n";
-                lssCout << "I_star: " << Istar_val << "\n";
-                return;
-            }
-            else
-            {
-                output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
-                            ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)));
-
-                if (!std::isfinite(output))
-                {
-                    lssCout << "Calculation Error Detected, time point: " << j << "\n";
-                    return;
-                }
-            }
-            compIdx++;
-        } 
-       return;
     }
 }
