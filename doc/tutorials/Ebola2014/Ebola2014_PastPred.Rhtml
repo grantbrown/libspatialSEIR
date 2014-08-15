@@ -77,15 +77,17 @@ documentCompilationMode = "debug"
 
 numConvergenceBatches = ifelse(documentCompilationMode == "release", 400, 10)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 50) 
+modelDfMax = 10
+
 
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[2]] # This line changes depending on the page formatting.
+dat = tbls[[3]] # This line changes depending on the page formatting.
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 original.rptDate = rptDate
 ascendingOrder = order(rptDate)
-rptDate = rptDate[ascendingOrder][2:length(rptDate)]
+rptDate = rptDate[ascendingOrder]
 original.rptDate = original.rptDate[ascendingOrder]
 Guinea = as.numeric(as.character(dat$V4[2:nrow(dat)]))[ascendingOrder]
 Guinea = ifelse(is.na(Guinea), 0, Guinea)
@@ -94,7 +96,7 @@ Liberia = ifelse(is.na(Liberia), 0, Liberia)
 Sierra.Leone = as.numeric(as.character(dat$V8[2:nrow(dat)]))[ascendingOrder]
 Sierra.Leone = ifelse(is.na(Sierra.Leone), 0,Sierra.Leone)
 
-numObs=length(Sierra.Leone)-1
+numObs=length(Sierra.Leone)
 startIdx = 20
 
 uncumulate = function(x)
@@ -103,7 +105,7 @@ uncumulate = function(x)
     ifelse(out >= 0, out, 0)
 }
 
-makePrediction = function(maxIdx, seedVal=123123)
+makePrediction = function(maxIdx, modelDF,seedVal=123123)
 {
   # Define the data matrix. 
   I_star = cbind(uncumulate(Guinea[1:maxIdx]), 
@@ -142,7 +144,7 @@ makePrediction = function(maxIdx, seedVal=123123)
   
   daysSinceJan.predict = ((max(daysSinceJan)+1):(max(daysSinceJan)+60))[1:14]
   
-  splineBasis = ns(daysSinceJan, df = 3)
+  splineBasis = ns(daysSinceJan, df = modelDF)
   splineBasis.predict = predict(splineBasis, daysSinceJan.predict)
   
   # Guinea, Liberia, Sierra Leone
@@ -155,8 +157,8 @@ makePrediction = function(maxIdx, seedVal=123123)
   
   # These co-variates are the same for each spatial location, 
   # so duplicate them row-wise. 
-  Z = Z[rep(1:nrow(Z), nrow(X)),]
-  Z.predict = Z.predict[rep(1:nrow(Z.predict), nrow(X)),]
+  Z = Z[rep(1:nrow(Z), nrow(X)),,drop=FALSE]
+  Z.predict = Z.predict[rep(1:nrow(Z.predict), nrow(X)),, drop=FALSE]
   
   # For convenience, let's combine X and Z for prediction.
   X.pred = cbind(X.predict[rep(1:nrow(X.predict), 
@@ -353,12 +355,11 @@ makePrediction = function(maxIdx, seedVal=123123)
   {
     dataRow = chainFile[i,]
     rho = dataRow$rho
-    beta = c(dataRow$BetaP_SE_0,
-             dataRow$BetaP_SE_1,
-             dataRow$BetaP_SE_2,
-             dataRow$BetaP_SE_3,
-             dataRow$BetaP_SE_4,
-             dataRow$BetaP_SE_5)
+    beta = c()
+    for (i in 0:(modelDF+2))
+    {
+      beta = c(beta, dataRow[[paste("BetaP_SE_", i, sep = "")]])
+    }
     
     S0 = c(dataRow[[paste("S_0_", maxIdx-2, sep = "")]],
            dataRow[[paste("S_1_", maxIdx-2, sep = "")]],
@@ -495,8 +496,11 @@ makePrediction = function(maxIdx, seedVal=123123)
   
 }
 
-
-maxIdxList = lapply(startIdx:numObs, makePrediction)
+outList = list()
+for (DOF in 1:modelDfMax)
+{
+  outList[[DOF]] = lapply(startIdx:numObs, makePrediction, modelDF = DOF)
+}
 
 plotPredictions = function(prediction, main="PredPlot")
 {
@@ -567,34 +571,75 @@ plotPredictions = function(prediction, main="PredPlot")
 
 
 end.rcode-->
-      </div>
+</div>
 <div class='container' ng-app ng-controller='imgController'>
-<div>
-<div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=
-<!--begin.rcode echo=FALSE, results='asis'
-cat(numObs-startIdx)
-end.rcode-->
-ng-model='DateIdx' width=40 ng-keyup="update1()"></div>
-<div class="col-sm-8"><h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter"></span></span></h4></div>
+  <div class="row">
+    <div class = "col-sm-3">Date</div>
+    <div class="col-sm-3"><input id='pred-slider' type='range' min=0 max=
+  <!--begin.rcode echo=FALSE, results='asis'
+    cat(numObs-startIdx)
+    end.rcode-->
+    ng-model='DateIdx' width=40 ng-keyup="update1()"></div> 
+    <div class="col-sm-5"></div>
+  </div>
 
+  <div class = "row">
+    <div class = "col-sm-3">Degrees of Freedom</div>
+    <div class="col-sm-3"><input id='pred-slider-df' type='range' min=1 max=
+  <!--begin.rcode echo=FALSE, results='asis'
+    cat(max(modelDfMax))
+    end.rcode-->
+    ng-model='ModelDF' width=40 ng-keyup="updateDF1()">
+    </div>
+    <div class="col-sm-5"></div>
+  </div>
+  <div class="row">
+    <div class="col-sm-11">
+      <h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter"></span></span></h4>
+    </div>
+  </div>
+<br/>
+<div id = "RCODE_DIV">
 <!--begin.rcode echo=FALSE, dpi=150, results='asis', fig.path='./pastPredFigure/'
-for (i in 1:length(maxIdxList))
+
+for (i in 1:length(outList))
 {
-  plotPredictions(maxIdxList[[i]])
+  for (j in 1:length(outList[[i]]))
+  {
+    plotPredictions(outList[[i]][[j]])
+  }
 }
 end.rcode-->
-
-
-<div class="col-sm-3">
-<input id='pred-slider2' type='range' min=0 max=
-<!--begin.rcode echo=FALSE, results='asis'
-cat(numObs-startIdx)
-end.rcode-->
-ng-model='DateIdx' width=40 ng-keyup="update2()">
 </div>
-<div class="col-sm-8">
-<h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter2"></span></span></h4>
-</div>
+<div class="row">
+    <div class="col-sm-3">
+      Date
+    </div>
+    <div class="col-sm-3">
+    <input id='pred-slider2' type='range' min=0 max=
+  <!--begin.rcode echo=FALSE, results='asis'
+    cat(numObs-startIdx)
+    end.rcode-->
+    ng-model='DateIdx' width=40 ng-keyup="update2()">
+    </div>
+    <div class="col-sm-5"></div>
+  </div>
+  <div class = "row">
+    <div class = "col-sm-3">Degrees of Freedom</div>
+    <div class="col-sm-3"><input id='pred-slider-df-2' type='range' min=1 max=
+<!--begin.rcode echo=FALSE, results='asis' 
+  cat(max(modelDfMax)) 
+end.rcode-->  
+ng-model='ModelDF' width=40 ng-keyup="updateDF2()">
+  </div>
+    <div class="col-sm-5"></div>
+  </div>
+  
+  <div class = "row">
+    <div class="col-sm-11">
+    <h4><span>Estimates and Predictions as of:&nbsp;&nbsp; <span id ="date-counter2"></span></span></h4>
+    </div>
+  </div>
 
 </div>
 </div>
@@ -620,7 +665,16 @@ end.rcode-->
 
 $(document).ready(function(){$("img").hide();});
 
+
+<!--begin.rcode echo=FALSE, results='asis'
+
+cat(paste("var nTpts=",length(outList[[1]]) , sep = ""))
+
+end.rcode-->
+
 var prevIdx = 1;
+var prevIdx_df = 1;
+var imgIdx = 0;
 
 $(document).ready(function(){$($("img")[prevIdx]).show(50);});
 
@@ -628,27 +682,70 @@ $(document).ready(function(){$($("img")[prevIdx]).show(50);});
 function imgController($scope)
 {
     $scope.DateIdx = 0;
+    $scope.ModelDF = 1;
     $scope.update1 = function()
     {
+      console.log("u1")
       prevIdx = $scope.DateIdx;
       $scope.DateIdx = $("#pred-slider").val();
       $("#pred-slider2").val($("#pred-slider").val());
     }
     $scope.update2 = function()
     {
+      console.log("u2")
       prevIdx = $scope.DateIdx;
       $scope.DateIdx = $("#pred-slider2").val();
       $("#pred-slider").val($("#pred-slider2").val());
     }
+    $scope.updateDF1 = function()
+    {
+      console.log("u_DF1")
+      prevIdx_df = $scope.ModelDF;
+      $scope.ModelDF = $("#pred-slider-df").val();
+      $("pred-slider-df-2").val($("#pred-slider-df").val());
+    }
+    $scope.updateDF2 = function()
+    {
+      console.log("u_DF2")
+      prevIdx_df = $scope.ModelDF;
+      $scope.ModelDF = $("#pred-slider-df-2").val();
+      $("pred-slider-df").val($("#pred-slider-df-2").val());
+    }
+    
     $scope.$watch('DateIdx', function(newIdx){
-      $($("img")[prevIdx]).hide();
-      $($("img")[newIdx]).show();
+      console.log(newIdx);
+      
+      $($("img")[imgIdx]).hide();
+      $($("img")[(eval(newIdx) + eval(prevIdx_df-1)*eval(nTpts))]).show();
       prevIdx = newIdx;
+      imgIdx = eval(newIdx) + eval(prevIdx_df-1)*eval(nTpts);
+      
+      console.log("NewImg1: " + (eval(newIdx) + eval(prevIdx_df-1)*eval(nTpts)));
+      console.log("  NewIdx: " + newIdx);
+      console.log("  prevIdx_df: " + prevIdx_df);
+      console.log("  nTpts:" + nTpts);
+      
       $("#date-counter").text(dateIdx[newIdx][0]);
       $("#date-counter2").text(dateIdx[newIdx][0]);
       $("#pred-slider2").val(newIdx);
     });
-    
+
+    $scope.$watch('ModelDF', function(newDF){
+      console.log("DF: " + newDF);
+      $($("img")[imgIdx]).hide();
+      $($("img")[eval(prevIdx) + eval(newDF-1)*eval(nTpts)]).show();
+      imgIdx = (eval(prevIdx) + eval(newDF-1)*eval(nTpts));
+      console.log("NewImg: " + (eval(prevIdx) + eval(newDF-1)*eval(nTpts)));
+      console.log("  newDF: " + newDF);
+      console.log("  prevIdx: " + prevIdx);
+      console.log("  nTpts:" + nTpts);
+      prevIdx_df = newDF;
+      //$("#date-counter").text(dateIdx[newIdx][0]);
+      //$("#date-counter2").text(dateIdx[newIdx][0]);
+      $("#pred-slider-df-2").val(newDF);
+    });
+
+
 }
 
 </script>
