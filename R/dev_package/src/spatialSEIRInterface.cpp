@@ -42,6 +42,7 @@ class spatialSEIRInterface
                      SEXP E0_,
                      SEXP I0_,
                      SEXP R0_,
+                     SEXP Y,
                      SEXP Sstar, 
                      SEXP Estar, 
                      SEXP Istar, 
@@ -145,6 +146,7 @@ class spatialSEIRInterface
         //Destructor
         ~spatialSEIRInterface();
 };
+
 
 int spatialSEIRInterface::getUseDecorrelation()
 {
@@ -865,6 +867,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP E0_,
                      SEXP I0_,
                      SEXP R0_,
+                     SEXP Y_,
                      SEXP Sstar, 
                      SEXP Estar, 
                      SEXP Istar, 
@@ -906,6 +909,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::IntegerVector I0(I0_);
     Rcpp::IntegerVector R0(R0_);
 
+    Rcpp::IntegerVector Y(Y_);
     Rcpp::IntegerVector S_star(Sstar);
     Rcpp::IntegerVector E_star(Estar);
     Rcpp::IntegerVector I_star(Istar);
@@ -997,7 +1001,11 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
             throw(-1);
         }
 
-
+        if (Y.size() != compartmentSize)
+        {
+            Rcpp::Rcout << "Invalid Y Size!\n";
+            throw(-1);
+        }
         if (S_star.size() != compartmentSize)
         {
             Rcpp::Rcout << "Invalid S_star Compartment Size!\n";
@@ -1166,7 +1174,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
-    context -> populate(&A0, &xArgs, &xPrsArgs, offset.begin(), &S_starArgs, &E_starArgs, &I_starArgs, 
+    context -> populate(&A0, &xArgs, &xPrsArgs, offset.begin(), Y.begin(), &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs,
                         rho.begin(),beta.begin(),gamma_ei.begin(), gamma_ir.begin(),
                         betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,

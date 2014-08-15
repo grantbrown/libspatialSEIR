@@ -92,6 +92,9 @@ namespace SpatialSEIR
                                                     */
                           double* offset, /**< Offset allows irregular spacing between time points.*/
 
+                          int* Y, /** Y is the actual observed data vector. It must be of the same dimension
+                                      as the rest of the Compartments. In the default data model, Y is 
+                                      exactly equal to I_star.*/
                           compartmentArgs* S_starArgs, /**< S_starArgs is an instance of compartmentArgs
                                                             containing the dimensions and data for S_star,
                                                             along with the steadyStateConstraintPrecision
@@ -425,6 +428,8 @@ namespace SpatialSEIR
             PerformDecorrelationStep* decorrelationStepTask;
 
             //Data
+            /** Pointer to the actual data vector: Y. Y is related by a data model to I_star.*/
+            int* Y;
             /** Pointer to the CompartmentalModelMatrix data structure storing the S compartment.*/ 
             CompartmentalModelMatrix* S;
             /** Pointer to the CompartmentalModelMatrix data structure storing the E compartment.*/ 

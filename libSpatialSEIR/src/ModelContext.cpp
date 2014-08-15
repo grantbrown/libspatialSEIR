@@ -101,6 +101,7 @@ namespace SpatialSEIR
                                 covariateArgs* xArgs, 
                                 covariateArgs* xPrsArgs,
                                 double *offset_,
+                                int* Y_,
                                 compartmentArgs* S_starArgs,
                                 compartmentArgs* E_starArgs,
                                 compartmentArgs* I_starArgs,
@@ -139,6 +140,7 @@ namespace SpatialSEIR
         p_se = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         p_se_components = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
         compartmentCache = new double[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
+        Y = new int[*(S_starArgs -> inRow)*(*(S_starArgs -> inCol))];
 
         // Create empty index cache
         indexLength = new int; *indexLength = config -> indexLength;
@@ -232,6 +234,11 @@ namespace SpatialSEIR
         for (i = 0; i < *(S_star -> nrow); i++)
         {
             offset[i] = offset_[i]; 
+        }
+
+        for (i = 0; i < ((*(S_star -> nrow)) * (*(S_star -> ncol))); i++)
+        {
+            Y[i] = Y_[i]; 
         }
 
         for (i = 0; i < nbeta; i++)
@@ -1163,6 +1170,7 @@ namespace SpatialSEIR
         delete numIterations;
         if (*isPopulated)
         {
+            delete[] Y;
             delete[] offset;
             delete S0_fc;
             delete E0_fc;
