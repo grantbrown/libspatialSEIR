@@ -1,5 +1,5 @@
 # Obtain a copy of the development package
-cp ../dev_package/* ./ -r
+cp -r ../dev_package/* ./
 # Create a folder for the libspatialSEIR code. 
 mkdir -p ./src/LSS
 # Create appropriate makefile using cmake.
