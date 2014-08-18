@@ -1,11 +1,18 @@
 SOURCES = ./spatialSEIRInterface.cpp ./RcppExports.cpp 
 OBJECTS = ./RcppExports.o ./spatialSEIRInterface.o
 
-PKG_CPPFLAGS=-I../../../eigen ../../../libSpatialSEIR/include ../../../libSpatialSEIR/include/DataStructures ../../../libSpatialSEIR/include/FullConditionals 
-PKG_LIBS = -L./LSS -lSpatialSEIR $(BLAS_LIBS)
+ROOT_DIR := $(abspath .)
+$(info The compilation root directory is: $(ROOT_DIR))
+$(info The name of the shared library to be created is: $(SHLIB))
+$(info The place R should look for libSpatialSEIR.so is: $(abspath ./LSS))
 
-libSpatialSEIR.so: $(SHLIB)
-	@(cd LSS && $(MAKE) all)
+PKG_CPPFLAGS+=-I$(abspath $(ROOT_DIR)/../../../eigen) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include/DataStructures) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include/FullConditionals) 
+PKG_LIBS += -L$(abspath ./LSS) -lSpatialSEIR -L$(BLAS_LIBS) -Wl,-rpath=$(abspath ./LSS) 
 
-all: libSpatialSEIR.so $(SHLIB) 
+$(SHLIB): LSS/libSpatialSEIR.so
+
+LSS/libSpatialSEIR.so: 
+	@(cd LSS && $(MAKE) all && cd ..)
+
+all: $(SHLIB) 
 
