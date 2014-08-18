@@ -128,7 +128,14 @@ namespace SpatialSEIR
 
     double ModelContext::estimateR0()
     {
-        return(-1.0);
+        int numTpt = *(S->nrow);
+        double output = 0.0;
+        int i;
+        for (i = 0; i < numTpt; i++)
+        {
+            output += estimateR0(i);
+        }
+        return(output/numTpt);
     }
 
     double ModelContext::estimateR0(int j)
