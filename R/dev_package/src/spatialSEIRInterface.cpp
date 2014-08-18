@@ -26,7 +26,7 @@ class spatialSEIRInterface
 
     private:
         //Attributes: 
-       ModelContext* context;
+        ModelContext* context;
         std::string* chainOutputFile;
         int* verbose;
         int* debug;
@@ -97,8 +97,6 @@ class spatialSEIRInterface
         virtual double estimateR0();
         virtual double estimateR02(int t);
         virtual int calculateP_RS();
-
-
 
         
         // Property Getter Functions
@@ -444,6 +442,7 @@ double spatialSEIRInterface::estimateR0()
     Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
     return(-1.0);
 }
+
 double spatialSEIRInterface::estimateR02(int t)
 {
     if (*(context -> isPopulated))
@@ -1219,8 +1218,8 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE2)
     .method("calculateP_SE_OCL", &spatialSEIRInterface::calculateP_SE_OCL)
-    .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("estimateR0", &spatialSEIRInterface::estimateR02)
+    .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("printAcceptanceRates", &spatialSEIRInterface::printAcceptanceRates)
     .method("printOCLSummary", &spatialSEIRInterface::printOCLSummary)
     .method("printSamplingParameters", &spatialSEIRInterface::printSamplingParameters)

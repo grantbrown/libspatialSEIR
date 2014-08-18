@@ -6,6 +6,8 @@
 #include <DistanceMatrix.hpp>
 #include <RandomNumberProvider.hpp>
 #include <IOProvider.hpp>
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 
 
 #ifndef BLAS_INC
@@ -131,7 +133,14 @@ namespace SpatialSEIR
 
     double ModelContext::estimateR0(int j)
     {
-        return(-1.0);
+        double* G; 
+        int nLoc = *(S -> ncol);
+        G = calculateG(j);
+        MatrixMapType Gmap(G, nLoc, nLoc);
+        Eigen::EigenSolver<Eigen::MatrixXd> Es(Gmap);
+        double output =  Es.eigenvalues()[0].real();
+        delete[] G;
+        return(output);
     }
 
     double* ModelContext::calculateG(int j)

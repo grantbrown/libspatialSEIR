@@ -12,8 +12,8 @@
 namespace SpatialSEIR
 {
 
-    typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> DoubleMatrixType;
-    typedef Eigen::Map<DoubleMatrixType, Eigen::ColMajor> DoubleMatrixMapType;
+    typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> MatrixType;
+    typedef Eigen::Map<MatrixType, Eigen::ColMajor> MatrixMapType;
     typedef Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic> IntMatrixType;
     typedef Eigen::Map<IntMatrixType, Eigen::ColMajor> IntMatrixMapType;
 

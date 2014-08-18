@@ -8,6 +8,8 @@
 #include <DistanceMatrix.hpp>
 #include <RandomNumberProvider.hpp>
 #include <IOProvider.hpp>
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 
 
 #ifndef BLAS_INC
