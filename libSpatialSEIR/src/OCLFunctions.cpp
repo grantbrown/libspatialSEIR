@@ -90,13 +90,13 @@ namespace SpatialSEIR
             (p_se_args -> globalSize) = globalSize; 
 
             /*
-            lssCout::cout << "Total Work Units: " << totalWorkUnits << "\n";
-            lssCout::cout << "Local Mem Per Core: " << localMemPerCore << "\n";
-            lssCout::cout << "Local Size Multiple: " << localSizeMultiple << "\n";
-            lssCout::cout << "Reported Maximum Size: " << deviceMaxSize << "\n";
-            lssCout::cout << "Max Local Size: " << maxLocalSize << "\n";
-            lssCout::cout << "Work Group Size: " << workGroupSize << "\n";
-            lssCout::cout << "Global Size: " << globalSize << "\n";
+            lssCout << "Total Work Units: " << totalWorkUnits << "\n";
+            lssCout << "Local Mem Per Core: " << localMemPerCore << "\n";
+            lssCout << "Local Size Multiple: " << localSizeMultiple << "\n";
+            lssCout << "Reported Maximum Size: " << deviceMaxSize << "\n";
+            lssCout << "Max Local Size: " << maxLocalSize << "\n";
+            lssCout << "Work Group Size: " << workGroupSize << "\n";
+            lssCout << "Global Size: " << globalSize << "\n";
             */
         }
         else
@@ -220,7 +220,7 @@ namespace SpatialSEIR
            
             if (multErr != CL_SUCCESS)
             { 
-                lssCout::cout << "clBLAS Error Encountered: " << multErr << "\n";
+                lssCout << "clBLAS Error Encountered: " << multErr << "\n";
                 throw(-1);
             }
         
@@ -250,7 +250,7 @@ namespace SpatialSEIR
             err |= p_se_kernel2 -> setArg(6, workGroupSize*sizeof(double), NULL); // p_se loc
             if (err < 0)
             {
-                lssCout::cout << "Error setting kernel args \n";
+                lssCout << "Error setting kernel args \n";
             }
         }
         catch(cl::Error e)
