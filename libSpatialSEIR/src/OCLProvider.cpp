@@ -178,8 +178,8 @@ SpatialSEIR::OCLProvider::OCLProvider()
     }
     catch(cl::Error e)
     {
-        cout << "Problem getting platforms:" << endl;
-        cout << e.what() << ": Error Code " << e.err() << endl;
+        cout << "Problem getting platforms:\n";
+        cout << e.what() << ": Error Code " << e.err() << "\n";
         throw(-1);
     }
 
