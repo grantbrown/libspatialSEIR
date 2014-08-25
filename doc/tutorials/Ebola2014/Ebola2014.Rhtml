@@ -45,7 +45,7 @@
           <h4>A Quick Stochastic Spatial SEIR Modeling Approach</h4>
           <h5><a href="http://www.public-health.uiowa.edu/people/grant-brown/">Grant Brown</a></h5>
           <h5><a href="http://www.public-health.uiowa.edu/people/jacob-oleson/">Jacob Oleson</a></h5>
-          <h5>Last Updated: 8/12/2014</h5>
+          <h5>Last Updated: 8/25/2014</h5>
         </div>
       </div>
     </div>
@@ -134,7 +134,7 @@
             </ul>
             <li><strong>Aug 10</strong> Predictions remain much the same, though perhaps not so immediately catestrophic as the August 5 predictions. </li>
             <li><strong>Aug 12</strong> Liberia continues to worsen, though Sierra Leone appears to have leveled off. Guinea might be worsening slightly. </li>
-            <li><strong>Aug 13</strong>TBD </li>
+            <li><strong>Aug 25</strong>TBD </li>
           
           </ul>
         </div>
@@ -163,8 +163,8 @@ library(XML) # Load the XML library to read in data from Wikipedia
 
 ## Define Document Compilation Parameters
 
-documentCompilationMode = "release"
-#documentCompilationMode = "debug"
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
 modelDF = 4
 pred.days = 12
 
@@ -176,7 +176,14 @@ extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
 ## Read in the data
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[2]] # This line changes depending on the page formatting.
+dat = tbls[[3]] # This line changes depending on the page formatting.
+
+# One date is now duplicated on the Wikipedia page, due to using different sources. 
+# Clean that up first. 
+
+dat[29,]
+dat[30,]
+
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
 numDays = max(rptDate) - min(rptDate) + 1
@@ -186,16 +193,43 @@ original.rptDate = rptDate
 ascendingOrder = order(rptDate)
 rptDate = rptDate[ascendingOrder][2:length(rptDate)]
 original.rptDate = original.rptDate[ascendingOrder]
-Guinea = as.numeric(as.character(dat$V4[2:nrow(dat)]))[ascendingOrder]
-Guinea = ifelse(is.na(Guinea), 0, Guinea)
-Liberia = as.numeric(as.character(dat$V6[2:nrow(dat)]))[ascendingOrder]
-Liberia = ifelse(is.na(Liberia), 0, Liberia)
-Sierra.Leone = as.numeric(as.character(dat$V8[2:nrow(dat)]))[ascendingOrder]
-Sierra.Leone = ifelse(is.na(Sierra.Leone), 0,Sierra.Leone)
+
+
+cleanData = function(dataColumn, ascendingOrder)
+{
+    # Remove commas
+    dataColumn = gsub(",", "", dataColumn, fixed = TRUE)
+    # Remove +1 -1 stuff
+    charCol = as.character(
+      lapply(
+        strsplit(
+          as.character(
+            dataColumn)[ascendingOrder], "\n"), function(x){ifelse(length(x) == 0, "—", x[[1]])}
+        )
+      )
+    if (is.na(charCol[1]) || charCol[1] == "—")
+    {
+      charCol[1] = "0"
+    }
+    charCol = as.numeric(ifelse(charCol == "—", "", charCol))
+    for (i in 2:length(charCol))
+    {
+      if (is.na(charCol[i]))
+      {
+        charCol[i] = charCol[i-1]  
+      }
+    }
+    charCol
+}
+
+Guinea = cleanData(dat$V4[2:nrow(dat)], ascendingOrder)
+Liberia = cleanData(dat$V6[2:nrow(dat)], ascendingOrder)
+Sierra.Leone = cleanData(dat$V8[2:nrow(dat)], ascendingOrder)
+Nigeria = cleanData(dat$V10[2:nrow(dat)], ascendingOrder)
 
 # Define the plot for the next section
-ylim = c(min(c(Guinea, Sierra.Leone, Liberia)), 
-             max(c(Guinea, Sierra.Leone, Liberia)))
+ylim = c(min(c(Guinea, Sierra.Leone, Liberia, Nigeria)), 
+             max(c(Guinea, Sierra.Leone, Liberia, Nigeria)))
 figure1 = function()
 {
       plot(original.rptDate, Guinea, type = "l", 
@@ -206,9 +240,10 @@ figure1 = function()
       abline(h = seq(0,1000, 50), lty = 2, col = "lightgrey")
       lines(original.rptDate, Liberia, lwd = 3, col = "blue", lty = 2)
       lines(original.rptDate, Sierra.Leone, lwd = 3, col = "red", lty = 3)
+      lines(original.rptDate, Nigeria, lwd = 3, col = "green", lty = 4)
       legend(x = original.rptDate[1], y = max(ylim), legend = 
-               c("Guinea", "Liberia", "Sierra Leone"), 
-             lty = 1:3, col = c("black", "blue","red"), bg="white", cex = 1.1)
+               c("Guinea", "Liberia", "Sierra Leone", "Nigeria"), 
+             lty = 1:3, col = c("black", "blue","red", "green"), bg="white", cex = 1.1)
 }
 
 end.rcode-->
@@ -236,7 +271,8 @@ uncumulate = function(x)
 # The "I_star" name will make more sense in a bit
 I_star = cbind(uncumulate(Guinea), 
                uncumulate(Liberia), 
-               uncumulate(Sierra.Leone))
+               uncumulate(Sierra.Leone),
+               uncumulate(Nigeria))
 
 maxIdx = nrow(I_star)
 
@@ -245,7 +281,7 @@ maxIdx = nrow(I_star)
 offsets = uncumulate(original.rptDate)
 
 
-InfectionPerDay = I_star/(cbind(offsets, offsets, offsets))
+InfectionPerDay = I_star/(cbind(offsets, offsets, offsets, offsets))
 
 # Define figure 2 for next section
 ylim = c(0,max(InfectionPerDay)*1.2)
@@ -262,13 +298,14 @@ figure2 = function()
     abline(h = seq(0, 50, 5), lty = 2, col = "lightgrey")
     lines(rptDate, InfectionPerDay[,2], col = "blue",lty=2, lwd = 2)
     lines(rptDate, InfectionPerDay[,3], col = "red", lty = 3, lwd = 2)
+    lines(rptDate, InfectionPerDay[,4], col = "green", lty = 4, lwd = 2)
     par(xaxt="n")
     par(yaxt="n")
     par(bty="n")
     par(xpd=TRUE)
     plot(c(0,10),c(0,10), type = "n", main  ="",xlab="",ylab="")
-    legend(x=-2,y=10, legend = c("Guinea", "Liberia", "Sierra Leone"), lty = 1:3,lwd=2, 
-           col = c("black", "blue", "red"))
+    legend(x=-2,y=10, legend = c("Guinea", "Liberia", "Sierra Leone", "Nigeria"), lty = 1:4,lwd=2, 
+           col = c("black", "blue", "red", "green"))
     par(xpd=FALSE)
     par(xaxt="s")
     par(yaxt="s")
