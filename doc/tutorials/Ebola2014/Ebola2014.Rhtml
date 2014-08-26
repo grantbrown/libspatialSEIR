@@ -157,6 +157,7 @@
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
 <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
+library(knitr)
 library(coda) # Load the coda library for MCMC convergence diagnosis
 library(spatialSEIR) # Load the spatialSEIR library to perform the modeling. 
 library(XML) # Load the XML library to read in data from Wikipedia
@@ -169,20 +170,20 @@ modelDF = 4
 pred.days = 12
 
 ## Compute number of samples/batches
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 200)
-convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 1000) 
-extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 100)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 100)
+convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 100) 
+extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 10)
 
 ## Read in the data
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
 tbls = readHTMLTable(url)
-dat = tbls[[3]] # This line changes depending on the page formatting.
+dat = tbls[[2]] # This line changes depending on the page formatting.
 
 # One date is now duplicated on the Wikipedia page, due to using different sources. 
 # Clean that up first. 
 
-dat[29,]
-dat[30,]
+dat[29,]$V2 = dat[30,]$V2
+dat = rbind(dat[1:29,], dat[31:nrow(dat),])
 
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
@@ -336,8 +337,10 @@ x = rptDate - min(rptDate)
 guinea.interp = approx(x,InfectionPerDay[,1],xout = 0:max(x))
 liberia.interp = approx(x,InfectionPerDay[,2],xout = 0:max(x))
 sierraleone.interp = approx(x,InfectionPerDay[,3],xout = 0:max(x))
+nigeria.interp = approx(x,InfectionPerDay[,4],xout = 0:max(x))
 
-interpMatrix = cbind(guinea.interp$y, liberia.interp$y,sierraleone.interp$y)
+
+interpMatrix = cbind(guinea.interp$y, liberia.interp$y,sierraleone.interp$y, nigeria.interp$y)
 cutvals = cut(interpMatrix, breaks = 9)
 interpMatrix.cut = matrix(as.numeric(cutvals), nrow = nrow(interpMatrix))
 
@@ -351,7 +354,7 @@ color.palette = c(hcol[1],hcol)
 fills = setNames(color.palette, c("defaultFill", paste("lt", upperVals, sep = "")))
 
 
-# GIN, LBR, SLE
+# GIN, LBR, SLE, 
 outList = list()
 for (tpt in min(x):max(x))
 {
@@ -360,6 +363,8 @@ for (tpt in min(x):max(x))
                                           "LBR" = list("fillKey"=factor(paste("lt", upperVals[interpMatrix.cut[tpt+1,2]], sep = ""), 
                                                         levels = names(fills))),
                                           "SLE" = list("fillKey"=factor(paste("lt",upperVals[interpMatrix.cut[tpt+1,3]], sep = ""), 
+                                                        levels = names(fills))),
+                                          "NGA" = list("fillKey"=factor(paste("lt",upperVals[interpMatrix.cut[tpt+1,4]], sep = ""), 
                                                         levels = names(fills))))
 }
 
@@ -442,18 +447,24 @@ temporal trend.
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
 
-# Define the simple "distance" matrix. There are 3 countries, all of which 
-# share borders. Therefore we simply define a 3x3 matrix with zero diagonals 
-# and 0.5 for the off diagonal values. 0.5 is used instead of 1 because
-# this normalized choice makes the matrix row stochastic, which makes the gods 
-# of proper posterior distributions happy. 
-DM = 0.5*(1-diag(3))
+# Define the simple "distance" matrix. There are 4 countries, three of which 
+# share borders. The borders between Guinea, Liberia, and Sierra Leone have been 
+# reported to be quite porous, and so mixing between these three nations should dwarf
+# mixing between them and Nigeria. At a conservative guess, there is probably at least 10 times
+# more contact directly across the borders compared to air travel between Nigeria and the rest. 
+# A better solution would be to allow separate dependence parameters for the different types of mixing. 
+# This work is underway. 
+DM = (1-diag(4))
+DM[4,1:3] = 0.1
+DM[1:3,4] = 0.1
+# Make row stochastic:
+DM = DM/matrix(apply(DM, 1, sum), nrow = 4, ncol = 4)
 
 # Define population sizes for the three countries of interest. This data also 
 # from Wikipedia. 
 
 # Guinea, Liberia, Sierra Leone
-N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, 
+N = matrix(c(10057975, 4128572, 6190280,174507539), nrow = nrow(I_star),ncol = 4, 
            byrow=TRUE)
 
 # Currently, the fixed and time varying co-variates driving the exposure 
@@ -461,7 +472,7 @@ N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3,
 # makes things a bit more complicated. I might change this at some point. 
 
 # For the fixed covariates, just fit a separate intercept for each location. 
-X = diag(3)
+X = diag(4)
 
 # For the time varying covariates, we first need to define a temporal index
 daysSinceJan = as.numeric(rptDate - as.Date("2014-01-01"))
@@ -473,7 +484,7 @@ Z = poly(daysSinceJan, degree=modelDF)
 
 # We're going to want to do prediction, so let's generate the fixed and time 
 # varying prediction covariate matrices now as well
-X.predict = cbind(diag(3))
+X.predict = cbind(diag(4))
 Z.predict = predict.poly(Z, c(max(daysSinceJan) + 1, 
                               max(daysSinceJan) + seq(2,pred.days-2,2))) 
 
@@ -580,8 +591,8 @@ proposeParameters = function(seedVal, chainNumber)
     # Make a crude guess as to the true compartments:
     # S_star, E_star, R_star, and thus S,E,I and R
     proposal = generateCompartmentProposal(I_star, N, 
-                                           S0 = N[1,]-I_star[1,] - c(86,0,0),
-                                           I0 = c(86,0,0), 
+                                           S0 = N[1,]-I_star[1,] - c(86,0,0,0),
+                                           I0 = c(86,0,0,0), 
                                            p_ir = 0.5, 
                                            p_rs = 0.00)
     
@@ -665,6 +676,7 @@ for (seedVal in c(12345,543219,992134))
 SEIRmodels[[1]]$setTrace(0) #Guinea 
 SEIRmodels[[1]]$setTrace(1) #Liberia
 SEIRmodels[[1]]$setTrace(2) #Sierra Leone
+SEIRmodels[[1]]$setTrace(3) #Nigeria
 
 
 # Make a helper function to run each chain, as well as update the metropolis 
@@ -832,9 +844,9 @@ end.rcode-->
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
 
-c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:7,9:11)]
-c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:7,9:11)]
-c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:7,9:11)]
+c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:8,10:12)]
+c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:8,10:12)]
+c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:8,10:12)]
 
 c1$gamma_ei = 1-exp(-c1$gamma_ei)
 c1$gamma_ir = 1-exp(-c1$gamma_ir)
@@ -843,7 +855,8 @@ c2$gamma_ir = 1-exp(-c2$gamma_ir)
 c3$gamma_ei = 1-exp(-c3$gamma_ei)
 c3$gamma_ir = 1-exp(-c3$gamma_ir)
 colnames(c1) = c("Guinea Intercept", "Liberia Intercept", 
-                 "Sierra Leone Intercept", "Linear Time Component", 
+                 "Sierra Leone Intercept", "Nigeria Intercept", 
+                 "Linear Time Component", 
                  "Quadratic Time Component", "Cubic Time Component",
                  "Quartic Time Component",
                  "Spatial Dependence Parameter", "E to I probability", 
@@ -918,14 +931,18 @@ getMeanAndCI = function(loc,tpt,baseStr="I_")
 Guinea.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=0)
 Liberia.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=1)
 SierraLeone.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=2)
+Nigeria.I.Est = sapply(0:(nrow(I_star)-1), getMeanAndCI, loc=3)
   
-  maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
+maxI = max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est))
+
 figure5 = function()
 {
-  par(mfrow = c(3,1))
+  par(mfrow = c(2,2))
   plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), 
        main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, xlab = "Date", ylab="Infectious Count")
+  abline(h = seq(0,100000, 100), col= "lightgrey", lty =2 )
+  lines(rptDate, Guinea.I.Est[1,], lty = 1, lwd = 2)
   lines(rptDate, Guinea.I.Est[2,], lty = 2)
   lines(rptDate, Guinea.I.Est[3,], lty = 2)
   
@@ -933,14 +950,26 @@ figure5 = function()
        main = "Liberia Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "blue", xlab = "Date",
        ylab="Infectious Count")
+  abline(h = seq(0,100000, 100), col= "lightgrey", lty =2 )
+  lines(rptDate, Liberia.I.Est[1,], lty = 1,, lwd=2, col = "blue")
   lines(rptDate, Liberia.I.Est[2,], lty = 2, col = "blue")
   lines(rptDate, Liberia.I.Est[3,], lty = 2, col = "blue")
   
   plot(rptDate, SierraLeone.I.Est[1,], ylim = c(0, maxI), 
        main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, col = "red", xlab = "Date", ylab="Infectious Count")
+  abline(h = seq(0,100000, 100), col= "lightgrey", lty =2 )
+  lines(rptDate, SierraLeone.I.Est[1,], lty = 1,lwd=2, col = "red")
   lines(rptDate, SierraLeone.I.Est[2,], lty = 2, col = "red")
   lines(rptDate, SierraLeone.I.Est[3,], lty = 2, col ="red")
+  
+  plot(rptDate, Nigeria.I.Est[1,], ylim = c(0, maxI), 
+       main = "Nigeria Estimated Epidemic Size\n 90% Credible Interval",
+       type = "l", lwd = 2, col = "green", xlab = "Date", ylab="Infectious Count")
+  abline(h = seq(0,100000, 100), col= "lightgrey", lty =2 )
+  lines(rptDate, Nigeria.I.Est[1,], lty = 1,lwd=2, col = "green")
+  lines(rptDate, Nigeria.I.Est[2,], lty = 2, col = "green")
+  lines(rptDate, Nigeria.I.Est[3,], lty = 2, col ="green")
 }
 end.rcode-->
 </div>
@@ -1084,16 +1113,20 @@ While the basic reproductive number is a useful quantity to know, it does not di
      
     S0 = c(dataRow[[paste("S_0_", maxIdx-1, sep = "")]],
            dataRow[[paste("S_1_", maxIdx-1, sep = "")]],
-           dataRow[[paste("S_2_", maxIdx-1, sep = "")]])
+           dataRow[[paste("S_2_", maxIdx-1, sep = "")]],
+           dataRow[[paste("S_3_", maxIdx-1, sep = "")]])
     E0 = c(dataRow[[paste("E_0_", maxIdx-1, sep = "")]],
            dataRow[[paste("E_1_", maxIdx-1, sep = "")]],
-           dataRow[[paste("E_2_", maxIdx-1, sep = "")]])
+           dataRow[[paste("E_2_", maxIdx-1, sep = "")]],
+           dataRow[[paste("E_3_", maxIdx-1, sep = "")]])
     I0 = c(dataRow[[paste("I_0_", maxIdx-1, sep = "")]],
            dataRow[[paste("I_1_", maxIdx-1, sep = "")]],
-           dataRow[[paste("I_2_", maxIdx-1, sep = "")]])
+           dataRow[[paste("I_2_", maxIdx-1, sep = "")]],
+           dataRow[[paste("I_3_", maxIdx-1, sep = "")]])
     R0 = c(dataRow[[paste("R_0_", maxIdx-1, sep = "")]],
            dataRow[[paste("R_1_", maxIdx-1, sep = "")]],
-           dataRow[[paste("R_2_", maxIdx-1, sep = "")]])
+           dataRow[[paste("R_2_", maxIdx-1, sep = "")]],
+           dataRow[[paste("R_3_", maxIdx-1, sep = "")]])
     
     
     return(predictEpidemic(beta,  
@@ -1121,6 +1154,7 @@ lastIdx = nrow(SEIRmodels[[1]]$I)
 Guinea.Pred = preds[[1]]$I[,1]
 Liberia.Pred = preds[[1]]$I[,2]
 SierraLeone.Pred = preds[[1]]$I[,3]
+Nigeria.Pred = preds[[1]]$I[,4]
 
 breakpoint = mean(c(max(rptDate), min(pred.dates)))
 
@@ -1129,11 +1163,13 @@ for (predIdx in 2:length(preds))
    Guinea.Pred = rbind(Guinea.Pred, preds[[predIdx]]$I[,1])
    Liberia.Pred = rbind(Liberia.Pred, preds[[predIdx]]$I[,2])
    SierraLeone.Pred = rbind(SierraLeone.Pred, preds[[predIdx]]$I[,3])
+   Nigeria.Pred = rbind(Nigeria.Pred, preds[[predIdx]]$I[,4])
 }
 
 Guinea.mean = apply(Guinea.Pred, 2, mean)
 Liberia.mean = apply(Liberia.Pred, 2, mean)
 SierraLeone.mean = apply(SierraLeone.Pred, 2, mean)
+Nigeria.mean = apply(Nigeria.Pred, 2, mean)
 
 Guinea.LB = apply(Guinea.Pred, 2, quantile, probs = c(0.05))
 Guinea.UB = apply(Guinea.Pred, 2, quantile, probs = c(0.95))
@@ -1144,10 +1180,13 @@ Liberia.UB = apply(Liberia.Pred, 2, quantile, probs = c(0.95))
 SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
 SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
 
+Nigeria.LB = apply(Nigeria.Pred, 2, quantile, probs = c(0.05))
+Nigeria.UB = apply(Nigeria.Pred, 2, quantile, probs = c(0.95))
+
 ## Guinea 
 figure7 = function()
 {
-  par(mfrow = c(3,1))
+  par(mfrow = c(2,2))
   plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), xlim = pred.xlim,
        main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, ylab = "Infectious Count", xlab = "Date")
@@ -1193,6 +1232,23 @@ figure7 = function()
   lines(pred.dates,SierraLeone.UB, 
           lty=2, col = "red", lwd = 1)
   abline(v = breakpoint, lty = 3, col= "lightgrey")
+  
+
+## Nigeria
+  plot(rptDate, Nigeria.I.Est[1,], ylim = c(0, maxI),  xlim = pred.xlim,
+       main = "Nigeria Estimated Epidemic Size\n 90% Credible Interval",
+       type = "l", lwd = 2, col = "green",ylab = "Infectious Count", 
+       xlab = "Date")
+  lines(rptDate, Nigeria.I.Est[2,], lty = 2, col = "green")
+  lines(rptDate, Nigeria.I.Est[3,], lty = 2, col ="green")
+  
+  lines(pred.dates,Nigeria.mean, 
+          lty=1, col = "green", lwd = 1)
+  lines(pred.dates,Nigeria.LB, 
+          lty=2, col = "green", lwd = 1)
+  lines(pred.dates,Nigeria.UB, 
+          lty=2, col = "green", lwd = 1)
+  abline(v = breakpoint, lty = 3, col= "lightgrey")
 }
 
 end.rcode-->
@@ -1226,8 +1282,8 @@ daysSinceJan.predict = c(max(daysSinceJan) + 1, max(daysSinceJan)
 splineBasis = ns(daysSinceJan, df = modelDF)
 splineBasis.predict = predict(splineBasis, daysSinceJan.predict)
 
-# Guinea, Liberia, Sierra Leone
-N = matrix(c(10057975, 4128572, 6190280), nrow = nrow(I_star),ncol = 3, 
+# Guinea, Liberia, Sierra Leone, Nigeria
+N = matrix(c(10057975, 4128572, 6190280,174507539), nrow = nrow(I_star),ncol = 4, 
            byrow=TRUE)
 
 Z = splineBasis
@@ -1292,7 +1348,7 @@ for (seedVal in c(12345,543219,992134))
 SEIRmodels.spline[[1]]$setTrace(0) #Guinea 
 SEIRmodels.spline[[1]]$setTrace(1) #Liberia
 SEIRmodels.spline[[1]]$setTrace(2) #Sierra Leone
-
+SEIRmodels.spline[[1]]$setTrace(3) #Nigeria
 
 for (i in 1:length(SEIRmodels.spline))
 {
@@ -1367,9 +1423,9 @@ figure9 = function()
 ## Parameter Estimates 
 
 
-c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:7,9:11)]
-c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:7,9:11)]
-c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:7,9:11)]
+c1 = chain1[floor(nrow(chain1)/2):nrow(chain1),c(1:8,10:12)]
+c2 = chain2[floor(nrow(chain2)/2):nrow(chain2),c(1:8,10:12)]
+c3 = chain3[floor(nrow(chain3)/2):nrow(chain3),c(1:8,10:12)]
 
 c1$gamma_ei = 1-exp(-c1$gamma_ei)
 c1$gamma_ir = 1-exp(-c1$gamma_ir)
@@ -1378,7 +1434,7 @@ c2$gamma_ir = 1-exp(-c2$gamma_ir)
 c3$gamma_ei = 1-exp(-c3$gamma_ei)
 c3$gamma_ir = 1-exp(-c3$gamma_ir)
 colnames(c1) = c("Guinea Intercept", "Liberia Intercept", 
-                 "Sierra Leone Intercept", "Linear Time Component", 
+                 "Sierra Leone Intercept","Nigeria Intercept", "Linear Time Component", 
                  "Quadratic Time Component", "Cubic Time Component",
                  "Quartic Time Component",
                  "Spatial Dependence Parameter", "E to I probability", 
@@ -1392,7 +1448,6 @@ mcl = mcmc.list(as.mcmc(c1),
 summary(mcl)
 
 ## R0 stuff
-
 
 getR0 = function(t)
 {
@@ -1437,6 +1492,7 @@ getMeanAndCI = function(loc,tpt,baseStr="I_")
 Guinea.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=0)
 Liberia.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=1)
 SierraLeone.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=2)
+Nigeria.I.Est = sapply(0:(nrow(I_star)- 1), getMeanAndCI, loc=3)
 
 preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
                   nrow(chain1), predict.i)
@@ -1449,6 +1505,7 @@ lastIdx = nrow(SEIRmodels.spline[[1]]$I)
 Guinea.Pred = preds[[1]]$I[,1]
 Liberia.Pred = preds[[1]]$I[,2]
 SierraLeone.Pred = preds[[1]]$I[,3]
+Nigeria.Pred = preds[[1]]$I[,4]
 
 
 breakpoint = mean(c(max(rptDate), min(pred.dates)))
@@ -1458,11 +1515,13 @@ for (predIdx in 2:length(preds))
    Guinea.Pred = rbind(Guinea.Pred, preds[[predIdx]]$I[,1])
    Liberia.Pred = rbind(Liberia.Pred, preds[[predIdx]]$I[,2])
    SierraLeone.Pred = rbind(SierraLeone.Pred, preds[[predIdx]]$I[,3])
+   Nigeria.Pred = rbind(Nigeria.Pred, preds[[predIdx]]$I[,4])
 }
 
 Guinea.mean = apply(Guinea.Pred, 2, mean)
 Liberia.mean = apply(Liberia.Pred, 2, mean)
 SierraLeone.mean = apply(SierraLeone.Pred, 2, mean)
+Nigeria.mean = apply(Nigeria.Pred, 2, mean)
 
 Guinea.LB = apply(Guinea.Pred, 2, quantile, probs = c(0.05))
 Guinea.UB = apply(Guinea.Pred, 2, quantile, probs = c(0.95))
@@ -1473,15 +1532,17 @@ Liberia.UB = apply(Liberia.Pred, 2, quantile, probs = c(0.95))
 SierraLeone.LB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.05))
 SierraLeone.UB = apply(SierraLeone.Pred, 2, quantile, probs = c(0.95))
 
-maxI = max(c(max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est)), Guinea.UB, Liberia.UB, SierraLeone.UB))
+Nigeria.LB = apply(Nigeria.Pred, 2, quantile, probs = c(0.05))
+Nigeria.UB = apply(Nigeria.Pred, 2, quantile, probs = c(0.95))
 
+maxI = max(c(max(c(Guinea.I.Est, Liberia.I.Est, SierraLeone.I.Est, Nigeria.I.Est)), Guinea.UB, Liberia.UB, SierraLeone.UB, Nigeria.UB))
 
 
 figure11 = function()
 {
   
   ## Guinea 
-  par(mfrow = c(3,1))
+  par(mfrow = c(2,2))
   plot(rptDate, Guinea.I.Est[1,], ylim = c(0, maxI), xlim = pred.xlim,
        main = "Guinea Estimated Epidemic Size\n 90% Credible Interval",
        type = "l", lwd = 2, ylab = "Infectious Count", xlab = "Date")
@@ -1533,6 +1594,25 @@ figure11 = function()
   lines(pred.dates,SierraLeone.UB, 
           lty=2, col = "red", lwd = 1)
   abline(v = breakpoint, lty = 3, col= "lightgrey")
+  
+
+  ## Nigeria
+  plot(rptDate, Nigeria.I.Est[1,], ylim = c(0, maxI),  xlim = pred.xlim,
+       main = "Sierra Leone Estimated Epidemic Size\n 90% Credible Interval",
+       type = "l", lwd = 2, col = "green",ylab = "Infectious Count", 
+       xlab = "Date")
+  abline(h = seq(0,100000,1000), lty = 2, col = "lightgrey")
+  lines(rptDate, Nigeria.I.Est[1,], lty = 2, col = "green")
+  lines(rptDate, Nigeria.I.Est[2,], lty = 2, col = "green")
+  lines(rptDate, Nigeria.I.Est[3,], lty = 2, col ="green")
+  
+  lines(pred.dates,Nigeria.mean, 
+          lty=1, col = "green", lwd = 1)
+  lines(pred.dates,Nigeria.LB, 
+          lty=2, col = "green", lwd = 1)
+  lines(pred.dates,Nigeria.UB, 
+          lty=2, col = "green", lwd = 1)
+  abline(v = breakpoint, lty = 3, col= "lightgrey")  
 }
 
 
@@ -1663,9 +1743,9 @@ end.rcode-->
 ,"setProjection": function( element, options ) {
     var path;
     var projection = d3.geo.equirectangular()
-        .center([-5, 7])
+        .center([1, 13])
         .rotate([4.4, 0])
-  		  .scale(1600)
+    	  .scale(700)
   		  .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
      
     path = d3.geo.path()
@@ -1801,13 +1881,15 @@ var alldata_pred =
 Guinea.pred.vec = c(Guinea.I.Est[1,], Guinea.mean[2:length(Guinea.mean)])
 Liberia.pred.vec = c(Liberia.I.Est[1,], Liberia.mean[2:length(Guinea.mean)]) 
 SierraLeone.pred.vec = c(SierraLeone.I.Est[1,], SierraLeone.mean[2:length(Guinea.mean)])
+Nigeria.pred.vec = c(Nigeria.I.Est[1,], Nigeria.mean[2:length(Guinea.mean)])
 
 x = c(rptDate, pred.dates[2:length(Guinea.mean)]) - min(rptDate) 
 guinea.interp.pred = approx(x,Guinea.pred.vec,xout = 0:max(x))
 liberia.interp.pred = approx(x,Liberia.pred.vec,xout = 0:max(x))
 sierraleone.interp.pred = approx(x,SierraLeone.pred.vec,xout = 0:max(x))
+nigeria.interp.pred = approx(x,Nigeria.pred.vec,xout = 0:max(x))
 
-interpMatrix = cbind(guinea.interp.pred$y, liberia.interp.pred$y,sierraleone.interp.pred$y)
+interpMatrix = cbind(guinea.interp.pred$y, liberia.interp.pred$y,sierraleone.interp.pred$y,nigeria.interp.pred$y)
 
 
 cutvals = cut(interpMatrix, breaks = 9)
@@ -1828,6 +1910,8 @@ for (tpt in min(x):max(x))
                                           "LBR" = list("fillKey"=factor(paste("lt", upperVals[interpMatrix.cut[tpt+1,2]], sep = ""), 
                                                         levels = names(fills.pred))),
                                           "SLE" = list("fillKey"=factor(paste("lt",upperVals[interpMatrix.cut[tpt+1,3]], sep = ""), 
+                                                        levels = names(fills.pred))),
+                                          "NGA" = list("fillKey"=factor(paste("lt",upperVals[interpMatrix.cut[tpt+1,4]], sep = ""), 
                                                         levels = names(fills.pred))))
 }
 
@@ -1853,9 +1937,9 @@ end.rcode-->
 ,"setProjection": function( element, options ) {
     var path;
     var projection = d3.geo.equirectangular()
-        .center([-5, 7])
+        .center([1, 13])
         .rotate([4.4, 0])
-    	  .scale(1600)
+    	  .scale(700)
   		  .translate([element.offsetWidth / 2, element.offsetHeight / 2]);
      
     path = d3.geo.path()
