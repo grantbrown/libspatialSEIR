@@ -1,0 +1,318 @@
+library(spatialSEIR)
+library(coda)
+library(parallel)
+
+
+    # Set simulation parameters
+
+generateData = function(NYears = 3, TptPerYear = 12, ThrowAwayTpt = 0)
+{
+    MaxTpt = NYears*TptPerYear
+
+    # Define covariate matrices. 
+    X = matrix(1, ncol = 1)
+    Z = cbind(seq(1,NYears*TptPerYear), sin(seq(1,NYears*TptPerYear)/TptPerYear*2*pi))
+
+    X_prs = cbind(1, 
+                  sin((1:MaxTpt)/TptPerYear*2*pi), 
+                  cos((6+1:MaxTpt)/TptPerYear*2*pi))
+
+    # Set the true values of the linear model parameters. 
+    trueBetaSEFixed = c(0.5)
+    trueBetaSEVarying = c(0.002, .5)
+    trueGamma = rep(0.0, MaxTpt)  
+
+    eta_se = as.numeric((X %*% trueBetaSEFixed)) + (Z %*% trueBetaSEVarying)
+    p_se = numeric(MaxTpt)
+
+    trueBetaRS = c(-2.5, 1, -0.25) 
+    eta_rs = X_prs %*% trueBetaRS
+    p_rs = 1-exp(-exp(eta_rs))
+
+
+    # Set the true values of the E to I and I to R transition params 
+    gamma_ei = 2.3
+    gamma_ir = 2.3
+
+    p_ei = 1-exp(-gamma_ei)
+    p_ir = 1-exp(-gamma_ir)
+
+    # Set up compartments
+    N = 100000
+    E0 = 0
+    I0 = floor(0.001*N)
+    R0 = floor(0.001*N) 
+    S0 = N-E0-I0-R0
+
+    S = matrix(0, nrow = 1, ncol = MaxTpt)
+    E = matrix(0, nrow = 1, ncol = MaxTpt)
+    I = matrix(0, nrow = 1, ncol = MaxTpt)
+    R = matrix(0, nrow = 1, ncol = MaxTpt)
+    S_star = matrix(0, nrow = 1, ncol = MaxTpt)
+    E_star = matrix(0, nrow = 1, ncol = MaxTpt)
+    I_star = matrix(0, nrow = 1, ncol = MaxTpt)
+    R_star = matrix(0, nrow = 1, ncol = MaxTpt)
+
+
+    # Generate true data according to the specified model.
+    for (i in 1:MaxTpt)
+    {
+        if (i == 1)
+        {
+            S[i] = S0
+            E[i] = E0
+            I[i] = I0
+            R[i] = R0
+
+            etaVal = -(I[i]/N)*exp(eta_se[i]) - trueGamma[i]
+            p_se[i] = 1-exp(etaVal)
+
+            S_star[i] = rbinom(1, R[i], p_rs[i])
+            E_star[i] = rbinom(1, S[i], p_se[i])
+            I_star[i] = rbinom(1, E[i], p_ei)
+            R_star[i] = rbinom(1, I[i], p_ir)
+        }
+        else
+        {
+            S[i] = S[i-1] + S_star[i-1] - E_star[i-1]
+            E[i] = E[i-1] + E_star[i-1] - I_star[i-1]
+            I[i] = I[i-1] + I_star[i-1] - R_star[i-1]
+            R[i] = R[i-1] + R_star[i-1] - S_star[i-1]
+
+            etaVal = -(I[i]/N)*exp(eta_se[i]) - trueGamma[i]
+            p_se[i] = 1-exp(etaVal)
+
+            S_star[i] = rbinom(1, R[i], p_rs[i])
+            E_star[i] = rbinom(1, S[i], p_se[i])
+            I_star[i] = rbinom(1, E[i], p_ei)
+            R_star[i] = rbinom(1, I[i], p_ir)
+        }
+    }
+
+    # Format for libspatialSEIR
+    if (ThrowAwayTpt != 0)
+        {
+        S0 = S[,ThrowAwayTpt+1]
+        E0 = E[,ThrowAwayTpt+1]
+        I0 = I[,ThrowAwayTpt+1]
+        R0 = R[,ThrowAwayTpt+1]
+    }
+
+    S_star = S_star[,(ThrowAwayTpt + 1):ncol(S_star), drop = FALSE]
+    E_star = E_star[,(ThrowAwayTpt + 1):ncol(E_star), drop = FALSE]
+    I_star = I_star[,(ThrowAwayTpt + 1):ncol(I_star), drop = FALSE]
+    R_star = R_star[,(ThrowAwayTpt + 1):ncol(R_star), drop = FALSE]
+
+    S = S[,(ThrowAwayTpt + 1):ncol(S), drop = FALSE]
+    E = E[,(ThrowAwayTpt + 1):ncol(E), drop = FALSE]
+    I = I[,(ThrowAwayTpt + 1):ncol(I), drop = FALSE]
+    R = R[,(ThrowAwayTpt + 1):ncol(R), drop = FALSE]
+
+    Z = Z[(1+ThrowAwayTpt*nrow(S)):nrow(Z),]
+    X_prs = X_prs[(ThrowAwayTpt + 1):nrow(X_prs),]
+
+# Transpose Everything to have TXP
+    S0 = t(S0)
+    E0 = t(E0)
+    I0 = t(I0)
+    R0 = t(R0)
+
+    S_star = t(S_star)
+    E_star = t(E_star)
+    I_star = t(I_star)
+    R_star = t(R_star)
+
+    S = t(S)
+    E = t(E)
+    I = t(I)
+    R = t(R)
+
+    xDim = dim(X)
+    zDim = dim(Z)
+    xPrsDim = dim(X_prs)
+    compMatDim = c(nrow(S), ncol(S))
+
+# Not applicable parameters
+    DM = c(0)
+    rho = 0
+
+    p_ei = p_ei
+    p_ir = p_ir
+    p_rs = p_rs[(ThrowAwayTpt +1):length(p_rs)]
+    p_se = p_se[(ThrowAwayTpt +1):length(p_se)]
+    eta_se = eta_se[(ThrowAwayTpt +1):length(eta_se)]
+    beta = c(trueBetaSEFixed, trueBetaSEVarying) 
+    betaPrs = trueBetaRS
+    N = matrix(N, nrow = nrow(S), ncol = ncol(S))
+
+    return(list("S"=S,
+                "E"=E,
+                "I"=I,
+                "R"=R,
+                "S0"=S0,
+                "E0"=E0,
+                "I0"=I0,
+                "R0"=R0,
+                "S_star"=S_star,
+                "E_star"=E_star,
+                "I_star"=I_star,
+                "R_star"=R_star,
+                "p_ei"=p_ei,
+                "p_ir"=p_ir,
+                "p_rs"=p_rs,
+                "p_se"=p_se,
+                "beta"=beta,
+                "betaPrs"=betaPrs,
+                "N"=N,
+                "X"=X,
+                "Z"=Z,
+                "X_prs"=X_prs,
+                "DM"=DM,
+                "rho"=rho,
+                "xDim"=xDim,
+                "zDim"=zDim,
+                "xPrsDim"=xPrsDim,
+                "compMatDim"=compMatDim))
+}
+
+
+buildCluster = function(seedVal, outFileName, paramList)
+{
+    library(spatialSEIR)
+    library(coda)
+    iterationStride = 1000
+
+    # S,E,R,S0,I0,beta,betaPrs,rho
+    sliceWidths = c(0.26,  # S_star
+                    0.1,  # E_star
+                    0.15, # I_star
+                    0.22, # S0
+                    0.24, # I0
+                    0.8, # beta
+                    0.2, # betaPrs
+                    0.015, # rho
+                    0.01, # gamma_ei
+                    0.01 # gamma_ir
+                    )
+    
+    priorAlpha_gammaEI = 2300;
+    priorBeta_gammaEI = 1000;
+    priorAlpha_gammaIR = 2300;
+    priorBeta_gammaIR = 1000;
+    betaPrsPriorPrecision = 0.5
+    betaPriorPrecision = 0.1
+
+
+    reinfectionMode = 1
+    # Mode 1: estimate betaP_RS, S_star
+    # Mode 2: fix betaP_RS, estimate S_star
+    # Mode 3+: No reinfection
+
+    scaledDistMode = 1
+    # 1 = inv square root
+    # 0 = raw
+
+    steadyStateConstraintPrecision = -1
+
+    verbose = FALSE 
+    debug = FALSE
+
+
+    # pretend not to know the true values of things
+    # proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
+    proposal = generateCompartmentProposal(paramList$I_star, paramList$N, S0 = paramList$N[1]-100, I0 = 100, E0 = 0)
+    beta = c(2, rep(0, (length(paramList$beta)-1)))
+    betaPrs = -c(4, rep(0,(length(paramList$betaPrs)-1)))
+    gamma_ei = 2.3
+    gamma_ir = 2.3
+    offset = rep(1, nrow(paramList$S_star))
+
+    res = spatialSEIRModel(paramList$compMatDim,
+                          paramList$xDim,
+                          paramList$zDim,
+                          paramList$xPrsDim,
+                          proposal$S0,
+                          proposal$E0,
+                          proposal$I0,
+                          proposal$R0,
+                          proposal$S_star,
+                          proposal$E_star,
+                          proposal$I_star,
+                          proposal$R_star,
+                          offset,
+                          paramList$X,
+                          paramList$Z,
+                          paramList$X_prs,
+                          paramList$DM,
+                          paramList$rho,
+                          priorAlpha_gammaEI,
+                          priorBeta_gammaEI,
+                          priorAlpha_gammaIR,
+                          priorBeta_gammaIR,
+                          beta,
+                          betaPriorPrecision,
+                          betaPrs,
+                          betaPrsPriorPrecision,
+                          gamma_ei,
+                          gamma_ir,
+                          paramList$N,
+                          outFileName, 
+                          iterationStride,
+                          steadyStateConstraintPrecision,
+                          verbose,
+                          debug, 
+                          sliceWidths,
+                          reinfectionMode,
+                          scaledDistMode)
+
+    #res$setTrace(0)
+    res$setRandomSeed(seedVal)
+
+    runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0.05, proportionChange = 0.1, printAR = FALSE)
+    {
+        tryCatch({
+            for (i in 1:(N/batchSize))
+            {
+                res$simulate(batchSize)
+                if (printAR)
+                {
+                    res$printAcceptanceRates()
+                }
+                res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
+                # sleep to allow R to catch up and handle interrupts 
+                Sys.sleep(0.001)
+                cat(i*batchSize,"\n")
+            }}, 
+            interrupt = function(interrupt)
+            {
+                cat("Exiting...\n")
+        })
+    }
+
+    runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
+    runSimulation(5000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
+    dat = read.csv(outFileName)
+    as.mcmc(dat)
+}
+
+
+clusterWrapper = function(li)
+{
+    buildCluster(li[["seed"]], li[["filename"]],li[["params"]])
+}
+
+params = generateData()
+paramList = list(list("seed"=123456,
+                      "filename"="chainOutput_parallel1.txt",
+                      "params"=params),
+                 list("seed"=123457,
+                      "filename"="chainOutput_parallel2.txt",
+                      "params"=params),
+                list("seed"=1234568,
+                      "filename"="chainOutput_parallel3.txt",
+                      "params"=params))
+
+cl = makeCluster(3)
+clusterExport(cl, c("buildCluster"))
+result = as.mcmc.list(parLapply(cl, paramList, clusterWrapper))
+
