@@ -315,4 +315,4 @@ paramList = list(list("seed"=123456,
 cl = makeCluster(3)
 clusterExport(cl, c("buildCluster"))
 result = as.mcmc.list(parLapply(cl, paramList, clusterWrapper))
-
+stopCluster(cl)
