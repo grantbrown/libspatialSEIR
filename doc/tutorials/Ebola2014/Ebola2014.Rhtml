@@ -161,6 +161,7 @@ library(knitr)
 library(coda) # Load the coda library for MCMC convergence diagnosis
 library(spatialSEIR) # Load the spatialSEIR library to perform the modeling. 
 library(XML) # Load the XML library to read in data from Wikipedia
+library(parallel) # Load the parallel library to enable multiple chains to be run simultaneously. 
 
 ## Define Document Compilation Parameters
 
@@ -379,7 +380,7 @@ end.rcode-->
 cat(numDays)
 end.rcode--> 
       ng-model='Day' width=200>
-       <span>Day: <span id ="zoom-map-day-counter" ng-bind='Day'></span></span>
+       <span>Day: <span id ="zoom-map-day-counter"></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play" type="button">Play</button></div>
     <div class = "col-sm-6"></div>
@@ -615,132 +616,160 @@ end.rcode-->
       </div>
 
 <p>
-  With the set up out of the way, we can finally build the models. In order to assess convergence, we'll make three model objects - one for each MCMC run. 
+  With the set up out of the way, we can finally build and run the models the models. The code presented below has recently (8/27/2014) been set up to use the "parallel" library which is included with the R statistical analysis software. While this allows us to spend considerably less time waiting for the document to compile, the code may be more difficult to understand for those unfamiliar with this useful parallelization library. The previous analyses, linked above, may be a better guide to the basic use of the spatialSEIR library for such users. 
 </p>
 <br/>  
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
 
-
-SEIRmodels = list()
-i = 1;
-for (seedVal in c(12345,543219,992134))
+buildAndRunModel = function(params)
 {
-  proposal = proposeParameters(seedVal, i)
-  SEIRmodels[[i]] = spatialSEIRModel(compMatDim,
-                      xDim,
-                      zDim,
-                      xPrsDim,
-                      proposal$S0,
-                      proposal$E0,
-                      proposal$I0,
-                      proposal$R0,
-                      proposal$S_star,
-                      proposal$E_star,
-                      proposal$I_star,
-                      proposal$R_star,
-                      offsets,
-                      X,
-                      Z,
-                      X_p_rs,
-                      DM,
-                      proposal$rho,
-                      priorAlpha_gammaEI,
-                      priorBeta_gammaEI,
-                      priorAlpha_gammaIR,
-                      priorBeta_gammaIR,
-                      proposal$beta,
-                      betaPriorPrecision,
-                      beta_p_rs,
-                      betaPrsPriorPrecision,
-                      proposal$gamma_ei,
-                      proposal$gamma_ir,
-                      N,
-                      proposal$outFileName,
-                      iterationStride,
-                      steadyStateConstraintPrecision,
-                      verbose,
-                      debug,
-                      mcmcTuningParams,
-                      reinfectionMode,
-                      scaleDistanceMode)
-  SEIRmodels[[i]]$setRandomSeed(seedVal)
-  #SEIRmodels[[i]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
-  i = i + 1;
-}
-
-# Track the epidemc values in the output file for each location/time point. 
-# This will allow estmation and prediction, but in large data sets can result in
-# a LOT of data being saved to disk. 
-SEIRmodels[[1]]$setTrace(0) #Guinea 
-SEIRmodels[[1]]$setTrace(1) #Liberia
-SEIRmodels[[1]]$setTrace(2) #Sierra Leone
-SEIRmodels[[1]]$setTrace(3) #Nigeria
-
-
-# Make a helper function to run each chain, as well as update the metropolis 
-# tuning parameters. 
-runSimulation = function(modelObject,
-                         numBatches=500, 
-                         batchSize=20, 
-                         targetAcceptanceRatio=0.2,
-                         tolerance=0.05,
-                         proportionChange = 0.1
-                        )
-{
-    for (batch in 1:numBatches)
-    {
-        modelObject$simulate(batchSize)
-        modelObject$updateSamplingParameters(targetAcceptanceRatio, 
-                                             tolerance, 
-                                             proportionChange)
-    }
-}
-
-end.rcode-->
-      </div> 
-
-<p>
-  With the model objects created, we may perform some some short runs in order to choose sensible Metropolis tuning parameters. The following script uses the runSimulation function defined in the previous code block to do just that. 
-</p>
-<br/>
-<button class="btn btn-default code-button">Show/Hide Code Block</button>
-      <div class="code-and-output-block" style="display:none">
-<!--begin.rcode
-
-for (i in 1:length(SEIRmodels))
-{
-    cat(paste("Burning in tuning params for chain ", i, "\n", sep =""))
-    #SEIRmodels[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
-    runSimulation(SEIRmodels[[i]])
-    SEIRmodels[[i]]$simulate(1000)
-    SEIRmodels[[i]]$printAcceptanceRates()
-}
-
-end.rcode-->
-</div>
+    library(spatialSEIR)
+    proposal = proposeParameters(params[["seedVal"]], params[["chainNumber"]])
+    SEIRmodel =  spatialSEIRModel(compMatDim,
+                        xDim,
+                        zDim,
+                        xPrsDim,
+                        proposal$S0,
+                        proposal$E0,
+                        proposal$I0,
+                        proposal$R0,
+                        proposal$S_star,
+                        proposal$E_star,
+                        proposal$I_star,
+                        proposal$R_star,
+                        offsets,
+                        X,
+                        Z,
+                        X_p_rs,
+                        DM,
+                        proposal$rho,
+                        priorAlpha_gammaEI,
+                        priorBeta_gammaEI,
+                        priorAlpha_gammaIR,
+                        priorBeta_gammaIR,
+                        proposal$beta,
+                        betaPriorPrecision,
+                        beta_p_rs,
+                        betaPrsPriorPrecision,
+                        proposal$gamma_ei,
+                        proposal$gamma_ir,
+                        N,
+                        proposal$outFileName,
+                        iterationStride,
+                        steadyStateConstraintPrecision,
+                        verbose,
+                        debug,
+                        mcmcTuningParams,
+                        reinfectionMode,
+                        scaleDistanceMode)
+  
+  SEIRmodel$setRandomSeed(params[["seedVal"]])
+  
+  # Do we need to keep track of compartment values for prediction? 
+  # No sense doing this for all of the chains.
+  if (params[["traceCompartments"]])
+  {
+    SEIRmodel$setTrace(0) #Guinea 
+    SEIRmodel$setTrace(1) #Liberia
+    SEIRmodel$setTrace(2) #Sierra Leone
+    SEIRmodel$setTrace(3) #Nigeria
+  }
       
-<p>Using these tuning parameters, we can now run the chains until convergence. 
-As before, we'll adjust the tuning parameters along the way. Astute readers may notice the frankly inconvenient number of samples requested, and will correctly infer that autocorrelation is currently a major problem for this library. While such autocorrelation does not impact the validity of estimates based on the converged chains, it does increase the required computation time. This is an area of active development for libspatialSEIR.</p>  
- <br/>    
-<button class="btn btn-default code-button">Show/Hide Code Block</button>
-      <div class="code-and-output-block" style="display:none">
-<!--begin.rcode
-for (i in 1:length(SEIRmodels))
-{
-    cat(paste("Running chain ", i, "\n", sep =""))
-    tm = system.time(runSimulation(SEIRmodels[[i]], 
+  # Make a helper function to run each chain, as well as update the metropolis 
+  # tuning parameters. 
+  runSimulation = function(modelObject,
+                           numBatches=500, 
+                           batchSize=20, 
+                           targetAcceptanceRatio=0.2,
+                           tolerance=0.05,
+                           proportionChange = 0.1
+                          )
+  {
+      for (batch in 1:numBatches)
+      {
+          modelObject$simulate(batchSize)
+          modelObject$updateSamplingParameters(targetAcceptanceRatio, 
+                                               tolerance, 
+                                               proportionChange)
+      }
+  }
+
+  # Burn in tuning parameters
+  runSimulation(SEIRmodel)
+  # Run Simulation
+  cat(paste("Running chain ", params[["chainNumber"]], "\n", sep =""))
+  tm = system.time(runSimulation(SEIRmodel, 
                   numBatches=numConvergenceBatches, 
                   batchSize=convergenceBatchSize, 
                   targetAcceptanceRatio=0.2,
                   tolerance=0.025,
                   proportionChange = 0.05))
-    cat(paste("Time elapsed: ", round(tm[3]/60,3), 
+  cat(paste("Time elapsed: ", round(tm[3]/60,3), 
               " minutes\n", sep = ""))
+  
+  dat = read.csv(proposal$outFileName)
+  
+  ## Do we need to estimate R0 for this chain?
+  if (params[["estimateR0"]])
+  {  
+    R0 = as.numeric(lapply(seq(0,(nrow(SEIRmodel$S)-1)), SEIRmodel$estimateR0))
+    for (i in 1:extraR0Iterations)
+    {
+        SEIRmodel$simulate(1000)
+        R0 = rbind(R0, as.numeric(lapply(seq(0,(nrow(SEIRmodel$S)-1)), SEIRmodel$estimateR0)))
+    }
+  }
+  else
+  {
+     R0 = NULL
+  }  
+  
+  return(list("chainOutput" = dat, "R0" = R0))
 }
+
+cl = makeCluster(3)
+clusterExport(cl, c("compMatDim",
+                     "xDim",
+                     "zDim",
+                     "xPrsDim",   
+                     "offsets",
+                     "X",
+                     "Z",
+                     "X_p_rs",
+                     "DM",
+                     "priorAlpha_gammaEI",
+                     "priorBeta_gammaEI",
+                     "priorAlpha_gammaIR",
+                     "priorBeta_gammaIR",
+                     "betaPriorPrecision",
+                     "beta_p_rs",
+                     "betaPrsPriorPrecision",
+                     "N",
+                     "iterationStride",
+                     "steadyStateConstraintPrecision",
+                     "verbose",
+                     "debug",
+                     "mcmcTuningParams",
+                     "reinfectionMode",
+                     "scaleDistanceMode",
+                     "proposeParameters",
+                     "generateCompartmentProposal",
+                     "numConvergenceBatches",
+                     "convergenceBatchSize",
+                     "extraR0Iterations",
+                     "I_star"))
+
+paramsList = list(list("estimateR0"=FALSE, "traceCompartments"=TRUE, "seedVal"=123123,"chainNumber"=1),
+                  list("estimateR0"=TRUE, "traceCompartments"=FALSE, "seedVal"=123124,"chainNumber"=2),
+                  list("estimateR0"=FALSE,"traceCompartments"=FALSE, "seedVal"=123125,"chainNumber"=3))
+
+chains = parLapply(cl, paramsList, buildAndRunModel)
+stopCluster(cl)
 end.rcode-->
-</div>
+</div> 
+
 <br/><br/>
 <div>
 <h3><a id="analysis-1-convergence-sect" class="anchor">Convergence Diagnosis</a></h3>
@@ -756,9 +785,10 @@ several important parameters, and take a look at the Gelman and Rubin convergenc
 <!--begin.rcode
 
 # Read in the output files created above
-chain1 = read.csv("chain_output_ebola_1.txt")
-chain2 = read.csv("chain_output_ebola_2.txt")
-chain3 = read.csv("chain_output_ebola_3.txt")
+
+chain1 = chains[[1]]$chainOutput
+chain2 = chains[[2]]$chainOutput
+chain3 = chains[[3]]$chainOutput
 
 plotChains = function(c1, c2, c3, main)
 {
@@ -983,25 +1013,12 @@ end.rcode-->
 </a>
 <p>
 A common tool for describing the evolution of an epidemic is a quantity known as the basic reproductive numer, the basic reproductive ratio, or one of several other variants on that theme. The basic idea is to quantify how many secondary infections a single infectious individual is expected to cause in a large, fully susceptible population. Naturally, when this ratio exceeds one we expect the epidemic to spread. Conversely, a basic reproductive number less than one indicates that a pathogen is more likely to die out. This software library doesn't yet compute the ratio automatically, but does provide what's known as the "next generation matrix" which can be used to quickly calculate the quantity.</p> <br/><br/>
-<p>
-In addition to coming up with a point estimate of the ratio, it is helpful to quantify the uncertainty in the estimates obtained. The code below draws additional samples from the posterior distribution in order to estimate this uncertainty.
-</p>
 
 <button class="btn btn-default code-button">Show/Hide Code Block</button>
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
- getR0 = function(t)
-  {
-    max(eigen(SEIRmodels[[1]]$getGenerationMatrix(t))$values)  
-  }
-  
-  R0_vec = sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0)
 
-  for (i in 1:extraR0Iterations)
-  {
-      SEIRmodels[[1]]$simulate(1000)
-      R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels[[1]]$I)-1), getR0))
-  }
+  R0_vec = chains[[2]]$R0
 
   r0.ylim = c(min(R0_vec), max(R0_vec))
   r0.meanvec = apply(R0_vec, 2, mean)
@@ -1010,12 +1027,12 @@ In addition to coming up with a point estimate of the ratio, it is helpful to qu
 
 figure6 = function()
 {
-  plot(rptDate[1:(length(rptDate)-1)], r0.meanvec , type = "l", xlab = "Date",
+  plot(rptDate[1:(length(rptDate))], r0.meanvec , type = "l", xlab = "Date",
        ylab = expression('R'[0]),
        main = "Estimated Basic Reproductive Number\n 90% Credible Interval", 
        ylim = r0.ylim, lwd = 2)
-  lines(rptDate[1:(length(rptDate)-1)], r0.LB, lty = 2)
-  lines(rptDate[1:(length(rptDate)-1)], r0.UB, lty = 2)
+  lines(rptDate[1:(length(rptDate))], r0.LB, lty = 2)
+  lines(rptDate[1:(length(rptDate))], r0.UB, lty = 2)
   abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
   abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
 }
@@ -1150,7 +1167,7 @@ While the basic reproductive number is a useful quantity to know, it does not di
 pred.dates = c(rptDate[(which.max(rptDate))], 
                rptDate[(which.max(rptDate))] + seq(2,pred.days-2,2))
 pred.xlim = c(min(rptDate), max(pred.dates))
-lastIdx = nrow(SEIRmodels[[1]]$I)
+lastIdx = nrow(I_star)
 Guinea.Pred = preds[[1]]$I[,1]
 Liberia.Pred = preds[[1]]$I[,2]
 SierraLeone.Pred = preds[[1]]$I[,3]
@@ -1298,84 +1315,51 @@ Z.predict = Z.predict[rep(1:nrow(Z.predict), nrow(X)),]
 X.pred = cbind(X.predict[rep(1:nrow(X.predict), 
                              each = nrow(Z.predict)/nrow(X)),], Z.predict)
 
-SEIRmodels.spline = list()
-i = 4;
-for (seedVal in c(12345,543219,992134))
-{
-  proposal = proposeParameters(seedVal, i)
-  SEIRmodels.spline[[i-3]] = spatialSEIRModel(compMatDim,
-                      xDim,
-                      zDim,
-                      xPrsDim,
-                      proposal$S0,
-                      proposal$E0,
-                      proposal$I0,
-                      proposal$R0,
-                      proposal$S_star,
-                      proposal$E_star,
-                      proposal$I_star,
-                      proposal$R_star,
-                      offsets,
-                      X,
-                      Z,
-                      X_p_rs,
-                      DM,
-                      proposal$rho,
-                      priorAlpha_gammaEI,
-                      priorBeta_gammaEI,
-                      priorAlpha_gammaIR,
-                      priorBeta_gammaIR,
-                      proposal$beta,
-                      betaPriorPrecision,
-                      beta_p_rs,
-                      betaPrsPriorPrecision,
-                      proposal$gamma_ei,
-                      proposal$gamma_ir,
-                      N,
-                      proposal$outFileName,
-                      iterationStride,
-                      steadyStateConstraintPrecision,
-                      verbose,
-                      debug,
-                      mcmcTuningParams,
-                      reinfectionMode,
-                      scaleDistanceMode)
-  SEIRmodels.spline[[i-3]]$setRandomSeed(seedVal)
-  #SEIRmodels.spline[[i-3]]$compartmentSamplingMode = 2 # use indexed metropolis to reduce autocorrelation
-  i = i + 1;
-}
-
-SEIRmodels.spline[[1]]$setTrace(0) #Guinea 
-SEIRmodels.spline[[1]]$setTrace(1) #Liberia
-SEIRmodels.spline[[1]]$setTrace(2) #Sierra Leone
-SEIRmodels.spline[[1]]$setTrace(3) #Nigeria
-
-for (i in 1:length(SEIRmodels.spline))
-{
-    cat(paste("Burning in chain ", i, "\n", sep =""))
-    #SEIRmodels.spline[[i]]$compartmentSamplingMode=2 # Use indexed Metropolis for reduced autocorrelation
-    runSimulation(SEIRmodels.spline[[i]])
-    SEIRmodels.spline[[i]]$simulate(1000)
-    SEIRmodels.spline[[i]]$printAcceptanceRates()
-}
-
-for (i in 1:length(SEIRmodels.spline))
-{
-    cat(paste("Running in chain ", i, "\n", sep =""))
-    tm = system.time(runSimulation(SEIRmodels.spline[[i]], 
-                  numBatches=numConvergenceBatches, 
-                  batchSize=convergenceBatchSize, 
-                  targetAcceptanceRatio=0.2,
-                  tolerance=0.025,
-                  proportionChange = 0.05))
-    cat(paste("Time elapsed: ", round(tm[3]/60,3), 
-              " minutes\n", sep = ""))
-}
 
 
-chain1 = read.csv("chain_output_ebola_4.txt")
-chain2 = read.csv("chain_output_ebola_5.txt")
-chain3 = read.csv("chain_output_ebola_6.txt")
+cl = makeCluster(3)
+clusterExport(cl, c("compMatDim",
+                     "xDim",
+                     "zDim",
+                     "xPrsDim",   
+                     "offsets",
+                     "X",
+                     "Z",
+                     "X_p_rs",
+                     "DM",
+                     "priorAlpha_gammaEI",
+                     "priorBeta_gammaEI",
+                     "priorAlpha_gammaIR",
+                     "priorBeta_gammaIR",
+                     "betaPriorPrecision",
+                     "beta_p_rs",
+                     "betaPrsPriorPrecision",
+                     "N",
+                     "iterationStride",
+                     "steadyStateConstraintPrecision",
+                     "verbose",
+                     "debug",
+                     "mcmcTuningParams",
+                     "reinfectionMode",
+                     "scaleDistanceMode",
+                     "proposeParameters",
+                     "generateCompartmentProposal",
+                     "numConvergenceBatches",
+                     "convergenceBatchSize",
+                     "extraR0Iterations",
+                     "I_star"))
+
+paramsList = list(list("estimateR0"=FALSE, "traceCompartments"=TRUE, "seedVal"=123123,"chainNumber"=4),
+                  list("estimateR0"=TRUE, "traceCompartments"=FALSE, "seedVal"=123124,"chainNumber"=5),
+                  list("estimateR0"=FALSE,"traceCompartments"=FALSE, "seedVal"=123125,"chainNumber"=6))
+
+chains = parLapply(cl, paramsList, buildAndRunModel)
+stopCluster(cl)
+
+chain1 = chains[[1]]$chainOutput 
+chain2 = chains[[2]]$chainOutput 
+chain3 = chains[[3]]$chainOutput 
+
 
 figure8 = function()
 {
@@ -1448,20 +1432,7 @@ mcl = mcmc.list(as.mcmc(c1),
 summary(mcl)
 
 ## R0 stuff
-
-getR0 = function(t)
-{
-  max(eigen(SEIRmodels.spline[[1]]$getGenerationMatrix(t))$values)  
-}
-  
-R0_vec = sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0)
-
-for (i in 1:extraR0Iterations)
-{
-    SEIRmodels.spline[[1]]$simulate(1000)
-    R0_vec = rbind(R0_vec,sapply(1:(nrow(SEIRmodels.spline[[1]]$I)-1), getR0))
-}
-
+R0_vec = chains[[2]]$R0
 r0.ylim = c(min(R0_vec), max(R0_vec))
 r0.meanvec = apply(R0_vec, 2, mean)
 r0.LB = apply(R0_vec, 2, quantile, probs = c(0.05))
@@ -1469,12 +1440,12 @@ r0.UB = apply(R0_vec, 2, quantile, probs = c(0.95))
 
 figure10 = function()
 {
-  plot(rptDate[1:(length(rptDate)-1)], r0.meanvec , type = "l", xlab = "Date",
+  plot(rptDate[1:(length(rptDate))], r0.meanvec , type = "l", xlab = "Date",
        ylab = expression('R'[0]),
        main = "Estimated Basic Reproductive Number - Spline Model\n 90% Credible Interval", 
        ylim = r0.ylim, lwd = 2)
-  lines(rptDate[1:(length(rptDate)-1)], r0.LB, lty = 2)
-  lines(rptDate[1:(length(rptDate)-1)], r0.UB, lty = 2)
+  lines(rptDate[1:(length(rptDate))], r0.LB, lty = 2)
+  lines(rptDate[1:(length(rptDate))], r0.UB, lty = 2)
   abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
   abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
 }
@@ -1501,7 +1472,7 @@ preds = lapply((nrow(chain1) - floor(nrow(chain1)/2)):
 pred.dates = c(rptDate[(which.max(rptDate))],
                rptDate[(which.max(rptDate))] + seq(2,10,2))
 pred.xlim = c(min(rptDate), max(pred.dates))
-lastIdx = nrow(SEIRmodels.spline[[1]]$I)
+lastIdx = nrow(I_star)
 Guinea.Pred = preds[[1]]$I[,1]
 Liberia.Pred = preds[[1]]$I[,2]
 SierraLeone.Pred = preds[[1]]$I[,3]
@@ -1659,7 +1630,7 @@ end.rcode-->
 cat(numDays.pred)
 end.rcode--> 
       ng-model='pred_Day' width=200>
-       <span>Day: <span id ="zoom-map-day-counter-pred" ng-bind='pred_Day'></span></span>
+       <span>Day: <span id ="zoom-map-day-counter-pred"></span></span>
     </div>
     <div class="col-sm-1">  <button class="btn btn-mini btn-primary" id="zoom-map-play-pred" type="button">Play</button></div>
     <div class = "col-sm-6"></div>
@@ -1702,6 +1673,7 @@ That wraps up the analyses for now. This document will continue to be updated as
     $scope.Day = 1;
     $scope.$watch('Day', function(newDay){
       zoom.updateChoropleth(alldata[newDay]);
+      $("#zoom-map-day-counter").text(dayLabels[newDay]);
     })
   }
     </script>
@@ -1711,6 +1683,7 @@ That wraps up the analyses for now. This document will continue to be updated as
     $scope.pred_Day = 1;
     $scope.$watch('pred_Day', function(newDay){
       zoom_pred.updateChoropleth(alldata_pred[newDay]);
+      $("#zoom-map-day-counter-pred").text(dayLabels[newDay]);
     })
   }
 </script>    
@@ -1777,7 +1750,7 @@ function intervalFunction_pred(slider,counter,sliderVal){
     if (eval(slider.val()) >= eval(slider.attr("max")))
     {
       slider.val(1);
-      counter.text(1);
+      counter.text(dayLabels[1]);
       zoom_pred.updateChoropleth(alldata_pred[1]);
       playing_pred = false;
       clearInterval(intervalVariable_pred);
@@ -1792,13 +1765,7 @@ function intervalFunction_pred(slider,counter,sliderVal){
     {
       sliderVal = eval(slider.val()) + 1;
       slider.val(sliderVal);
-      if (sliderVal > 131){
-        counter.text(sliderVal + " (predicted)");
-      }
-      else
-      {
-        counter.text(sliderVal);
-      }
+      counter.text(dayLabels[sliderVal]);
       zoom_pred.updateChoropleth(alldata_pred[sliderVal]);
     }
 }
@@ -1830,7 +1797,7 @@ function intervalFunction(slider,counter,sliderVal){
     {
       console.log("Exit Case 1.");
       slider.val(1);
-      counter.text(1);
+      counter.text(dayLabels[1]);
       zoom.updateChoropleth(alldata[1]);
       playing = false;
       clearInterval(intervalVariable);
@@ -1847,7 +1814,7 @@ function intervalFunction(slider,counter,sliderVal){
       sliderVal = eval(slider.val()) + 1;
       console.log("Run Case: " + sliderVal);
       slider.val(sliderVal);
-      counter.text(sliderVal);
+      counter.text(dayLabels[sliderVal]);
       zoom.updateChoropleth(alldata[sliderVal]);
     }
 }
@@ -1919,6 +1886,13 @@ for (tpt in min(x):max(x))
 end.rcode-->
 
 
+var dayLabels=
+<!--begin.rcode echo=FALSE, results="asis"
+dayLabels = as.list(as.character((min(rptDate) + 0:(numDays.pred))))
+names(dayLabels) = 1:length(dayLabels)
+cat(toJSON2(dayLabels))
+cat(";")
+end.rcode-->
 var chartParams_pred={"dom": "zoom_map_pred",
 "scope": "world",
 "legend":true,
