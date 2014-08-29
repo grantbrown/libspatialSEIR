@@ -60,7 +60,7 @@ namespace SpatialSEIR
         initVal = (*initCompartmentFC) -> getValue();
         if (! std::isfinite(initVal))
         {
-            lssCout << "Compartment sampler starting from value of zero probability.\n";
+            lssCout << "Init compartment sampler starting from value of zero probability.\n";
             throw(-1);
         }
         for (i = 0; i < **indexLength; i++)
