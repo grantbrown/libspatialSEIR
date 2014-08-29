@@ -19,18 +19,27 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
 
     if (any(is.na(S0)))
     {
+        print("Creating S0")
         S0 = rbinom(rep(1, ncol(N)), N[1,], 0.9)
     }
     if (any(is.na(E0)))
     {
+        print("Creating E0")
         E0 = I_star[1,]
     }
     if (any(is.na(I0)))
     {
+        print("Creating I0")
         I0 = floor(I_star[1,]/2)
+
     }
    
-    R0 = N[1,] - floor(S0 + E0 + I0) 
+    R0 = N[1,] - (S0 + E0 + I0)
+    if (!all(0 == (R0 + S0 + E0 + I0 - N[1,])))
+    {
+        print("Invalid Init Compartment Values - Do the values you provided leave room for the E0 compartment?")
+        stop(1)
+    }
     R0 = ifelse(R0 < 0, 0, R0)
 
 
@@ -75,7 +84,8 @@ generateCompartmentProposal = function(I_star, N, S0 = NA, E0 = NA, I0 = NA, rei
         }
     }
     if (any(S < 0) || any(E < 0) || any(I < 0) || any(R < 0)
-        || any(E_star > S) || any(I_star > E) || any(R_star > I) || any(S_star > R))
+        || any(E_star > S) || any(I_star > E) || any(R_star > I) || any(S_star > R)
+        || max(abs((S+E+I+R - N))) != 0)
     {
         print("Warning: Invalid Compartment Proposal Generated. Try Different Parameters.")
         stop(-1);
