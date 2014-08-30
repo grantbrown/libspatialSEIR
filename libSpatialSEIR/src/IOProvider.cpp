@@ -27,7 +27,12 @@ namespace SpatialSEIR
     {
         if (!(*(this -> isOpen)))
         {
-            std::cout << "Attempt to set trace for IOProvider without output file.\n";
+            lssCout << "Attempt to set trace for IOProvider without output file.\n";
+            throw(-1);
+        }
+        if (locationIndex >= *((*context) -> S_star -> ncol))
+        {
+            lssCout << "Invalid Location Index\n";
             throw(-1);
         }
 
@@ -62,6 +67,18 @@ namespace SpatialSEIR
             std::cout << "Attempt to set trace for IOProvider without output file.\n";
             throw(-1);
         }
+        if (locationIndex >= *((*context) -> S_star -> ncol))
+        {
+            lssCout << "Invalid Location Index\n";
+            throw(-1);
+        }
+        if (timeIndex >= *((*context) -> S_star -> nrow))
+        {
+            lssCout << "Invalid Time Index\n";
+            throw(-1);
+        }
+
+
         TimeLocationTrace* newTrace = new TimeLocationTrace();
         (newTrace -> locationIndex) = locationIndex;
         (newTrace -> timeIndex) = timeIndex;

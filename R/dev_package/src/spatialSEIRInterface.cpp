@@ -339,7 +339,14 @@ int spatialSEIRInterface::setTrace(int locationIndex)
 {
     if (*(context -> isPopulated))
     {
-        (context -> fileProvider -> setTrace(locationIndex));
+        try
+        {
+            (context -> fileProvider -> setTrace(locationIndex));
+        }
+        catch (int err)
+        {
+            Rcpp::Rcout << "Unable to set trace for location: " << locationIndex << "\n";
+        }
         return(0);
     }
     Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
@@ -349,7 +356,16 @@ int spatialSEIRInterface::setTrace2(int locationIndex, int timeIndex)
 {
     if (*(context -> isPopulated))
     {
-        (context -> fileProvider -> setTrace(locationIndex, timeIndex));
+        try
+        {
+            (context -> fileProvider -> setTrace(locationIndex, timeIndex));
+        }
+        catch (int err)
+        {
+            Rcpp::Rcout << "Unable to set trace for (loc,time): (" << locationIndex 
+                        << ", " << timeIndex << ")"<< "\n";
+        }
+
         return(0);
     }
     Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
