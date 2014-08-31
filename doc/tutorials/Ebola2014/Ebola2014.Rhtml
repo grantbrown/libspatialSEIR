@@ -178,15 +178,16 @@ extraR0Iterations =     ifelse(documentCompilationMode == "release", 500,   10)
 iterationStride =       ifelse(documentCompilationMode == "release", 1000,  50)
 
 ## Read in the data
-url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
+url = 'http://en.wikipedia.org/wiki/West_Africa_Ebola_virus_outbreak'
 tbls = readHTMLTable(url)
 dat = tbls[[2]] # This line changes depending on the page formatting.
 
 # One date is now duplicated on the Wikipedia page, due to using different sources. 
 # Clean that up first. 
 
-dat[29,]$V2 = dat[30,]$V2
-dat = rbind(dat[1:29,], dat[31:nrow(dat),])
+dup.indices = which(as.Date(dat[,1], "%d %b %Y") == as.Date("2014-06-05"))
+dat[dup.indices[1],]$V2 = dat[dup.indices[2],]$V2
+dat = rbind(dat[1:dup.indices[1],], dat[(dup.indices[2]+1):nrow(dat),])
 
 
 rptDate = as.Date(dat[2:nrow(dat),1], "%d %b %Y")
@@ -283,7 +284,11 @@ maxIdx = nrow(I_star)
 # Define the temporal offset vector to be the number of days reflected in each 
 # aggregated record (time between reports).
 offsets = uncumulate(original.rptDate)
-
+if (any(offsets <= 0))
+{
+    cat("Invalid Date Information. The data source has likely changed.\n")
+    stop(-1)
+}
 
 InfectionPerDay = I_star/(cbind(offsets, offsets, offsets, offsets))
 
