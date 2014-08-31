@@ -135,6 +135,7 @@
             <li><strong>Aug 10</strong> Predictions remain much the same, though perhaps not so immediately catestrophic as the August 5 predictions. </li>
             <li><strong>Aug 12</strong> Liberia continues to worsen, though Sierra Leone appears to have leveled off. Guinea might be worsening slightly. </li>
             <li><strong>Aug 28</strong> With the addition of Nigeria and new data, the situation appears dire across the board, especially in Liberia. The basic reproductive number calculations no longer look reasonable, so more must be done to estimate them separately for each country. The changes may also be due to recent changes to the R0 estimation code, which must now be reevaluated. This work is underway. </li>
+            <li><strong>Aug 31</strong> Basic reproductive number clearly very heterogenous between countries. Other interpretations TBD.</li>
           
           </ul>
         </div>
@@ -171,9 +172,10 @@ modelDF = 4
 pred.days = 12
 
 ## Compute number of samples/batches
-numConvergenceBatches = ifelse(documentCompilationMode == "release", 500, 100)
+numConvergenceBatches = ifelse(documentCompilationMode == "release", 500,   100)
 convergenceBatchSize =  ifelse(documentCompilationMode == "release", 10000, 100) 
-extraR0Iterations =     ifelse(documentCompilationMode == "release", 500, 10)
+extraR0Iterations =     ifelse(documentCompilationMode == "release", 500,   10)
+iterationStride =       ifelse(documentCompilationMode == "release", 1000,  50)
 
 ## Read in the data
 url = 'http://en.wikipedia.org/wiki/2014_West_Africa_Ebola_outbreak'
@@ -239,7 +241,7 @@ figure1 = function()
            xlab = "Date", 
            ylab = "Total Cases",
            ylim = ylim, lwd = 3)
-      abline(h = seq(0,1000, 50), lty = 2, col = "lightgrey")
+      abline(h = seq(0,100000, 100), lty = 2, col = "lightgrey")
       lines(original.rptDate, Liberia, lwd = 3, col = "blue", lty = 2)
       lines(original.rptDate, Sierra.Leone, lwd = 3, col = "red", lty = 3)
       lines(original.rptDate, Nigeria, lwd = 3, col = "green", lty = 4)
@@ -297,7 +299,7 @@ figure2 = function()
          lty=1, lwd = 2,
          ylim = ylim, type = "l"
          )
-    abline(h = seq(0, 50, 5), lty = 2, col = "lightgrey")
+    abline(h = seq(0, 1000, 5), lty = 2, col = "lightgrey")
     lines(rptDate, InfectionPerDay[,2], col = "blue",lty=2, lwd = 2)
     lines(rptDate, InfectionPerDay[,3], col = "red", lty = 3, lwd = 2)
     lines(rptDate, InfectionPerDay[,4], col = "green", lty = 4, lwd = 2)
@@ -543,11 +545,6 @@ reinfectionMode = 3
 # We do not need this parameter here. 
 steadyStateConstraintPrecision = -1
 
-# iterationStride determines the delay between saving samples to the specified
-# output file As you can probably tell based on the high number chosen, 
-# autocorrelation is currently a big problem for this library
-iterationStride = 1000
-
 # We don't need no verbose or debug level output
 verbose = FALSE
 debug = FALSE
@@ -717,6 +714,7 @@ buildAndRunModel = function(params)
     R0 = array(0, dim = c(nrow(proposal$I_star), ncol(proposal$I_star), extraR0Iterations))
     for (i in 1:extraR0Iterations)
     {
+        SEIRmodel$simulate(iterationStride)
         for (j in 1:nrow(proposal$I_star))
         {
             R0[j,,i] = apply(SEIRmodel$getGenerationMatrix(j), 2, sum)
@@ -726,14 +724,16 @@ buildAndRunModel = function(params)
     R0Mean = apply(R0, 1:2, mean)
     R0LB = apply(R0, 1:2, quantile, probs = 0.05)
     R0UB = apply(R0, 1:2, quantile, probs = 0.95)
+    orig.R0 = R0
     R0 = list("mean"=R0Mean, "LB" = R0LB, "UB" = R0UB)
   }
   else
   {
      R0 = NULL
+     orig.R0 = NULL
   }  
   
-  return(list("chainOutput" = dat, "R0" = R0))
+  return(list("chainOutput" = dat, "R0" = R0, "rawSamples" = orig.R0))
 }
 
 cl = makeCluster(3)
@@ -1034,12 +1034,12 @@ figure6 = function()
   par(mfrow = c(2,2))
   plotR0 = function(main, idx)
   {
-    plot(rptDate[1:(length(rptDate))], R0_list$mean[,idx] , type = "l", xlab = "Date",
+    plot(rptDate[1:(length(rptDate)-1)], R0_list$mean[1:(length(rptDate)-1),idx] , type = "l", xlab = "Date",
          ylab = expression('R'[0]),
          main = main, 
          ylim = r0.ylim, lwd = 2)
-    lines(rptDate[1:(length(rptDate))], R0_list$LB[,idx], lty = 2)
-    lines(rptDate[1:(length(rptDate))], R0_list$UB[,idx], lty = 2)
+    lines(rptDate[1:(length(rptDate)-1)], R0_list$LB[1:(length(rptDate)-1),idx], lty = 2)
+    lines(rptDate[1:(length(rptDate)-1)], R0_list$UB[1:(length(rptDate)-1),idx], lty = 2)
     abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
     abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
   }
@@ -1055,7 +1055,7 @@ end.rcode-->
 figure6()
 end.rcode-->
 
-These figures no longer look reasonable with the introduction of Nigeria, so work is underway to estimate the quantity separately for each nation. <br/>
+Clearly, the decision to separate the basic reproductive number by country was reasonable - the countries vary widely in epidemic behavior overall and over time.<br/>
 
 While the basic reproductive number is a useful quantity to know, it does not directly make any predictions about future epidemic behavior. In order to do that, we need to simulate epidemics  based on the MCMC samples we have obtained and summarize their variability over time. <br/>
  
@@ -1454,12 +1454,12 @@ figure10 = function()
   par(mfrow = c(2,2))
   plotR0 = function(main, idx)
   {
-    plot(rptDate[1:(length(rptDate))], R0_list$mean[,idx] , type = "l", xlab = "Date",
+    plot(rptDate[1:(length(rptDate)-1)], R0_list$mean[1:(length(rptDate)-1),idx] , type = "l", xlab = "Date",
          ylab = expression('R'[0]),
          main = main, 
          ylim = r0.ylim, lwd = 2)
-    lines(rptDate[1:(length(rptDate))], R0_list$LB[,idx], lty = 2)
-    lines(rptDate[1:(length(rptDate))], R0_list$UB[,idx], lty = 2)
+    lines(rptDate[1:(length(rptDate)-1)], R0_list$LB[1:(length(rptDate)-1),idx], lty = 2)
+    lines(rptDate[1:(length(rptDate)-1)], R0_list$UB[1:(length(rptDate)-1),idx], lty = 2)
     abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
     abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
   }
@@ -1625,7 +1625,6 @@ end.rcode-->
 
 <a id="analysis-2-r0-sect" class="anchor"><h3>Basic Reproductive Number Calculation</h3></a>
 
-<p>Again, the basic reproductive number estimate no longer appears reasonable.</p><br/>
 <!--begin.rcode dpi=150, fig.align='center', echo=FALSE
 figure10()
 end.rcode-->
