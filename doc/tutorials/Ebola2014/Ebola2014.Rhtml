@@ -165,8 +165,8 @@ library(parallel) # Load the parallel library to enable multiple chains to be ru
 
 ## Define Document Compilation Parameters
 
-documentCompilationMode = "release"
-#documentCompilationMode = "debug"
+#documentCompilationMode = "release"
+documentCompilationMode = "debug"
 modelDF = 4
 pred.days = 12
 
@@ -714,12 +714,19 @@ buildAndRunModel = function(params)
   ## Do we need to estimate R0 for this chain?
   if (params[["estimateR0"]])
   {  
-    R0 = as.numeric(lapply(seq(0,(nrow(SEIRmodel$S)-1)), SEIRmodel$estimateR0))
+    R0 = array(0, dim = c(nrow(proposal$I_star), ncol(proposal$I_star), extraR0Iterations))
     for (i in 1:extraR0Iterations)
     {
-        SEIRmodel$simulate(1000)
-        R0 = rbind(R0, as.numeric(lapply(seq(0,(nrow(SEIRmodel$S)-1)), SEIRmodel$estimateR0)))
+        for (j in 1:nrow(proposal$I_star))
+        {
+            R0[j,,i] = apply(SEIRmodel$getGenerationMatrix(j), 2, sum)
+        }
     }
+    
+    R0Mean = apply(R0, 1:2, mean)
+    R0LB = apply(R0, 1:2, quantile, probs = 0.05)
+    R0UB = apply(R0, 1:2, quantile, probs = 0.95)
+    R0 = list("mean"=R0Mean, "LB" = R0LB, "UB" = R0UB)
   }
   else
   {
@@ -1018,23 +1025,28 @@ A common tool for describing the evolution of an epidemic is a quantity known as
       <div class="code-and-output-block" style="display:none">
 <!--begin.rcode
 
-  R0_vec = chains[[2]]$R0
+R0_list = chains[[2]]$R0
 
-  r0.ylim = c(min(R0_vec), max(R0_vec))
-  r0.meanvec = apply(R0_vec, 2, mean)
-  r0.LB = apply(R0_vec, 2, quantile, probs = c(0.05))
-  r0.UB = apply(R0_vec, 2, quantile, probs = c(0.95))
+r0.ylim = c(min(R0_list$LB), max(R0_list$UB))
 
 figure6 = function()
 {
-  plot(rptDate[1:(length(rptDate))], r0.meanvec , type = "l", xlab = "Date",
-       ylab = expression('R'[0]),
-       main = "Estimated Basic Reproductive Number\n 90% Credible Interval", 
-       ylim = r0.ylim, lwd = 2)
-  lines(rptDate[1:(length(rptDate))], r0.LB, lty = 2)
-  lines(rptDate[1:(length(rptDate))], r0.UB, lty = 2)
-  abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
-  abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
+  par(mfrow = c(2,2))
+  plotR0 = function(main, idx)
+  {
+    plot(rptDate[1:(length(rptDate))], R0_list$mean[,idx] , type = "l", xlab = "Date",
+         ylab = expression('R'[0]),
+         main = main, 
+         ylim = r0.ylim, lwd = 2)
+    lines(rptDate[1:(length(rptDate))], R0_list$LB[,idx], lty = 2)
+    lines(rptDate[1:(length(rptDate))], R0_list$UB[,idx], lty = 2)
+    abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
+    abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
+  }
+  plotR0("Guinea Estimated R0", 1)
+  plotR0("Liberia Estimated R0", 2)
+  plotR0("Sierra Leone Estimated R0", 3)
+  plotR0("Nigeria Estimated R0", 4)
 }
 end.rcode-->
 </div>
@@ -1432,24 +1444,30 @@ mcl = mcmc.list(as.mcmc(c1),
 summary(mcl)
 
 ## R0 stuff
-R0_vec = chains[[2]]$R0
-r0.ylim = c(min(R0_vec), max(R0_vec))
-r0.meanvec = apply(R0_vec, 2, mean)
-r0.LB = apply(R0_vec, 2, quantile, probs = c(0.05))
-r0.UB = apply(R0_vec, 2, quantile, probs = c(0.95))
+
+R0_list = chains[[2]]$R0
+
+r0.ylim = c(min(R0_list$LB), max(R0_list$UB))
 
 figure10 = function()
 {
-  plot(rptDate[1:(length(rptDate))], r0.meanvec , type = "l", xlab = "Date",
-       ylab = expression('R'[0]),
-       main = "Estimated Basic Reproductive Number - Spline Model\n 90% Credible Interval", 
-       ylim = r0.ylim, lwd = 2)
-  lines(rptDate[1:(length(rptDate))], r0.LB, lty = 2)
-  lines(rptDate[1:(length(rptDate))], r0.UB, lty = 2)
-  abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
-  abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
+  par(mfrow = c(2,2))
+  plotR0 = function(main, idx)
+  {
+    plot(rptDate[1:(length(rptDate))], R0_list$mean[,idx] , type = "l", xlab = "Date",
+         ylab = expression('R'[0]),
+         main = main, 
+         ylim = r0.ylim, lwd = 2)
+    lines(rptDate[1:(length(rptDate))], R0_list$LB[,idx], lty = 2)
+    lines(rptDate[1:(length(rptDate))], R0_list$UB[,idx], lty = 2)
+    abline(h=seq(0, 50, 0.5), lty=2, col="lightgrey")
+    abline(h = 1.0, col = "blue", lwd = 1.5, lty = 2)
+  }
+  plotR0("Guinea Estimated R0", 1)
+  plotR0("Liberia Estimated R0",2)
+  plotR0("Sierra Leone Estimated R0", 3)
+  plotR0("Nigeria Estimated R0", 4)
 }
-
 
 # Guinea, Liberia, Sierra Leone
 
