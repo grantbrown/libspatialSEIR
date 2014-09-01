@@ -75,6 +75,7 @@ class spatialSEIRInterface
         // Simulation Functions
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);
+        virtual void setPredictionTraces();
         virtual int setTrace(int locationIndex);
         virtual int setTrace2(int locationIndex, int timeIndex);
         virtual void setDevice(int platformId, int deviceId);
@@ -371,6 +372,25 @@ int spatialSEIRInterface::setTrace2(int locationIndex, int timeIndex)
     Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
     return(-1);
 }
+
+void spatialSEIRInterface::setPredictionTraces()
+{
+    if (*(context -> isPopulated))
+    {
+        int i;
+        int lastTimeIdx = (*(context -> S_star -> nrow))-1;
+        for (i = 0; i < *(context -> S_star -> ncol); i++)
+        {
+            setTrace2(i,lastTimeIdx);
+        }
+        return;
+    }
+    Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
+    return;
+
+}
+
+
 int spatialSEIRInterface::printDebugInfo()
 {
     Rcpp::Rcout << "S Dimensions: ";
@@ -1223,6 +1243,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("printDebugInfo", &spatialSEIRInterface::printDebugInfo)
     .method("setRandomSeed", &spatialSEIRInterface::setRandomSeed)
     .method("simulate", &spatialSEIRInterface::simulate)
+    .method("setPredictionTraces", &spatialSEIRInterface::setPredictionTraces)
     .method("setTrace", &spatialSEIRInterface::setTrace)
     .method("setTrace", &spatialSEIRInterface::setTrace2)
     .method("setDevice", &spatialSEIRInterface::setDevice)
