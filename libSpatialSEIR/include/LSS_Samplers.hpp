@@ -130,7 +130,11 @@ namespace SpatialSEIR
         public: 
             CompartmentBinomialMetropolisSampler(ModelContext* context,
                                          CompartmentFullConditional* compartmentFC,
-                                         int* compartmentData);
+                                         int* compartmentData,
+                                         int* compartmentFrom, 
+                                         int* compartmentTo,
+                                         double* probabilityVector,
+                                         int probabilityVectorLen);
             void drawSample();
             int getSamplerType();
             void genProposal();
@@ -139,6 +143,10 @@ namespace SpatialSEIR
             ModelContext** context;
             CompartmentFullConditional** compartmentFC;
             int** compartmentData;
+            int** compartmentFrom;
+            int** compartmentTo;
+            double** probabilityVector;
+            int* probabilityVectorLen;
     };
 
 
