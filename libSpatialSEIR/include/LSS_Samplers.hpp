@@ -138,7 +138,7 @@ namespace SpatialSEIR
             void drawSample();
             int getSamplerType();
             void genProposal();
-            ~CompartmentBinomialMetropolsiSampler();
+            ~CompartmentBinomialMetropolisSampler();
 
             ModelContext** context;
             CompartmentFullConditional** compartmentFC;

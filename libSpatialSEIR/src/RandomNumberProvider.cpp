@@ -125,6 +125,10 @@ namespace SpatialSEIR
         {
             return((x==n ? 0 : -INFINITY));
         }
+        if (x < 0)
+        {
+            return(-INFINITY);
+        }
         return(choose(n,x) + std::log(p)*x + (std::log(1-p))*(n-x)); 
     }
     double RandomNumberProvider::dgamma(double x, double a, double b)

@@ -222,12 +222,17 @@ void spatialSEIRInterface::setCompartmentSamplingMode(int mode)
         {
              Rcpp::Rcout << "Setting compartment sampling mode to Metropolis using OpenCL\n";  
         }
+        else if (mode == COMPARTMENT_BINOM_PROPOSAL_METROPOLIS_SAMPLER)
+        {
+             Rcpp::Rcout << "Setting compartment sampling mode to Metropolis with chain binomial proposal.\n";  
+        }
         else
         {
             Rcpp::Rcout << "Error: mode must be one of the following: \n"
                         << COMPARTMENT_METROPOLIS_SAMPLER << ": Metropolis \n   "
                         << COMPARTMENT_METROPOLIS_SAMPLER_OCL << ": Metropolis with OpenCL\n   "
                         << COMPARTMENT_IDX_METROPOLIS_SAMPLER << ": Indexed Metropolis\n   "
+                        << COMPARTMENT_BINOM_PROPOSAL_METROPOLIS_SAMPLER << ": Metropolis w/ chain binomial proposal.\n" 
                         << COMPARTMENT_IDX_SLICE_SAMPLER << ": Indexed Slice\n   ";
             return;
         }

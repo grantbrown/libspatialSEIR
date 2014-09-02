@@ -21,7 +21,7 @@ namespace SpatialSEIR
                                                                int* compartmentFrom_,
                                                                int* compartmentTo_,
                                                                double* probabilityVector_,
-                                                               int probabilityVectorLength_)
+                                                               int probabilityVectorLen_)
     {
         context = new ModelContext*;
         compartmentFC = new CompartmentFullConditional*;
@@ -37,7 +37,7 @@ namespace SpatialSEIR
         *compartmentFrom = compartmentFrom_;
         *compartmentTo = compartmentTo_;
         *probabilityVector = probabilityVector_;
-        *probabilityVEctorLen = probabilityVectorLen_;
+        *probabilityVectorLen = probabilityVectorLen_;
     }
 
     CompartmentBinomialMetropolisSampler::~CompartmentBinomialMetropolisSampler()
@@ -62,60 +62,70 @@ namespace SpatialSEIR
         int initAccepted = *((*compartmentFC) -> accepted);
         double initVal;
         int i;
-        int itrs = 0;
         int x0, x1;
         int nLoc = *((*context) -> S_star -> ncol);
-        int loc = std::floor((*context) -> random -> uniform(0,nLoc))
-        int totalPoints = *((*context) -> S -> nrow);
-        int compIdx;
+        int nTpt = *((*context) -> S -> nrow);
+        int loc = std::floor((*context) -> random -> uniform()*nLoc);
+        int compIdx = loc*nTpt;
         double proposalNumerator;
         double proposalDenominator;
         double p;
         int n;
-        memcpy((*context) -> tmpContainer -> data, *compartmentData, totalPoints*sizeof(int));
+        //memcpy((*context) -> tmpContainer -> data, &((*compartmentData)[compIdx]), nTpt*sizeof(int));
+        //memcpy(((*context) -> tmpContainer -> data) + nTpt*sizeof(int), &((*compartmentFrom)[compIdx]), nTpt*sizeof(int));
+
         (*compartmentFC) -> calculateRelevantCompartments(); 
         (*compartmentFC) -> evalCPU();
         initVal = (*compartmentFC) -> getValue();
-
         if (! std::isfinite(initVal))
         {
             lssCout << "Compartment sampler starting from value of zero probability.\n";
             throw(-1);
         }
-        do{ 
-            proposalNumerator = 0.0;
-            proposalDenominator = 0.0;
-            for (i = 0; i < totalPoints; i++)
-            {
-                compIdx = loc*totalPoints + i;
-                x0 = (*compartmentData)[compIdx];
-                n = (*compartmentFrom)[compIdx];
-                p = (*probabilityVector)[compIdx % * probabilityVectorLen];
-                //x1 = std::floor(((*context) -> random -> normal(x0 + 0.5, sliceWidth)));
-                x1 = (*context) -> random -> binom(n, p);
-                proposalNumerator += (*context) -> random -> dbinom(x0, n, p);
-                proposalDenominator += (*context) -> random -> dbinom(x1, n, p);
-                (*compartmentData)[compIdx] = x1;
-            }
+
+        proposalNumerator = 0.0;
+        proposalDenominator = 0.0;
+        compIdx = loc*nTpt;
+        for (i = 0; i < (nTpt); i++)
+        { 
+            (*compartmentFC) -> calculateRelevantCompartments(); 
+            (*compartmentFC) -> evalCPU();
+            initVal = (*compartmentFC) -> getValue();
+
+            x0 = (*compartmentData)[compIdx];
+            n = (*compartmentFrom)[compIdx];
+            p = (*probabilityVector)[compIdx % (*probabilityVectorLen)];
+            x1 = (*context) -> random -> binom(n, p);
+            proposalNumerator = (*context) -> random -> dbinom(x0, n, p);
+            proposalDenominator = (*context) -> random -> dbinom(x1, n, p);
+            (*compartmentData)[compIdx] = x1;
+
             (*compartmentFC) -> calculateRelevantCompartments(); 
             (*compartmentFC) -> evalCPU();
             double newVal = (*compartmentFC) -> getValue();
             double criterion = (newVal - initVal) + (proposalNumerator - proposalDenominator);
+
 
             if (std::log((*context) -> random -> uniform()) < criterion)
             {
                 // Accept new values
                 *((*compartmentFC) -> accepted) += 1;
             }
-            itrs++;
-        } while(itrs < 1000 && (*((*compartmentFC) -> accepted)) == initAccepted);
+            else 
+            {
+                (*compartmentData)[compIdx] = x0;
+            }
+
+            compIdx++;
+
+        }
+
 
 
         if ((*((*compartmentFC) -> accepted)) == initAccepted)
         {
             // Keep original values
             lssCout << "Compartment sampler did not update.\n";
-            memcpy(*compartmentData, (*context) -> tmpContainer -> data, totalPoints*sizeof(int));
             (*compartmentFC) -> calculateRelevantCompartments(); 
             (*compartmentFC) -> setValue(initVal); 
         }

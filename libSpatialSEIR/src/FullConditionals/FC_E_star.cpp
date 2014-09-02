@@ -70,11 +70,15 @@ namespace SpatialSEIR
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
 
+        int nvals = *((*context) -> S_star -> nrow) * (*((*context) -> S_star -> ncol));
+
         samplers = new std::vector<Sampler*>();
         currentSampler = new Sampler*;
         samplers -> push_back(new CompartmentMetropolisSampler(*context, this, (*E_star) -> data));
         samplers -> push_back(new IndexedCompartmentMetropolisSampler(*context, this, (*E_star) -> data));
         samplers -> push_back(new CompartmentMetropolisSampler_OCL(*context, this, (*E_star) -> data));
+        samplers -> push_back(new CompartmentBinomialMetropolisSampler(*context, this, (*E_star) -> data, 
+                                                                      (*S) -> data, (*E) -> data, *p_se, nvals));
     }
 
     FC_E_Star::~FC_E_Star()
