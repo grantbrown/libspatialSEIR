@@ -25,7 +25,7 @@ namespace SpatialSEIR
                                     InitData *_A0,
                                     double *_p_ei,
                                     double *_p_ir,
-                                    double *_dispersion,
+                                    double *_phi,
                                     double _sliceWidth,
                                     double _steadyStateConstraintPrecision);
             virtual int evalCPU();
@@ -46,7 +46,7 @@ namespace SpatialSEIR
             InitData **A0;
             double **p_ei;
             double **p_ir;
-            double **dispersion;
+            double **phi;
             long double* value;
             double* steadyStateConstraintPrecision;
     };

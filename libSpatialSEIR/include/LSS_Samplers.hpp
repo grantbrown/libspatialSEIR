@@ -11,6 +11,7 @@
 #define COMPARTMENT_METROPOLIS_SAMPLER 1
 #define COMPARTMENT_IDX_METROPOLIS_SAMPLER 2
 #define COMPARTMENT_IDX_SLICE_SAMPLER 3
+#define COMPARTMENT_BINOM_PROPOSAL_METROPOLIS_SAMPLER 14
 #define INITCOMPARTMENT_METROPOLIS_SAMPLER 4
 #define INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER 5
 #define INITCOMPARTMENT_IDX_SLICE_SAMPLER 6
@@ -120,6 +121,26 @@ namespace SpatialSEIR
             int** compartmentData;
             int** indexList;
     };
+
+
+    /** The CompartmentBinomialMetropolisSampler class is child of the Sampler class which draws samples from the 
+     * posterior distribution of the various transition compartments using a chain binomial proposal based on the parameters. */
+    class CompartmentBinomialMetropolisSampler : public Sampler
+    {
+        public: 
+            CompartmentBinomialMetropolisSampler(ModelContext* context,
+                                         CompartmentFullConditional* compartmentFC,
+                                         int* compartmentData);
+            void drawSample();
+            int getSamplerType();
+            void genProposal();
+            ~CompartmentBinomialMetropolsiSampler();
+
+            ModelContext** context;
+            CompartmentFullConditional** compartmentFC;
+            int** compartmentData;
+    };
+
 
     /** The InitCompartmentMetropolisSampler functions identically to the CompartmentMetropolisSampler class, but for 
      * the vector of initial values of each CompartmentalModelMatrix.*/

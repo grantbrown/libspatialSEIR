@@ -18,6 +18,7 @@
 #include<boost/random/gamma_distribution.hpp>
 #include<boost/random/poisson_distribution.hpp>
 #include<boost/random/normal_distribution.hpp>
+#include<boost/random/binomial_distribution.hpp>
 #include <boost/math/distributions/normal.hpp>
 
 
@@ -45,6 +46,7 @@ namespace SpatialSEIR
             double* gamma(int n);
             double* gamma(int n, double* output);
             double beta(double a, double b);
+            int binom(int n, double p);
 
 
             //Density Functions
@@ -90,7 +92,7 @@ namespace SpatialSEIR
             double* gamma(int n);
             double* gamma(int n, double* output);
             double beta(double a, double b);
-
+            int binom(int n, double p);
 
             //Density Functions
             double dpois(int x, double mu);

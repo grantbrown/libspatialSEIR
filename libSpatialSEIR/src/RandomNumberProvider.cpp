@@ -89,6 +89,13 @@ namespace SpatialSEIR
         boost::random::normal_distribution<> ndist(mu, sd);
         return(ndist(generator));
     }
+    
+    int RandomNumberProvider::binom(int n, double p)
+    {
+        boost::random::binomial_distribution<> bdist(n, p);
+        return(bdist(generator));
+    }
+
     double RandomNumberProvider::dnorm(double x, double mu, double sd)
     {
         boost::math::normal_distribution<> ndist(mu, sd);
@@ -258,6 +265,12 @@ namespace SpatialSEIR
     {
         return(R::rgamma(a,1.0));
     }
+
+    int RandomNumberProvider::binom(int n, double p)
+    {
+        return((int) R::rbinom((double) n, p));
+    }
+
     double* RandomNumberProvider::gamma(int n)
     {
         // We're not actually using this. Depricate.
