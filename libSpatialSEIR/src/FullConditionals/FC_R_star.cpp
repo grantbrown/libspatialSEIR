@@ -219,6 +219,118 @@ namespace SpatialSEIR
         return 0;
     }
 
+    int FC_R_Star::evalCPU(int startLoc, int startTpt)
+    {
+        int i,j, compIdx;
+        int nTpts = *((*R) -> nrow);
+        int nLoc = *((*R) -> ncol);
+
+        long double output = 0.0;
+        
+        double p_se_val;
+        double p_rs_val;
+        double p_ir_val;
+        int Rstar_val, Sstar_val, Estar_val, R_val, I_val, S_val;   
+        long unsigned int I_star_sum;
+        long unsigned int R_star_sum;
+        int64_t aDiff; 
+
+        // Is p_rs meaningful?
+        if ((*context) -> config -> reinfectionMode <= 2)
+        {
+            i = startLoc;
+            compIdx = i*nTpts + startTpt;
+            for (j = startTpt; j < nTpts; j++)
+            {
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                Sstar_val = ((*S_star)->data)[compIdx];
+                R_val = ((*R) ->data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+                p_rs_val = (*p_rs)[j];
+                p_ir_val = (*p_ir)[j];
+
+                if (Rstar_val < 0 || Rstar_val > I_val || 
+                        Sstar_val > R_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val)) + 
+                               ((*context) -> random -> dbinom(Sstar_val, R_val, p_rs_val)));
+                }
+                compIdx++;
+            } 
+        }
+        else
+        {
+            i = startLoc; 
+            compIdx = i*nTpts + startTpt;
+            for (j = startTpt; j < nTpts; j++)
+            {
+                Rstar_val = ((*R_star) -> data)[compIdx];
+                I_val = ((*I) ->data)[compIdx];
+                p_ir_val = (*p_ir)[j];
+
+                if (Rstar_val < 0 || Rstar_val > I_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += ((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val));
+                }
+                compIdx++;
+            }  
+        }
+
+
+        // p_se changes, so need to look at p_se component for all locations and 
+        // time points
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts;
+            for (j = startTpt; j< nTpts; j++)
+            {
+
+                p_se_val = (*p_se)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S)->data)[compIdx];
+                if (p_se_val > 1 || p_se_val < 0)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+
+                output += (*context) -> random -> dbinom(Estar_val,S_val, p_se_val);
+                compIdx ++; 
+            }
+        }
+
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            I_star_sum = (*I_star)->marginSum(3,-1);
+            R_star_sum = (*R_star)->marginSum(3,-1);
+            aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/(nTpts*nLoc);
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;   
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+        return 0;
+    }
+
+
+
     int FC_R_Star::evalOCL()
     {
 

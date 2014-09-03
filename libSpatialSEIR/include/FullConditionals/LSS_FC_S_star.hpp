@@ -33,6 +33,7 @@ namespace SpatialSEIR
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
             virtual int evalCPU();
+            virtual int evalCPU(int i, int j);
             virtual int evalOCL();
             virtual void sample(int verbose);
             virtual long double getValue();

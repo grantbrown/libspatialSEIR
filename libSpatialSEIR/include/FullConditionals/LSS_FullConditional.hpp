@@ -121,6 +121,7 @@ namespace SpatialSEIR
             //Template for shared methods
             virtual ~CompartmentFullConditional(){}; 
             virtual int evalCPU() = 0;
+            virtual int evalCPU(int i, int j) = 0;
             virtual int evalOCL() = 0;
             virtual void sample(int verbose) = 0;
             virtual long double getValue() = 0;

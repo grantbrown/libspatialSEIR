@@ -35,6 +35,7 @@ namespace SpatialSEIR
             ~FC_R_Star();
 
             virtual int evalCPU();
+            virtual int evalCPU(int i, int j);
             virtual int evalOCL();
             virtual void sample(int verbose);
             virtual long double getValue();

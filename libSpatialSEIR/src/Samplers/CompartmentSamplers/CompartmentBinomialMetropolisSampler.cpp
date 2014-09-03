@@ -58,15 +58,14 @@ namespace SpatialSEIR
 
     void CompartmentBinomialMetropolisSampler::drawSample()
     {
-        *((*compartmentFC) -> samples) += 1;
         int initAccepted = *((*compartmentFC) -> accepted);
         double initVal;
         int i;
         int x0, x1;
         int nLoc = *((*context) -> S_star -> ncol);
         int nTpt = *((*context) -> S -> nrow);
-        int loc = std::floor((*context) -> random -> uniform()*nLoc);
-        int compIdx = loc*nTpt;
+        int loc;
+        int compIdx;
         double proposalNumerator;
         double proposalDenominator;
         double p;
@@ -85,39 +84,43 @@ namespace SpatialSEIR
 
         proposalNumerator = 0.0;
         proposalDenominator = 0.0;
-        compIdx = loc*nTpt;
-        for (i = 0; i < (nTpt); i++)
-        { 
-            (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
-            (*compartmentFC) -> evalCPU();
-            initVal = (*compartmentFC) -> getValue();
+        for (loc = 0; loc < nLoc; loc++)
+        {
+            compIdx = loc*nTpt;
+            for (i = 0; i < (nTpt); i++)
+            { 
+                *((*compartmentFC) -> samples) += 1;
+                (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
+                (*compartmentFC) -> evalCPU(loc, i);
+                initVal = (*compartmentFC) -> getValue();
 
-            x0 = (*compartmentData)[compIdx];
-            n = (*compartmentFrom)[compIdx];
-            p = (*probabilityVector)[compIdx % (*probabilityVectorLen)];
-            x1 = (*context) -> random -> binom(n, p);
-            proposalNumerator = (*context) -> random -> dbinom(x0, n, p);
-            proposalDenominator = (*context) -> random -> dbinom(x1, n, p);
-            (*compartmentData)[compIdx] = x1;
+                x0 = (*compartmentData)[compIdx];
+                n = (*compartmentFrom)[compIdx];
+                p = (*probabilityVector)[compIdx % (*probabilityVectorLen)];
+                x1 = (*context) -> random -> binom(n, p);
+                proposalNumerator = (*context) -> random -> dbinom(x0, n, p);
+                proposalDenominator = (*context) -> random -> dbinom(x1, n, p);
+                (*compartmentData)[compIdx] = x1;
 
-            (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
-            (*compartmentFC) -> evalCPU();
-            double newVal = (*compartmentFC) -> getValue();
-            double criterion = (newVal - initVal) + (proposalNumerator - proposalDenominator);
+                (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
+                (*compartmentFC) -> evalCPU(loc, i);
+                double newVal = (*compartmentFC) -> getValue();
+                double criterion = (newVal - initVal) + (proposalNumerator - proposalDenominator);
 
 
-            if (std::log((*context) -> random -> uniform()) < criterion)
-            {
-                // Accept new values
-                *((*compartmentFC) -> accepted) += 1;
+                if (std::log((*context) -> random -> uniform()) < criterion)
+                {
+                    // Accept new values
+                    *((*compartmentFC) -> accepted) += 1;
+                }
+                else 
+                {
+                    (*compartmentData)[compIdx] = x0;
+                }
+
+                compIdx++;
+
             }
-            else 
-            {
-                (*compartmentData)[compIdx] = x0;
-            }
-
-            compIdx++;
-
         }
 
 

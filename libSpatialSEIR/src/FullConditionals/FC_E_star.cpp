@@ -166,6 +166,67 @@ namespace SpatialSEIR
        return 0;
     }
 
+    int FC_E_Star::evalCPU(int startLoc, int startTpt)
+    {
+        int i,j, compIdx;
+        int nTpts = *((*S) -> nrow); 
+        int nLoc = *((*S) -> ncol); 
+        double p_ei_val; 
+        double p_se_val;
+        int S_val, E_val, Estar_val, Istar_val;
+        long double output = 0.0;
+        long unsigned int E_star_sum;
+        long unsigned int I_star_sum;
+        int64_t aDiff; 
+
+        i = startLoc;
+        compIdx = i*nTpts + startTpt;
+        for (j = startTpt; j < nTpts; j++)
+        {
+            Estar_val = ((*E_star) -> data)[compIdx];
+            S_val = ((*S) -> data)[compIdx];
+            E_val = ((*E) -> data)[compIdx];
+            Istar_val = ((*I_star) -> data)[compIdx];
+            p_se_val = (*p_se)[compIdx];
+            p_ei_val = (*p_ei)[j]; 
+
+            if (Estar_val < 0 || Estar_val > S_val || 
+                    Istar_val > E_val)
+
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+            else
+            {
+                output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
+                           ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val))); 
+            }
+            compIdx++;
+        }
+
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            E_star_sum = (*E_star)->marginSum(2,i);
+            I_star_sum = (*I_star)->marginSum(2,i);
+            aDiff = (E_star_sum > I_star_sum ? E_star_sum - I_star_sum : I_star_sum - E_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+    
+       return 0;
+    }
+
+
     int FC_E_Star::evalOCL()
     {
         //NOT IMPLEMENTED
