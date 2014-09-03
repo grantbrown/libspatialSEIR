@@ -34,6 +34,7 @@ namespace SpatialSEIR
             virtual long double getValue();
             virtual void setValue(long double val);
             virtual int calculateRelevantCompartments();
+            virtual int calculateRelevantCompartments(int i, int j);
             virtual int calculateRelevantCompartments_OCL();
             virtual ~FC_I_Star_overdispersed();
 

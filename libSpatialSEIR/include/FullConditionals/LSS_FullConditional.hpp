@@ -126,6 +126,7 @@ namespace SpatialSEIR
             virtual long double getValue() = 0;
             virtual void setValue(long double value) = 0;
             virtual int calculateRelevantCompartments() = 0;
+            virtual int calculateRelevantCompartments(int i, int j) = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 

@@ -181,6 +181,13 @@ namespace SpatialSEIR
         (*context) -> calculateR_givenS_CPU();
         return(0);
     }
+    int FC_S_Star::calculateRelevantCompartments(int i, int j)
+    {
+        (*context) -> calculateS_CPU(i, j);
+        (*context) -> calculateR_givenS_CPU(i, j);
+        return(0);
+    }
+
     int FC_S_Star::calculateRelevantCompartments_OCL()
     {
         (*context) -> calculateS_CPU();

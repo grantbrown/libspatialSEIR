@@ -259,6 +259,14 @@ namespace SpatialSEIR
         ((*context) -> calculateP_SE_CPU());
         return(0);
     }
+    int FC_R_Star::calculateRelevantCompartments(int i, int j)
+    {        
+        (*context) -> calculateR_CPU(i,j);
+        (*context) -> calculateI_givenR_CPU(i,j);
+        ((*context) -> calculateP_SE_CPU(i,j));
+        return(0);
+    }
+
 
     int FC_R_Star::calculateRelevantCompartments_OCL()
     {
@@ -271,6 +279,7 @@ namespace SpatialSEIR
     void FC_R_Star::sample(int verbose)
     {
         if (verbose){lssCout << "Sampling R_star\n";}
+        (*context) -> cacheP_SE_Calculation();
         (*currentSampler) -> drawSample();
     }
 

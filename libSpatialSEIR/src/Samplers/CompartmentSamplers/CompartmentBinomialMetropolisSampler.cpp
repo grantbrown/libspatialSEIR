@@ -88,7 +88,7 @@ namespace SpatialSEIR
         compIdx = loc*nTpt;
         for (i = 0; i < (nTpt); i++)
         { 
-            (*compartmentFC) -> calculateRelevantCompartments(); 
+            (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
             (*compartmentFC) -> evalCPU();
             initVal = (*compartmentFC) -> getValue();
 
@@ -100,7 +100,7 @@ namespace SpatialSEIR
             proposalDenominator = (*context) -> random -> dbinom(x1, n, p);
             (*compartmentData)[compIdx] = x1;
 
-            (*compartmentFC) -> calculateRelevantCompartments(); 
+            (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
             (*compartmentFC) -> evalCPU();
             double newVal = (*compartmentFC) -> getValue();
             double criterion = (newVal - initVal) + (proposalNumerator - proposalDenominator);
