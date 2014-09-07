@@ -128,6 +128,7 @@ class spatialSEIRInterface
         virtual Rcpp::NumericVector getP_IR();
         virtual Rcpp::NumericVector getP_RS();
         virtual Rcpp::NumericVector getGenerationMatrix(int t);
+        virtual Rcpp::NumericVector getIntegratedGenerationMatrix(int t);
         virtual Rcpp::NumericVector getBeta();
         virtual Rcpp::NumericVector getBetaP_RS();
         virtual Rcpp::NumericVector getRho();
@@ -819,6 +820,27 @@ Rcpp::NumericVector spatialSEIRInterface::getGenerationMatrix(int t)
     return(output);
 }
 
+Rcpp::NumericVector spatialSEIRInterface::getIntegratedGenerationMatrix(int t)
+{
+    int nLoc = *(context->S->ncol);
+    int numVals =nLoc*nLoc; 
+    Rcpp::NumericMatrix output(nLoc, nLoc);
+    double* input;
+    int i;
+    if (*(context -> isPopulated))
+    {
+        input = (context -> calculateIntegratedG(t));
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = input[i];
+        }
+        delete[] input;
+        return(output);
+    }
+    Rcpp::Rcout << "Model context isn't populated\n";
+    return(output);
+}
+
 Rcpp::NumericVector spatialSEIRInterface::getP_RS()
 {
     Rcpp::NumericVector output(*(context->S->nrow));
@@ -1284,6 +1306,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("printSamplingParameters", &spatialSEIRInterface::printSamplingParameters)
     .method("updateSamplingParameters", &spatialSEIRInterface::updateSamplingParameters)
     .method("getGenerationMatrix", &spatialSEIRInterface::getGenerationMatrix)
+    .method("getIntegratedGenerationMatrix", &spatialSEIRInterface::getIntegratedGenerationMatrix)
     .method("standardizeDistanceMatrix", &spatialSEIRInterface::standardizeDistanceMatrix)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
