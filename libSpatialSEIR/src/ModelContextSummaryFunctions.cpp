@@ -178,7 +178,7 @@ namespace SpatialSEIR
                 if (i != l)
                 {
                     G[GIndex] = ((I->data)[lIndex] != 0 ?
-                                    ((((N[iIndex])/((I->data)[lIndex]))
+                                    ((((N[iIndex]))
                                     * (1-std::exp(-(offset[j])*(*rho)*((scaledDistMat->data)[GIndex]) 
                                     * (((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]))))) :
                                         0.0 );
@@ -186,7 +186,7 @@ namespace SpatialSEIR
                 else
                 { 
                     G[GIndex] = ((I->data)[lIndex] != 0 ?
-                                    (((N[iIndex])/((I->data)[lIndex]))
+                                    (((N[iIndex]))
                                     * (1-std::exp(-(offset[j])*(((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex])))) : 
                                      0.0 );
                 }
