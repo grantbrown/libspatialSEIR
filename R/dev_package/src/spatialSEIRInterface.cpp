@@ -97,6 +97,7 @@ class spatialSEIRInterface
         virtual int calculateP_SE_OCL();
         virtual double estimateR0();
         virtual double estimateR02(int t);
+        virtual double estimateR03(int i, int t);
         virtual int calculateP_RS();
 
         
@@ -494,6 +495,16 @@ double spatialSEIRInterface::estimateR02(int t)
     if (*(context -> isPopulated))
     {
         return((context -> estimateR0(t)));
+    }
+    Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+    return(-1.0);
+}
+
+double spatialSEIRInterface::estimateR03(int i, int t)
+{
+    if (*(context -> isPopulated))
+    {
+        return((context -> estimateR0(i, t)));
     }
     Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
     return(-1.0);
@@ -1265,6 +1276,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE)
     .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE2)
     .method("calculateP_SE_OCL", &spatialSEIRInterface::calculateP_SE_OCL)
+    .method("estimateR0", &spatialSEIRInterface::estimateR03)
     .method("estimateR0", &spatialSEIRInterface::estimateR02)
     .method("estimateR0", &spatialSEIRInterface::estimateR0)
     .method("printAcceptanceRates", &spatialSEIRInterface::printAcceptanceRates)
