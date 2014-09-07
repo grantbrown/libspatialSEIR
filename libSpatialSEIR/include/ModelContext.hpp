@@ -384,8 +384,13 @@ namespace SpatialSEIR
             double estimateR0();
             /** Estimates the basic reproductive number for time point t*/
             double estimateR0(int t);
+            /** Estimates the basic reproductive number for location l and time point t*/
+            double estimateR0(int l, int t);
             /** Calculates the next generation matrix used */
             double* calculateG(int t);
+            /** Calculates the next generation matrix used, integrated forward in time. */
+            double* calculateIntegratedG(int t);
+
 
 
             //Logic provider and utility classes

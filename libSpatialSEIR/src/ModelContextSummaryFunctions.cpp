@@ -142,12 +142,54 @@ namespace SpatialSEIR
     {
         double* G; 
         int nLoc = *(S -> ncol);
-        G = calculateG(j);
+        G = calculateIntegratedG(j);
         MatrixMapType Gmap(G, nLoc, nLoc);
         Eigen::EigenSolver<Eigen::MatrixXd> Es(Gmap);
         double output =  Es.eigenvalues()[0].real();
         delete[] G;
         return(output);
+    }
+
+    double ModelContext::estimateR0(int i, int j)
+    {
+        // Column sum
+        double* G = calculateIntegratedG(j); 
+        double out = 0.0;
+        int nLoc = *(S -> ncol);
+        int k;
+
+        for (k = 0; k < nLoc; k++)
+        {
+            out += G[i*nLoc + k];
+        }
+        delete[] G;
+        return(out); 
+    }
+
+    double* ModelContext::calculateIntegratedG(int j)
+    {
+        int i,k;
+        int p_ir_idx = j;
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+        calculateP_IR_CPU(); 
+        double* outG = calculateG(j);
+        double pIR;
+        double _1mpIR_cum = 1.0;
+        // Need to do prediction here for later time points?
+        for (i = j+1; i < nTpt; i++)
+        {
+            pIR = (p_ir)[p_ir_idx];
+            _1mpIR_cum *= (1-pIR);
+            double* newG = calculateG(i); 
+            for (k = 0; k < nLoc*nLoc; k++)
+            {
+                outG[k] += _1mpIR_cum*newG[k];
+            }
+            p_ir_idx++;
+            delete[] newG;
+        }
+        return(outG);
     }
 
     double* ModelContext::calculateG(int j)
