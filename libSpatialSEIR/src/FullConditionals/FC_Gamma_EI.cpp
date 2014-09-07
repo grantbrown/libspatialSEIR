@@ -91,6 +91,11 @@ namespace SpatialSEIR
         delete accepted;
     }
 
+    double FC_Gamma_EI::evalPrior()
+    {
+        return((*context) -> random -> dgamma(**gamma_ei, *priorAlpha, 1/(*priorBeta)));
+    }
+
     int FC_Gamma_EI::evalCPU()
     { 
         *value = 0.0;
@@ -108,7 +113,7 @@ namespace SpatialSEIR
                 compIdx++;
             }
         } 
-        *value += (*context) -> random -> dgamma(**gamma_ei, *priorAlpha, 1/(*priorBeta));
+        *value += evalPrior();
 
         // Catch invalid values, nans etc. 
         if (!std::isfinite(*value))

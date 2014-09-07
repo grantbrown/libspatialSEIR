@@ -96,6 +96,17 @@ namespace SpatialSEIR
         delete[] accepted;
     }
 
+    double FC_Beta::evalPrior()
+    {
+        double out = 0.0;
+        int i;
+        for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
+        {
+            out -= pow((*beta)[i],2)*(*priorPrecision); // Generalize to allow different prior precisions. 
+        }
+        return(out);
+    }
+
     int FC_Beta::evalCPU()
     {
         *value = 0.0;
@@ -119,12 +130,7 @@ namespace SpatialSEIR
             }
         } 
 
-        for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
-        {
-            term3 -= pow((*beta)[i],2)*(*priorPrecision); // Generalize to allow different prior precisions. 
-        }
-
-        *value = term1 + term2 + term3;
+        *value = term1 + term2 + evalPrior();
         // Catch invalid values, nans etc. 
         if (!std::isfinite(*value))
         {

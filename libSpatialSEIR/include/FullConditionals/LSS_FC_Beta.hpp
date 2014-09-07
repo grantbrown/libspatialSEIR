@@ -31,6 +31,7 @@ namespace SpatialSEIR
                     double _priorPrecision); 
             ~FC_Beta();
 
+            virtual double evalPrior();
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);

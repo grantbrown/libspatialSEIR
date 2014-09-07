@@ -82,6 +82,11 @@ namespace SpatialSEIR
         delete accepted;
     }
 
+    double FC_Rho::evalPrior()
+    {
+         return(**rho > 0 && **rho < 1 ? 0 : -INFINITY); 
+    }
+
     int FC_Rho::evalCPU()
     {
         *value = 0.0;

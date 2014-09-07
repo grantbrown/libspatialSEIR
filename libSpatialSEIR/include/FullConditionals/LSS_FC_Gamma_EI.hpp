@@ -27,6 +27,7 @@ namespace SpatialSEIR
                     double _priorAlpha,
                     double _priorBeta,
                     double sliceWidth);
+            virtual double evalPrior(); 
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);

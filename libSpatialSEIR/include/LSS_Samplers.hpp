@@ -150,6 +150,7 @@ namespace SpatialSEIR
             int* probabilityVectorLen;
     };
 
+
     /** The CompartmentBinomialSliceSampler class is child of the Sampler class which draws samples from the 
      * posterior distribution of the various transition compartments using a chain binomial proposal based on the parameters. */
     class CompartmentBinomialSliceSampler : public Sampler

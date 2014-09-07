@@ -11,24 +11,22 @@ namespace SpatialSEIR
     class OCLProvider;
 
     /**
-     * FC_Rho gives the full conditional distribution of rho, the 
+     * FC_Phi gives the full conditional distribution of rho, the 
      * scalar spatial dependence parameter. 
      */
-    class FC_Rho : public ParameterFullConditional 
+    class FC_Phi : public ParameterFullConditional 
     {
         public:
-            FC_Rho(ModelContext *_context,
-                   CompartmentalModelMatrix *_E_star, 
-                   CompartmentalModelMatrix *_S, 
-                   InitData *_A0,
-                   CovariateMatrix *_X,
-                   double *_p_se, 
-                   double *_beta, 
-                   double *_rho,
+            FC_Phi(ModelContext *_context,
+                   CompartmentalModelMatrix *_I_star, 
+                   double* _phi,
+                   double _priorAlpha,
+                   double _priorBeta,
+                   int* _Y,
                    double sliceWidth
                    );
-            ~FC_Rho();
-            virtual double evalPrior(); 
+            ~FC_Phi();
+            virtual double evalPrior();
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);
@@ -38,13 +36,11 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments_OCL();
 
             ModelContext **context;
-            CompartmentalModelMatrix **E_star; 
-            CompartmentalModelMatrix **S; 
-            InitData **A0;
-            CovariateMatrix **X;
-            double **p_se;
-            double **beta;
-            double **rho;
+            CompartmentalModelMatrix **I_star; 
+            double** phi;
+            double* priorAlpha;
+            double* priorBeta;
+            int** Y;
             long double* value;
     };
 

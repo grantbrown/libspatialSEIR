@@ -30,6 +30,7 @@ namespace SpatialSEIR
                     double _sliceWidth
                     );
             ~FC_Beta_P_RS();
+            virtual double evalPrior(); 
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);

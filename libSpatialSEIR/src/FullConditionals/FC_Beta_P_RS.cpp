@@ -97,6 +97,18 @@ namespace SpatialSEIR
         delete[] accepted;
     }
 
+    double FC_Beta_P_RS::evalPrior()
+    {
+        double out = 0.0;
+        int nbeta = *((*X) -> ncol_x);
+        int j;
+        for (j = 0; j < nbeta; j++)
+        {
+            out -= ((*tausq)/2)*pow((*beta_p_rs)[j],2);
+        }
+        return(out);
+    }
+
     int FC_Beta_P_RS::evalCPU()
     {
         int j;
