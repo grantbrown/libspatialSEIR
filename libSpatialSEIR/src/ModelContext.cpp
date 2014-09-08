@@ -64,6 +64,9 @@ namespace SpatialSEIR
                     case COMPARTMENT_METROPOLIS_SAMPLER_OCL:
                         (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL);
                         break;
+                    default:
+                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
+                        break;
                 }
             }
             else if ((*model)[i] -> getFullConditionalType() == LSS_COMPARTMENT_FULL_CONDITIONAL_TYPE)
@@ -513,6 +516,11 @@ namespace SpatialSEIR
             model -> push_back(gamma_ei_fc);
             model -> push_back(gamma_ir_fc);
         } 
+        if ((config -> dataModel) == 1)
+        {
+            model -> push_back(I_star_overdispersed_fc);
+            model -> push_back(phi_fc);
+        }
     }
 
     int ModelContext::checkCompartmentBounds()

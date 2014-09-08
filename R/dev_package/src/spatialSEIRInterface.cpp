@@ -122,6 +122,8 @@ class spatialSEIRInterface
         virtual Rcpp::IntegerMatrix getI_star();
         virtual Rcpp::IntegerMatrix getR_star();
 
+        virtual Rcpp::IntegerMatrix getY();
+
         virtual Rcpp::IntegerVector getS0();
         virtual Rcpp::IntegerVector getE0();
         virtual Rcpp::IntegerVector getI0();
@@ -136,6 +138,8 @@ class spatialSEIRInterface
         virtual Rcpp::NumericVector getBeta();
         virtual Rcpp::NumericVector getBetaP_RS();
         virtual Rcpp::NumericVector getRho();
+        virtual Rcpp::NumericVector getPhi();
+
 
         virtual int getDebug();
         virtual void setDebug(int debug_);
@@ -743,6 +747,25 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getR()
 
 }
 
+Rcpp::IntegerMatrix spatialSEIRInterface::getY()
+{
+    if (*(context -> isPopulated))
+    {
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->I_star->data)[i];
+        }
+        return(output);
+    }
+    Rcpp::Rcout << "Context Not Populated\n";
+    Rcpp::IntegerMatrix err(0,0);
+    err[0] = -1;
+
+}
+
 Rcpp::IntegerMatrix spatialSEIRInterface::getS_star()
 {
     Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
@@ -906,9 +929,28 @@ Rcpp::NumericVector spatialSEIRInterface::getP_IR()
 Rcpp::NumericVector spatialSEIRInterface::getRho()
 {
     Rcpp::NumericVector output(1);
-    output[0] = *(context->rho); 
-    return(output);
+    if (*(context -> isPopulated))
+    {
+        output[0] = *(context->rho); 
+        return(output);
+    }
+    Rcpp::Rcout << "Context Not Populated\n";
+    output[0] = -1.0;
 }
+
+Rcpp::NumericVector spatialSEIRInterface::getPhi()
+{
+    Rcpp::NumericVector output(1);
+    if (*(context -> isPopulated))
+    {
+        output[0] = *(context->phi); 
+        return(output);
+    }
+    Rcpp::Rcout << "Context Not Populated\n";
+    output[0] = -1.0;
+}
+
+
 
 int spatialSEIRInterface::getDebug()
 {
@@ -1342,6 +1384,8 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
     .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
     .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
+    .property("phi", &spatialSEIRInterface::getPhi, "Overdispersion Term")
+    .property("Y", &spatialSEIRInterface::getY, "Raw Data")
     .property("parameterSamplingMode", &spatialSEIRInterface::getParameterSamplingMode, 
             &spatialSEIRInterface::setParameterSamplingMode, "Type of sampler used for non-compartment parameters.")
     .property("compartmentSamplingMode", &spatialSEIRInterface::getCompartmentSamplingMode, 

@@ -206,7 +206,8 @@ sliceWidths = c(0.26,  # S_star
                 0.2, # betaPrs
                 0.015, # rho
                 0.01, # gamma_ei
-                0.01 # gamma_ir
+                0.01, # gamma_ir
+                0.01 # phi
                 )
 
 
@@ -315,7 +316,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
     })
 }
 
-#res$compartmentSamplingMode = 2
+res$compartmentSamplingMode = 14
 
 #print("Burn in 1 to adjust sampling widths.")
 runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)

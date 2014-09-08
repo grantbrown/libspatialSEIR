@@ -177,7 +177,7 @@ namespace SpatialSEIR
         phi_val = **phi;
 
 
-        compIdx = i*nTpts;
+        compIdx = i*nTpts + t;
         for (j = t; j < nTpts; j++)
         {
             Rstar_val = ((*R_star) -> data)[compIdx];
@@ -258,7 +258,7 @@ namespace SpatialSEIR
 
     void FC_I_Star_overdispersed::sample(int verbose)
     {
-        if (verbose){lssCout << "Sampling E_star\n";}
+        if (verbose){lssCout << "Sampling I_star\n";}
         (*context) -> cacheP_SE_Calculation();
         (*currentSampler) -> drawSample();
     }
