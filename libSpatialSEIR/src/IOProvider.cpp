@@ -185,11 +185,20 @@ namespace SpatialSEIR
         // Write rho header
         (*outFileStream) << "rho,";        
 
+        // Need to write overdispersion header?
+        if (((*context) -> config -> dataModel) == 1)
+        {
+            (*outFileStream) << "phi,";
+        }
+
         // Write gamma_ei header
         (*outFileStream) << "gamma_ei" << ",";
 
         // Write gamma_ir header
         (*outFileStream) << "gamma_ir" << ",";
+
+
+
 
 
         unsigned int nTpts = *((*context) -> S_star -> nrow);
@@ -261,6 +270,13 @@ namespace SpatialSEIR
 
         // Write rho
         (*outFileStream) << *((*context) -> rho) << ",";        
+        
+        // Need to write overdispersion header?
+        if (((*context) -> config -> dataModel) == 1)
+        {
+            (*outFileStream) << *((*context) -> phi) << ",";
+        }
+
 
         // Write gamma_ei
         (*outFileStream) << *((*context) -> gamma_ei) << ",";        
