@@ -53,10 +53,13 @@ class spatialSEIRInterface
                      SEXP X_pRS_,
                      SEXP DistMat_,
                      SEXP rho_,
+                     SEXP phi_,
                      SEXP priorAlpha_pEI_,
                      SEXP priorBeta_pEI_,
                      SEXP priorAlpha_pIR_,
                      SEXP priorBeta_pIR_,
+                     SEXP priorAlpha_phi_,
+                     SEXP priorBeta_phi_,
                      SEXP beta_,
                      SEXP betaPriorPrecision_,
                      SEXP betaPrs_,
@@ -71,6 +74,7 @@ class spatialSEIRInterface
                      SEXP debugFlag,
                      SEXP sliceWidths,
                      SEXP reinfectionMode,
+                     SEXP dataModel_,
                      SEXP scaleDistanceMode_);
         // Simulation Functions
         virtual int setRandomSeed(int seedVal);
@@ -956,10 +960,13 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP X_pRS_,
                      SEXP DistMat_,
                      SEXP rho_,
+                     SEXP phi_,
                      SEXP priorAlpha_pEI_,
                      SEXP priorBeta_pEI_,
                      SEXP priorAlpha_pIR_,
                      SEXP priorBeta_pIR_,
+                     SEXP priorAlpha_phi_,
+                     SEXP priorBeta_phi_,
                      SEXP beta_,
                      SEXP betaPriorPrecision_,
                      SEXP betaPrs_,
@@ -974,6 +981,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP debugFlag,
                      SEXP sliceWidths,
                      SEXP reinfectionMode,
+                     SEXP dataModel_,
                      SEXP scaleDistanceMode_)
 {
     int err = 0;
@@ -1001,13 +1009,16 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::NumericVector DistMat(DistMat_);
 
     Rcpp::NumericVector rho(rho_);
-
+    Rcpp::NumericVector phi(phi_);
 
     Rcpp::NumericVector priorAlpha_pEI(priorAlpha_pEI_);
     Rcpp::NumericVector priorBeta_pEI(priorBeta_pEI_);
     Rcpp::NumericVector priorAlpha_pIR(priorAlpha_pIR_);
     Rcpp::NumericVector priorBeta_pIR(priorBeta_pIR_);
+    Rcpp::NumericVector priorAlpha_phi(priorAlpha_phi_);
+    Rcpp::NumericVector priorBeta_phi(priorBeta_phi_);
 
+    Rcpp::NumericVector dataModel(dataModel_);
 
     Rcpp::NumericVector beta(beta_);
     Rcpp::NumericVector betaPriorPrecision(betaPriorPrecision_);
@@ -1120,9 +1131,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
             Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
         }
 
-        if (sliceParams.size() != 10)
+        if (sliceParams.size() != 11)
         {
-            Rcpp::Rcout << "Slice sampling parameters must be of length 10: S*,E*,R*,S0,I0,beta,betaPrs,rho,gamma_ei,gamma_ir\n";
+            Rcpp::Rcout << "Slice sampling parameters must be of length 11: S*,E*,R*,S0,I0,beta,betaPrs,rho,gamma_ei,gamma_ir,phi\n";
             throw(-1);
         }
         if (reinfectMode[0] > 2)
@@ -1192,6 +1203,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     modelConfig.parameterSamplingMode = PARAMETER_JOINT_METROPOLIS_SAMPLER;
     modelConfig.indexLength = std::floor(0.25*compartmentDimensions[0]*compartmentDimensions[1]); // Update 25% per iteration. 
     modelConfig.useDecorrelation = 0;
+    modelConfig.dataModel = dataModel[0];
     Rcpp::Rcout << "Setting index length to be: " << (modelConfig.indexLength) << "\n";
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
@@ -1204,6 +1216,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     sliceParamStruct.rhoWidth = &sliceParams[7];
     sliceParamStruct.gammaEiWidth = &sliceParams[8];
     sliceParamStruct.gammaIrWidth = &sliceParams[9];
+    sliceParamStruct.phiWidth = &sliceParams[10];
 
     S_starArgs.inData = S_star.begin();
     S_starArgs.inRow = &compartmentDimensions[0];
@@ -1233,14 +1246,16 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     priorValues.P_IR_priorAlpha = priorAlpha_pIR[0];
     priorValues.P_IR_priorBeta = priorBeta_pIR[0];
     priorValues.betaPrsPriorPrecision = betaPrsPriorPrecision[0];
+    priorValues.Phi_priorAlpha = priorAlpha_phi[0];
+    priorValues.Phi_priorBeta = priorBeta_phi[0];
 
     // Gather information for the creation of the distance matrices
 
-    double phi = 60*60*4.0;
+    double spatialRange = 60*60*4.0;
     distanceArgs rawDistArgs; scaledDistanceArgs scaledDistArgs;
     rawDistArgs.inData = DistMat.begin(); 
     rawDistArgs.dim = &compartmentDimensions[1];
-    scaledDistArgs.phi = &phi; 
+    scaledDistArgs.phi = &spatialRange; 
     scaledDistArgs.inData = DistMat.begin();
     scaledDistArgs.dim = &compartmentDimensions[1];
     scaledDistArgs.mode = scaleDistanceMode[0];
@@ -1254,7 +1269,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
     context -> populate(&A0, &xArgs, &xPrsArgs, offset.begin(), Y.begin(), &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, &rawDistArgs,&scaledDistArgs,
-                        rho.begin(),beta.begin(),gamma_ei.begin(), gamma_ir.begin(),
+                        rho.begin(),phi.begin(),beta.begin(),gamma_ei.begin(), gamma_ir.begin(),
                         betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,
                         modelConfig);
 

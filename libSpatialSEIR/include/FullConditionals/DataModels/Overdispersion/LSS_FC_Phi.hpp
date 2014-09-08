@@ -1,6 +1,6 @@
 #include <LSS_FullConditional.hpp>
-#ifndef FULL_CONDITIONAL_RHO_INC
-#define FULL_CONDITIONAL_RHO_INC
+#ifndef FULL_CONDITIONAL_PHI_INC
+#define FULL_CONDITIONAL_PHI_INC
 
 namespace SpatialSEIR
 {

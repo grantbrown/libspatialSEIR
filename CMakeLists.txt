@@ -93,6 +93,8 @@ endif()
 ## Require Boost Message
 include_directories("${CMAKE_SOURCE_DIR}/libSpatialSEIR/include"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals"
+                    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels"
+                    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/DataStructures"
                     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/clBLAS"
                     "."
@@ -123,6 +125,8 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Rho.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_EI.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_IR.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/DataModels/Overdispersion/FC_I_star_overdispersion.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/DataModels/Overdispersion/FC_Phi.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/SetCompartmentSamplingIndicesTask.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformDecorrelationStep.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentMetropolisSampler.cpp"
@@ -169,6 +173,8 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Rho.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_I_star_overdispersion.hpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_Phi.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
 	"${SpatialSEIR_Boost_LIBRARIES}"
     "${BLAS_LIBRARIES}"
@@ -227,6 +233,8 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Rho.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_I_star_overdispersion.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_Phi.hpp"
 
             DESTINATION include)
 

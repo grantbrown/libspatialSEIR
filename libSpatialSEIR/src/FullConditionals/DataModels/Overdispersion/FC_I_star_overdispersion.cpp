@@ -27,11 +27,9 @@ namespace SpatialSEIR
                          CompartmentalModelMatrix *_I,  
                          CompartmentalModelMatrix *_E,
                          CompartmentalModelMatrix *_R_star,
-                         InitData *_A0,
                          double *_p_ei,
                          double *_p_ir,
                          double *_phi,
-                         double _sliceWidth,
                          double _steadyStateConstraintPrecision) 
     {
 
@@ -41,11 +39,9 @@ namespace SpatialSEIR
         I = new CompartmentalModelMatrix*;
         E = new CompartmentalModelMatrix*;
         R_star = new CompartmentalModelMatrix*;
-        A0 = new InitData*;
         p_ei = new double*;
         p_ir = new double*;
         phi = new double*;
-        sliceWidth = new double;
         steadyStateConstraintPrecision = new double;
         value = new long double;
         samples = new int;
@@ -59,11 +55,9 @@ namespace SpatialSEIR
         *E = _E;
         *I = _I;
         *R_star = _R_star;
-        *A0 = _A0;
         *p_ir = _p_ir;
         *p_ei = _p_ei;
         *phi = _phi; 
-        *sliceWidth = _sliceWidth;
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
 
@@ -94,12 +88,10 @@ namespace SpatialSEIR
         delete E;
         delete I;
         delete R_star;
-        delete A0;
         delete p_ir;
         delete p_ei;
         delete phi;
         delete value;
-        delete sliceWidth;
         delete steadyStateConstraintPrecision; 
         delete context;
         delete samples;
@@ -169,6 +161,72 @@ namespace SpatialSEIR
     
        return 0;
     }
+
+    int FC_I_Star_overdispersed::evalCPU(int i, int t)
+    {
+        int j, compIdx;
+        int nTpts = *((*I) -> nrow); 
+        int nLoc = *((*I) -> ncol); 
+        double p_ei_val; 
+        double p_ir_val;
+        int I_val, E_val, Rstar_val, Istar_val, y_val;
+        long double output = 0.0;
+        long unsigned int R_star_sum, I_star_sum;
+        int64_t aDiff; 
+        double phi_val;
+        phi_val = **phi;
+
+
+        compIdx = i*nTpts;
+        for (j = t; j < nTpts; j++)
+        {
+            Rstar_val = ((*R_star) -> data)[compIdx];
+            E_val = ((*E) -> data)[compIdx];
+            Istar_val = ((*I_star) -> data)[compIdx];
+            I_val = ((*I) -> data)[compIdx];
+            y_val = (*Y)[compIdx];
+            p_ei_val = (*p_ei)[j];
+            p_ir_val = (*p_ir)[j]; 
+
+            if (Istar_val < 0 || Istar_val > E_val || 
+                    Rstar_val > I_val)
+
+            {
+                *value = -INFINITY;
+                return(-1);
+            }
+            else
+            {
+                output += (((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val)) +    
+                           ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val))); 
+                output -= 0.5*std::pow((Istar_val - y_val)*phi_val, 2);
+            }
+            compIdx++;
+        }
+
+        if (*steadyStateConstraintPrecision > 0)
+        {
+            R_star_sum = (*R_star)->marginSum(2,i);
+            I_star_sum = (*I_star)->marginSum(2,i);
+            aDiff = (R_star_sum > I_star_sum ? R_star_sum - I_star_sum : I_star_sum - R_star_sum)/nTpts;
+            output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
+        }
+
+
+        if (!std::isfinite(output))
+        {
+            *value = -INFINITY;
+            return(-1);
+        }
+        else
+        {
+            *value = output;
+        }
+    
+       return 0;
+    }
+
+
 
     int FC_I_Star_overdispersed::evalOCL()
     {

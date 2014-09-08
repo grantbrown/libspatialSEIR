@@ -8,6 +8,9 @@
 #ifndef MODEL_CONTEXT_INC
 #define MODEL_CONTEXT_INC
 
+#define LSS_DEGENERATE_DATA_MODEL 1
+#define LSS_OVERDISPERSED_DATA_MODEL 2
+
 #include<Eigen/Core>
 namespace SpatialSEIR
 {
@@ -33,6 +36,8 @@ namespace SpatialSEIR
     class FC_Gamma_IR;
     class FC_Beta_P_RS;
     class FC_Rho;
+    class FC_I_Star_overdispersed;
+    class FC_Phi;
     class InitData;
 
     class CompartmentalModelMatrix;
@@ -51,7 +56,7 @@ namespace SpatialSEIR
 
     /**
      * The modelConfiguration struct stores information on the reinfection mode requested for the model
-     * as well as the sampling behavior. This set of features is very much still under development.  
+     * as well as the sampling behavior and data model. This set of features is very much still under development.  
      */
     struct modelConfiguration
     {
@@ -60,6 +65,7 @@ namespace SpatialSEIR
         int parameterSamplingMode; 
         int indexLength;
         int useDecorrelation;
+        int dataModel;
     };
 
 
@@ -120,6 +126,7 @@ namespace SpatialSEIR
                                                                    distance matrix. 
                                                                */
                           double* rho, /**< rho gives the starting value of the spatial dependence parameter*/
+                          double* phi,
                           double* beta,/**< beta gives the starting vector of regression parameters driving the exposure process.*/ 
                           double* gamma_ei,/**< p_ei is the starting value of the parameter driving the exposed to infectious transition probability. */
                           double* gamma_ir,/**< p_ir is the starting value of the parameter driving the infectious to removed/recovered transition probability.*/ 
@@ -426,6 +433,10 @@ namespace SpatialSEIR
             FC_Gamma_EI *gamma_ei_fc;
             /** Pointer to FullConditional distribution for the parameter controlling transition probability p_ir*/
             FC_Gamma_IR *gamma_ir_fc;
+            /** Pointer to FullConditional distribution for the I_star transition matrix under overdispersion*/
+            FC_I_Star_overdispersed *I_star_overdispersed_fc;
+            /** Pointer to FullConditional distribution for the overdispersion parameter for I_star*/
+            FC_Phi *phi_fc;
 
             /** Pointer to the sampling indices task.*/
             SetCompartmentSamplingIndicesTask* setSamplingIndicesTask;
@@ -478,6 +489,8 @@ namespace SpatialSEIR
             double* betaPrs;
             /** Storage for the spatial dependence parameter rho*/
             double* rho;
+            /** Storage for the overdispersion parameter*/
+            double* phi;
             /** Storage for the external infection parameters gamma (DEPRICATED)*/
             double* gamma;
             /** Storage for the linear predictor, eta*/

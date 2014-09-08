@@ -110,7 +110,7 @@ namespace SpatialSEIR
                                 compartmentArgs* R_starArgs,
                                 distanceArgs* rawDistArgs,
                                 scaledDistanceArgs* scaledDistArgs,
-                                double* rho_, double* beta_, 
+                                double* rho_, double* phi_, double* beta_, 
                                 double* gamma_ei_, double* gamma_ir_, double* betaPrs_, 
                                 int* N_, sliceParameters* sliceWidths,
                                 priorControl* priorValues,
@@ -131,7 +131,8 @@ namespace SpatialSEIR
         X_pRS = new CovariateMatrix();
         rawDistMat = new DistanceMatrix();
         scaledDistMat = new DistanceMatrix();
-        rho = new double; *rho = 0.25;
+        rho = new double; *rho = *rho_;
+        phi = new double; *phi = *phi_;
         fileProvider = new IOProvider();
         singleLocation = new int; *singleLocation = -1;
         oclProvider = new OCLProvider();
@@ -262,7 +263,6 @@ namespace SpatialSEIR
             N[i] = N_[i];
         } 
 
-        *rho = *rho_;
         *gamma_ei = *gamma_ei_;
         *gamma_ir = *gamma_ir_;
 
@@ -391,6 +391,26 @@ namespace SpatialSEIR
                              (priorValues -> P_IR_priorAlpha),
                              (priorValues -> P_IR_priorBeta),
                              *(sliceWidths -> gammaIrWidth));
+
+        phi_fc = new FC_Phi(this,
+                            I_star,
+                            phi,
+                            (priorValues -> Phi_priorAlpha),
+                            (priorValues -> Phi_priorBeta),
+                            Y,
+                            *(sliceWidths -> phiWidth));
+
+        I_star_overdispersed_fc = new FC_I_Star_overdispersed(this,
+                                                              Y,
+                                                              I_star,
+                                                              I,
+                                                              E,
+                                                              R_star,
+                                                              p_ei,
+                                                              p_ir,
+                                                              phi,
+                                                              (R_starArgs -> steadyStateConstraintPrecision));
+        
 
         // Calculate Compartments
         this -> calculateS_CPU();
@@ -1183,6 +1203,8 @@ namespace SpatialSEIR
             delete R_star_fc;
             delete beta_fc;
             delete rho_fc;
+            delete phi_fc;
+            delete I_star_overdispersed_fc;
             delete betaPrs_fc;
             delete gamma_ei_fc;
             delete gamma_ir_fc;
@@ -1216,6 +1238,7 @@ namespace SpatialSEIR
             delete[] beta;
             delete[] eta;
             delete rho;
+            delete phi;
             delete[] gamma;
             delete singleLocation;   
             // FC's have already been disposed of.

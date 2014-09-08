@@ -41,16 +41,16 @@ spatialSEIRModel = function(compMatDim,
                                               S0_, E0_, I0_, R0_, Istar, Sstar, 
                                               Estar, Istar, Rstar,
                                               offset, X_, Z_, X_pRS_, 
-                                              DistMat_, rho_, priorAlpha_pEI_, 
+                                              DistMat_, rho_,0, priorAlpha_pEI_, 
                                               priorBeta_pEI_, priorAlpha_pIR_, 
-                                              priorBeta_pIR_, beta_, 
+                                              priorBeta_pIR_,0,0, beta_, 
                                               betaPriorPrecision_, betaPrs_, 
                                               betaPrsPriorPrecision_, gamma_ei_, 
                                               gamma_ir_, N_, outFile, 
                                               iterationStride,
                                               steadyStateConstraintPrecision, 
                                               verboseFlag, debugFlag, sliceWidths, 
-                                              reinfectionMode,scaledDistMode)
+                                              reinfectionMode,0,scaledDistMode)
     if (err < 0){
         rm(interface)
         stop("Errors building spatialSEIRModel\n")
@@ -78,10 +78,13 @@ spatialSEIRDataModel = function(compMatDim,
                             X_pRS_, 
                             DistMat_, 
                             rho_, 
+                            phi_,
                             priorAlpha_pEI_, 
                             priorBeta_pEI_, 
                             priorAlpha_pIR_, 
                             priorBeta_pIR_, 
+                            priorAlpha_phi_,
+                            priorBeta_phi_,
                             beta_, 
                             betaPriorPrecision_, 
                             betaPrs_, 
@@ -96,6 +99,7 @@ spatialSEIRDataModel = function(compMatDim,
                             debugFlag, 
                             sliceWidths, 
                             reinfectionMode,
+                            dataModel,
                             scaledDistMode)
 {
     interface = new( spatialSEIRInterface )
@@ -103,16 +107,18 @@ spatialSEIRDataModel = function(compMatDim,
                                               S0_, E0_, I0_, R0_, Y, Sstar, 
                                               Estar, Istar, Rstar,
                                               offset, X_, Z_, X_pRS_, 
-                                              DistMat_, rho_, priorAlpha_pEI_, 
+                                              DistMat_, rho_, phi_, priorAlpha_pEI_, 
                                               priorBeta_pEI_, priorAlpha_pIR_, 
-                                              priorBeta_pIR_, beta_, 
+                                              priorBeta_pIR_, 
+                                              priorAlpha_phi_, priorBeta_phi_,
+                                              beta_, 
                                               betaPriorPrecision_, betaPrs_, 
                                               betaPrsPriorPrecision_, gamma_ei_, 
                                               gamma_ir_, N_, outFile, 
                                               iterationStride,
                                               steadyStateConstraintPrecision, 
                                               verboseFlag, debugFlag, sliceWidths, 
-                                              reinfectionMode,scaledDistMode)
+                                              reinfectionMode, dataModel, scaledDistMode)
     if (err < 0){
         rm(interface)
         stop("Errors building spatialSEIRModel\n")

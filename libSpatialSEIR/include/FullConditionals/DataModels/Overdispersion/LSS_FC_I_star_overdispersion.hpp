@@ -21,12 +21,10 @@ namespace SpatialSEIR
                                     CompartmentalModelMatrix *_I_star, 
                                     CompartmentalModelMatrix *_I, 
                                     CompartmentalModelMatrix *_E,
-                                    CompartmentalModelMatrix *_R_star,
-                                    InitData *_A0,
+                                    CompartmentalModelMatrix *_R_star,                                    
                                     double *_p_ei,
                                     double *_p_ir,
                                     double *_phi,
-                                    double _sliceWidth,
                                     double _steadyStateConstraintPrecision);
             virtual int evalCPU();
             virtual int evalCPU(int i, int j);

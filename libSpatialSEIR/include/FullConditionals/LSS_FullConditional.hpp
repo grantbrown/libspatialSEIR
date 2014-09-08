@@ -31,6 +31,8 @@ namespace SpatialSEIR
         double P_EI_priorBeta;
         double P_IR_priorAlpha;
         double P_IR_priorBeta;
+        double Phi_priorAlpha;
+        double Phi_priorBeta;
     };
 
     //! struct containing initial slice sampling tuning parameters. 
@@ -47,6 +49,7 @@ namespace SpatialSEIR
         double* gammaWidth;
         double* gammaEiWidth;
         double* gammaIrWidth;
+        double* phiWidth;
     };
 
     //! Wrapper for cblas::dgemm
@@ -160,7 +163,6 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments() = 0;
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual double acceptanceRatio(int i);
-            virtual double evalPrior();
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
             int *varLen;

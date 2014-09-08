@@ -29,6 +29,7 @@ namespace SpatialSEIR
         priorAlpha = new double;
         priorBeta = new double;
         sliceWidth = new double;
+        Y = new int*;
         value = new long double;
         samples = new int;
         accepted = new int; 
