@@ -6,7 +6,7 @@ $(info The compilation root directory is: $(ROOT_DIR))
 $(info The name of the shared library to be created is: $(SHLIB))
 $(info The place R should look for libSpatialSEIR.so is: $(abspath ./LSS))
 
-PKG_CPPFLAGS+=-I$(abspath $(ROOT_DIR)/../../../eigen) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include/DataStructures) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include/FullConditionals) 
+PKG_CPPFLAGS+=-I$(abspath $(ROOT_DIR)/../../../eigen) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include/DataStructures) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include/FullConditionals) -I$(abspath $(ROOT_DIR)/../../../libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion) 
 PKG_LIBS += -L$(abspath ./LSS) -lSpatialSEIR -L$(BLAS_LIBS) -Wl,-rpath=$(abspath ./LSS) 
 
 $(SHLIB): LSS/libSpatialSEIR.so
