@@ -173,7 +173,6 @@ namespace SpatialSEIR
     {
         int i,j, compIdx;
         int nTpts = *((*S) -> nrow); 
-        int nLoc = *((*S) -> ncol); 
         double p_ei_val; 
         double p_se_val;
         int S_val, E_val, Estar_val, Istar_val;

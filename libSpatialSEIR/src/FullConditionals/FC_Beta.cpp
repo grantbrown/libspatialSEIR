@@ -113,8 +113,8 @@ namespace SpatialSEIR
         int i, j, tmp, compIdx;
         int nLoc = *((*S) -> ncol);
         int nTpts = *((*S) -> nrow);
-        double term1, term2, term3;
-        term1 = 0.0; term2 = 0.0; term3 = 0.0;
+        double term1, term2;
+        term1 = 0.0; term2 = 0.0;
 
         for (i = 0; i < nLoc; i++)    
         {

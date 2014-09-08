@@ -180,7 +180,6 @@ namespace SpatialSEIR
         int i,j,compIdx,Sstar_val,Estar_val,S_val,R_val;
         double p_se_val, p_rs_val;
         int nTpts = *((*S)->nrow);
-        int nLoc = *((*S)->ncol);
         long double output = 0.0;
         long unsigned int S_star_sum;
         long unsigned int R_star_sum;
