@@ -491,32 +491,58 @@ int spatialSEIRInterface::calculateP_SE_OCL()
 
 double spatialSEIRInterface::estimateR0()
 {
-    if (*(context -> isPopulated))
+    try
     {
-        return((context -> estimateR0()));
+        if (*(context -> isPopulated))
+        {
+            return((context -> estimateR0()));
+        }
+        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+        return(-1.0);
     }
-    Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
-    return(-1.0);
+    catch (int e)
+    {
+        Rcpp::Rcout << "Error: " << e << "\n";
+        return(-1.0);
+    }
 }
 
 double spatialSEIRInterface::estimateR02(int t)
 {
-    if (*(context -> isPopulated))
+    try
     {
-        return((context -> estimateR0(t)));
+        if (*(context -> isPopulated))
+        {
+            return((context -> estimateR0(t)));
+        }
+        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+        return(-1.0);
     }
-    Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
-    return(-1.0);
+    catch (int e)
+    {
+        Rcpp::Rcout << "Error: " << e << "\n";
+        return(-1.0);
+    }
+
 }
 
 double spatialSEIRInterface::estimateR03(int i, int t)
 {
-    if (*(context -> isPopulated))
+    try
     {
-        return((context -> estimateR0(i, t)));
+        if (*(context -> isPopulated))
+        {
+            return((context -> estimateR0(i, t)));
+        }
+        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+        return(-1.0);
     }
-    Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
-    return(-1.0);
+     catch (int e)
+    {
+        Rcpp::Rcout << "Error: " << e << "\n";
+        return(-1.0);
+    }
+   
 }
 
 int spatialSEIRInterface::calculateP_RS()
@@ -828,23 +854,33 @@ Rcpp::NumericMatrix spatialSEIRInterface::getP_SE()
 
 Rcpp::NumericVector spatialSEIRInterface::getGenerationMatrix(int t)
 {
-    int nLoc = *(context->S->ncol);
-    int numVals =nLoc*nLoc; 
-    Rcpp::NumericMatrix output(nLoc, nLoc);
-    double* input;
-    int i;
-    if (*(context -> isPopulated))
+    try
     {
-        input = (context -> calculateG(t));
-        for (i = 0; i < numVals; i++)
+        int nLoc = *(context->S->ncol);
+        int numVals =nLoc*nLoc; 
+        Rcpp::NumericMatrix output(nLoc, nLoc);
+        double* input;
+        int i;
+        if (*(context -> isPopulated))
         {
-            output[i] = input[i];
+            input = (context -> calculateG(t));
+            for (i = 0; i < numVals; i++)
+            {
+                output[i] = input[i];
+            }
+            delete[] input;
+            return(output);
         }
-        delete[] input;
+        Rcpp::Rcout << "Model context isn't populated\n";
         return(output);
     }
-    Rcpp::Rcout << "Model context isn't populated\n";
-    return(output);
+    catch (int e)
+    {
+        Rcpp::Rcout << "Error: " << e << "\n";
+        Rcpp::NumericMatrix out(1,1);
+        out[0] = -1;
+        return(out);
+    }
 }
 
 Rcpp::NumericVector spatialSEIRInterface::getIntegratedGenerationMatrix(int t)

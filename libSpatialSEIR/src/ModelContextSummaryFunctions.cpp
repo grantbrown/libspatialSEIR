@@ -168,10 +168,16 @@ namespace SpatialSEIR
 
     double* ModelContext::calculateIntegratedG(int j)
     {
+
         int i,k;
         int p_ir_idx = j;
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
+        if (j >= nTpt)
+        {
+            lssCout << "Invalid time point: " << j << "\n";
+            throw(-1);
+        }
         calculateP_IR_CPU(); 
         double* outG = calculateG(j);
         double pIR;
@@ -189,6 +195,21 @@ namespace SpatialSEIR
             p_ir_idx++;
             delete[] newG;
         }
+        // If we're truncated at end of time period
+        // do a simple extrapolation
+        i = nTpt - 1;
+        pIR = (p_ir)[p_ir_idx];
+        while (_1mpIR_cum >= 1e-8)
+        {
+            _1mpIR_cum *= (1-pIR);
+            double* newG = calculateG(i); 
+            for (k = 0; k < nLoc*nLoc; k++)
+            {
+                outG[k] += _1mpIR_cum*newG[k];
+            }
+            delete[] newG;          
+        }
+
         return(outG);
     }
 
@@ -202,6 +223,12 @@ namespace SpatialSEIR
         int iIndex, lIndex, GIndex;
         int nLoc = *(S -> ncol);
         int nTpt = *(S -> nrow);
+        if (j >= nTpt)
+        {
+            lssCout << "Invalid time point: " << j << "\n";
+            throw(-1);
+        }
+
         double* G = new double[nLoc*nLoc];
         //Exponentiate
         int nrowz = *(X->nrow_z);
