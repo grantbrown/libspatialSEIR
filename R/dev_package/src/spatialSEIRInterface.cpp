@@ -413,9 +413,14 @@ void spatialSEIRInterface::setPredictionTraces()
 
 int spatialSEIRInterface::printDebugInfo()
 {
-    Rcpp::Rcout << "S Dimensions: ";
-    Rcpp::Rcout << *(context -> S -> nrow) << ", " << *(context -> S -> ncol) << "\n";
-    return(0);
+    if (*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "S Dimensions: ";
+        Rcpp::Rcout << *(context -> S -> nrow) << ", " << *(context -> S -> ncol) << "\n";
+        return(0);
+    }
+    Rcpp::Rcout << "Context not populated\n";
+    return(-1);
 }
 
 int spatialSEIRInterface::calculateS()
@@ -558,7 +563,7 @@ int spatialSEIRInterface::calculateP_RS()
 
 void spatialSEIRInterface::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
 {
-    if ((*(context -> numIterations)) == 0)
+    if ((*(context -> numIterations)) == 0 ||  !(*(context -> isPopulated)))
     {
         Rcpp::Rcout << "No samples drawn.\n";
         return;
@@ -578,199 +583,264 @@ void spatialSEIRInterface::printOCLSummary()
 
 void spatialSEIRInterface::printSamplingParameters()
 {
-    int i;
-    Rcpp::Rcout << "S0:       " << (*(context -> S0_fc -> sliceWidth)) << "\n"; 
-    Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> sliceWidth)) << "\n"; 
-    if ((context -> config -> reinfectionMode) <= 2)
+    if (*(context -> isPopulated))
     {
-        Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> sliceWidth)) << "\n"; 
-    }
-    Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> sliceWidth)) << "\n"; 
-    Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> sliceWidth))<< "\n";  
 
-    Rcpp::Rcout << "beta:     ";
-    for (i = 0; i < (*(context -> beta_fc -> varLen)); i++)
-    {
-        Rcpp::Rcout << ((context -> beta_fc -> sliceWidth)[i]) << ", ";
-
-    }
-    Rcpp::Rcout << "\n"; 
-
-    if ((context -> config -> reinfectionMode) == 1)
-    {
-        Rcpp::Rcout << "betaP_RS:     ";
-        for (i = 0; i < (*(context -> betaPrs_fc -> varLen)); i++)
+        int i;
+        Rcpp::Rcout << "S0:       " << (*(context -> S0_fc -> sliceWidth)) << "\n"; 
+        Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> sliceWidth)) << "\n"; 
+        if ((context -> config -> reinfectionMode) <= 2)
         {
-            Rcpp::Rcout << ((context -> betaPrs_fc -> sliceWidth)[i]) << ", ";
+            Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> sliceWidth)) << "\n"; 
+        }
+        Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> sliceWidth)) << "\n"; 
+        Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> sliceWidth))<< "\n";  
+
+        Rcpp::Rcout << "beta:     ";
+        for (i = 0; i < (*(context -> beta_fc -> varLen)); i++)
+        {
+            Rcpp::Rcout << ((context -> beta_fc -> sliceWidth)[i]) << ", ";
 
         }
         Rcpp::Rcout << "\n"; 
-    }
 
-    if (*(context -> S_star -> ncol) > 1)
-    {
-        Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> sliceWidth)) << "\n"; 
-    }
-    Rcpp::Rcout << "gamma_ei: " << (*(context -> gamma_ei_fc -> sliceWidth)) << "\n"; 
-    Rcpp::Rcout << "gamma_ir: " <<  (*(context -> gamma_ir_fc -> sliceWidth)) << "\n"; 
+        if ((context -> config -> reinfectionMode) == 1)
+        {
+            Rcpp::Rcout << "betaP_RS:     ";
+            for (i = 0; i < (*(context -> betaPrs_fc -> varLen)); i++)
+            {
+                Rcpp::Rcout << ((context -> betaPrs_fc -> sliceWidth)[i]) << ", ";
 
+            }
+            Rcpp::Rcout << "\n"; 
+        }
+
+        if (*(context -> S_star -> ncol) > 1)
+        {
+            Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> sliceWidth)) << "\n"; 
+        }
+        Rcpp::Rcout << "gamma_ei: " << (*(context -> gamma_ei_fc -> sliceWidth)) << "\n"; 
+        Rcpp::Rcout << "gamma_ir: " <<  (*(context -> gamma_ir_fc -> sliceWidth)) << "\n"; 
+        return;
+    }
+    Rcpp::Rcout << "Context not populated\n";
 }
 
 void spatialSEIRInterface::printAcceptanceRates()
 {
-    int i;
-    if ((*(context -> numIterations)) == 0)
+    if (*(context -> isPopulated))
     {
-        Rcpp::Rcout << "No samples drawn.\n";
-        return;
-    }
-    Rcpp::Rcout << "Total iterations so far: " << (*(context -> numIterations)) << "\n";
-    Rcpp::Rcout << "Acceptance rates: \n";
-    Rcpp::Rcout << "S0:       " << (*(context -> S0_fc -> accepted)*1.0)/(*(context -> S0_fc -> samples)) 
-                          << "\n"; 
-    Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> accepted)*1.0)/ 
-                                  (*(context -> I0_fc -> samples)) 
-                          <<  "\n"; 
-    if ((context -> config -> reinfectionMode) <= 2)
-    {
-        Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
-                                          (*(context -> S_star_fc -> samples)) 
-                                  << "\n"; 
-    }
-
-    Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> accepted)*1.0)/
-                                      (*(context -> E_star_fc -> samples)) 
-                              << "\n"; 
-    Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> accepted)*1.0)/
-                                      (*(context -> R_star_fc -> samples)) 
-                              << "\n";  
-    Rcpp::Rcout << "beta:     ";
-    for (i = 0; i < *(context -> beta_fc -> varLen); i++)
-    {
-        Rcpp::Rcout << ((context -> beta_fc -> accepted)[i]*1.0)/
-                                      (*(context -> beta_fc -> samples))
-                                      << ", "; 
-    }
-    Rcpp::Rcout << "\n"; 
-
-    if (*(context -> S_star -> ncol) > 1)
-    {
-        Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> accepted)*1.0)/
-                                          (*(context -> rho_fc -> samples)) 
-                                  << "\n"; 
-    }
-    if ((context -> config -> reinfectionMode) == 1)
-    {
-        Rcpp::Rcout << "betaP_RS: ";
-        for (i = 0; i < *(context -> betaPrs_fc -> varLen); i++)
+        int i;
+        if ((*(context -> numIterations)) == 0)
         {
-            Rcpp::Rcout << ((context -> betaPrs_fc -> accepted)[i]*1.0)/
-                                      (*(context -> betaPrs_fc -> samples)) 
-                                      << ", "; 
+            Rcpp::Rcout << "No samples drawn.\n";
+            return;
+        }
+        Rcpp::Rcout << "Total iterations so far: " << (*(context -> numIterations)) << "\n";
+        Rcpp::Rcout << "Acceptance rates: \n";
+        Rcpp::Rcout << "S0:       " << (*(context -> S0_fc -> accepted)*1.0)/(*(context -> S0_fc -> samples)) 
+                              << "\n"; 
+        Rcpp::Rcout << "I0:       " << (*(context -> I0_fc -> accepted)*1.0)/ 
+                                      (*(context -> I0_fc -> samples)) 
+                              <<  "\n"; 
+        if ((context -> config -> reinfectionMode) <= 2)
+        {
+            Rcpp::Rcout << "S_star:   " << (*(context -> S_star_fc -> accepted)*1.0)/
+                                              (*(context -> S_star_fc -> samples)) 
+                                      << "\n"; 
+        }
+
+        Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> accepted)*1.0)/
+                                          (*(context -> E_star_fc -> samples)) 
+                                  << "\n"; 
+        Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> accepted)*1.0)/
+                                          (*(context -> R_star_fc -> samples)) 
+                                  << "\n";  
+        Rcpp::Rcout << "beta:     ";
+        for (i = 0; i < *(context -> beta_fc -> varLen); i++)
+        {
+            Rcpp::Rcout << ((context -> beta_fc -> accepted)[i]*1.0)/
+                                          (*(context -> beta_fc -> samples))
+                                          << ", "; 
         }
         Rcpp::Rcout << "\n"; 
+
+        if (*(context -> S_star -> ncol) > 1)
+        {
+            Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> accepted)*1.0)/
+                                              (*(context -> rho_fc -> samples)) 
+                                      << "\n"; 
+        }
+        if ((context -> config -> reinfectionMode) == 1)
+        {
+            Rcpp::Rcout << "betaP_RS: ";
+            for (i = 0; i < *(context -> betaPrs_fc -> varLen); i++)
+            {
+                Rcpp::Rcout << ((context -> betaPrs_fc -> accepted)[i]*1.0)/
+                                          (*(context -> betaPrs_fc -> samples)) 
+                                          << ", "; 
+            }
+            Rcpp::Rcout << "\n"; 
+        }
+        Rcpp::Rcout << "gamma_ei:     " << (*(context -> gamma_ei_fc -> accepted)*1.0)/
+                                          (*(context -> gamma_ei_fc -> samples)) 
+                                  << "\n"; 
+
+        Rcpp::Rcout << "gamma_ir:     " << (*(context -> gamma_ir_fc -> accepted)*1.0)/
+                                          (*(context -> gamma_ir_fc -> samples))
+                                  << "\n"; 
+        return;
     }
-    Rcpp::Rcout << "gamma_ei:     " << (*(context -> gamma_ei_fc -> accepted)*1.0)/
-                                      (*(context -> gamma_ei_fc -> samples)) 
-                              << "\n"; 
-
-    Rcpp::Rcout << "gamma_ir:     " << (*(context -> gamma_ir_fc -> accepted)*1.0)/
-                                      (*(context -> gamma_ir_fc -> samples))
-                              << "\n"; 
-
+    Rcpp::Rcout << "Context not populated\n";
 }
 
 Rcpp::IntegerVector spatialSEIRInterface::getS0()
 {
-    Rcpp::IntegerVector output(*(context->S->ncol));
-    int numVals = *(context->S->ncol);
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->A0 -> S0)[i];
+        Rcpp::IntegerVector output(*(context->S->ncol));
+        int numVals = *(context->S->ncol);
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->A0 -> S0)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerVector output(1);
+    output[0] = -1;
     return(output);
 }
 Rcpp::IntegerVector spatialSEIRInterface::getE0()
 {
-    Rcpp::IntegerVector output(*(context->S->ncol));
-    int numVals = *(context->S->ncol);
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->A0 -> E0)[i];
+        Rcpp::IntegerVector output(*(context->S->ncol));
+        int numVals = *(context->S->ncol);
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->A0 -> E0)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerVector output(1);
+    output[0] = -1;
     return(output);
+
 }
 Rcpp::IntegerVector spatialSEIRInterface::getI0()
 {
-    Rcpp::IntegerVector output(*(context->S->ncol));
-    int numVals = *(context->S->ncol);
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->A0 -> I0)[i];
+        Rcpp::IntegerVector output(*(context->S->ncol));
+        int numVals = *(context->S->ncol);
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->A0 -> I0)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerVector output(1);
+    output[0] = -1;
     return(output);
 }
 Rcpp::IntegerVector spatialSEIRInterface::getR0()
 {
-    Rcpp::IntegerVector output(*(context->S->ncol));
-    int numVals = *(context->S->ncol);
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->A0 -> R0)[i];
+        Rcpp::IntegerVector output(*(context->S->ncol));
+        int numVals = *(context->S->ncol);
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->A0 -> R0)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerVector output(1);
+    output[0] = -1;
     return(output);
+
 }
 
 Rcpp::IntegerMatrix spatialSEIRInterface::getS()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->S->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->S->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
 }
 Rcpp::IntegerMatrix spatialSEIRInterface::getE()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->E->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->E->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
-
 }
 Rcpp::IntegerMatrix spatialSEIRInterface::getI()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->I->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->I->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
 
 }
 Rcpp::IntegerMatrix spatialSEIRInterface::getR()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->R->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->R->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
-
 }
 
 Rcpp::IntegerMatrix spatialSEIRInterface::getY()
@@ -794,66 +864,106 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getY()
 
 Rcpp::IntegerMatrix spatialSEIRInterface::getS_star()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->S_star->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->S_star->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
-
 }
+
 Rcpp::IntegerMatrix spatialSEIRInterface::getE_star()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->E_star->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->E_star->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
-
 }
+
 Rcpp::IntegerMatrix spatialSEIRInterface::getI_star()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->I_star->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->I_star->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
-
 }
+
 Rcpp::IntegerMatrix spatialSEIRInterface::getR_star()
 {
-    Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->R_star->data)[i];
+        Rcpp::IntegerMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->R_star->data)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::IntegerMatrix output(1,1);
+    output[0] = -1;
     return(output);
 }
 
 Rcpp::NumericMatrix spatialSEIRInterface::getP_SE()
 {
-    Rcpp::NumericMatrix output(*(context->S->nrow), *(context->S->ncol));
-    int numVals = (*(context->S->nrow))*(*(context->S->ncol));
-    int i;
-    for (i = 0; i < numVals; i++)
+    if (*(context -> isPopulated))
     {
-        output[i] = (context->p_se)[i];
+        Rcpp::NumericMatrix output(*(context->S->nrow), *(context->S->ncol));
+        int numVals = (*(context->S->nrow))*(*(context->S->ncol));
+        int i;
+        for (i = 0; i < numVals; i++)
+        {
+            output[i] = (context->p_se)[i];
+        }
+        return(output);
     }
+    Rcpp::Rcout << "Context not populated\n";
+    Rcpp::NumericMatrix output(1,1);
+    output[0] = -1;
     return(output);
 }
 
 Rcpp::NumericVector spatialSEIRInterface::getGenerationMatrix(int t)
 {
+    if (!*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "Context not populated\n";
+        throw(-1);
+    }
     try
     {
         int nLoc = *(context->S->ncol);
@@ -885,6 +995,11 @@ Rcpp::NumericVector spatialSEIRInterface::getGenerationMatrix(int t)
 
 Rcpp::NumericVector spatialSEIRInterface::getIntegratedGenerationMatrix(int t)
 {
+    if (!*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "Context not populated\n";
+        throw(-1);
+    }
     int nLoc = *(context->S->ncol);
     int numVals =nLoc*nLoc; 
     Rcpp::NumericMatrix output(nLoc, nLoc);
@@ -906,6 +1021,12 @@ Rcpp::NumericVector spatialSEIRInterface::getIntegratedGenerationMatrix(int t)
 
 Rcpp::NumericVector spatialSEIRInterface::getP_RS()
 {
+    if (!*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "Context not populated\n";
+        throw(-1);
+    }
+
     Rcpp::NumericVector output(*(context->S->nrow));
     int i;
     int numVals = (*(context->S->nrow));
@@ -918,6 +1039,12 @@ Rcpp::NumericVector spatialSEIRInterface::getP_RS()
 
 Rcpp::NumericVector spatialSEIRInterface::getBeta()
 {
+    if (!*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "Context not populated\n";
+        throw(-1);
+    }
+
     Rcpp::NumericVector output(((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
     int i;
     int numVals = (((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
@@ -930,6 +1057,12 @@ Rcpp::NumericVector spatialSEIRInterface::getBeta()
 }
 Rcpp::NumericVector spatialSEIRInterface::getBetaP_RS()
 {
+    if (!*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "Context not populated\n";
+        throw(-1);
+    }
+
     Rcpp::NumericVector output(*(context->X_pRS->ncol_x));
     int i;
     int numVals = (*(context->X_pRS->ncol_x));
@@ -941,6 +1074,12 @@ Rcpp::NumericVector spatialSEIRInterface::getBetaP_RS()
 }
 Rcpp::NumericVector spatialSEIRInterface::getP_EI()
 {
+    if (!*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "Context not populated\n";
+        throw(-1);
+    }
+
     int i;
     int numVals = (*(context -> S -> nrow));
     Rcpp::NumericVector output(numVals);
@@ -952,6 +1091,12 @@ Rcpp::NumericVector spatialSEIRInterface::getP_EI()
 }
 Rcpp::NumericVector spatialSEIRInterface::getP_IR()
 {
+    if (!*(context -> isPopulated))
+    {
+        Rcpp::Rcout << "Context not populated\n";
+        throw(-1);
+    }
+
     int i;
     int numVals = (*(context -> S -> nrow));
     Rcpp::NumericVector output(numVals);
