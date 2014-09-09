@@ -15,14 +15,14 @@ namespace SpatialSEIR
 {
     struct distanceArgs
     {
-        double* inData;
+        std::vector<double*> inData;
         int* dim; 
     };
 
     struct scaledDistanceArgs
     {
         double* phi;
-        double* inData;
+        std::vector<double*> inData;
         int* dim;
         int mode;
     };

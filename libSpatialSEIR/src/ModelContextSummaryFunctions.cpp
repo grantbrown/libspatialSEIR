@@ -230,6 +230,8 @@ namespace SpatialSEIR
         }
 
         double* G = new double[nLoc*nLoc];
+        double component1, component2;
+        unsigned int k;
         //Exponentiate
         int nrowz = *(X->nrow_z);
         for (i = 0; i < nrowz; i++)
@@ -238,18 +240,23 @@ namespace SpatialSEIR
         }
         for (i = 0; i < nLoc; i++) 
         {
+
             for (l = 0; l < nLoc; l++)
             { 
                 iIndex = i*nTpt + j;
                 lIndex = l*nTpt + j;
-
                 GIndex = l*nLoc + i;
                 if (i != l)
                 {
+                    component1 = (((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]);
+                    component2 = 0.0;
+                    for (k = 0; k < scaledDistMatrices -> size(); k++)
+                    {
+                        component2 += ((rho)[k])*(((*scaledDistMatrices)[k] -> data)[GIndex])*component1;
+                    }
                     G[GIndex] = ((I->data)[lIndex] != 0 ?
                                     ((((N[iIndex])/((I -> data)[lIndex]))
-                                    * (1-std::exp(-(offset[j])*(*rho)*((scaledDistMat->data)[GIndex]) 
-                                    * (((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex]))))) :
+                                    * (1-std::exp(-(offset[j])*component2)))) :
                                         0.0 );
                 }
                 else

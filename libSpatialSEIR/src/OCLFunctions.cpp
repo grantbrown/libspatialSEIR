@@ -37,13 +37,22 @@ namespace SpatialSEIR
         cl::Buffer NBuffer(*context, CL_MEM_WRITE_ONLY | 
             CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> N));
 
+        cl::Buffer offsetBuffer(*context, CL_MEM_READ_ONLY |
+                CL_MEM_COPY_HOST_PTR, nTpt*sizeof(int), ctx -> offset);
         cl::Buffer etaBuffer(*context, CL_MEM_READ_WRITE | 
             CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> eta));
         cl::Buffer p_seBuffer(*context, CL_MEM_READ_WRITE | 
             CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> p_se));
-        cl::Buffer distMatBuffer(*context, CL_MEM_WRITE_ONLY | 
-                CL_MEM_COPY_HOST_PTR, nLoc*nLoc*sizeof(double) , 
-                ctx -> scaledDistMat -> data);
+        std::vector<cl::Buffer> distMatBuffers();
+        int i;
+        for (i = 0; i < (ctx -> staledDistMatrices -> size()); i++) 
+        {
+            distMatBuffers.push_back(
+                cl::Buffer distMatBuffer(*context, CL_MEM_WRITE_ONLY | 
+                        CL_MEM_COPY_HOST_PTR, nLoc*nLoc*sizeof(double) , 
+                        ctx -> scaledDistMat -> data)
+                );
+        }
 
 
         // Kernel 1
@@ -195,35 +204,39 @@ namespace SpatialSEIR
         
         try
         {
-           clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
-                                           clblasNoTrans,       // TransB
-                                           clblasNoTrans,       // TransA
-                                           nTpt,                // M
-                                           nLoc,                // N
-                                           nLoc,                // K
-                                           1.0,                 // alpha
-                                           etaBuffer(),         // A
-                                           0,                   // offA
-                                           nTpt,                // ldA
-                                           distMatBuffer(),     // B
-                                           0,                   // offB
-                                           nLoc,                // ldB
-                                           0.0,                 // Beta
-                                           p_seBuffer(),        // C
-                                           0,                   // offC
-                                           nTpt,                // ldC
-                                           numCommandQueues,    // numCommandQueues
-                                           &((*(**currentDevice).commandQueue)()), // commandQueues
-                                           1,                   // numEventsInWaitList
-                                           &(part1Finished()),            // eventWaitList
-                                           &((waitList[0])()));               // events 
-           
-            if (multErr != CL_SUCCESS)
-            { 
-                lssCout << "clBLAS Error Encountered: " << multErr << "\n";
-                throw(-1);
+            int numMatrices = (ctx -> scaledDistMatrices -> size());
+            for (i = 0; i < numMatrices; i++)
+            {
+               clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
+                                               clblasNoTrans,        // TransB
+                                               clblasNoTrans,        // TransA
+                                               nTpt,                 // M
+                                               nLoc,                 // N
+                                               nLoc,                 // K
+                                               (ctx -> rho)[i],      // alpha
+                                               etaBuffer(),          // A
+                                               0,                    // offA
+                                               nTpt,                 // ldA
+                                               (distMatBuffers[i])(),// B
+                                               0,                    // offB
+                                               nLoc,                 // ldB
+                                               (i!=0),               // Beta
+                                               p_seBuffer(),         // C
+                                               0,                    // offC
+                                               nTpt,                 // ldC
+                                               numCommandQueues,     // numCommandQueues
+                                               &((*(**currentDevice).commandQueue)()), // commandQueues
+                                               1,                    // numEventsInWaitList
+                                               &(part1Finished()),   // eventWaitList
+                                               &((waitList[0])()));  // events 
+               
+                if (multErr != CL_SUCCESS)
+                { 
+                    lssCout << "clBLAS Error Encountered: " << multErr << "\n";
+                    throw(-1);
+                }
             }
-        
+            
         }
         catch(cl::Error e)
         {
@@ -243,8 +256,8 @@ namespace SpatialSEIR
         {
             err = p_se_kernel2 -> setArg(0, nLoc);
             err |= p_se_kernel2 -> setArg(1, nTpt);
-            err |= p_se_kernel2 -> setArg(2, *(ctx -> rho));
-            err |= p_se_kernel2 -> setArg(3, etaBuffer);
+            err |= p_se_kernel2 -> setArg(2, etaBuffer);
+            err |= p_se_kernel2 -> setArg(3, offsetBuffer);
             err |= p_se_kernel2 -> setArg(4, p_seBuffer);
             err |= p_se_kernel2 -> setArg(5, workGroupSize*sizeof(double), NULL); // p_seComponents loc
             err |= p_se_kernel2 -> setArg(6, workGroupSize*sizeof(double), NULL); // p_se loc

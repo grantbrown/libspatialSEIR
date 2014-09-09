@@ -10,6 +10,7 @@
 #include <IOProvider.hpp>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
+#include <cblas.h>
 
 
 #ifndef BLAS_INC
@@ -132,9 +133,9 @@ namespace SpatialSEIR
         A0 = new InitData();
         X = new CovariateMatrix();
         X_pRS = new CovariateMatrix();
-        rawDistMat = new DistanceMatrix();
-        scaledDistMat = new DistanceMatrix();
-        rho = new double; *rho = *rho_;
+        rawDistMatrices = new std::vector<DistanceMatrix*>();
+        scaledDistMatrices = new std::vector<DistanceMatrix*>();
+        rho = new double[(rawDistArgs -> inData).size()];
         phi = new double; *phi = *phi_;
         fileProvider = new IOProvider();
         singleLocation = new int; *singleLocation = -1;
@@ -223,20 +224,28 @@ namespace SpatialSEIR
         R -> createEmptyCompartment(S_starArgs -> inRow,
                                     S_starArgs -> inCol);
 
-
-        rawDistMat -> genFromDataStream(rawDistArgs -> inData,
-                                        rawDistArgs -> dim);
-
-        scaledDistMat -> genFromDataStream(rawDistArgs -> inData,
-                                           rawDistArgs -> dim);
-
-        if ((scaledDistArgs -> mode) == 1)
+        int i;
+        for (i = 0; i < (int) (rawDistArgs -> inData).size(); i++)
         {
-            scaledDistMat -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
+            rho[i] = rho_[i];
+        }
+
+        for (i = 0; i < (int) (rawDistArgs -> inData).size(); i++)
+        {
+            DistanceMatrix* rawTmp = new DistanceMatrix();
+            DistanceMatrix* scaledTmp = new DistanceMatrix();
+            rawTmp -> genFromDataStream((rawDistArgs -> inData)[i], rawDistArgs -> dim);
+            scaledTmp -> genFromDataStream((scaledDistArgs -> inData)[i], scaledDistArgs -> dim);
+            if ((scaledDistArgs -> mode) == 1)
+            {
+                scaledTmp -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
+            }
+            rawDistMatrices -> push_back(rawTmp);
+            scaledDistMatrices -> push_back(scaledTmp);
+
         }
 
         // Initialize Data
-        int i;
         for (i = 0; i < *(S_star -> nrow); i++)
         {
             offset[i] = offset_[i]; 
@@ -1081,33 +1090,47 @@ namespace SpatialSEIR
     void ModelContext::calculateP_SE_CPU()
     {
         this -> cacheP_SE_Calculation(); 
-        int i, j, index;
+        unsigned int i, j, index;
 
         // Calculate dmu: I/N * exp(eta)
-        int nLoc = *(S -> ncol);
-        int nTpt = *(S -> nrow);
+        unsigned int nLoc = (unsigned int) *(S -> ncol);
+        unsigned int nTpt = (unsigned int) *(S -> nrow);
 
         memset(p_se, 0, nLoc*nTpt*sizeof(double));
         // Calculate rho*sqrt(idmat)
-
-        SpatialSEIR::matMult(this -> p_se, 
-                p_se_components, 
-                scaledDistMat -> data, 
-                *(I -> nrow),
-                *(I -> ncol), 
-                *(scaledDistMat -> numLocations), 
-                *(scaledDistMat -> numLocations),
-                false,false, 
-                *(I->nrow), 
-                *(scaledDistMat -> numLocations),
-                *(I->nrow));
+        
+        // C := alpha * op( A ) %*% op ( B ) + beta*C
+        // op( X ) is one of op( X ) = X, op( X ) == X**T
+        // A, B, and C are matrices with
+        // op( A ) a m by k matrix, 
+        // op( B ) a k by n matrix,
+        // C an m by n matrix
+        double* DM;
+        for (i = 0; i < (scaledDistMatrices -> size()); i++)
+        {
+            DM = (*scaledDistMatrices)[i] -> data;
+            cblas_dgemm(CblasColMajor,      // order
+                        CblasNoTrans,       // TransA
+                        CblasNoTrans,       // TransB
+                        *(I->nrow),         // M
+                        *(I->ncol),         // N
+                        *(I->ncol),         // K
+                        rho[i],             // alpha
+                        p_se_components,    // A 
+                        *(I->nrow),         // ldA
+                        DM,                 // B 
+                        *(I-> ncol),        // ldB
+                        1.0,                // beta
+                        p_se,               // C
+                        *(I->nrow));        // ldC 
+        }
 
         for (i = 0; i < nLoc; i++) 
         {
             index = i*nTpt;
             for (j = 0; j < nTpt; j++)
             {
-                p_se[index] = 1-exp(-offset[j]*(gamma[j] + p_se_components[index] + (*rho)*p_se[index]));
+                p_se[index] = 1-exp(-offset[j]*(p_se_components[index] + p_se[index]));
                 index++;
             }
         }        
@@ -1118,11 +1141,21 @@ namespace SpatialSEIR
     void ModelContext::calculateP_SE_CPU(int startLoc, int startTime)
     {
 
-        int i, j, index;
+        unsigned int i, j, index;
 
         // Calculate dmu: I/N * exp(eta)
-        int nLoc = *(S -> ncol);
-        int nTpt = *(S -> nrow);
+        unsigned int nLoc = (unsigned int) *(S -> ncol);
+        unsigned int nTpt = (unsigned int) *(S -> nrow);
+
+        for (i = 0; i < nLoc; i++)
+        {
+            index = i*nTpt + startTime;
+            for (j = startTime; j < nTpt; j++)
+            {
+                p_se[index] = 0.0;
+                index++;
+            }
+        }
 
         index = startLoc*nTpt + startTime;
         for (j = startTime; j < nTpt; j++)
@@ -1132,32 +1165,35 @@ namespace SpatialSEIR
             index++;
         }
 
- 
-
-        //memset(p_se, 0, nLoc*nTpt*sizeof(double));
-        // Calculate rho*sqrt(idmat)
-        SpatialSEIR::matMult(&(p_se[startTime]), 
-                &(p_se_components[startTime]), 
-                scaledDistMat -> data, 
-                (*(I -> nrow) - startTime),
-                *(I -> ncol), 
-                *(scaledDistMat -> numLocations), 
-                *(scaledDistMat -> numLocations),
-                false,false, 
-                *(I->nrow), 
-                *(scaledDistMat -> numLocations),
-                *(I->nrow));
+        double* DM;
+        for (i = 0; i < (scaledDistMatrices -> size()); i++)
+        {
+            DM = (*scaledDistMatrices)[i] -> data;
+            cblas_dgemm(CblasColMajor,         // order
+                        CblasNoTrans,          // TransA
+                        CblasNoTrans,          // TransB
+                        (*(I->nrow)-startTime),// M
+                        *(I->ncol),            // N
+                        *(I->ncol),            // K
+                        rho[i],                // alpha
+                        &(p_se_components[startTime]),       // A 
+                        *(I->nrow),            // ldA
+                        DM,                    // B 
+                        *(I-> ncol),           // ldB
+                        1.0,                   // beta
+                        &(p_se[startTime]),                  // C
+                        *(I->nrow));           // ldC 
+        }
 
         for (i = 0; i < nLoc; i++) 
         {
             index = i*nTpt + startTime;
             for (j = startTime; j < nTpt; j++)
             {
-                p_se[index] = 1-exp(-offset[j]*(gamma[j] + p_se_components[index] + (*rho)*p_se[index]));
+                p_se[index] = 1-exp(-offset[j]*(p_se_components[index] + p_se[index]));
                 index++;
             }
         }        
-
     }
 
     void ModelContext::cacheP_SE_Calculation()
@@ -1240,18 +1276,20 @@ namespace SpatialSEIR
             delete X;
             delete X_pRS;
             delete[] betaPrs;
-            delete rawDistMat;
-            delete scaledDistMat;
             delete[] N;
             delete[] beta;
             delete[] eta;
-            delete rho;
+            delete[] rho;
             delete phi;
             delete[] gamma;
             delete singleLocation;   
             // FC's have already been disposed of.
             delete model;
             while (iterationTasks -> size() != 0){delete (*iterationTasks).back(); (iterationTasks -> pop_back());}
+            while (scaledDistMatrices -> size() != 0){delete (*scaledDistMatrices).back(); (scaledDistMatrices -> pop_back());}
+            while (rawDistMatrices -> size() != 0){delete (*rawDistMatrices).back(); (rawDistMatrices -> pop_back());}
+            delete rawDistMatrices;
+            delete scaledDistMatrices;
             delete iterationTasks;
             delete oclProvider;
             delete[] indexList;

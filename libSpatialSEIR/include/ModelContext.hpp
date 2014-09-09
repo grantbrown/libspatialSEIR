@@ -119,11 +119,11 @@ namespace SpatialSEIR
                                                             parameter.*/ 
                           distanceArgs* rawDistArgs, /**< rawDistAgs is the distanceArgs struct 
                                                           containing the data and dimension of the unscaled
-                                                          distance matrix. 
+                                                          distance matrices. 
                                                         */
                           scaledDistanceArgs* scaledDistArgs, /**< scaledDistArgs is the scaledDistanceArgs struct 
                                                                    containing the data and dimension of the unscaled
-                                                                   distance matrix. 
+                                                                   distance matrices. 
                                                                */
                           double* rho, /**< rho gives the starting value of the spatial dependence parameter*/
                           double* phi,
@@ -468,10 +468,10 @@ namespace SpatialSEIR
             CovariateMatrix* X;
             /** Pointer to CovariateMatrix instance containing covariate informating driving the reinfection process.*/
             CovariateMatrix* X_pRS;
-            /** Pointer to the DistanceMatrix instance containing the unscaled distance data. */
-            DistanceMatrix* rawDistMat;
-            /** Pointer to the DistanceMatrix scaledDistMat containing the unscaled distance data. */
-            DistanceMatrix* scaledDistMat;
+            /** Pointer to vector of DistanceMatrix instances containing the unscaled distance data. */
+            std::vector<DistanceMatrix*>* rawDistMatrices;
+            /** Pointer to vector of scaled DistanceMatrix  objects. */
+            std::vector<DistanceMatrix*>* scaledDistMatrices;
             /** Extra compartment storage for caching integer computations*/
             CompartmentalModelMatrix* tmpContainer;
             /** Pointer to modelConfiguration instance.*/
@@ -487,7 +487,7 @@ namespace SpatialSEIR
             double* beta;
             /** Storage for the regression parameters betaP_RS*/
             double* betaPrs;
-            /** Storage for the spatial dependence parameter rho*/
+            /** Storage for the vector of spatial dependence parameters, rho*/
             double* rho;
             /** Storage for the overdispersion parameter*/
             double* phi;

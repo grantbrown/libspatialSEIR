@@ -38,6 +38,7 @@ namespace SpatialSEIR
         samples = new int;
         accepted = new int; 
         varLen = new int;
+        *varLen = (*context) -> scaledDistMatrices -> size(); 
         *varLen = 1;
         *samples = 0;
         *accepted = 0;
