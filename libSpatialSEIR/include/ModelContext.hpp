@@ -117,10 +117,6 @@ namespace SpatialSEIR
                                                             containing the dimensions and data for R_star,
                                                             along with the steadyStateConstraintPrecision
                                                             parameter.*/ 
-                          distanceArgs* rawDistArgs, /**< rawDistAgs is the distanceArgs struct 
-                                                          containing the data and dimension of the unscaled
-                                                          distance matrices. 
-                                                        */
                           scaledDistanceArgs* scaledDistArgs, /**< scaledDistArgs is the scaledDistanceArgs struct 
                                                                    containing the data and dimension of the unscaled
                                                                    distance matrices. 
@@ -468,8 +464,6 @@ namespace SpatialSEIR
             CovariateMatrix* X;
             /** Pointer to CovariateMatrix instance containing covariate informating driving the reinfection process.*/
             CovariateMatrix* X_pRS;
-            /** Pointer to vector of DistanceMatrix instances containing the unscaled distance data. */
-            std::vector<DistanceMatrix*>* rawDistMatrices;
             /** Pointer to vector of scaled DistanceMatrix  objects. */
             std::vector<DistanceMatrix*>* scaledDistMatrices;
             /** Extra compartment storage for caching integer computations*/

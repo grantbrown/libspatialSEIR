@@ -112,7 +112,6 @@ namespace SpatialSEIR
                                 compartmentArgs* E_starArgs,
                                 compartmentArgs* I_starArgs,
                                 compartmentArgs* R_starArgs,
-                                distanceArgs* rawDistArgs,
                                 scaledDistanceArgs* scaledDistArgs,
                                 double* rho_, double* phi_, double* beta_, 
                                 double* gamma_ei_, double* gamma_ir_, double* betaPrs_, 
@@ -133,9 +132,8 @@ namespace SpatialSEIR
         A0 = new InitData();
         X = new CovariateMatrix();
         X_pRS = new CovariateMatrix();
-        rawDistMatrices = new std::vector<DistanceMatrix*>();
         scaledDistMatrices = new std::vector<DistanceMatrix*>();
-        rho = new double[(rawDistArgs -> inData).size()];
+        rho = new double[(scaledDistArgs -> inData).size()];
         phi = new double; *phi = *phi_;
         fileProvider = new IOProvider();
         singleLocation = new int; *singleLocation = -1;
@@ -225,24 +223,16 @@ namespace SpatialSEIR
                                     S_starArgs -> inCol);
 
         int i;
-        for (i = 0; i < (int) (rawDistArgs -> inData).size(); i++)
+        for (i = 0; i < (int) (scaledDistArgs -> inData).size(); i++)
         {
             rho[i] = rho_[i];
         }
 
-        for (i = 0; i < (int) (rawDistArgs -> inData).size(); i++)
+        for (i = 0; i < (int) (scaledDistArgs -> inData).size(); i++)
         {
-            DistanceMatrix* rawTmp = new DistanceMatrix();
             DistanceMatrix* scaledTmp = new DistanceMatrix();
-            rawTmp -> genFromDataStream((rawDistArgs -> inData)[i], rawDistArgs -> dim);
             scaledTmp -> genFromDataStream((scaledDistArgs -> inData)[i], scaledDistArgs -> dim);
-            if ((scaledDistArgs -> mode) == 1)
-            {
-                scaledTmp -> scaledInvFunc_CPU(*(scaledDistArgs -> phi));
-            }
-            rawDistMatrices -> push_back(rawTmp);
             scaledDistMatrices -> push_back(scaledTmp);
-
         }
 
         // Initialize Data
@@ -1287,8 +1277,6 @@ namespace SpatialSEIR
             delete model;
             while (iterationTasks -> size() != 0){delete (*iterationTasks).back(); (iterationTasks -> pop_back());}
             while (scaledDistMatrices -> size() != 0){delete (*scaledDistMatrices).back(); (scaledDistMatrices -> pop_back());}
-            while (rawDistMatrices -> size() != 0){delete (*rawDistMatrices).back(); (rawDistMatrices -> pop_back());}
-            delete rawDistMatrices;
             delete scaledDistMatrices;
             delete iterationTasks;
             delete oclProvider;
