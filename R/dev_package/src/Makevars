@@ -1,2 +1,2 @@
-PKG_CPPFLAGS+=-I../../../eigen
+PKG_CPPFLAGS+=-I../../../eigen -I./include
 PKG_LIBS = -lOpenCL -lSpatialSEIR -lclBLAS -lblas 

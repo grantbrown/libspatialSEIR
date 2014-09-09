@@ -1,5 +1,7 @@
 #include <Rcpp.h>
+#include <spatialSEIRInterface.hpp>
 #include <cmath>
+#include <distanceModel.hpp>
 #include <ModelContext.hpp>
 #include <LSS_FullConditionalList.hpp>
 #include <LSS_Samplers.hpp>
@@ -11,151 +13,6 @@
 
 using namespace Rcpp;
 using namespace SpatialSEIR;
-
-struct LSSCout {};
-extern LSSCout lssCout;
-
-template <typename T>
-    LSSCout& operator<< (LSSCout &s, const T &x){
-        Rcpp::Rcout << x;
-        return s;
-    }
-
-class spatialSEIRInterface
-{
-
-    private:
-        //Attributes: 
-        ModelContext* context;
-        std::string* chainOutputFile;
-        int* verbose;
-        int* debug;
-
-    public: 
-
-        spatialSEIRInterface();
-        int buildSpatialSEIRInterface(SEXP compMatDim,
-                     SEXP xDim,
-                     SEXP zDim,
-                     SEXP xPrsDim,
-                     SEXP S0_,
-                     SEXP E0_,
-                     SEXP I0_,
-                     SEXP R0_,
-                     SEXP Y,
-                     SEXP Sstar, 
-                     SEXP Estar, 
-                     SEXP Istar, 
-                     SEXP Rstar, 
-                     SEXP offset_,
-                     SEXP X_,
-                     SEXP Z_,
-                     SEXP X_pRS_,
-                     SEXP DistMat_,
-                     SEXP rho_,
-                     SEXP phi_,
-                     SEXP priorAlpha_pEI_,
-                     SEXP priorBeta_pEI_,
-                     SEXP priorAlpha_pIR_,
-                     SEXP priorBeta_pIR_,
-                     SEXP priorAlpha_phi_,
-                     SEXP priorBeta_phi_,
-                     SEXP beta_,
-                     SEXP betaPriorPrecision_,
-                     SEXP betaPrs_,
-                     SEXP betaPrsPriorPrecision_,
-                     SEXP gamma_ei_,
-                     SEXP gamma_ir_,
-                     SEXP N_,
-                     SEXP outFile,
-                     SEXP iterationStride,
-                     SEXP steadyStateConstraintPrecision_,
-                     SEXP verboseFlag,
-                     SEXP debugFlag,
-                     SEXP sliceWidths,
-                     SEXP reinfectionMode,
-                     SEXP dataModel_,
-                     SEXP scaleDistanceMode_);
-        // Simulation Functions
-        virtual int setRandomSeed(int seedVal);
-        virtual int simulate(int iters);
-        virtual void setPredictionTraces();
-        virtual int setTrace(int locationIndex);
-        virtual int setTrace2(int locationIndex, int timeIndex);
-        virtual void setDevice(int platformId, int deviceId);
-        virtual void setCompartmentSamplingMode(int mode);
-        virtual int getCompartmentSamplingMode();
-        virtual void setParameterSamplingMode(int mode);
-        virtual int getParameterSamplingMode();
-
-
-
-        // Calculation Functions
-        virtual int printDebugInfo();
-        virtual int calculateS();
-        virtual int calculateE();
-        virtual int calculateI();
-        virtual int calculateR();
-        virtual int calculateP_SE(); 
-        virtual int calculateP_SE2(int i, int j); 
-        virtual int calculateP_SE_OCL();
-        virtual double estimateR0();
-        virtual double estimateR02(int t);
-        virtual double estimateR03(int i, int t);
-        virtual int calculateP_RS();
-
-        
-        // Property Getter Functions
-        // (All of this stuff is read only, should 
-        // be changed only by calls to libspatialSEIR)
-        virtual void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
-        virtual void printSamplingParameters();
-        virtual void printAcceptanceRates();       
-        virtual void printOCLSummary();
-        virtual Rcpp::IntegerMatrix getS();
-        virtual Rcpp::IntegerMatrix getE();
-        virtual Rcpp::IntegerMatrix getI();
-        virtual Rcpp::IntegerMatrix getR();
-
-        virtual Rcpp::IntegerMatrix getS_star();
-        virtual Rcpp::IntegerMatrix getE_star();
-        virtual Rcpp::IntegerMatrix getI_star();
-        virtual Rcpp::IntegerMatrix getR_star();
-
-        virtual Rcpp::IntegerMatrix getY();
-
-        virtual Rcpp::IntegerVector getS0();
-        virtual Rcpp::IntegerVector getE0();
-        virtual Rcpp::IntegerVector getI0();
-        virtual Rcpp::IntegerVector getR0();
-
-        virtual Rcpp::NumericMatrix getP_SE();
-        virtual Rcpp::NumericVector getP_EI();
-        virtual Rcpp::NumericVector getP_IR();
-        virtual Rcpp::NumericVector getP_RS();
-        virtual Rcpp::NumericVector getGenerationMatrix(int t);
-        virtual Rcpp::NumericVector getIntegratedGenerationMatrix(int t);
-        virtual Rcpp::NumericVector getBeta();
-        virtual Rcpp::NumericVector getBetaP_RS();
-        virtual Rcpp::NumericVector getRho();
-        virtual Rcpp::NumericVector getPhi();
-
-
-        virtual int getDebug();
-        virtual void setDebug(int debug_);
-
-        virtual int getVerbose();
-        virtual void setVerbose(int verbose_);
-
-        virtual int getUseDecorrelation();
-        virtual void setUseDecorrelation(int val);
-
-        virtual void standardizeDistanceMatrix();
- 
-        //Destructor
-        ~spatialSEIRInterface();
-};
-
 
 int spatialSEIRInterface::getUseDecorrelation()
 {
@@ -338,7 +195,7 @@ int spatialSEIRInterface::getParameterSamplingMode()
 
 
 
-void spatialSEIRInterface::standardizeDistanceMatrix()
+void spatialSEIRInterface::standardizeDistanceMatrices()
 {
     if (*(context -> isPopulated))
     {
@@ -347,7 +204,11 @@ void spatialSEIRInterface::standardizeDistanceMatrix()
            Rcpp::Rcout << "Can't change distance matrix once sampling has begun.\n";
            return;
        }
-       (context -> scaledDistMat -> makeRowStochastic()); 
+       unsigned int k;
+       for (k = 0; k < context -> scaledDistMatrices -> size(); k++)
+        {
+           (*(context -> scaledDistMatrices))[k] -> makeRowStochastic(); 
+        }
     }
     else
     {
@@ -409,7 +270,6 @@ void spatialSEIRInterface::setPredictionTraces()
     return;
 
 }
-
 
 int spatialSEIRInterface::printDebugInfo()
 {
@@ -1181,7 +1041,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP X_,
                      SEXP Z_,
                      SEXP X_pRS_,
-                     SEXP DistMat_,
+                     Rcpp::XPtr<distanceModel> distModel_,
                      SEXP rho_,
                      SEXP phi_,
                      SEXP priorAlpha_pEI_,
@@ -1204,10 +1064,12 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP debugFlag,
                      SEXP sliceWidths,
                      SEXP reinfectionMode,
-                     SEXP dataModel_,
-                     SEXP scaleDistanceMode_)
+                     SEXP dataModel_)
 {
     int err = 0;
+    distModel = new distanceModel;
+    distModel = (distanceModel*) distModel_;
+
     //Deal with the data conversion from R to c++
     Rcpp::IntegerVector compartmentDimensions(compMatDim);
     Rcpp::IntegerVector covariateDimensions_x(xDim);
@@ -1229,7 +1091,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::NumericVector X(X_);
     Rcpp::NumericVector Z(Z_);
     Rcpp::NumericVector X_pRS(X_pRS_);
-    Rcpp::NumericVector DistMat(DistMat_);
 
     Rcpp::NumericVector rho(rho_);
     Rcpp::NumericVector phi(phi_);
@@ -1255,7 +1116,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::NumericVector sliceParams(sliceWidths);
 
     Rcpp::IntegerVector reinfectMode(reinfectionMode);
-    Rcpp::IntegerVector scaleDistanceMode(scaleDistanceMode_);
 
     chainOutputFile = new std::string(); 
     *chainOutputFile = Rcpp::as<std::string>(outFile);
@@ -1372,12 +1232,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                 }
             }
         }
-        if (scaleDistanceMode[0] != 0 && scaleDistanceMode[0] != 1)
-        {
-            Rcpp::Rcout << "scaleDistanceMode should be true or false until more options are implemented.\n";
-            Rcpp::Rcout << "   mode given: " << scaleDistanceMode[0] << "\n";
-            throw(-1);
-        }
     }
     catch(int e)
     {
@@ -1472,16 +1326,8 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     priorValues.Phi_priorAlpha = priorAlpha_phi[0];
     priorValues.Phi_priorBeta = priorBeta_phi[0];
 
-    // Gather information for the creation of the distance matrices
 
-    double spatialRange = 60*60*4.0;
-    distanceArgs rawDistArgs; scaledDistanceArgs scaledDistArgs;
-    rawDistArgs.inData = DistMat.begin(); 
-    rawDistArgs.dim = &compartmentDimensions[1];
-    scaledDistArgs.phi = &spatialRange; 
-    scaledDistArgs.inData = DistMat.begin();
-    scaledDistArgs.dim = &compartmentDimensions[1];
-    scaledDistArgs.mode = scaleDistanceMode[0];
+
 
     // Create the InitData object 
     InitData A0;
@@ -1491,7 +1337,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
     //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
     context -> populate(&A0, &xArgs, &xPrsArgs, offset.begin(), Y.begin(), &S_starArgs, &E_starArgs, &I_starArgs, 
-                        &R_starArgs, &rawDistArgs,&scaledDistArgs,
+                        &R_starArgs, distModel -> scaledDistArgs,
                         rho.begin(),phi.begin(),beta.begin(),gamma_ei.begin(), gamma_ir.begin(),
                         betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,
                         modelConfig);
@@ -1507,6 +1353,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 spatialSEIRInterface::~spatialSEIRInterface()
 {   
     // Context handles the complicated cleanup
+    delete distModel;
     delete verbose;
     delete debug;
     delete context;
@@ -1545,7 +1392,7 @@ RCPP_MODULE(mod_spatialSEIRInterface)
     .method("updateSamplingParameters", &spatialSEIRInterface::updateSamplingParameters)
     .method("getGenerationMatrix", &spatialSEIRInterface::getGenerationMatrix)
     .method("getIntegratedGenerationMatrix", &spatialSEIRInterface::getIntegratedGenerationMatrix)
-    .method("standardizeDistanceMatrix", &spatialSEIRInterface::standardizeDistanceMatrix)
+    .method("standardizeDistanceMatrices", &spatialSEIRInterface::standardizeDistanceMatrices)
     .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
     .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
     .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")
