@@ -180,7 +180,7 @@ xPrsDim = dim(X_prs)
 compMatDim = c(nrow(S), ncol(S))
 
 # Not applicable parameters
-DM = c(0)
+DM = matrix(0)
 rho = 0
 
 p_ei = p_ei
@@ -223,10 +223,6 @@ reinfectionMode = 1
 # Mode 1: estimate betaP_RS, S_star
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3+: No reinfection
-
-scaledDistMode = 1
-# 1 = inv square root
-# 0 = raw
 
 steadyStateConstraintPrecision = -1
 
@@ -278,8 +274,7 @@ res = spatialSEIRModel(compMatDim,
                       verbose,
                       debug, 
                       sliceWidths,
-                      reinfectionMode,
-                      scaledDistMode)
+                      reinfectionMode)
 
 
 #res$setTrace(0)

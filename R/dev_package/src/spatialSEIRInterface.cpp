@@ -1041,7 +1041,7 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP X_,
                      SEXP Z_,
                      SEXP X_pRS_,
-                     Rcpp::XPtr<distanceModel> distModel_,
+                     const distanceModel& distModel_,
                      SEXP rho_,
                      SEXP phi_,
                      SEXP priorAlpha_pEI_,
@@ -1067,8 +1067,10 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
                      SEXP dataModel_)
 {
     int err = 0;
-    distModel = new distanceModel;
-    distModel = (distanceModel*) distModel_;
+    distModel = new const distanceModel;
+    distModel = &distModel_;
+    Rcpp::Rcout << "Current DM obj is like this: " << distModel << "\n";
+
 
     //Deal with the data conversion from R to c++
     Rcpp::IntegerVector compartmentDimensions(compMatDim);
@@ -1353,7 +1355,6 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
 spatialSEIRInterface::~spatialSEIRInterface()
 {   
     // Context handles the complicated cleanup
-    delete distModel;
     delete verbose;
     delete debug;
     delete context;

@@ -33,15 +33,17 @@ spatialSEIRModel = function(compMatDim,
                             verboseFlag, 
                             debugFlag, 
                             sliceWidths, 
-                            reinfectionMode,
-                            scaledDistMode)
+                            reinfectionMode)
 {
+
+    DistanceModel = new( distanceModel )
+    err = DistanceModel$addDistanceMatrix(DistMat_)
     interface = new( spatialSEIRInterface )
     err = interface$buildSpatialSEIRInterface(compMatDim, xDim, zDim, xPrsDim, 
                                               S0_, E0_, I0_, R0_, Istar, Sstar, 
                                               Estar, Istar, Rstar,
                                               offset, X_, Z_, X_pRS_, 
-                                              DistMat_, rho_,0, priorAlpha_pEI_, 
+                                              DistanceModel, rho_,0, priorAlpha_pEI_, 
                                               priorBeta_pEI_, priorAlpha_pIR_, 
                                               priorBeta_pIR_,0,0, beta_, 
                                               betaPriorPrecision_, betaPrs_, 
@@ -50,7 +52,7 @@ spatialSEIRModel = function(compMatDim,
                                               iterationStride,
                                               steadyStateConstraintPrecision, 
                                               verboseFlag, debugFlag, sliceWidths, 
-                                              reinfectionMode,0,scaledDistMode)
+                                              reinfectionMode,0)
     if (err < 0){
         rm(interface)
         stop("Errors building spatialSEIRModel\n")

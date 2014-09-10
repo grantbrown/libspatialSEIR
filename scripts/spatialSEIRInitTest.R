@@ -75,8 +75,8 @@ Z = Z2
 
 xDim = dim(X)
 zDim = dim(Z)
-
-DM = as.numeric(data_list$dcm)
+dcm = as.numeric(data_list$dcm)
+DM = matrix(ifelse(dcm==0,0,dcm), nrow = nrow(data_list$dcm), ncol = ncol(data_list$dcm))
 
 rho = 0.05
 
@@ -142,9 +142,6 @@ reinfectionMode = 1;
 # Mode 2: fix betaP_RS, estimate S_star
 # Mode 3: no reinfection
 
-scaledDistMode = 1
-# 1 = inv square root
-# 0 = raw
 
 
 
@@ -200,8 +197,7 @@ res = spatialSEIRModel(compMatDim,
                       verbose,
                       debug, 
                       sliceWidths,
-                      reinfectionMode,
-                      scaledDistMode)
+                      reinfectionMode)
 
 # Use OpenCL:
 #res$oclPreferences = res$oclPreferences + 1 

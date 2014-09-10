@@ -50,7 +50,7 @@ class spatialSEIRInterface
                      SEXP X_,
                      SEXP Z_,
                      SEXP X_pRS_,
-                     Rcpp::XPtr<distanceModel> DM, 
+                     const distanceModel& DM, 
                      SEXP rho_,
                      SEXP phi_,
                      SEXP priorAlpha_pEI_,
@@ -150,7 +150,7 @@ class spatialSEIRInterface
 
         virtual void standardizeDistanceMatrices();
 
-        distanceModel* distModel;
+        const distanceModel* distModel;
  
         //Destructor
         ~spatialSEIRInterface();

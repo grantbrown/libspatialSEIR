@@ -7,6 +7,7 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
+RCPP_EXPOSED_CLASS(distanceModel)
 class distanceModel
 {
     public:
