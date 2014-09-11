@@ -1,2 +1,7 @@
 loadModule("mod_spatialSEIRInterface", TRUE)
 loadModule("mod_distanceModel", TRUE)
+loadModule("mod_dataModel", TRUE)
+loadModule("mod_exposureModel", TRUE)
+loadModule("mod_reinfectionModel", TRUE)
+loadModule("mod_transitionPriors", TRUE)
+loadModule("mod_samplingControl", TRUE)
