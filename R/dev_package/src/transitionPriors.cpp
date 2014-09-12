@@ -24,8 +24,8 @@ void transitionPriors::setUniformPriors()
     gamma_ir_params[0] = 1.0; 
     gamma_ir_params[1] = 1.0;
 
-    *gamma_ei = R::rgamma(gamma_ei_params[0], gamma_ei_params[1]);
-    *gamma_ir = R::rgamma(gamma_ir_params[0], gamma_ir_params[1]);
+    *gamma_ei = R::rgamma(gamma_ei_params[0], 1/gamma_ei_params[1]);
+    *gamma_ir = R::rgamma(gamma_ir_params[0], 1/gamma_ir_params[1]);
 
 }
 
@@ -68,16 +68,16 @@ void transitionPriors::setPriorsManually(SEXP priorAlpha_gammaEI, SEXP priorBeta
     gamma_ir_params[0] = pA_gammaIR[0]; 
     gamma_ir_params[1] = pB_gammaIR[0]; 
 
-    *gamma_ei = R::rgamma(gamma_ei_params[0], gamma_ei_params[1]);
-    *gamma_ir = R::rgamma(gamma_ir_params[0], gamma_ir_params[1]);
+    *gamma_ei = R::rgamma(gamma_ei_params[0], 1/gamma_ei_params[1]);
+    *gamma_ir = R::rgamma(gamma_ir_params[0], 1/gamma_ir_params[1]);
 }
 
 void transitionPriors::summary()
 {
     Rcpp::Rcout << "gamma_ei: " << *gamma_ei << "\n";
     Rcpp::Rcout << "gamma_ir: " << *gamma_ir << "\n";
-    Rcpp::Rcout << "gamma_ei parameters: " << gamma_ei_params[0] << ", " << gamma_ei_params[1] << "\n";
-    Rcpp::Rcout << "gamma_ir parameters: " << gamma_ir_params[0] << ", " << gamma_ir_params[1] << "\n";
+    Rcpp::Rcout << "gamma_ei parameters: " << gamma_ei_params[0] << ", " << 1/gamma_ei_params[1] << "\n";
+    Rcpp::Rcout << "gamma_ir parameters: " << gamma_ir_params[0] << ", " << 1/gamma_ir_params[1] << "\n";
 
 
 }

@@ -1128,11 +1128,12 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
 
     
     int numDistMatrices = (distanceModelInstance -> getNumDistanceMatrices());
+    Rcpp::Rcout << "Number of distance metrics: " << numDistMatrices << "\n";
     Rcpp::NumericVector rho(numDistMatrices);
     double rhoSum = 0.0;
     for (i = 0; i < numDistMatrices; i++)
     {
-        rho[i] = R::rgamma(0.001,0.1);
+        rho[i] = R::rgamma(0.01,0.1);
         rhoSum += rho[i];
     }
     if (rhoSum >= 0.5)

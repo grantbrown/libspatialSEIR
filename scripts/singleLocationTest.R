@@ -7,49 +7,38 @@ MaxTpt = NYears*TptPerYear
 ThrowAwayTpt = 0
 
 
-plotEpidemic = function()
-{
-    par(mfrow = c(3,1))
-    plot(S[1,], type = "l", main = "S,E,I,R", ylim = c(0, max(S)))
-    lines(E[1,], col = "red")
-    lines(I[1,], col = "orange")
-    lines(R[1,], col = "blue")
-
-    plot(I[1,]/N, type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
-    plot(p_se, type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(p_se)))
-}
-plotEpidemic2 = function()
+plotEpidemic = function(simResults,res)
 {
     par(mfrow = c(5,2))
 
-    plot(S_star, type = "l", main = "S_star", ylim = c(0, max(max(S_star), max(res$S_star))))
+    plot(simResults$S_star, type = "l", main = "S_star", ylim = c(0, max(max(simResults$S_star), max(res$S_star))))
     lines(res$S_star, col = "red")
 
-    plot(S, type = "l", main = "S", ylim = c(0, max(max(S), max(res$S))))
+    plot(simResults$S, type = "l", main = "S", ylim = c(0, max(max(simResults$S), max(res$S))))
     lines(res$S, col = "red")
 
-    plot(E_star, type = "l", main = "E_star", ylim = c(0, max(max(E_star), max(res$E_star))))
+    plot(simResults$E_star, type = "l", main = "E_star", ylim = c(0, max(max(simResults$E_star), max(res$E_star))))
     lines(res$E_star, col = "red")
 
-    plot(E, type = "l", main = "E", ylim = c(0, max(max(E), max(res$E))))
+    plot(simResults$E, type = "l", main = "E", ylim = c(0, max(max(simResults$E), max(res$E))))
     lines(res$E, col = "red")
 
-    plot(I_star, type = "l", main = "I_star", ylim = c(0, max(max(I_star), max(res$I_star))))
+    plot(simResults$I_star, type = "l", main = "I_star", ylim = c(0, max(max(simResults$I_star), max(res$I_star))))
     lines(res$I_star, col = "red")
 
-    plot(I, type = "l", main = "I", ylim = c(0, max(max(I), max(res$I))))
+    plot(simResults$I, type = "l", main = "I", ylim = c(0, max(max(simResults$I), max(res$I))))
     lines(res$I, col = "red")
 
-    plot(R_star, type = "l", main = "R_star", ylim = c(0, max(max(R_star), max(res$R_star))))
+    plot(simResults$R_star, type = "l", main = "R_star", ylim = c(0, max(max(simResults$R_star), max(res$R_star))))
     lines(res$R_star, col = "red")
 
-    plot(R, type = "l", main = "R", ylim = c(0, max(max(R), max(res$R))))
+    plot(simResults$R, type = "l", main = "R", ylim = c(0, max(max(simResults$R), max(res$R))))
     lines(res$R, col = "red")
 
-    plot(p_se, type = "l", main = "p_se")
+    plot(simResults$p_se, type = "l", main = "p_se")
     lines(res$p_se, col = "red")
 
-    plot(p_rs, type = "l", main = "p_rs", ylim = c(0,1)) 
+    plot(simResults$p_rs, type = "l", main = "p_rs", ylim = c(0,1)) 
     lines(res$p_rs, col = "red")
 
 }
@@ -241,7 +230,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
             png(filename = paste("./imgOut/single/", itrPrint(imgNo), ".png", sep =""), width = 600, height = 1200) 
-                plotEpidemic2()
+                plotEpidemic(simResults,res)
             dev.off()
             cat(i*batchSize,"\n")
         }}, 
@@ -258,6 +247,7 @@ runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
 #runSimulation(1000,200, printAR = FALSE, targetRatio = 0.2)
 #print("Switching to joint reinfection sampling.")
 runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
+
 
 
 
