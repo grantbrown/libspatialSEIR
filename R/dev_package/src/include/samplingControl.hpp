@@ -16,19 +16,19 @@ class samplingControl
         ~samplingControl();
 
         virtual Rcpp::IntegerVector getIterationStride();
-        virtual void setIterationStride(SEXP stride);
+        virtual void setIterationStride(Rcpp::IntegerVector stride);
 
         virtual Rcpp::NumericVector getSteadyStateConstraintPrecision();
-        virtual void setSteadyStateConstraintPrecision(SEXP prec);
+        virtual void setSteadyStateConstraintPrecision(Rcpp::NumericVector prec);
 
         virtual Rcpp::IntegerVector getVerbose();
-        virtual void setVerbose(SEXP vb);
+        virtual void setVerbose(Rcpp::IntegerVector vb);
 
         virtual Rcpp::IntegerVector getDebug();
-        virtual void setDebug(SEXP dbg);
+        virtual void setDebug(Rcpp::IntegerVector dbg);
 
         virtual Rcpp::NumericVector getSliceWidths();
-        virtual void setSliceWidths();
+        virtual void setSliceWidths(Rcpp::NumericVector widths);
 
         int* iterationStride;
         int* verbose;

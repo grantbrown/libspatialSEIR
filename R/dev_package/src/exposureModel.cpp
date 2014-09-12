@@ -37,9 +37,8 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _prec)
 }
 
 
-void exposureModel::setOffset(SEXP _offs)
+void exposureModel::setOffset(IntegerVector offsets)
 {
-    Rcpp::IntegerVector offsets(_offs);
     if (offsets.length() != ((zDim[0])/(xDim[0])))
     {
         Rcpp::Rcout << "Error: offsets must have length equal to the number of time points.\n";
@@ -77,7 +76,7 @@ RCPP_MODULE(mod_exposureModel)
     class_<exposureModel>( "exposureModel" )
     .constructor<SEXP,SEXP,SEXP>()
     .method("summary", &exposureModel::summary)
-    .property("offsets", &exposureModel::getOffset, &exposureModel::setOffset, "Vector of temporal offsets.");
+    .property("offsets", &exposureModel::getOffset, &exposureModel::setOffset);
 }
 
 

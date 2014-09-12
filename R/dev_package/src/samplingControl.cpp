@@ -16,9 +16,8 @@ samplingControl::samplingControl()
     memset(sliceWidths, 0.1, 11*sizeof(double));
 }
 
-void samplingControl::setIterationStride(SEXP stride)
+void samplingControl::setIterationStride(Rcpp::IntegerVector input)
 {
-    Rcpp::IntegerVector input(stride);
     *iterationStride = input[0];
 }
 
@@ -29,22 +28,20 @@ Rcpp::IntegerVector samplingControl::getIterationStride()
     return(output);
 }
 
-void samplingControl::setVerbose(SEXP vb)
+void samplingControl::setVerbose(IntegerVector input)
 {
-    Rcpp::IntegerVector input(vb);
     *verbose = input[0];
 }
 
-Rcpp::IntegerVector::getVerbose()
+Rcpp::IntegerVector  samplingControl::getVerbose()
 {
     Rcpp::IntegerVector output(1);
     output[0] = *verbose;
     return(output);
 }
 
-void samplingControl::setDebug(SEXP dbg)
+void samplingControl::setDebug(IntegerVector input)
 {
-    Rcpp::IntegerVector input(dbg);
     *debug = input[0];
 }
 
@@ -55,9 +52,8 @@ Rcpp::IntegerVector samplingControl::getDebug()
     return(output);
 }
 
-void samplingControl::setSliceWidths(SEXP widths)
+void samplingControl::setSliceWidths(NumericVector inWidths)
 {
-    Rcpp::NumericVector inWidths(widths);
     if (inWidths.length() != 11)
     {
         Rcpp::Rcout << "Slice widths must have length 11.\n";
@@ -73,10 +69,9 @@ Rcpp::NumericVector samplingControl::getSliceWidths()
     return(output);
 }
 
-void samplingControl::setSteadyStateConstraintPrecision(SEXP widths)
+void samplingControl::setSteadyStateConstraintPrecision(NumericVector input)
 {
-    Rcpp::NumericVector input(widths);
-    *steadyStateConstraintPrecision = widths[0];
+    *steadyStateConstraintPrecision = input[0];
 }
 
 Rcpp::NumericVector samplingControl::getSteadyStateConstraintPrecision()
@@ -93,11 +88,11 @@ void samplingControl::summary()
 }
 samplingControl::~samplingControl()
 {
-    delete[] xDim;
-    delete[] zDim;
-    delete[] X;
-    delete[] Z;
-    delete betaPriorPrecision;
+    delete iterationStride;
+    delete verbose;
+    delete debug;
+    delete steadyStateConstraintPrecision;
+    delete[] sliceWidths;
 }
 
 RCPP_MODULE(mod_samplingControl)

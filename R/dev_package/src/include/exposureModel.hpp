@@ -14,7 +14,7 @@ class exposureModel
         exposureModel(SEXP X, SEXP Z, SEXP precision);
         virtual void summary();
         virtual Rcpp::IntegerVector getOffset();
-        virtual void setOffset(SEXP offs);
+        virtual void setOffset(Rcpp::IntegerVector offs);
         int* offset;
         int* xDim;
         int* zDim;
