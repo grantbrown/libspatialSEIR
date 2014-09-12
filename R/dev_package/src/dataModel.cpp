@@ -13,11 +13,11 @@ dataModel::dataModel(SEXP _Y, SEXP type)
     priorParameters = new double[10]; memset(priorParameters, -1.0, 10*sizeof(double));
     initialParameterValues = new double[10]; memset(initialParameterValues, -1.0, 10*sizeof(double));
     Rcpp::NumericMatrix input(_Y);
-    compartmentDimensions = new Rcpp::IntegerVecetor(2);
+    compartmentDimensions = new Rcpp::IntegerVector(2);
     nLoc = new int; *nLoc = input.ncol();
     nTpt = new int; *nTpt = input.nrow();
-    (*compartmentDimensions)[0] = nTpt;
-    (*compartmentDimensions)[1] = nLoc;
+    (*compartmentDimensions)[0] = *nTpt;
+    (*compartmentDimensions)[1] = *nLoc;
     dataModelType = new int;
     Rcpp::StringVector inputType(type);
     if (inputType[0] == "identity")

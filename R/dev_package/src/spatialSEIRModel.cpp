@@ -1021,7 +1021,7 @@ void spatialSEIRModel::setVerbose(int verbose_)
    *verbose = verbose_; 
 }
 
-spatialSEIRModel::spatialSEIRModel()
+spatialSEIRModel::spatialSEIRModel(SEXP outFileName)
 {
     // Create the empty ModelContext object  
     context = new ModelContext();
@@ -1029,6 +1029,8 @@ spatialSEIRModel::spatialSEIRModel()
     debug = new int(); 
     *verbose = 0;
     *debug = 0;
+    chainOutputFile = new std::string(); 
+    *chainOutputFile = Rcpp::as<std::string>(outFileName);
 }
 
 int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
@@ -1040,29 +1042,24 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
                           const samplingControl& samplingControl_)
 {
     int err = 0;
-    dataModelInstance = new const dataModel;
-    exposureModelInstance = new const exposureModel;
-    reinfectionModelInstance = new const reinfectionModel;
-    distanceModelInstance = new const distanceModel;
-    transitionPriorsInstance = new const transitionPriors;
-    initialValueContainerInstance = new const initialValueContainer;
-    samplingControlInstance = new const samplingControl;
-
-    dataModelInstance = &dataModel_;
-    exposureModelInstance = &exposureModel_;
-    reinfectionModelInstance = &reinfectionModel_;
-    distanceModelInstance = &distanceModel_;
-    transitionPriorsInstance = &transitionPriors_;
-    initialValueContainerInstance = &initialValueContainer_;
-    samplingControlInstance = &samplingControl_;
+    
+    const dataModel* dataModelInstance = &dataModel_;
+    const exposureModel* exposureModelInstance = &exposureModel_;
+    const reinfectionModel* reinfectionModelInstance = &reinfectionModel_;
+    const distanceModel* distanceModelInstance = &distanceModel_;
+    const transitionPriors* transitionPriorsInstance = &transitionPriors_;
+    const initialValueContainer* initialValueContainerInstance = &initialValueContainer_;
+    const samplingControl* samplingControlInstance = &samplingControl_;
 
 
     if (*(dataModelInstance -> nLoc) != (exposureModelInstance -> xDim)[0])
     {
         Rcpp::Rcout << "Exposure model and data model imply different number of locations\n";
+        Rcpp::Rcout << "Exposure model: " << (exposureModelInstance -> xDim)[0] << "\n";
+        Rcpp::Rcout << "Data model: " << *(dataModelInstance -> nLoc) << "\n";
         throw(-1);
     }
-    if (*(dataModelInstance -> nCol) != ((exposureModelInstance -> zDim)[0])/((exposureModelInstance -> xDim)[0]))
+    if (*(dataModelInstance -> nTpt) != ((exposureModelInstance -> zDim)[0])/((exposureModelInstance -> xDim)[0]))
     {
         Rcpp::Rcout << "Exposure model and data model imply different number of time points\n";
         throw(-1);
@@ -1072,13 +1069,17 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
         Rcpp::Rcout << "Data model and distance model imply different number of locations\n";
         throw(-1);
     }
-    if ((*(dataModelInstance -> nLoc) != (initialValueContainer -> compMatDim)[1]) || 
-        (*(dataModelInstance -> nTpt) != (initialValueContainer -> compMatDim)[0]))
+    if ((*(dataModelInstance -> nLoc) != (initialValueContainerInstance -> compMatDim)[1]) || 
+        (*(dataModelInstance -> nTpt) != (initialValueContainerInstance -> compMatDim)[0]))
     {
         Rcpp::Rcout << "Data model and initial value container have different dimensions\n";
+        Rcpp::Rcout << "Data Model: " << *(dataModelInstance -> nTpt) << ", " 
+            << *(dataModelInstance -> nLoc) << "\n";
+        Rcpp::Rcout << "Initial Vals: " << (initialValueContainerInstance -> compMatDim)[0] << ", "
+            << (initialValueContainerInstance -> compMatDim)[1] << "\n";
         throw(-1);
     }
-    if (*(reinfectionModelInstance -> reinfectMode) == 3)
+    if (*(reinfectionModelInstance -> reinfectionMode) == 3)
     {
         // No reinfection
     }
@@ -1096,12 +1097,11 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
         Rcpp::Rcout << "Transition priors haven't been populated (or have invalid values)\n";
         throw(-1);
     }
-    
-    if (*(reinfectionModelInstance -> reinfectMode) > 2)
+    int i;
+    if (*(reinfectionModelInstance -> reinfectionMode) > 2)
     {
         int maxItr = ((*(dataModelInstance -> compartmentDimensions))[0]
                      *(*(dataModelInstance -> compartmentDimensions))[1]);
-        int i;
         for (i = 0; i < maxItr; i++)
         {
             if ((initialValueContainerInstance -> S_star)[i] != 0)
@@ -1112,7 +1112,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
         }
     }
 
-    if (*(dataModel -> dataModelType) != 0 && *(dataModel ->setMode) < 0)
+    if (*(dataModelInstance -> dataModelType) != 0 && *(dataModelInstance ->setMode) < 0)
     {
         Rcpp::Rcout << "Non-identity data model requested, but prior parameters were not supplied.\n"; 
         throw(-1);
@@ -1121,13 +1121,13 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
     int* nTpt = &((*(dataModelInstance -> compartmentDimensions))[0]); 
     int* nLoc = &((*(dataModelInstance -> compartmentDimensions))[1]);
     
-    Rcpp::Rcout << "Building Model.\n   Number of Locations: " << *nLoc; 
+    Rcpp::Rcout << "Building Model.\n   Number of Locations: " << *nLoc
         << "\n";
     Rcpp::Rcout << "   Number of Time Points: " << *nTpt
         << "\n";
 
     
-    int numDistMatrices = (distanceModelInstance -> getNUmDistanceMatrices());
+    int numDistMatrices = (distanceModelInstance -> getNumDistanceMatrices());
     Rcpp::NumericVector rho(numDistMatrices);
     double rhoSum = 0.0;
     for (i = 0; i < numDistMatrices; i++)
@@ -1146,17 +1146,13 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
     Rcpp::NumericVector phi(1);
     phi[0] = (dataModelInstance -> initialParameterValues)[0];
 
-    double* sliceParams = (samplingControlInstance -> sliceWidth);
+    double* sliceParams = (samplingControlInstance -> sliceWidths);
 
-    Rcpp::IntegerVector reinfectMode(reinfectionMode);
 
-    chainOutputFile = new std::string(); 
-    *chainOutputFile = Rcpp::as<std::string>(outFile);
 
-    Rcpp::IntegerVector vFlag(verboseFlag);
-    Rcpp::IntegerVector dFlag(debugFlag);
-    *verbose = vFlag[0];
-    *debug = dFlag[0];
+
+    *verbose = *(samplingControlInstance -> verbose);
+    *debug = *(samplingControlInstance -> debug);
     
 
     // Gather information for the creation of the 
@@ -1185,12 +1181,12 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
     compartmentArgs S_starArgs, E_starArgs, I_starArgs, R_starArgs;
     sliceParameters sliceParamStruct;
     modelConfiguration modelConfig;
-    modelConfig.reinfectionMode = reinfectMode[0];
+    modelConfig.reinfectionMode = *(reinfectionModelInstance -> reinfectionMode);
     modelConfig.compartmentSamplingMode = COMPARTMENT_METROPOLIS_SAMPLER;
     modelConfig.parameterSamplingMode = PARAMETER_JOINT_METROPOLIS_SAMPLER;
     modelConfig.indexLength = std::floor(0.25*(*nTpt)*(*nLoc)); // Update 25% per iteration. 
     modelConfig.useDecorrelation = 0;
-    modelConfig.dataModel = *(dataModel -> dataModelType) ;
+    modelConfig.dataModel = *(dataModelInstance -> dataModelType) ;
     Rcpp::Rcout << "Setting index length to be: " << (modelConfig.indexLength) << "\n";
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
@@ -1245,7 +1241,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
                 nLoc);
 
     context -> populate(&A0, &xArgs, &xPrsArgs, (exposureModelInstance -> offset), (dataModelInstance -> Y), &S_starArgs, &E_starArgs, &I_starArgs, 
-                        &R_starArgs, distModel -> scaledDistArgs,
+                        &R_starArgs, distanceModelInstance -> scaledDistArgs,
                         rho.begin(),phi.begin(),(exposureModelInstance -> beta),(transitionPriorsInstance -> gamma_ei), (transitionPriorsInstance -> gamma_ir),
                         (reinfectionModelInstance -> beta), (initialValueContainerInstance -> N),&sliceParamStruct, &priorValues,
                         modelConfig);
@@ -1262,6 +1258,7 @@ spatialSEIRModel::~spatialSEIRModel()
     delete verbose;
     delete debug;
     delete context;
+    delete chainOutputFile;
 }
 
 
@@ -1270,7 +1267,7 @@ RCPP_MODULE(mod_spatialSEIRModel)
     using namespace Rcpp;
     class_<spatialSEIRModel>( "spatialSEIRModel" )
 
-    .constructor()
+    .constructor<SEXP>()
 
     .method("buildSpatialSEIRModel", &spatialSEIRModel::buildSpatialSEIRModel)
     .method("printDebugInfo", &spatialSEIRModel::printDebugInfo)

@@ -31,7 +31,7 @@ class spatialSEIRModel
 
     public: 
 
-        spatialSEIRModel();
+        spatialSEIRModel(SEXP outFileName);
         int buildSpatialSEIRModel(const dataModel& dataModel_,
                                   const exposureModel& exposureModel_,
                                   const reinfectionModel& reinfectionModel_,
@@ -113,14 +113,6 @@ class spatialSEIRModel
 
         virtual void standardizeDistanceMatrices();
 
-        const distanceModel* distanceModelInstance;
-        const exposureModel* exposureModelInstance;
-        const reinfectionModel* reinfectionModelInstance;
-        const transitionPriors* transitionPriorsInstance;
-        const samplingControl* samplingControlInstance;
-        const initialValueContainer* initialValueContainerInstance;
-        const dataModel* dataModelInstance;
- 
         //Destructor
         ~spatialSEIRModel();
 };

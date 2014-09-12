@@ -1,20 +1,67 @@
-    library(spatialSEIR)
+library(spatialSEIR)
 
-    set.seed(123123)
-    NYears = 3
-    TptPerYear = 12 
-    MaxTpt = NYears*TptPerYear
+set.seed(123123)
+NYears = 3
+TptPerYear = 12 
+MaxTpt = NYears*TptPerYear
+ThrowAwayTpt = 0
 
-    ThrowAwayTpt = 0
 
+plotEpidemic = function()
+{
+    par(mfrow = c(3,1))
+    plot(S[1,], type = "l", main = "S,E,I,R", ylim = c(0, max(S)))
+    lines(E[1,], col = "red")
+    lines(I[1,], col = "orange")
+    lines(R[1,], col = "blue")
+
+    plot(I[1,]/N, type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
+    plot(p_se, type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(p_se)))
+}
+plotEpidemic2 = function()
+{
+    par(mfrow = c(5,2))
+
+    plot(S_star, type = "l", main = "S_star", ylim = c(0, max(max(S_star), max(res$S_star))))
+    lines(res$S_star, col = "red")
+
+    plot(S, type = "l", main = "S", ylim = c(0, max(max(S), max(res$S))))
+    lines(res$S, col = "red")
+
+    plot(E_star, type = "l", main = "E_star", ylim = c(0, max(max(E_star), max(res$E_star))))
+    lines(res$E_star, col = "red")
+
+    plot(E, type = "l", main = "E", ylim = c(0, max(max(E), max(res$E))))
+    lines(res$E, col = "red")
+
+    plot(I_star, type = "l", main = "I_star", ylim = c(0, max(max(I_star), max(res$I_star))))
+    lines(res$I_star, col = "red")
+
+    plot(I, type = "l", main = "I", ylim = c(0, max(max(I), max(res$I))))
+    lines(res$I, col = "red")
+
+    plot(R_star, type = "l", main = "R_star", ylim = c(0, max(max(R_star), max(res$R_star))))
+    lines(res$R_star, col = "red")
+
+    plot(R, type = "l", main = "R", ylim = c(0, max(max(R), max(res$R))))
+    lines(res$R, col = "red")
+
+    plot(p_se, type = "l", main = "p_se")
+    lines(res$p_se, col = "red")
+
+    plot(p_rs, type = "l", main = "p_rs", ylim = c(0,1)) 
+    lines(res$p_rs, col = "red")
+
+}
+
+
+runSimulation = function()
+{
     X = matrix(1, ncol = 1)
-
     Z = cbind(seq(1,NYears*TptPerYear), sin(seq(1,NYears*TptPerYear)/TptPerYear*2*pi))
-
     X_prs = cbind(1, 
                   sin((1:MaxTpt)/TptPerYear*2*pi), 
                   cos((6+1:MaxTpt)/TptPerYear*2*pi))
-
 
     trueBetaSEFixed = c(0.5)
     trueBetaSEVarying = c(0.002, .5)
@@ -83,201 +130,94 @@
         }
     }
 
-    plotEpidemic = function()
-    {
-        par(mfrow = c(3,1))
-        plot(S[1,], type = "l", main = "S,E,I,R", ylim = c(0, max(S)))
-        lines(E[1,], col = "red")
-        lines(I[1,], col = "orange")
-        lines(R[1,], col = "blue")
-
-        plot(I[1,]/N, type = "l", col = "red", main = "Proportion Infected", ylim = c(0,1))
-        plot(p_se, type = "l", col = "red", lty = 2, main = "Probability of Infection", ylim = c(0, max(p_se)))
-    }
-    plotEpidemic2 = function()
-    {
-        par(mfrow = c(5,2))
-
-        plot(S_star, type = "l", main = "S_star", ylim = c(0, max(max(S_star), max(res$S_star))))
-        lines(res$S_star, col = "red")
-
-        plot(S, type = "l", main = "S", ylim = c(0, max(max(S), max(res$S))))
-        lines(res$S, col = "red")
-
-        plot(E_star, type = "l", main = "E_star", ylim = c(0, max(max(E_star), max(res$E_star))))
-        lines(res$E_star, col = "red")
-
-        plot(E, type = "l", main = "E", ylim = c(0, max(max(E), max(res$E))))
-        lines(res$E, col = "red")
-
-        plot(I_star, type = "l", main = "I_star", ylim = c(0, max(max(I_star), max(res$I_star))))
-        lines(res$I_star, col = "red")
-
-        plot(I, type = "l", main = "I", ylim = c(0, max(max(I), max(res$I))))
-        lines(res$I, col = "red")
-
-        plot(R_star, type = "l", main = "R_star", ylim = c(0, max(max(R_star), max(res$R_star))))
-        lines(res$R_star, col = "red")
-
-        plot(R, type = "l", main = "R", ylim = c(0, max(max(R), max(res$R))))
-        lines(res$R, col = "red")
-
-        plot(p_se, type = "l", main = "p_se")
-        lines(res$p_se, col = "red")
-
-        plot(p_rs, type = "l", main = "p_rs", ylim = c(0,1)) 
-        lines(res$p_rs, col = "red")
-
+    if (ThrowAwayTpt != 0)
+        {
+        S0 = S[,ThrowAwayTpt+1]
+        E0 = E[,ThrowAwayTpt+1]
+        I0 = I[,ThrowAwayTpt+1]
+        R0 = R[,ThrowAwayTpt+1]
     }
 
+    S_star = S_star[,(ThrowAwayTpt + 1):ncol(S_star), drop = FALSE]
+    E_star = E_star[,(ThrowAwayTpt + 1):ncol(E_star), drop = FALSE]
+    I_star = I_star[,(ThrowAwayTpt + 1):ncol(I_star), drop = FALSE]
+    R_star = R_star[,(ThrowAwayTpt + 1):ncol(R_star), drop = FALSE]
 
+    S = S[,(ThrowAwayTpt + 1):ncol(S), drop = FALSE]
+    E = E[,(ThrowAwayTpt + 1):ncol(E), drop = FALSE]
+    I = I[,(ThrowAwayTpt + 1):ncol(I), drop = FALSE]
+    R = R[,(ThrowAwayTpt + 1):ncol(R), drop = FALSE]
 
-#plotEpidemic()
-
-# Format for libspatialSEIR
-
-if (ThrowAwayTpt != 0)
-    {
-    S0 = S[,ThrowAwayTpt+1]
-    E0 = E[,ThrowAwayTpt+1]
-    I0 = I[,ThrowAwayTpt+1]
-    R0 = R[,ThrowAwayTpt+1]
-}
-
-S_star = S_star[,(ThrowAwayTpt + 1):ncol(S_star), drop = FALSE]
-E_star = E_star[,(ThrowAwayTpt + 1):ncol(E_star), drop = FALSE]
-I_star = I_star[,(ThrowAwayTpt + 1):ncol(I_star), drop = FALSE]
-R_star = R_star[,(ThrowAwayTpt + 1):ncol(R_star), drop = FALSE]
-
-S = S[,(ThrowAwayTpt + 1):ncol(S), drop = FALSE]
-E = E[,(ThrowAwayTpt + 1):ncol(E), drop = FALSE]
-I = I[,(ThrowAwayTpt + 1):ncol(I), drop = FALSE]
-R = R[,(ThrowAwayTpt + 1):ncol(R), drop = FALSE]
-
-Z = Z[(1+ThrowAwayTpt*nrow(S)):nrow(Z),]
-X_prs = X_prs[(ThrowAwayTpt + 1):nrow(X_prs),]
+    Z = Z[(1+ThrowAwayTpt*nrow(S)):nrow(Z),]
+    X_prs = X_prs[(ThrowAwayTpt + 1):nrow(X_prs),]
 
 # Transpose Everything to have TXP
 
-S0 = t(S0)
-E0 = t(E0)
-I0 = t(I0)
-R0 = t(R0)
+    S0 = t(S0)
+    E0 = t(E0)
+    I0 = t(I0)
+    R0 = t(R0)
 
-S_star = t(S_star)
-E_star = t(E_star)
-I_star = t(I_star)
-R_star = t(R_star)
+    S_star = t(S_star)
+    E_star = t(E_star)
+    I_star = t(I_star)
+    R_star = t(R_star)
 
-S = t(S)
-E = t(E)
-I = t(I)
-R = t(R)
+    S = t(S)
+    E = t(E)
+    I = t(I)
+    R = t(R)
 
-xDim = dim(X)
-zDim = dim(Z)
-xPrsDim = dim(X_prs)
-compMatDim = c(nrow(S), ncol(S))
+    xDim = dim(X)
+    zDim = dim(Z)
+    xPrsDim = dim(X_prs)
+    compMatDim = c(nrow(S), ncol(S))
 
-# Not applicable parameters
-DM = matrix(0)
-rho = 0
+    p_rs = p_rs[(ThrowAwayTpt +1):length(p_rs)]
+    p_se = p_se[(ThrowAwayTpt +1):length(p_se)]
+    eta_se = eta_se[(ThrowAwayTpt +1):length(eta_se)]
+    beta = c(trueBetaSEFixed, trueBetaSEVarying) 
+    betaPrs = trueBetaRS
+    N = matrix(N, nrow = nrow(S), ncol = ncol(S))
 
-p_ei = p_ei
-p_ir = p_ir
-p_rs = p_rs[(ThrowAwayTpt +1):length(p_rs)]
-p_se = p_se[(ThrowAwayTpt +1):length(p_se)]
-eta_se = eta_se[(ThrowAwayTpt +1):length(eta_se)]
-beta = c(trueBetaSEFixed, trueBetaSEVarying) 
-betaPrs = trueBetaRS
-N = matrix(N, nrow = nrow(S), ncol = ncol(S))
+    return(list("S_star"=S_star, "E_star" = E_star, "I_star" = I_star, "R_star" = R_star,
+                "S"=S, "E"=E, "I"=I, "R"=R, "S0"=S0,"E0"=E0,"I0"=I0,"R0"=R0,"X"=X, "Z"=Z,"X_prs"=X_prs,
+                "p_se"=p_se,"p_rs"=p_rs, "beta" = beta, "betaPrs"=betaPrs, "N"=N))
+}
+
+simResults = runSimulation()
+
+
+## 
+DataModel = buildDataModel(simResults$I_star, type = "identity")
+ExposureModel = buildExposureModel(simResults$X, simResults$Z, 
+                                   beta = c(2, rep(0, ((length(simResults$beta))-1))), betaPriorPrecision = 0.1)
+ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = simResults$X_prs, 
+                                         betaPrs = -c(4, rep(0,(length(simResults$betaPrs)-1))), 
+                                         priorPrecision = 0.1)
+SamplingControl = buildSamplingControl(iterationStride=1000,
+                                       sliceWidths = c(0.26,  # S_star
+                                                       0.1,  # E_star
+                                                       0.15, # I_star
+                                                       0.22, # S0
+                                                       0.24, # I0
+                                                       0.8, # beta
+                                                       0.2, # betaPrs
+                                                       0.015, # rho
+                                                       0.01, # gamma_ei
+                                                       0.01, # gamma_ir
+                                                       0.01 # phi
+                                                      ))
+DistanceModel = buildDistanceModel(list(matrix(0)))
+TransitionPriors = buildTransitionPriorsManually(2300,1000,2300,1000)
+InitContainer = buildInitialValueContainer(simResults$I_star, simResults$N, S0 = simResults$N[1]-100, 
+                                           I0 = 100, E0 = 0)
+
 outFileName = "./chainOutput_single.txt"
 
-iterationStride = 100
+res = buildSEIRModel(outFileName,DataModel,ExposureModel,ReinfectionModel,DistanceModel,TransitionPriors,
+                     InitContainer,SamplingControl)
 
-
-# S,E,R,S0,I0,beta,betaPrs,rho
-sliceWidths = c(0.26,  # S_star
-                0.1,  # E_star
-                0.15, # I_star
-                0.22, # S0
-                0.24, # I0
-                0.8, # beta
-                0.2, # betaPrs
-                0.015, # rho
-                0.01, # gamma_ei
-                0.01, # gamma_ir
-                0.01 # phi
-                )
-
-
-priorAlpha_gammaEI = 2300;
-priorBeta_gammaEI = 1000;
-priorAlpha_gammaIR = 2300;
-priorBeta_gammaIR = 1000;
-betaPrsPriorPrecision = 0.5
-betaPriorPrecision = 0.1
-
-
-reinfectionMode = 1
-# Mode 1: estimate betaP_RS, S_star
-# Mode 2: fix betaP_RS, estimate S_star
-# Mode 3+: No reinfection
-
-steadyStateConstraintPrecision = -1
-
-verbose = FALSE 
-debug = FALSE
-
-
-# pretend not to know the true values of things
-#proposal = generateCompartmentProposal(I_star, N, S0, E0, I0)
-proposal = generateCompartmentProposal(I_star, N, S0 = N[1]-100, I0 = 100, E0 = 0)
-beta = c(2, rep(0, (length(beta)-1)))
-betaPrs = -c(4, rep(0,(length(betaPrs)-1)))
-gamma_ei = 2.3
-gamma_ir = 2.3
-offset = rep(1, nrow(S_star))
-
-res = spatialSEIRModel(compMatDim,
-                      xDim,
-                      zDim,
-                      xPrsDim,
-                      proposal$S0,
-                      proposal$E0,
-                      proposal$I0,
-                      proposal$R0,
-                      proposal$S_star,
-                      proposal$E_star,
-                      proposal$I_star,
-                      proposal$R_star,
-                      offset,
-                      X,
-                      Z,
-                      X_prs,
-                      DM,
-                      rho,
-                      priorAlpha_gammaEI,
-                      priorBeta_gammaEI,
-                      priorAlpha_gammaIR,
-                      priorBeta_gammaIR,
-                      beta,
-                      betaPriorPrecision,
-                      betaPrs,
-                      betaPrsPriorPrecision,
-                      gamma_ei,
-                      gamma_ir,
-                      N,
-                      outFileName, 
-                      iterationStride,
-                      steadyStateConstraintPrecision,
-                      verbose,
-                      debug, 
-                      sliceWidths,
-                      reinfectionMode)
-
-
-#res$setTrace(0)
 res$setRandomSeed(123123)
 itrPrint = function(x, wd=8)
 {

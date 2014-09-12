@@ -36,9 +36,15 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec)
     if (initParams.length() != xDim[1] + zDim[1])
     {
         Rcpp::Rcout << "Initial parameters have different length then number of columns of X and Z\n";
+        Rcpp::Rcout << "ncol(X): " << xDim[1] << "\n";
+        Rcpp::Rcout << "ncol(Z): " << zDim[1] << "\n";
+        Rcpp::Rcout << "length(beta): " << initParams.length() << "\n";
+        Rcpp::Rcout << initParams << "\n";
+
+
         throw(-1);
     }
-    offset = new int[(zDim[0])/(xDim[0])];
+    offset = new double[(zDim[0])/(xDim[0])];
     memset(offset, 1, (zDim[0])/(xDim[0])*sizeof(int));
     memcpy(X, inX.begin(), xDim[0]*xDim[1]*sizeof(double));
     memcpy(Z, inZ.begin(), zDim[0]*zDim[1]*sizeof(double));

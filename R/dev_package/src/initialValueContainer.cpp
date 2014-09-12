@@ -13,6 +13,7 @@ initialValueContainer::initialValueContainer()
 void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_,
                                              SEXP S_star_, SEXP E_star_, SEXP I_star_,SEXP R_star_, SEXP N_)
 {
+
     Rcpp::IntegerVector S0_vec(S0_);
     Rcpp::IntegerVector E0_vec(E0_);
     Rcpp::IntegerVector I0_vec(I0_);
@@ -45,6 +46,9 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
 
     int nTpt = (S_star_mat.nrow());
     int nLoc = (S_star_mat.ncol());
+    compMatDim = new int[2];
+    compMatDim[0] = nTpt;
+    compMatDim[1] = nLoc;
     S0 = new int[nLoc];
     E0 = new int[nLoc];
     I0 = new int[nLoc];
@@ -79,6 +83,7 @@ initialValueContainer::~initialValueContainer()
     delete[] E_star;
     delete[] I_star;
     delete[] R_star;
+    delete[] compMatDim;
     delete[] N;
 }
 

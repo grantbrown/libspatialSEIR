@@ -48,7 +48,7 @@ distanceModel::~distanceModel()
     delete numLocations;
 }
 
-int distanceModel::getNumDistanceMatrices()
+int distanceModel::getNumDistanceMatrices() const
 {
     return((scaledDistArgs -> inData).size()); 
 }

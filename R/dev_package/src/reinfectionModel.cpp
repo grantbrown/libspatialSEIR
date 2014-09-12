@@ -9,14 +9,14 @@ using namespace SpatialSEIR;
 
 reinfectionModel::reinfectionModel(SEXP reinfectMode)
 {
-     Rcpp::Integervector modeVec(reinfectMode);
+     Rcpp::IntegerVector modeVec(reinfectMode);
      reinfectionMode = new int;
      *reinfectionMode = modeVec[0];
      betaPriorPrecision = new double; *betaPriorPrecision = -1; 
      xDim = new int[2]; memset(xDim, -1, 2*sizeof(int));
 }
 
-reinfectionModel::buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _prec)
+void reinfectionModel::buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _prec)
 {
     Rcpp::NumericMatrix inX(_X);
     Rcpp::NumericVector inPrecision(_prec);
@@ -53,7 +53,7 @@ RCPP_MODULE(mod_reinfectionModel)
 {
     using namespace Rcpp;
     class_<reinfectionModel>( "reinfectionModel" )
-    .constructor()
+    .constructor<SEXP>()
     .method("buildReinfectionModel", &reinfectionModel::buildReinfectionModel)
     .method("summary", &reinfectionModel::summary);
 }

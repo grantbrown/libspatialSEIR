@@ -2,7 +2,6 @@ useDynLib(spatialSEIR)
 import(methods)
 import(Rcpp)
 # Rcpp Modules
-export(spatialSEIRInterface)
 export(distanceModel)
 export(dataModel)
 export(exposureModel)
@@ -13,10 +12,17 @@ export(spatialSEIRModel)
 # Helper Functions
 export(buildDistanceModel)
 export(buildDataModel)
-export(buildSEIRModel)
+export(buildReinfectionModel)
+export(buildExposureModel)
+export(buildSamplingControl)
 export(generateCompartmentProposal)
 export(plotCompartment)
 export(plotTwoCompartments)
+export(buildSEIRModel)
+export(buildTransitionPriorsFromProbabilities)
+export(buildTransitionPriorsManually)
+export(buildUniformTransitionPriors)
+export(buildInitialValueContainer)
 
 
 

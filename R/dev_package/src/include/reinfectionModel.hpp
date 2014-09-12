@@ -12,7 +12,7 @@ class reinfectionModel
 {
     public:
         reinfectionModel(SEXP reinfectionMode);
-        buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _prec);
+        virtual void buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _prec);
         virtual void summary();
         int* xDim;
         int* reinfectionMode;

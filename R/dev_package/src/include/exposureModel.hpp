@@ -15,7 +15,7 @@ class exposureModel
         virtual void summary();
         virtual Rcpp::IntegerVector getOffset();
         virtual void setOffset(Rcpp::IntegerVector offs);
-        int* offset;
+        double* offset;
         int* xDim;
         int* zDim;
         double* beta;

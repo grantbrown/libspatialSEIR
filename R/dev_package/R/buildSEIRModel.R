@@ -1,6 +1,8 @@
+## distanceModel module helper function
 buildDistanceModel = function(distanceList, 
                               scaleMode = c("none","rowscale","invsqrt"))
 {
+    scaleMode = scaleMode[1]
     rowScale = function(mat)
     {
         mat/matrix(apply(mat,1,sum), nrow = nrow(mat), ncol = ncol(mat))
@@ -60,12 +62,15 @@ buildDistanceModel = function(distanceList,
     finalDistanceModel
 }
 
-buildDataModel = function(Y, modelType = c("identity", "overdispersion"))
+# dataModel module helper function
+buildDataModel = function(Y, type = c("identity", "overdispersion"))
 {
-    return(new(dataModel(Y, modelType)))
+    return(new(dataModel, Y, type))
 }
 
-buildReinfectionModel = function(reinfectMode = c("SEIR", "SEIRS", "Fixed"),X_prs = NA, priorPrecision = NA)
+# reinfectionModel module helper function
+buildReinfectionModel = function(reinfectMode = c("SEIR", "SEIRS", "Fixed"),X_prs = NA, 
+                                 betaPrs=NA , priorPrecision = NA)
 {
     integerMode = ifelse(reinfectMode[1] == "SEIR", 3, 
                   ifelse(reinfectMode[1] == "SEIRS", 1, 
@@ -74,27 +79,28 @@ buildReinfectionModel = function(reinfectMode = c("SEIR", "SEIRS", "Fixed"),X_pr
     {
         stop(paste("Invalid mode: ", reinfectMode[1], sep = ""))
     }
-    if (integerMode != 3 && (is.na(X_prs)))
+    if (integerMode != 3 && (is.na(X_prs) || is.na(betaPrs)))
     {
-        stop("If reinfection mode is not SEIR, X_prs must be supplied.")
+        stop("If reinfection mode is not SEIR, X_prs and betaPrs must be supplied.")
     }
     if (integerMode == 1 && (is.na(priorPrecision)))
     {
         stop("If reinfection parameters are going to be estimated, priorPrecision must be specified.")
     }
 
-    reinfectionmod = new(reinfectionModel(integerMode));
+    reinfectionmod = new(reinfectionModel, integerMode);
     if (integerMode != 3)
     {
         if (all(is.na(priorPrecision)))
         {
            priorPrecision = 0.1     
         }
-        reinfectionmod$buildReinfectionModel(X_prs, priorPrecision);
+        reinfectionmod$buildReinfectionModel(X_prs, betaPrs, priorPrecision);
     }
     reinfectionmod
 }
 
+# samplingControl module helper function
 buildSamplingControl = function(verbose = FALSE, debug = FALSE, iterationStride = 100, steadyStateConstraintPrecision = -1, sliceWidths = rep(0.1, 11))
 {
     samplingControlInstance = new ( samplingControl )
@@ -106,7 +112,54 @@ buildSamplingControl = function(verbose = FALSE, debug = FALSE, iterationStride 
     samplingControlInstance        
 }
 
-buildSEIRModel = function(dataModelInstance,
+# transitionPriors module helper functions
+buildTransitionPriorsFromProbabilities = function(p_ei, p_ir, p_ei_ess, p_ir_ess)
+{
+    tp = new(transitionPriors)
+    tp$setPriorsFromProbabilities(p_ei, p_ir, p_ei_ess, p_ir_ess)
+    tp
+}
+buildTransitionPriorsManually = function(priorAlpha_gammaEI, priorBeta_gammaEI,
+                                         priorAlpha_gammaIR, priorBeta_gammaIR)
+{
+     tp = new(transitionPriors)
+     tp$setPriorsManually(priorAlpha_gammaEI, priorBeta_gammaEI,
+                          priorAlpha_gammaIR, priorBeta_gammaIR)
+     tp
+}
+buildUniformTransitionPriors = function()
+{
+    tp = new(transitionPriors)
+    tp$setUniformPriors()
+    tp
+}
+
+# exposureModel module helper function
+buildExposureModel = function(X,Z,beta,betaPriorPrecision,offset=NA)
+{
+    ExposureModel = new(exposureModel,X,Z,beta,betaPriorPrecision)
+    if (!is.na(offset))
+    {
+        ExposureModel$offsets = offset
+    }
+    ExposureModel
+}
+
+# initialValueContainer module helper function
+
+buildInitialValueContainer = function(I_star, N, S0=NA, E0=NA, I0=NA, reinfection =TRUE, p_ir = 0.9, p_rs = 0.05)
+{
+    proposal = generateCompartmentProposal(I_star, N, S0, E0, I0, reinfection, p_ir, p_rs)
+    InitialValueContainer = new(initialValueContainer)
+    InitialValueContainer$setInitialValues(proposal$S0, proposal$E0, proposal$I0, proposal$R0,
+                                           proposal$S_star, proposal$E_star, proposal$I_star, proposal$R_star,
+                                           N)
+    InitialValueContainer
+}
+
+# SEIRModel module helper function
+buildSEIRModel = function(outFileName,
+                          dataModelInstance,
                           exposureModelInstance,
                           reinfectionModelInstance,
                           distanceModelInstance,
@@ -115,8 +168,8 @@ buildSEIRModel = function(dataModelInstance,
                           samplingControlInstance)
 {
 
-    interface = new( spatialSEIRModel )
-    interace$buildSpatialSEIRModel(dataModelInstance,
+    interface = new( spatialSEIRModel,outFileName )
+    interface$buildSpatialSEIRModel(dataModelInstance,
                                    exposureModelInstance,
                                    reinfectionModelInstance,
                                    distanceModelInstance,
