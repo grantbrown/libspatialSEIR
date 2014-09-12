@@ -13,6 +13,8 @@ transitionPriors::transitionPriors()
     gamma_ir = new double;
     gamma_ei_params = new double[2];
     gamma_ir_params = new double[2];
+    *gamma_ei = -1.0;
+    *gamma_ir = -1.0;
 }
 
 void transitionPriors::setUniformPriors()

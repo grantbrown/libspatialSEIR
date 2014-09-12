@@ -48,15 +48,19 @@ distanceModel::~distanceModel()
     delete numLocations;
 }
 
+int distanceModel::getNumDistanceMatrices()
+{
+    return((scaledDistArgs -> inData).size()); 
+}
+
 RCPP_MODULE(mod_distanceModel)
 {
     using namespace Rcpp;
     class_<distanceModel>( "distanceModel" )
-
     .constructor()
-
     .method("addDistanceMatrix", &distanceModel::addDistanceMatrix)
-    .method("summary", &distanceModel::summary);
+    .method("summary", &distanceModel::summary)
+    .property("numMatrices", &distanceModel::getNumDistanceMatrices, "Number of distict distance matrices.");
 }
 
 

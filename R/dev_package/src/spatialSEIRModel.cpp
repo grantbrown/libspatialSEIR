@@ -1,7 +1,14 @@
 #include <Rcpp.h>
-#include <spatialSEIRInterface.hpp>
+#include <Rmath.h>
+#include <spatialSEIRModel.hpp>
 #include <cmath>
+#include <dataModel.hpp>
+#include <exposureModel.hpp>
+#include <reinfectionModel.hpp>
 #include <distanceModel.hpp>
+#include <transitionPriors.hpp>
+#include <initialValueContainer.hpp>
+#include <samplingControl.hpp>
 #include <ModelContext.hpp>
 #include <LSS_FullConditionalList.hpp>
 #include <LSS_Samplers.hpp>
@@ -14,7 +21,7 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
-int spatialSEIRInterface::getUseDecorrelation()
+int spatialSEIRModel::getUseDecorrelation()
 {
     if (*(context -> isPopulated))
     {
@@ -24,7 +31,7 @@ int spatialSEIRInterface::getUseDecorrelation()
     return(-1);
 }
 
-void spatialSEIRInterface::setUseDecorrelation(int val)
+void spatialSEIRModel::setUseDecorrelation(int val)
 {
     if (*(context -> isPopulated))
     {
@@ -36,7 +43,7 @@ void spatialSEIRInterface::setUseDecorrelation(int val)
     return; 
 }
 
-int spatialSEIRInterface::setRandomSeed(int seedVal)
+int spatialSEIRModel::setRandomSeed(int seedVal)
 {
     if (*(context -> isPopulated))
     {
@@ -46,7 +53,7 @@ int spatialSEIRInterface::setRandomSeed(int seedVal)
     Rcpp::Rcout << "Context Not populated\n";
     return(-1);
 }
-int spatialSEIRInterface::simulate(int iters)
+int spatialSEIRModel::simulate(int iters)
 {
     if (*(context -> isPopulated))
     {
@@ -57,7 +64,7 @@ int spatialSEIRInterface::simulate(int iters)
 
 }
 
-void spatialSEIRInterface::setDevice(int platformId, int deviceId)
+void spatialSEIRModel::setDevice(int platformId, int deviceId)
 {
     if (*(context -> isPopulated))
     {
@@ -68,7 +75,7 @@ void spatialSEIRInterface::setDevice(int platformId, int deviceId)
     return;
 }
 
-void spatialSEIRInterface::setCompartmentSamplingMode(int mode)
+void spatialSEIRModel::setCompartmentSamplingMode(int mode)
 {
     int oldMode = getCompartmentSamplingMode();
     if (*(context -> isPopulated))
@@ -123,7 +130,7 @@ void spatialSEIRInterface::setCompartmentSamplingMode(int mode)
     Rcpp::Rcout << "Context Not populated\n";
 }
 
-int spatialSEIRInterface::getCompartmentSamplingMode()
+int spatialSEIRModel::getCompartmentSamplingMode()
 {
     if (*(context -> isPopulated))
     {
@@ -132,7 +139,7 @@ int spatialSEIRInterface::getCompartmentSamplingMode()
     return(-1);
 }
 
-void spatialSEIRInterface::setParameterSamplingMode(int mode)
+void spatialSEIRModel::setParameterSamplingMode(int mode)
 {
 
     int oldMode = getCompartmentSamplingMode();
@@ -184,7 +191,7 @@ void spatialSEIRInterface::setParameterSamplingMode(int mode)
     Rcpp::Rcout << "Context Not populated\n";
 }
 
-int spatialSEIRInterface::getParameterSamplingMode()
+int spatialSEIRModel::getParameterSamplingMode()
 {
     if (*(context -> isPopulated))
     {
@@ -195,7 +202,7 @@ int spatialSEIRInterface::getParameterSamplingMode()
 
 
 
-void spatialSEIRInterface::standardizeDistanceMatrices()
+void spatialSEIRModel::standardizeDistanceMatrices()
 {
     if (*(context -> isPopulated))
     {
@@ -217,7 +224,7 @@ void spatialSEIRInterface::standardizeDistanceMatrices()
 }
 
 
-int spatialSEIRInterface::setTrace(int locationIndex)
+int spatialSEIRModel::setTrace(int locationIndex)
 {
     if (*(context -> isPopulated))
     {
@@ -234,7 +241,7 @@ int spatialSEIRInterface::setTrace(int locationIndex)
     Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
     return(-1);
 }
-int spatialSEIRInterface::setTrace2(int locationIndex, int timeIndex)
+int spatialSEIRModel::setTrace2(int locationIndex, int timeIndex)
 {
     if (*(context -> isPopulated))
     {
@@ -254,7 +261,7 @@ int spatialSEIRInterface::setTrace2(int locationIndex, int timeIndex)
     return(-1);
 }
 
-void spatialSEIRInterface::setPredictionTraces()
+void spatialSEIRModel::setPredictionTraces()
 {
     if (*(context -> isPopulated))
     {
@@ -271,7 +278,7 @@ void spatialSEIRInterface::setPredictionTraces()
 
 }
 
-int spatialSEIRInterface::printDebugInfo()
+int spatialSEIRModel::printDebugInfo()
 {
     if (*(context -> isPopulated))
     {
@@ -283,7 +290,7 @@ int spatialSEIRInterface::printDebugInfo()
     return(-1);
 }
 
-int spatialSEIRInterface::calculateS()
+int spatialSEIRModel::calculateS()
 {
     if (*(context -> isPopulated))
     {
@@ -293,7 +300,7 @@ int spatialSEIRInterface::calculateS()
     Rcpp::Rcout << "Attept to calculate S on non-populated ModelContext.\n";
     return(-1);
 }
-int spatialSEIRInterface::calculateE()
+int spatialSEIRModel::calculateE()
 {
     if (*(context -> isPopulated))
     {
@@ -303,7 +310,7 @@ int spatialSEIRInterface::calculateE()
     Rcpp::Rcout << "Attept to calculate E on non-populated ModelContext.\n";
     return(-1);
 }
-int spatialSEIRInterface::calculateI()
+int spatialSEIRModel::calculateI()
 {
     if (*(context -> isPopulated))
     {
@@ -313,7 +320,7 @@ int spatialSEIRInterface::calculateI()
     Rcpp::Rcout << "Attept to calculate I on non-populated ModelContext.\n";
     return(-1);
 }
-int spatialSEIRInterface::calculateR()
+int spatialSEIRModel::calculateR()
 {
     if (*(context -> isPopulated))
     {
@@ -323,7 +330,7 @@ int spatialSEIRInterface::calculateR()
     Rcpp::Rcout << "Attept to calculate R on non-populated ModelContext.\n";
     return(-1);
 }
-int spatialSEIRInterface::calculateP_SE() 
+int spatialSEIRModel::calculateP_SE() 
 {
     if (*(context -> isPopulated))
     {
@@ -333,7 +340,7 @@ int spatialSEIRInterface::calculateP_SE()
     Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
     return(-1);
 }
-int spatialSEIRInterface::calculateP_SE2(int i, int j) 
+int spatialSEIRModel::calculateP_SE2(int i, int j) 
 {
     if (*(context -> isPopulated))
     {
@@ -343,7 +350,7 @@ int spatialSEIRInterface::calculateP_SE2(int i, int j)
     Rcpp::Rcout << "Attept to calculate P_SE on non-populated ModelContext.\n";
     return(-1);
 }
-int spatialSEIRInterface::calculateP_SE_OCL() 
+int spatialSEIRModel::calculateP_SE_OCL() 
 {
     if (*(context -> isPopulated))
     {
@@ -354,7 +361,7 @@ int spatialSEIRInterface::calculateP_SE_OCL()
     return(-1);
 }
 
-double spatialSEIRInterface::estimateR0()
+double spatialSEIRModel::estimateR0()
 {
     try
     {
@@ -372,7 +379,7 @@ double spatialSEIRInterface::estimateR0()
     }
 }
 
-double spatialSEIRInterface::estimateR02(int t)
+double spatialSEIRModel::estimateR02(int t)
 {
     try
     {
@@ -391,7 +398,7 @@ double spatialSEIRInterface::estimateR02(int t)
 
 }
 
-double spatialSEIRInterface::estimateR03(int i, int t)
+double spatialSEIRModel::estimateR03(int i, int t)
 {
     try
     {
@@ -410,7 +417,7 @@ double spatialSEIRInterface::estimateR03(int i, int t)
    
 }
 
-int spatialSEIRInterface::calculateP_RS()
+int spatialSEIRModel::calculateP_RS()
 {
     if (*(context -> isPopulated))
     {
@@ -421,7 +428,7 @@ int spatialSEIRInterface::calculateP_RS()
     return(-1);
 }
 
-void spatialSEIRInterface::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
+void spatialSEIRModel::updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange)
 {
     if ((*(context -> numIterations)) == 0 ||  !(*(context -> isPopulated)))
     {
@@ -431,7 +438,7 @@ void spatialSEIRInterface::updateSamplingParameters(double desiredRatio, double 
     (context -> updateSamplingParameters(desiredRatio, targetWidth, proportionChange));
 }
 
-void spatialSEIRInterface::printOCLSummary()
+void spatialSEIRModel::printOCLSummary()
 {
     if (*(context -> isPopulated))
     {
@@ -441,7 +448,7 @@ void spatialSEIRInterface::printOCLSummary()
     Rcpp::Rcout << "ModelContext has not been populated.\n";
 }
 
-void spatialSEIRInterface::printSamplingParameters()
+void spatialSEIRModel::printSamplingParameters()
 {
     if (*(context -> isPopulated))
     {
@@ -486,7 +493,7 @@ void spatialSEIRInterface::printSamplingParameters()
     Rcpp::Rcout << "Context not populated\n";
 }
 
-void spatialSEIRInterface::printAcceptanceRates()
+void spatialSEIRModel::printAcceptanceRates()
 {
     if (*(context -> isPopulated))
     {
@@ -554,7 +561,7 @@ void spatialSEIRInterface::printAcceptanceRates()
     Rcpp::Rcout << "Context not populated\n";
 }
 
-Rcpp::IntegerVector spatialSEIRInterface::getS0()
+Rcpp::IntegerVector spatialSEIRModel::getS0()
 {
     if (*(context -> isPopulated))
     {
@@ -572,7 +579,7 @@ Rcpp::IntegerVector spatialSEIRInterface::getS0()
     output[0] = -1;
     return(output);
 }
-Rcpp::IntegerVector spatialSEIRInterface::getE0()
+Rcpp::IntegerVector spatialSEIRModel::getE0()
 {
     if (*(context -> isPopulated))
     {
@@ -591,7 +598,7 @@ Rcpp::IntegerVector spatialSEIRInterface::getE0()
     return(output);
 
 }
-Rcpp::IntegerVector spatialSEIRInterface::getI0()
+Rcpp::IntegerVector spatialSEIRModel::getI0()
 {
     if (*(context -> isPopulated))
     {
@@ -609,7 +616,7 @@ Rcpp::IntegerVector spatialSEIRInterface::getI0()
     output[0] = -1;
     return(output);
 }
-Rcpp::IntegerVector spatialSEIRInterface::getR0()
+Rcpp::IntegerVector spatialSEIRModel::getR0()
 {
     if (*(context -> isPopulated))
     {
@@ -629,7 +636,7 @@ Rcpp::IntegerVector spatialSEIRInterface::getR0()
 
 }
 
-Rcpp::IntegerMatrix spatialSEIRInterface::getS()
+Rcpp::IntegerMatrix spatialSEIRModel::getS()
 {
     if (*(context -> isPopulated))
     {
@@ -647,7 +654,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getS()
     output[0] = -1;
     return(output);
 }
-Rcpp::IntegerMatrix spatialSEIRInterface::getE()
+Rcpp::IntegerMatrix spatialSEIRModel::getE()
 {
     if (*(context -> isPopulated))
     {
@@ -665,7 +672,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getE()
     output[0] = -1;
     return(output);
 }
-Rcpp::IntegerMatrix spatialSEIRInterface::getI()
+Rcpp::IntegerMatrix spatialSEIRModel::getI()
 {
     if (*(context -> isPopulated))
     {
@@ -684,7 +691,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getI()
     return(output);
 
 }
-Rcpp::IntegerMatrix spatialSEIRInterface::getR()
+Rcpp::IntegerMatrix spatialSEIRModel::getR()
 {
     if (*(context -> isPopulated))
     {
@@ -703,7 +710,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getR()
     return(output);
 }
 
-Rcpp::IntegerMatrix spatialSEIRInterface::getY()
+Rcpp::IntegerMatrix spatialSEIRModel::getY()
 {
     if (*(context -> isPopulated))
     {
@@ -722,7 +729,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getY()
 
 }
 
-Rcpp::IntegerMatrix spatialSEIRInterface::getS_star()
+Rcpp::IntegerMatrix spatialSEIRModel::getS_star()
 {
     if (*(context -> isPopulated))
     {
@@ -741,7 +748,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getS_star()
     return(output);
 }
 
-Rcpp::IntegerMatrix spatialSEIRInterface::getE_star()
+Rcpp::IntegerMatrix spatialSEIRModel::getE_star()
 {
     if (*(context -> isPopulated))
     {
@@ -760,7 +767,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getE_star()
     return(output);
 }
 
-Rcpp::IntegerMatrix spatialSEIRInterface::getI_star()
+Rcpp::IntegerMatrix spatialSEIRModel::getI_star()
 {
     if (*(context -> isPopulated))
     {
@@ -779,7 +786,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getI_star()
     return(output);
 }
 
-Rcpp::IntegerMatrix spatialSEIRInterface::getR_star()
+Rcpp::IntegerMatrix spatialSEIRModel::getR_star()
 {
     if (*(context -> isPopulated))
     {
@@ -798,7 +805,7 @@ Rcpp::IntegerMatrix spatialSEIRInterface::getR_star()
     return(output);
 }
 
-Rcpp::NumericMatrix spatialSEIRInterface::getP_SE()
+Rcpp::NumericMatrix spatialSEIRModel::getP_SE()
 {
     if (*(context -> isPopulated))
     {
@@ -817,7 +824,7 @@ Rcpp::NumericMatrix spatialSEIRInterface::getP_SE()
     return(output);
 }
 
-Rcpp::NumericVector spatialSEIRInterface::getGenerationMatrix(int t)
+Rcpp::NumericVector spatialSEIRModel::getGenerationMatrix(int t)
 {
     if (!*(context -> isPopulated))
     {
@@ -853,7 +860,7 @@ Rcpp::NumericVector spatialSEIRInterface::getGenerationMatrix(int t)
     }
 }
 
-Rcpp::NumericVector spatialSEIRInterface::getIntegratedGenerationMatrix(int t)
+Rcpp::NumericVector spatialSEIRModel::getIntegratedGenerationMatrix(int t)
 {
     if (!*(context -> isPopulated))
     {
@@ -879,7 +886,7 @@ Rcpp::NumericVector spatialSEIRInterface::getIntegratedGenerationMatrix(int t)
     return(output);
 }
 
-Rcpp::NumericVector spatialSEIRInterface::getP_RS()
+Rcpp::NumericVector spatialSEIRModel::getP_RS()
 {
     if (!*(context -> isPopulated))
     {
@@ -897,7 +904,7 @@ Rcpp::NumericVector spatialSEIRInterface::getP_RS()
     return(output);
 }
 
-Rcpp::NumericVector spatialSEIRInterface::getBeta()
+Rcpp::NumericVector spatialSEIRModel::getBeta()
 {
     if (!*(context -> isPopulated))
     {
@@ -915,7 +922,7 @@ Rcpp::NumericVector spatialSEIRInterface::getBeta()
     return(output);
 
 }
-Rcpp::NumericVector spatialSEIRInterface::getBetaP_RS()
+Rcpp::NumericVector spatialSEIRModel::getBetaP_RS()
 {
     if (!*(context -> isPopulated))
     {
@@ -932,7 +939,7 @@ Rcpp::NumericVector spatialSEIRInterface::getBetaP_RS()
     }
     return(output);
 }
-Rcpp::NumericVector spatialSEIRInterface::getP_EI()
+Rcpp::NumericVector spatialSEIRModel::getP_EI()
 {
     if (!*(context -> isPopulated))
     {
@@ -949,7 +956,7 @@ Rcpp::NumericVector spatialSEIRInterface::getP_EI()
     }
     return(output);
 }
-Rcpp::NumericVector spatialSEIRInterface::getP_IR()
+Rcpp::NumericVector spatialSEIRModel::getP_IR()
 {
     if (!*(context -> isPopulated))
     {
@@ -967,7 +974,7 @@ Rcpp::NumericVector spatialSEIRInterface::getP_IR()
     return(output);
 }
 
-Rcpp::NumericVector spatialSEIRInterface::getRho()
+Rcpp::NumericVector spatialSEIRModel::getRho()
 {
     Rcpp::NumericVector output(1);
     if (*(context -> isPopulated))
@@ -979,7 +986,7 @@ Rcpp::NumericVector spatialSEIRInterface::getRho()
     output[0] = -1.0;
 }
 
-Rcpp::NumericVector spatialSEIRInterface::getPhi()
+Rcpp::NumericVector spatialSEIRModel::getPhi()
 {
     Rcpp::NumericVector output(1);
     if (*(context -> isPopulated))
@@ -993,28 +1000,28 @@ Rcpp::NumericVector spatialSEIRInterface::getPhi()
 
 
 
-int spatialSEIRInterface::getDebug()
+int spatialSEIRModel::getDebug()
 {
     int out;
     out = *debug;
     return(out);    
 }
-void spatialSEIRInterface::setDebug(int debug_)
+void spatialSEIRModel::setDebug(int debug_)
 {
    *debug = debug_;  
 }
-int spatialSEIRInterface::getVerbose()
+int spatialSEIRModel::getVerbose()
 {
     int output;
     output= *verbose;
     return(output);
 }
-void spatialSEIRInterface::setVerbose(int verbose_)
+void spatialSEIRModel::setVerbose(int verbose_)
 {
    *verbose = verbose_; 
 }
 
-spatialSEIRInterface::spatialSEIRInterface()
+spatialSEIRModel::spatialSEIRModel()
 {
     // Create the empty ModelContext object  
     context = new ModelContext();
@@ -1024,98 +1031,122 @@ spatialSEIRInterface::spatialSEIRInterface()
     *debug = 0;
 }
 
-int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
-                     SEXP xDim,
-                     SEXP zDim,
-                     SEXP xPrsDim,
-                     SEXP S0_,
-                     SEXP E0_,
-                     SEXP I0_,
-                     SEXP R0_,
-                     SEXP Y_,
-                     SEXP Sstar, 
-                     SEXP Estar, 
-                     SEXP Istar, 
-                     SEXP Rstar, 
-                     SEXP offset_,
-                     SEXP X_,
-                     SEXP Z_,
-                     SEXP X_pRS_,
-                     const distanceModel& distModel_,
-                     SEXP rho_,
-                     SEXP phi_,
-                     SEXP priorAlpha_pEI_,
-                     SEXP priorBeta_pEI_,
-                     SEXP priorAlpha_pIR_,
-                     SEXP priorBeta_pIR_,
-                     SEXP priorAlpha_phi_,
-                     SEXP priorBeta_phi_,
-                     SEXP beta_,
-                     SEXP betaPriorPrecision_,
-                     SEXP betaPrs_,
-                     SEXP betaPrsPriorPrecision_,
-                     SEXP gamma_ei_,
-                     SEXP gamma_ir_,
-                     SEXP N_,
-                     SEXP outFile,
-                     SEXP iterationStride,
-                     SEXP steadyStateConstraintPrecision_,
-                     SEXP verboseFlag,
-                     SEXP debugFlag,
-                     SEXP sliceWidths,
-                     SEXP reinfectionMode,
-                     SEXP dataModel_)
+int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
+                          const exposureModel& exposureModel_,
+                          const reinfectionModel& reinfectionModel_,
+                          const distanceModel& distanceModel_,
+                          const transitionPriors& transitionPriors_,
+                          const initialValueContainer& initialValueContainer_,
+                          const samplingControl& samplingControl_)
 {
     int err = 0;
-    distModel = new const distanceModel;
-    distModel = &distModel_;
-    Rcpp::Rcout << "Current DM obj is like this: " << distModel << "\n";
+    dataModelInstance = new const dataModel;
+    exposureModelInstance = new const exposureModel;
+    reinfectionModelInstance = new const reinfectionModel;
+    distanceModelInstance = new const distanceModel;
+    transitionPriorsInstance = new const transitionPriors;
+    initialValueContainerInstance = new const initialValueContainer;
+    samplingControlInstance = new const samplingControl;
+
+    dataModelInstance = &dataModel_;
+    exposureModelInstance = &exposureModel_;
+    reinfectionModelInstance = &reinfectionModel_;
+    distanceModelInstance = &distanceModel_;
+    transitionPriorsInstance = &transitionPriors_;
+    initialValueContainerInstance = &initialValueContainer_;
+    samplingControlInstance = &samplingControl_;
 
 
-    //Deal with the data conversion from R to c++
-    Rcpp::IntegerVector compartmentDimensions(compMatDim);
-    Rcpp::IntegerVector covariateDimensions_x(xDim);
-    Rcpp::IntegerVector covariateDimensions_z(zDim);
-    Rcpp::IntegerVector covariateDimension_pRS_x(xPrsDim);
-    Rcpp::IntegerVector S0(S0_);
-    Rcpp::IntegerVector E0(E0_);
-    Rcpp::IntegerVector I0(I0_);
-    Rcpp::IntegerVector R0(R0_);
+    if (*(dataModelInstance -> nLoc) != (exposureModelInstance -> xDim)[0])
+    {
+        Rcpp::Rcout << "Exposure model and data model imply different number of locations\n";
+        throw(-1);
+    }
+    if (*(dataModelInstance -> nCol) != ((exposureModelInstance -> zDim)[0])/((exposureModelInstance -> xDim)[0]))
+    {
+        Rcpp::Rcout << "Exposure model and data model imply different number of time points\n";
+        throw(-1);
+    }
+    if (*(dataModelInstance -> nLoc) != (*(distanceModelInstance -> numLocations)))
+    {
+        Rcpp::Rcout << "Data model and distance model imply different number of locations\n";
+        throw(-1);
+    }
+    if ((*(dataModelInstance -> nLoc) != (initialValueContainer -> compMatDim)[1]) || 
+        (*(dataModelInstance -> nTpt) != (initialValueContainer -> compMatDim)[0]))
+    {
+        Rcpp::Rcout << "Data model and initial value container have different dimensions\n";
+        throw(-1);
+    }
+    if (*(reinfectionModelInstance -> reinfectMode) == 3)
+    {
+        // No reinfection
+    }
+    else
+    {
+        if ((reinfectionModelInstance -> xDim)[0] != *(dataModelInstance -> nTpt))
+        {
+            Rcpp::Rcout << "Reinfection and data mode time points differ.\n";
+            throw(-1);
+        }
+    }
+    if (*(transitionPriorsInstance -> gamma_ei) < 0 || 
+        *(transitionPriorsInstance -> gamma_ir) < 0)
+    {
+        Rcpp::Rcout << "Transition priors haven't been populated (or have invalid values)\n";
+        throw(-1);
+    }
+    
+    if (*(reinfectionModelInstance -> reinfectMode) > 2)
+    {
+        int maxItr = ((*(dataModelInstance -> compartmentDimensions))[0]
+                     *(*(dataModelInstance -> compartmentDimensions))[1]);
+        int i;
+        for (i = 0; i < maxItr; i++)
+        {
+            if ((initialValueContainerInstance -> S_star)[i] != 0)
+            {
+                Rcpp::Rcout << "Error: reinfectionMode indicates that no reinfection should occur, but nonzero S_star provided\n";
+                throw(-1);
+            }
+        }
+    }
 
-    Rcpp::IntegerVector Y(Y_);
-    Rcpp::IntegerVector S_star(Sstar);
-    Rcpp::IntegerVector E_star(Estar);
-    Rcpp::IntegerVector I_star(Istar);
-    Rcpp::IntegerVector R_star(Rstar);
+    if (*(dataModel -> dataModelType) != 0 && *(dataModel ->setMode) < 0)
+    {
+        Rcpp::Rcout << "Non-identity data model requested, but prior parameters were not supplied.\n"; 
+        throw(-1);
+    }
 
-    Rcpp::NumericVector offset(offset_);
+    int* nTpt = &((*(dataModelInstance -> compartmentDimensions))[0]); 
+    int* nLoc = &((*(dataModelInstance -> compartmentDimensions))[1]);
+    
+    Rcpp::Rcout << "Building Model.\n   Number of Locations: " << *nLoc; 
+        << "\n";
+    Rcpp::Rcout << "   Number of Time Points: " << *nTpt
+        << "\n";
 
-    Rcpp::NumericVector X(X_);
-    Rcpp::NumericVector Z(Z_);
-    Rcpp::NumericVector X_pRS(X_pRS_);
+    
+    int numDistMatrices = (distanceModelInstance -> getNUmDistanceMatrices());
+    Rcpp::NumericVector rho(numDistMatrices);
+    double rhoSum = 0.0;
+    for (i = 0; i < numDistMatrices; i++)
+    {
+        rho[i] = R::rgamma(0.001,0.1);
+        rhoSum += rho[i];
+    }
+    if (rhoSum >= 0.5)
+    {
+        for (i = 0; i < numDistMatrices; i++)
+        {
+            rho[i]*=(1/rhoSum)*0.1;
+        }
+    }
 
-    Rcpp::NumericVector rho(rho_);
-    Rcpp::NumericVector phi(phi_);
+    Rcpp::NumericVector phi(1);
+    phi[0] = (dataModelInstance -> initialParameterValues)[0];
 
-    Rcpp::NumericVector priorAlpha_pEI(priorAlpha_pEI_);
-    Rcpp::NumericVector priorBeta_pEI(priorBeta_pEI_);
-    Rcpp::NumericVector priorAlpha_pIR(priorAlpha_pIR_);
-    Rcpp::NumericVector priorBeta_pIR(priorBeta_pIR_);
-    Rcpp::NumericVector priorAlpha_phi(priorAlpha_phi_);
-    Rcpp::NumericVector priorBeta_phi(priorBeta_phi_);
-
-    Rcpp::NumericVector dataModel(dataModel_);
-
-    Rcpp::NumericVector beta(beta_);
-    Rcpp::NumericVector betaPriorPrecision(betaPriorPrecision_);
-    Rcpp::NumericVector betaPrs(betaPrs_);
-    Rcpp::NumericVector betaPrsPriorPrecision(betaPrsPriorPrecision_);
-    Rcpp::NumericVector gamma_ei(gamma_ei_);
-    Rcpp::NumericVector gamma_ir(gamma_ir_);
-    Rcpp::IntegerVector N(N_);
-
-    Rcpp::NumericVector steadyStateConstraintPrecision(steadyStateConstraintPrecision_);
-    Rcpp::NumericVector sliceParams(sliceWidths);
+    double* sliceParams = (samplingControlInstance -> sliceWidth);
 
     Rcpp::IntegerVector reinfectMode(reinfectionMode);
 
@@ -1126,146 +1157,23 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     Rcpp::IntegerVector dFlag(debugFlag);
     *verbose = vFlag[0];
     *debug = dFlag[0];
-
-    Rcpp::IntegerVector chainStride(iterationStride);
     
-
-    try
-    {
-
-        // Sanity check the input data. 
-        if (compartmentDimensions.size() != 2)
-        {
-            Rcpp::Rcout << "Compartments must be two dimensional.\n";
-            throw(-1);
-        }
-        if (covariateDimensions_x.size() != 2 || covariateDimensions_z.size() != 2)
-        {
-            Rcpp::Rcout << "Covariates must be two dimensional.\n";
-            throw(-1);
-        }
-        if (vFlag.size() != 1 || dFlag.size() != 1)
-        {
-            Rcpp::Rcout << "Verbose and debug flags must be length 1\n";
-        }
-        if (chainStride.size() != 1)
-        {
-            Rcpp::Rcout << "Chain stride must be length 1\n";
-        }
-
-        int compartmentSize = (compartmentDimensions[0]*compartmentDimensions[1]);
-        if (S0.size() != compartmentDimensions[1])
-        {
-            Rcpp::Rcout << "Invalid S0 Compartment Size!\n";
-            throw(-1);
-        }
-        if (E0.size() != compartmentDimensions[1])
-        {
-            Rcpp::Rcout << "Invalid E_star0 Compartment Size!\n";
-            throw(-1);
-        }
-        if (I0.size() != compartmentDimensions[1])
-        {
-            Rcpp::Rcout << "Invalid I_star0 Compartment Size!\n";
-            throw(-1);
-        }
-        if (R0.size() != compartmentDimensions[1])
-        {
-            Rcpp::Rcout << "Invalid R_star0 Compartment Size!\n";
-            throw(-1);
-        }
-
-        if (Y.size() != compartmentSize)
-        {
-            Rcpp::Rcout << "Invalid Y Size!\n";
-            throw(-1);
-        }
-        if (S_star.size() != compartmentSize)
-        {
-            Rcpp::Rcout << "Invalid S_star Compartment Size!\n";
-            throw(-1);
-        }
-        if (E_star.size() != compartmentSize)
-        {
-            Rcpp::Rcout << "Invalid E_star Compartment Size!\n";
-            throw(-1);
-        }
-        if (I_star.size() != compartmentSize)
-        {
-            Rcpp::Rcout << "Invalid I_star Compartment Size!\n";
-            throw(-1);
-        }
-        if (R_star.size() != compartmentSize)
-        {
-            Rcpp::Rcout << "Invalid R_star Compartment Size!\n";
-            throw(-1);
-        }
-        if (offset.size() != compartmentDimensions[0])
-        {
-            Rcpp::Rcout << "Invalid Offset Size: " << offset.size() << "\n";
-            throw(-1);
-        }
-        if (N.size() != compartmentSize)
-        {
-            Rcpp::Rcout << "Invalid N Compartment Size!\n";
-            throw(-1);
-        }
-        if ((X_pRS.size() % compartmentDimensions[0]) != 0 && reinfectMode[0] <= 2)
-        {
-            Rcpp::Rcout << "Invalid X_pRS size.\n";
-            Rcpp::Rcout << "Size: " << X_pRS.size() << ", Number of Time Points: " << compartmentDimensions[0] << "\n";
-        }
-
-        if (sliceParams.size() != 11)
-        {
-            Rcpp::Rcout << "Slice sampling parameters must be of length 11: S*,E*,R*,S0,I0,beta,betaPrs,rho,gamma_ei,gamma_ir,phi\n";
-            throw(-1);
-        }
-        if (reinfectMode[0] > 2)
-        {
-            int maxItr = (compartmentDimensions[0]*compartmentDimensions[1]); 
-            int i;
-            for (i = 0; i < maxItr; i++)
-            {
-                if (S_star[i] != 0)
-                {
-                    Rcpp::Rcout << "Error: reinfectionMode indicates that no reinfection shoul occur, but nonzero S_star provided\n";
-                    throw(-1);
-                }
-            }
-        }
-    }
-    catch(int e)
-    {
-        Rcpp::Rcout << "Errors Encountered, exiting.\n";
-        delete chainOutputFile;
-        return -1;
-    }
-
-
-
-
-
-    Rcpp::Rcout << "Building Model.\n   Number of Locations: " << compartmentDimensions[1] 
-        << "\n";
-    Rcpp::Rcout << "   Number of Time Points: " << compartmentDimensions[0] 
-        << "\n";
 
     // Gather information for the creation of the 
     // covariate matrix
     covariateArgs xArgs;
-    xArgs.inData_x = X.begin();
-    xArgs.inData_z = Z.begin();
-    xArgs.inRow_x = &covariateDimensions_x[0];
-    xArgs.inCol_x = &covariateDimensions_x[1];
-    xArgs.inRow_z = &covariateDimensions_z[0];
-    xArgs.inCol_z = &covariateDimensions_z[1];
+    xArgs.inData_x = (exposureModelInstance -> X);
+    xArgs.inData_z = (exposureModelInstance -> Z);
+    xArgs.inRow_x = &((exposureModelInstance -> xDim)[0]);
+    xArgs.inCol_x = &((exposureModelInstance -> xDim)[1]);
+    xArgs.inRow_z = &((exposureModelInstance -> zDim)[0]);
+    xArgs.inCol_z = &((exposureModelInstance -> zDim)[1]);
 
     covariateArgs xPrsArgs; 
-    xPrsArgs.inData_x = X_pRS.begin();
+    xPrsArgs.inData_x = (reinfectionModelInstance -> X);
     xPrsArgs.inData_z = NULL;
-    xPrsArgs.inRow_x = &covariateDimension_pRS_x[0];
-    xPrsArgs.inCol_x = &covariateDimension_pRS_x[1];
+    xPrsArgs.inRow_x = &((reinfectionModelInstance -> xDim)[0]);
+    xPrsArgs.inCol_x = &((reinfectionModelInstance -> xDim)[1]);
     // Clean this up, pass values instead. 
     int zeroVal = 0;
     xPrsArgs.inRow_z = &zeroVal;
@@ -1280,9 +1188,9 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     modelConfig.reinfectionMode = reinfectMode[0];
     modelConfig.compartmentSamplingMode = COMPARTMENT_METROPOLIS_SAMPLER;
     modelConfig.parameterSamplingMode = PARAMETER_JOINT_METROPOLIS_SAMPLER;
-    modelConfig.indexLength = std::floor(0.25*compartmentDimensions[0]*compartmentDimensions[1]); // Update 25% per iteration. 
+    modelConfig.indexLength = std::floor(0.25*(*nTpt)*(*nLoc)); // Update 25% per iteration. 
     modelConfig.useDecorrelation = 0;
-    modelConfig.dataModel = dataModel[0];
+    modelConfig.dataModel = *(dataModel -> dataModelType) ;
     Rcpp::Rcout << "Setting index length to be: " << (modelConfig.indexLength) << "\n";
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
@@ -1297,62 +1205,58 @@ int spatialSEIRInterface::buildSpatialSEIRInterface(SEXP compMatDim,
     sliceParamStruct.gammaIrWidth = &sliceParams[9];
     sliceParamStruct.phiWidth = &sliceParams[10];
 
-    S_starArgs.inData = S_star.begin();
-    S_starArgs.inRow = &compartmentDimensions[0];
-    S_starArgs.inCol = &compartmentDimensions[1];
-    S_starArgs.steadyStateConstraintPrecision = steadyStateConstraintPrecision[0];
+    S_starArgs.inData = (initialValueContainerInstance -> S_star);
+    S_starArgs.inRow = nTpt;
+    S_starArgs.inCol = nLoc;
+    S_starArgs.steadyStateConstraintPrecision = (samplingControlInstance -> steadyStateConstraintPrecision)[0];
 
-    E_starArgs.inData = E_star.begin();
-    E_starArgs.inRow = &compartmentDimensions[0];
-    E_starArgs.inCol = &compartmentDimensions[1];
-    E_starArgs.steadyStateConstraintPrecision = steadyStateConstraintPrecision[0];
+    E_starArgs.inData = (initialValueContainerInstance -> E_star);
+    E_starArgs.inRow = nTpt;
+    E_starArgs.inCol = nLoc;
+    E_starArgs.steadyStateConstraintPrecision = (samplingControlInstance -> steadyStateConstraintPrecision)[0];
 
+    I_starArgs.inData = (initialValueContainerInstance -> I_star);
+    I_starArgs.inRow = nTpt;
+    I_starArgs.inCol = nLoc;
 
-    I_starArgs.inData = I_star.begin();
-    I_starArgs.inRow = &compartmentDimensions[0];
-    I_starArgs.inCol = &compartmentDimensions[1];
-
-    R_starArgs.inData = R_star.begin();
-    R_starArgs.inRow = &compartmentDimensions[0];
-    R_starArgs.inCol = &compartmentDimensions[1];
-    R_starArgs.steadyStateConstraintPrecision = steadyStateConstraintPrecision[0];
+    R_starArgs.inData = (initialValueContainerInstance -> R_star);
+    R_starArgs.inRow = nTpt;
+    R_starArgs.inCol = nLoc;
+    R_starArgs.steadyStateConstraintPrecision = (samplingControlInstance -> steadyStateConstraintPrecision)[0];
 
 
     priorControl priorValues;
-    priorValues.betaPriorPrecision = betaPriorPrecision[0];
-    priorValues.P_EI_priorAlpha = priorAlpha_pEI[0];
-    priorValues.P_EI_priorBeta = priorBeta_pEI[0];
-    priorValues.P_IR_priorAlpha = priorAlpha_pIR[0];
-    priorValues.P_IR_priorBeta = priorBeta_pIR[0];
-    priorValues.betaPrsPriorPrecision = betaPrsPriorPrecision[0];
-    priorValues.Phi_priorAlpha = priorAlpha_phi[0];
-    priorValues.Phi_priorBeta = priorBeta_phi[0];
-
-
-
+    priorValues.betaPriorPrecision = *(exposureModelInstance -> betaPriorPrecision);
+    priorValues.P_EI_priorAlpha = (transitionPriorsInstance -> gamma_ei_params)[0];
+    priorValues.P_EI_priorBeta = (transitionPriorsInstance -> gamma_ei_params)[1];
+    priorValues.P_IR_priorAlpha = (transitionPriorsInstance -> gamma_ir_params)[0];
+    priorValues.P_IR_priorBeta = (transitionPriorsInstance -> gamma_ir_params)[1];
+    priorValues.betaPrsPriorPrecision = *(reinfectionModelInstance -> betaPriorPrecision);
+    priorValues.Phi_priorAlpha = (dataModelInstance -> priorParameters)[0];
+    priorValues.Phi_priorBeta = (dataModelInstance -> priorParameters)[1];
+    
 
     // Create the InitData object 
     InitData A0;
-    A0.populate(S0.begin(),E0.begin(),I0.begin(),R0.begin()
-            ,&compartmentDimensions[1]);
+    A0.populate((initialValueContainerInstance -> S0),
+                (initialValueContainerInstance -> E0),
+                (initialValueContainerInstance -> I0),
+                (initialValueContainerInstance -> R0),
+                nLoc);
 
-    //Rcpp::Rcout << compartmentDimensions[0] << " " << compartmentDimensions[1] << "\n";
-    //Rcpp::Rcout << (xArgs.inData_x)[1] << "\n";
-    context -> populate(&A0, &xArgs, &xPrsArgs, offset.begin(), Y.begin(), &S_starArgs, &E_starArgs, &I_starArgs, 
+    context -> populate(&A0, &xArgs, &xPrsArgs, (exposureModelInstance -> offset), (dataModelInstance -> Y), &S_starArgs, &E_starArgs, &I_starArgs, 
                         &R_starArgs, distModel -> scaledDistArgs,
-                        rho.begin(),phi.begin(),beta.begin(),gamma_ei.begin(), gamma_ir.begin(),
-                        betaPrs.begin(),N.begin(),&sliceParamStruct, &priorValues,
+                        rho.begin(),phi.begin(),(exposureModelInstance -> beta),(transitionPriorsInstance -> gamma_ei), (transitionPriorsInstance -> gamma_ir),
+                        (reinfectionModelInstance -> beta), (initialValueContainerInstance -> N),&sliceParamStruct, &priorValues,
                         modelConfig);
 
     // Set up output stream
-    context -> fileProvider -> populate(context, chainOutputFile,
-            (int*) chainStride.begin());
-
+    context -> fileProvider -> populate(context, chainOutputFile,(samplingControlInstance -> iterationStride));
     return(err);
 }
 
 
-spatialSEIRInterface::~spatialSEIRInterface()
+spatialSEIRModel::~spatialSEIRModel()
 {   
     // Context handles the complicated cleanup
     delete verbose;
@@ -1361,67 +1265,67 @@ spatialSEIRInterface::~spatialSEIRInterface()
 }
 
 
-RCPP_MODULE(mod_spatialSEIRInterface)
+RCPP_MODULE(mod_spatialSEIRModel)
 {
     using namespace Rcpp;
-    class_<spatialSEIRInterface>( "spatialSEIRInterface" )
+    class_<spatialSEIRModel>( "spatialSEIRModel" )
 
     .constructor()
 
-    .method("buildSpatialSEIRInterface", &spatialSEIRInterface::buildSpatialSEIRInterface)
-    .method("printDebugInfo", &spatialSEIRInterface::printDebugInfo)
-    .method("setRandomSeed", &spatialSEIRInterface::setRandomSeed)
-    .method("simulate", &spatialSEIRInterface::simulate)
-    .method("setPredictionTraces", &spatialSEIRInterface::setPredictionTraces)
-    .method("setTrace", &spatialSEIRInterface::setTrace)
-    .method("setTrace", &spatialSEIRInterface::setTrace2)
-    .method("setDevice", &spatialSEIRInterface::setDevice)
-    .method("calculateS", &spatialSEIRInterface::calculateS)
-    .method("calculateE", &spatialSEIRInterface::calculateE)
-    .method("calculateI", &spatialSEIRInterface::calculateI)
-    .method("calculateR", &spatialSEIRInterface::calculateR)
-    .method("calculateP_RS", &spatialSEIRInterface::calculateP_RS)
-    .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE)
-    .method("calculateP_SE", &spatialSEIRInterface::calculateP_SE2)
-    .method("calculateP_SE_OCL", &spatialSEIRInterface::calculateP_SE_OCL)
-    .method("estimateR0", &spatialSEIRInterface::estimateR03)
-    .method("estimateR0", &spatialSEIRInterface::estimateR02)
-    .method("estimateR0", &spatialSEIRInterface::estimateR0)
-    .method("printAcceptanceRates", &spatialSEIRInterface::printAcceptanceRates)
-    .method("printOCLSummary", &spatialSEIRInterface::printOCLSummary)
-    .method("printSamplingParameters", &spatialSEIRInterface::printSamplingParameters)
-    .method("updateSamplingParameters", &spatialSEIRInterface::updateSamplingParameters)
-    .method("getGenerationMatrix", &spatialSEIRInterface::getGenerationMatrix)
-    .method("getIntegratedGenerationMatrix", &spatialSEIRInterface::getIntegratedGenerationMatrix)
-    .method("standardizeDistanceMatrices", &spatialSEIRInterface::standardizeDistanceMatrices)
-    .property("S", &spatialSEIRInterface::getS, "Susceptible Compartment Matrix")
-    .property("E", &spatialSEIRInterface::getE, "Exposed Compartment Matrix")
-    .property("I", &spatialSEIRInterface::getI, "Infectious Compartment Matrix")
-    .property("R", &spatialSEIRInterface::getR, "Removed Compartment Matrix")
-    .property("S0", &spatialSEIRInterface::getS0, "Initial Susceptible Compartment Matrix")
-    .property("E0", &spatialSEIRInterface::getE0, "Initial Exposed Compartment Matrix")
-    .property("I0", &spatialSEIRInterface::getI0, "Initial Infectious Compartment Matrix")
-    .property("R0", &spatialSEIRInterface::getR0, "Initial Removed Compartment Matrix")
-    .property("S_star", &spatialSEIRInterface::getS_star, "Removed to Susceptible Transition Matrix")
-    .property("E_star", &spatialSEIRInterface::getE_star, "Susceptible to Exposed Transition Matrix")
-    .property("I_star", &spatialSEIRInterface::getI_star, "Exposed to Infectious Transition Matrix")
-    .property("R_star", &spatialSEIRInterface::getR_star, "Infectious to Removed Transition Matrix")
-    .property("p_se", &spatialSEIRInterface::getP_SE, "Exposure Probability Matrix")
-    .property("p_ei", &spatialSEIRInterface::getP_EI, "E to I Transition Probability")
-    .property("p_ir", &spatialSEIRInterface::getP_IR, "I to R Transition Probability")
-    .property("p_rs", &spatialSEIRInterface::getP_RS, "R-S Transition Probability Vector")
-    .property("beta", &spatialSEIRInterface::getBeta, "Exposure Process Regression Parameters")
-    .property("betaP_RS", &spatialSEIRInterface::getBetaP_RS, "R-S Transition Process Regression Parameters")
-    .property("rho", &spatialSEIRInterface::getRho, "Spatial Dependence Term")
-    .property("phi", &spatialSEIRInterface::getPhi, "Overdispersion Term")
-    .property("Y", &spatialSEIRInterface::getY, "Raw Data")
-    .property("parameterSamplingMode", &spatialSEIRInterface::getParameterSamplingMode, 
-            &spatialSEIRInterface::setParameterSamplingMode, "Type of sampler used for non-compartment parameters.")
-    .property("compartmentSamplingMode", &spatialSEIRInterface::getCompartmentSamplingMode, 
-            &spatialSEIRInterface::setCompartmentSamplingMode, "Type of sampler used for disease compartments.")
-    .property("debug", &spatialSEIRInterface::getDebug, &spatialSEIRInterface::setDebug, "Show debug level output?")
-    .property("verbose", &spatialSEIRInterface::getVerbose, &spatialSEIRInterface::setVerbose, "Show verbose level output?")
-    .property("useDecorrelation", &spatialSEIRInterface::getUseDecorrelation, &spatialSEIRInterface::setUseDecorrelation, "Use decorrelation sampling?")
+    .method("buildSpatialSEIRModel", &spatialSEIRModel::buildSpatialSEIRModel)
+    .method("printDebugInfo", &spatialSEIRModel::printDebugInfo)
+    .method("setRandomSeed", &spatialSEIRModel::setRandomSeed)
+    .method("simulate", &spatialSEIRModel::simulate)
+    .method("setPredictionTraces", &spatialSEIRModel::setPredictionTraces)
+    .method("setTrace", &spatialSEIRModel::setTrace)
+    .method("setTrace", &spatialSEIRModel::setTrace2)
+    .method("setDevice", &spatialSEIRModel::setDevice)
+    .method("calculateS", &spatialSEIRModel::calculateS)
+    .method("calculateE", &spatialSEIRModel::calculateE)
+    .method("calculateI", &spatialSEIRModel::calculateI)
+    .method("calculateR", &spatialSEIRModel::calculateR)
+    .method("calculateP_RS", &spatialSEIRModel::calculateP_RS)
+    .method("calculateP_SE", &spatialSEIRModel::calculateP_SE)
+    .method("calculateP_SE", &spatialSEIRModel::calculateP_SE2)
+    .method("calculateP_SE_OCL", &spatialSEIRModel::calculateP_SE_OCL)
+    .method("estimateR0", &spatialSEIRModel::estimateR03)
+    .method("estimateR0", &spatialSEIRModel::estimateR02)
+    .method("estimateR0", &spatialSEIRModel::estimateR0)
+    .method("printAcceptanceRates", &spatialSEIRModel::printAcceptanceRates)
+    .method("printOCLSummary", &spatialSEIRModel::printOCLSummary)
+    .method("printSamplingParameters", &spatialSEIRModel::printSamplingParameters)
+    .method("updateSamplingParameters", &spatialSEIRModel::updateSamplingParameters)
+    .method("getGenerationMatrix", &spatialSEIRModel::getGenerationMatrix)
+    .method("getIntegratedGenerationMatrix", &spatialSEIRModel::getIntegratedGenerationMatrix)
+    .method("standardizeDistanceMatrices", &spatialSEIRModel::standardizeDistanceMatrices)
+    .property("S", &spatialSEIRModel::getS, "Susceptible Compartment Matrix")
+    .property("E", &spatialSEIRModel::getE, "Exposed Compartment Matrix")
+    .property("I", &spatialSEIRModel::getI, "Infectious Compartment Matrix")
+    .property("R", &spatialSEIRModel::getR, "Removed Compartment Matrix")
+    .property("S0", &spatialSEIRModel::getS0, "Initial Susceptible Compartment Matrix")
+    .property("E0", &spatialSEIRModel::getE0, "Initial Exposed Compartment Matrix")
+    .property("I0", &spatialSEIRModel::getI0, "Initial Infectious Compartment Matrix")
+    .property("R0", &spatialSEIRModel::getR0, "Initial Removed Compartment Matrix")
+    .property("S_star", &spatialSEIRModel::getS_star, "Removed to Susceptible Transition Matrix")
+    .property("E_star", &spatialSEIRModel::getE_star, "Susceptible to Exposed Transition Matrix")
+    .property("I_star", &spatialSEIRModel::getI_star, "Exposed to Infectious Transition Matrix")
+    .property("R_star", &spatialSEIRModel::getR_star, "Infectious to Removed Transition Matrix")
+    .property("p_se", &spatialSEIRModel::getP_SE, "Exposure Probability Matrix")
+    .property("p_ei", &spatialSEIRModel::getP_EI, "E to I Transition Probability")
+    .property("p_ir", &spatialSEIRModel::getP_IR, "I to R Transition Probability")
+    .property("p_rs", &spatialSEIRModel::getP_RS, "R-S Transition Probability Vector")
+    .property("beta", &spatialSEIRModel::getBeta, "Exposure Process Regression Parameters")
+    .property("betaP_RS", &spatialSEIRModel::getBetaP_RS, "R-S Transition Process Regression Parameters")
+    .property("rho", &spatialSEIRModel::getRho, "Spatial Dependence Term")
+    .property("phi", &spatialSEIRModel::getPhi, "Overdispersion Term")
+    .property("Y", &spatialSEIRModel::getY, "Raw Data")
+    .property("parameterSamplingMode", &spatialSEIRModel::getParameterSamplingMode, 
+            &spatialSEIRModel::setParameterSamplingMode, "Type of sampler used for non-compartment parameters.")
+    .property("compartmentSamplingMode", &spatialSEIRModel::getCompartmentSamplingMode, 
+            &spatialSEIRModel::setCompartmentSamplingMode, "Type of sampler used for disease compartments.")
+    .property("debug", &spatialSEIRModel::getDebug, &spatialSEIRModel::setDebug, "Show debug level output?")
+    .property("verbose", &spatialSEIRModel::getVerbose, &spatialSEIRModel::setVerbose, "Show verbose level output?")
+    .property("useDecorrelation", &spatialSEIRModel::getUseDecorrelation, &spatialSEIRModel::setUseDecorrelation, "Use decorrelation sampling?")
     ;
 
 }

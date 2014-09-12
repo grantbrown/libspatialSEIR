@@ -23,6 +23,7 @@ class initialValueContainer
         int* E_star;
         int* I_star;
         int* R_star;
+        int* N;
         ~initialValueContainer();
 };
 

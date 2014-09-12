@@ -11,7 +11,7 @@ initialValueContainer::initialValueContainer()
     // Do nothing
 }
 void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_,
-                                             SEXP S_star_, SEXP E_star_, SEXP I_star_,SEXP R_star_)
+                                             SEXP S_star_, SEXP E_star_, SEXP I_star_,SEXP R_star_, SEXP N_)
 {
     Rcpp::IntegerVector S0_vec(S0_);
     Rcpp::IntegerVector E0_vec(E0_);
@@ -21,6 +21,7 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
     Rcpp::IntegerMatrix E_star_mat(E_star_);
     Rcpp::IntegerMatrix I_star_mat(I_star_);
     Rcpp::IntegerMatrix R_star_mat(R_star_);
+    Rcpp::IntegerMatrix N_mat(N_);
 
     if (S0_vec.length() != E0_vec.length() || 
         E0_vec.length() != I0_vec.length() ||
@@ -32,9 +33,11 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
     if (S_star_mat.nrow() != E_star_mat.nrow() ||
         E_star_mat.nrow() != I_star_mat.nrow() ||
         I_star_mat.nrow() != R_star_mat.nrow() || 
+        R_star_mat.nrow() != N_mat.nrow()      ||
         S_star_mat.ncol() != E_star_mat.ncol() ||
         E_star_mat.ncol() != I_star_mat.ncol() ||
-        I_star_mat.ncol() != R_star_mat.ncol())
+        I_star_mat.ncol() != R_star_mat.ncol() ||
+        R_star_mat.ncol() != N_mat.ncol())
     {
         Rcpp::Rcout << "Compartment dimensions do not match\n";
         throw(-1);
@@ -51,6 +54,7 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
     E_star = new int[nLoc*nTpt];
     I_star = new int[nLoc*nTpt];
     R_star = new int[nLoc*nTpt];
+    N = new int[nLoc*nTpt];
 
     memcpy(S0, S0_vec.begin(), nLoc*sizeof(int));
     memcpy(E0, E0_vec.begin(), nLoc*sizeof(int));
@@ -60,6 +64,7 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
     memcpy(E_star, E_star_mat.begin(), nLoc*nTpt*sizeof(int));
     memcpy(I_star, I_star_mat.begin(), nLoc*nTpt*sizeof(int));
     memcpy(R_star, R_star_mat.begin(), nLoc*nTpt*sizeof(int));
+    memcpy(N, N_mat.begin(), nLoc*nTpt*sizeof(int));
 
 }
 
@@ -74,6 +79,7 @@ initialValueContainer::~initialValueContainer()
     delete[] E_star;
     delete[] I_star;
     delete[] R_star;
+    delete[] N;
 }
 
 RCPP_MODULE(mod_initialValueContainer)

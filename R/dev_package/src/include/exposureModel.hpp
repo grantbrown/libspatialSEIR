@@ -11,13 +11,14 @@ RCPP_EXPOSED_CLASS(exposureModel)
 class exposureModel
 {
     public:
-        exposureModel(SEXP X, SEXP Z, SEXP precision);
+        exposureModel(SEXP X, SEXP Z, SEXP initBeta, SEXP precision);
         virtual void summary();
         virtual Rcpp::IntegerVector getOffset();
         virtual void setOffset(Rcpp::IntegerVector offs);
         int* offset;
         int* xDim;
         int* zDim;
+        double* beta;
         double* X;
         double* Z;
         double* betaPriorPrecision;

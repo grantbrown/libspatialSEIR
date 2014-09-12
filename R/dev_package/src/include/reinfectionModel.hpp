@@ -11,10 +11,13 @@ RCPP_EXPOSED_CLASS(reinfectionModel)
 class reinfectionModel
 {
     public:
-        reinfectionModel(SEXP X, SEXP reinfectionMode);
+        reinfectionModel(SEXP reinfectionMode);
+        buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _prec);
         virtual void summary();
         int* xDim;
+        int* reinfectionMode;
         double* X;
+        double* beta;
         double* betaPriorPrecision;
         ~reinfectionModel();
 };

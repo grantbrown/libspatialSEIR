@@ -1,7 +1,14 @@
-#ifndef SPATIALSEIR_INTERFACE_INC
-#define SPATIALSEIR_INTERFACE_INC
+#ifndef SPATIALSEIR_MODEL_INC
+#define SPATIALSEIR_MODEL_INC
 #include <Rcpp.h>
 
+class dataModel;
+class exposureModel;
+class distanceModel;
+class initialValueContainer;
+class reinfectionModel;
+class samplingControl;
+class transitionPriors;
 
 namespace SpatialSEIR
 {
@@ -11,16 +18,8 @@ class distanceModel;
 
 using namespace Rcpp;
 using namespace SpatialSEIR;
-struct LSSCout {};
-extern LSSCout lssCout;
 
-template <typename T>
-    LSSCout& operator<< (LSSCout &s, const T &x){
-        Rcpp::Rcout << x;
-        return s;
-    }
-
-class spatialSEIRInterface
+class spatialSEIRModel
 {
 
     private:
@@ -32,48 +31,14 @@ class spatialSEIRInterface
 
     public: 
 
-        spatialSEIRInterface();
-        int buildSpatialSEIRInterface(SEXP compMatDim,
-                     SEXP xDim,
-                     SEXP zDim,
-                     SEXP xPrsDim,
-                     SEXP S0_,
-                     SEXP E0_,
-                     SEXP I0_,
-                     SEXP R0_,
-                     SEXP Y,
-                     SEXP Sstar, 
-                     SEXP Estar, 
-                     SEXP Istar, 
-                     SEXP Rstar, 
-                     SEXP offset_,
-                     SEXP X_,
-                     SEXP Z_,
-                     SEXP X_pRS_,
-                     const distanceModel& DM, 
-                     SEXP rho_,
-                     SEXP phi_,
-                     SEXP priorAlpha_pEI_,
-                     SEXP priorBeta_pEI_,
-                     SEXP priorAlpha_pIR_,
-                     SEXP priorBeta_pIR_,
-                     SEXP priorAlpha_phi_,
-                     SEXP priorBeta_phi_,
-                     SEXP beta_,
-                     SEXP betaPriorPrecision_,
-                     SEXP betaPrs_,
-                     SEXP betaPrsPriorPrecision_,
-                     SEXP gamma_ei_,
-                     SEXP gamma_ir_,
-                     SEXP N_,
-                     SEXP outFile,
-                     SEXP iterationStride,
-                     SEXP steadyStateConstraintPrecision_,
-                     SEXP verboseFlag,
-                     SEXP debugFlag,
-                     SEXP sliceWidths,
-                     SEXP reinfectionMode,
-                     SEXP dataModel_);
+        spatialSEIRModel();
+        int buildSpatialSEIRModel(const dataModel& dataModel_,
+                                  const exposureModel& exposureModel_,
+                                  const reinfectionModel& reinfectionModel_,
+                                  const distanceModel& distanceModel_,
+                                  const transitionPriors& transitionPriors_,
+                                  const initialValueContainer& initialValueContainer_,
+                                  const samplingControl& samplingControl_);
         // Simulation Functions
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);
@@ -85,8 +50,6 @@ class spatialSEIRInterface
         virtual int getCompartmentSamplingMode();
         virtual void setParameterSamplingMode(int mode);
         virtual int getParameterSamplingMode();
-
-
 
         // Calculation Functions
         virtual int printDebugInfo();
@@ -150,10 +113,16 @@ class spatialSEIRInterface
 
         virtual void standardizeDistanceMatrices();
 
-        const distanceModel* distModel;
+        const distanceModel* distanceModelInstance;
+        const exposureModel* exposureModelInstance;
+        const reinfectionModel* reinfectionModelInstance;
+        const transitionPriors* transitionPriorsInstance;
+        const samplingControl* samplingControlInstance;
+        const initialValueContainer* initialValueContainerInstance;
+        const dataModel* dataModelInstance;
  
         //Destructor
-        ~spatialSEIRInterface();
+        ~spatialSEIRModel();
 };
 
 #endif

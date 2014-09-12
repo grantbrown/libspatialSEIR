@@ -6,11 +6,12 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
-exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _prec)
+exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec)
 {
     Rcpp::NumericMatrix inX(_X);
     Rcpp::NumericMatrix inZ(_Z); 
     Rcpp::NumericVector inPrecision(_prec);
+    Rcpp::NumericVector initParams(_paramInit);
 
     betaPriorPrecision = new double;
     *betaPriorPrecision = *(inPrecision.begin()); 
@@ -22,6 +23,8 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _prec)
     zDim[1] = inZ.ncol();
     X = new double[xDim[0]*xDim[1]];
     Z = new double[zDim[0]*zDim[1]];
+
+    beta = new double[xDim[1] + zDim[1]];
     if (zDim[0] % xDim[0] != 0)
     {
         Rcpp::Rcout << "Error: Covariate matrices have invalid dimensions." 
@@ -30,10 +33,16 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _prec)
                     <<" to the number of time points.\n";
         throw(-1);
     }
+    if (initParams.length() != xDim[1] + zDim[1])
+    {
+        Rcpp::Rcout << "Initial parameters have different length then number of columns of X and Z\n";
+        throw(-1);
+    }
     offset = new int[(zDim[0])/(xDim[0])];
     memset(offset, 1, (zDim[0])/(xDim[0])*sizeof(int));
     memcpy(X, inX.begin(), xDim[0]*xDim[1]*sizeof(double));
     memcpy(Z, inZ.begin(), zDim[0]*zDim[1]*sizeof(double));
+    memcpy(beta, initParams.begin(), (xDim[1] + zDim[1])*sizeof(double));
 }
 
 
@@ -67,6 +76,7 @@ exposureModel::~exposureModel()
     delete[] zDim;
     delete[] X;
     delete[] Z;
+    delete[] beta;
     delete betaPriorPrecision;
 }
 
@@ -74,7 +84,7 @@ RCPP_MODULE(mod_exposureModel)
 {
     using namespace Rcpp;
     class_<exposureModel>( "exposureModel" )
-    .constructor<SEXP,SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP,SEXP>()
     .method("summary", &exposureModel::summary)
     .property("offsets", &exposureModel::getOffset, &exposureModel::setOffset);
 }

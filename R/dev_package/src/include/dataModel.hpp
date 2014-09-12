@@ -13,10 +13,15 @@ class dataModel
     public:
         dataModel(SEXP Y, SEXP type);
         virtual void summary();
+        virtual void setOverdispersionParameters(SEXP priorAlpha, SEXP priorBeta, SEXP initialValue);
+        Rcpp::IntegerVector* compartmentDimensions;
+        double* priorParameters;
+        double* initialParameterValues;
         int* nLoc;
         int* nTpt;
         int* dataModelType;
         int* Y;
+        int* setMode;
 
         ~dataModel();
 };
