@@ -91,7 +91,6 @@ N = matrix(data_list[["pop"]][,2], nrow = nrow(S), ncol = ncol(S), byrow = TRUE)
 
 
 compMatDim = c(nrow(S), ncol(S))
-outFileName = "./chainOutput_sim.txt"
 
 
 iterationStride = 1000
@@ -153,55 +152,19 @@ true_rho = rho
 
 beta = true_beta
 betaPrs = true_beta_prs*0; betaPrs[1] = -2 
-rho = 0.00001
 
+outFileName = "./chainOutput_sim.txt"
+DataModel = buildDataModel(I_star, type="identity")
+ExposureModel = buildExposureModel(X, Z, beta, betaPriorPrecision)
+ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = X_betaPrs, betaPrs = betaPrs, priorPrecision = betaPrsPriorPrecision)
+SamplingControl = buildSamplingControl(iterationStride=iterationStride,sliceWidths=sliceWidths)
+DistanceModel = buildDistanceModel(list(DM))
+TransitionPriors = buildTransitionPriorsManually(priorAlpha_gammaEI, priorBeta_gammaEI, priorAlpha_gammaIR, priorBeta_gammaIR)
+InitContainer = buildInitialValueContainer(I_star, N, S0, E0, I0,p_ir=0.3)
 
-steadyStateConstraintPrecision = -1 
-
-proposal = generateCompartmentProposal(I_star, N, S0, E0, I0,p_ir=0.3)
-
-offsets = rep(1, nrow(S))
-
-res = spatialSEIRModel(compMatDim,
-                      xDim,
-                      zDim,
-                      X_betaPrsDim,
-                      proposal$S0,
-                      proposal$E0,
-                      proposal$I0,
-                      proposal$R0,
-                      proposal$S_star,
-                      proposal$E_star,
-                      proposal$I_star,
-                      proposal$R_star,
-                      offsets,
-                      X,
-                      Z,
-                      X_betaPrs,
-                      DM,
-                      rho,
-                      priorAlpha_gammaEI,
-                      priorBeta_gammaEI,
-                      priorAlpha_gammaIR,
-                      priorBeta_gammaIR,
-                      beta,
-                      betaPriorPrecision,
-                      betaPrs,
-                      betaPrsPriorPrecision,
-                      gamma_ei,
-                      gamma_ir,
-                      N,
-                      outFileName, 
-                      iterationStride,
-                      steadyStateConstraintPrecision,
-                      verbose,
-                      debug, 
-                      sliceWidths,
-                      reinfectionMode)
-
+res = buildSEIRModel(outFileName, DataModel, ExposureModel, ReinfectionModel, DistanceModel, TransitionPriors,
+                     InitContainer, SamplingControl)
 # Use OpenCL:
-#res$oclPreferences = res$oclPreferences + 1 
-
 res$setRandomSeed(123123)
 
 
