@@ -63,9 +63,24 @@ buildDistanceModel = function(distanceList,
 }
 
 # dataModel module helper function
-buildDataModel = function(Y, type = c("identity", "overdispersion"))
+buildDataModel = function(Y, type = c("identity", "overdispersion"),params=NA)
 {
-    return(new(dataModel, Y, type))
+    type = type[1]
+    if (length(params) == 1 && is.na(params) && type != "identity")
+    {
+        stop("Non-identity data model selected without specifying parameters.")
+    }
+    else if (length(params) ==1 && is.na(params))
+    {
+        return(new(dataModel, Y, type))
+    }
+    else if (class(params) != "numeric" || length(params) != 2)
+    {
+        stop("Non identy data model currently requires the params argument to be a numeric vector of length 2") 
+    }
+    outModel = new(dataModel, Y, type)
+    outModel$setOverdispersionParameters(params[1], params[2], rgamma(1, params[1], params[2]))
+    outModel
 }
 
 # reinfectionModel module helper function

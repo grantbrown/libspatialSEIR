@@ -84,7 +84,8 @@ RCPP_MODULE(mod_dataModel)
     using namespace Rcpp;
     class_<dataModel>( "dataModel" )
     .constructor<SEXP,SEXP>()
-    .method("summary", &dataModel::summary);
+    .method("summary", &dataModel::summary)
+    .method("setOverdispersionParameters",&dataModel::setOverdispersionParameters);
 }
 
 
