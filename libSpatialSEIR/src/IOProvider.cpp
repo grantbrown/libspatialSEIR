@@ -187,7 +187,7 @@ namespace SpatialSEIR
 
         // Write rho header
         unsigned int nRho = ((*context) -> scaledDistMatrices -> size());
-        if (*((*context) -> singleLocation) < 0)
+        if (*((*context) -> S_star -> ncol) > 1)
         {
             for (i = 0; i < nRho; i++)
             {
@@ -284,7 +284,7 @@ namespace SpatialSEIR
 
         // Write rho
         unsigned int nRho = ((*context) -> scaledDistMatrices -> size());
-        if (*((*context) -> singleLocation) < 0)
+        if (*((*context) -> S_star -> ncol) > 1)
         {
             for (i = 0; i < nRho; i++)
             {
