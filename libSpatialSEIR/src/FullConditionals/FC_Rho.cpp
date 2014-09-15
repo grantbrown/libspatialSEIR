@@ -38,13 +38,12 @@ namespace SpatialSEIR
         samples = new int;
         accepted = new int; 
         varLen = new int;
-        *varLen = (*context) -> scaledDistMatrices -> size(); 
-        *varLen = 1;
         *samples = 0;
         *accepted = 0;
 
 
         *context = _context;
+        *varLen = (*context) -> scaledDistMatrices -> size(); 
         *E_star = _E_star;
         *S = _S;
         *A0 = _A0;
@@ -114,9 +113,7 @@ namespace SpatialSEIR
                 compIdx++;
             }
         } 
-        *value += (**rho > 0 && **rho < 1 ? 0 : -INFINITY); // Generalize to allow informative priors. 
-                                                        // Prior specification in this area needs work. 
-        // Catch invalid values, nans etc. 
+        *value += evalPrior();
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;
