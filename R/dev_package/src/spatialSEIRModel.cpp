@@ -976,13 +976,17 @@ Rcpp::NumericVector spatialSEIRModel::getP_IR()
 
 Rcpp::NumericVector spatialSEIRModel::getRho()
 {
-    Rcpp::NumericVector output(1);
+
+
     if (*(context -> isPopulated))
     {
-        output[0] = *(context->rho); 
+        int nRho = (context -> scaledDistMatrices -> size()); 
+        Rcpp::NumericVector output(nRho);
+        memcpy(output.begin(), (context->rho), nRho*sizeof(int)); 
         return(output);
     }
     Rcpp::Rcout << "Context Not Populated\n";
+    Rcpp::NumericVector output(1);
     output[0] = -1.0;
 }
 
@@ -1035,7 +1039,7 @@ spatialSEIRModel::spatialSEIRModel(SEXP outFileName)
 
 int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
                           const exposureModel& exposureModel_,
-                          const reinfectionModel& reinfectionModel_,
+                          reinfectionModel& reinfectionModel_,
                           const distanceModel& distanceModel_,
                           const transitionPriors& transitionPriors_,
                           const initialValueContainer& initialValueContainer_,
@@ -1045,7 +1049,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
     
     const dataModel* dataModelInstance = &dataModel_;
     const exposureModel* exposureModelInstance = &exposureModel_;
-    const reinfectionModel* reinfectionModelInstance = &reinfectionModel_;
+    reinfectionModel* reinfectionModelInstance = &reinfectionModel_;
     const distanceModel* distanceModelInstance = &distanceModel_;
     const transitionPriors* transitionPriorsInstance = &transitionPriors_;
     const initialValueContainer* initialValueContainerInstance = &initialValueContainer_;
@@ -1110,6 +1114,8 @@ int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
                 throw(-1);
             }
         }
+        // Create appropriate dummy data. 
+        reinfectionModelInstance -> buildDummyReinfectionModel((*(dataModelInstance -> compartmentDimensions))[0]);
     }
 
     if (*(dataModelInstance -> dataModelType) != 0 && *(dataModelInstance ->setMode) < 0)

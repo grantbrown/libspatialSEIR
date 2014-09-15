@@ -34,7 +34,7 @@ class spatialSEIRModel
         spatialSEIRModel(SEXP outFileName);
         int buildSpatialSEIRModel(const dataModel& dataModel_,
                                   const exposureModel& exposureModel_,
-                                  const reinfectionModel& reinfectionModel_,
+                                  reinfectionModel& reinfectionModel_,
                                   const distanceModel& distanceModel_,
                                   const transitionPriors& transitionPriors_,
                                   const initialValueContainer& initialValueContainer_,

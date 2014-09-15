@@ -13,7 +13,7 @@ reinfectionModel::reinfectionModel(SEXP reinfectMode)
      reinfectionMode = new int;
      *reinfectionMode = modeVec[0];
      betaPriorPrecision = new double; *betaPriorPrecision = -1; 
-     xDim = new int[2]; memset(xDim, -1, 2*sizeof(int));
+     xDim = new int[2]; memset(xDim, 1, 2*sizeof(int));
 }
 
 void reinfectionModel::buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _prec)
@@ -33,6 +33,16 @@ void reinfectionModel::buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _pre
     }
     memcpy(beta, initValues.begin(), xDim[1]*sizeof(double));
     memcpy(X, inX.begin(), xDim[0]*xDim[1]*sizeof(double));
+}
+
+void reinfectionModel::buildDummyReinfectionModel(int nTpt)
+{
+    xDim[0] = nTpt;
+    xDim[1] = 1;
+    X = new double[nTpt];
+    beta = new double(1);
+    *beta = -INFINITY;
+    *betaPriorPrecision=100;
 }
 
 void reinfectionModel::summary()
