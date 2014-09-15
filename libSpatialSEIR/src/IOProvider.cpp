@@ -177,14 +177,23 @@ namespace SpatialSEIR
         // Write Beta P_RS header
         betaLen = (*((*context) -> X_pRS -> ncol_x));
 
-        for (i = 0; i < betaLen; i++)
+        if (((*context) -> config -> reinfectionMode) == 1)
         {
-            (*outFileStream) << "BetaP_RS_" << i << ", "; 
+            for (i = 0; i < betaLen; i++)
+            {
+                (*outFileStream) << "BetaP_RS_" << i << ", "; 
+            }
         }
 
         // Write rho header
-        (*outFileStream) << "rho,";        
-
+        unsigned int nRho = ((*context) -> scaledDistMatrices -> size());
+        if (*((*context) -> singleLocation) < 0)
+        {
+            for (i = 0; i < nRho; i++)
+            {
+                (*outFileStream) << "rho_" << i << ",";       
+            }
+        }
         // Need to write overdispersion header?
         if (((*context) -> config -> dataModel) == 1)
         {
@@ -202,9 +211,12 @@ namespace SpatialSEIR
 
 
         unsigned int nTpts = *((*context) -> S_star -> nrow);
-        for (i = 0; i < nTpts; i++)
+        if (((*context) -> config -> reinfectionMode) == 1)
         {
-            (*outFileStream)  << "P_RS_" << i << ", ";
+            for (i = 0; i < nTpts; i++)
+            {
+                (*outFileStream)  << "P_RS_" << i << ", ";
+            }
         }
 
         // Write header for any location and time-location traces 
@@ -262,14 +274,23 @@ namespace SpatialSEIR
         
         // Write Beta P_RS
         betaLen = (*((*context) -> X_pRS -> ncol_x));
-
-        for (i = 0; i < betaLen; i++)
+        if (((*context) -> config -> reinfectionMode) == 1)
         {
-            (*outFileStream) << ((*context) -> betaPrs)[i] << ","; 
+            for (i = 0; i < betaLen; i++)
+            {
+                (*outFileStream) << ((*context) -> betaPrs)[i] << ","; 
+            }
         }
 
         // Write rho
-        (*outFileStream) << *((*context) -> rho) << ",";        
+        unsigned int nRho = ((*context) -> scaledDistMatrices -> size());
+        if (*((*context) -> singleLocation) < 0)
+        {
+            for (i = 0; i < nRho; i++)
+            {
+                (*outFileStream) << ((*context) -> rho)[i] << ",";        
+            }
+        }
         
         // Need to write overdispersion header?
         if (((*context) -> config -> dataModel) == 1)
@@ -285,9 +306,13 @@ namespace SpatialSEIR
         (*outFileStream) << *((*context) -> gamma_ir) << ",";        
 
         unsigned int nTpts = *((*context) -> S_star -> nrow);
-        for (i = 0; i < nTpts; i++)
+        if (((*context) -> config -> reinfectionMode) == 1)
         {
-           (*outFileStream)  << ((*context) -> p_rs)[i] << ", ";
+            
+            for (i = 0; i < nTpts; i++)
+            {
+               (*outFileStream)  << ((*context) -> p_rs)[i] << ", ";
+            }
         }
 
 
