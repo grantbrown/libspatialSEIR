@@ -1037,23 +1037,23 @@ spatialSEIRModel::spatialSEIRModel(SEXP outFileName)
     *chainOutputFile = Rcpp::as<std::string>(outFileName);
 }
 
-int spatialSEIRModel::buildSpatialSEIRModel(const dataModel& dataModel_,
-                          const exposureModel& exposureModel_,
+int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
+                          exposureModel& exposureModel_,
                           reinfectionModel& reinfectionModel_,
-                          const distanceModel& distanceModel_,
-                          const transitionPriors& transitionPriors_,
-                          const initialValueContainer& initialValueContainer_,
-                          const samplingControl& samplingControl_)
+                          distanceModel& distanceModel_,
+                          transitionPriors& transitionPriors_,
+                          initialValueContainer& initialValueContainer_,
+                          samplingControl& samplingControl_)
 {
     int err = 0;
     
-    const dataModel* dataModelInstance = &dataModel_;
-    const exposureModel* exposureModelInstance = &exposureModel_;
+    dataModel* dataModelInstance = &dataModel_;
+    exposureModel* exposureModelInstance = &exposureModel_;
     reinfectionModel* reinfectionModelInstance = &reinfectionModel_;
-    const distanceModel* distanceModelInstance = &distanceModel_;
-    const transitionPriors* transitionPriorsInstance = &transitionPriors_;
-    const initialValueContainer* initialValueContainerInstance = &initialValueContainer_;
-    const samplingControl* samplingControlInstance = &samplingControl_;
+    distanceModel* distanceModelInstance = &distanceModel_;
+    transitionPriors* transitionPriorsInstance = &transitionPriors_;
+    initialValueContainer* initialValueContainerInstance = &initialValueContainer_;
+    samplingControl* samplingControlInstance = &samplingControl_;
 
 
     if (*(dataModelInstance -> nLoc) != (exposureModelInstance -> xDim)[0])

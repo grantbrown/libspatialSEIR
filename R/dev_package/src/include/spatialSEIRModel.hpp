@@ -32,13 +32,13 @@ class spatialSEIRModel
     public: 
 
         spatialSEIRModel(SEXP outFileName);
-        int buildSpatialSEIRModel(const dataModel& dataModel_,
-                                  const exposureModel& exposureModel_,
+        int buildSpatialSEIRModel(dataModel& dataModel_,
+                                  exposureModel& exposureModel_,
                                   reinfectionModel& reinfectionModel_,
-                                  const distanceModel& distanceModel_,
-                                  const transitionPriors& transitionPriors_,
-                                  const initialValueContainer& initialValueContainer_,
-                                  const samplingControl& samplingControl_);
+                                  distanceModel& distanceModel_,
+                                  transitionPriors& transitionPriors_,
+                                  initialValueContainer& initialValueContainer_,
+                                  samplingControl& samplingControl_);
         // Simulation Functions
         virtual int setRandomSeed(int seedVal);
         virtual int simulate(int iters);

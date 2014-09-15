@@ -14,7 +14,7 @@ class distanceModel
         distanceModel();
         virtual void addDistanceMatrix(NumericMatrix distMat);
         virtual void summary();
-        virtual int getNumDistanceMatrices() const;
+        virtual int getNumDistanceMatrices();
 
         int* numLocations;
         scaledDistanceArgs* scaledDistArgs;
