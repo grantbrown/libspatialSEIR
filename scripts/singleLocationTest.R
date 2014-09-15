@@ -176,9 +176,7 @@ runSimulation = function()
 
 simResults = runSimulation()
 
-
-## 
-DataModel = buildDataModel(simResults$I_star, type = "identity")
+DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = c(1,1))
 ExposureModel = buildExposureModel(simResults$X, simResults$Z, 
                                    beta = c(2, rep(0, ((length(simResults$beta))-1))), betaPriorPrecision = 0.1)
 ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = simResults$X_prs, 
@@ -241,11 +239,7 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 }
 
 res$compartmentSamplingMode = 14
-
-#print("Burn in 1 to adjust sampling widths.")
 runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
-#runSimulation(1000,200, printAR = FALSE, targetRatio = 0.2)
-#print("Switching to joint reinfection sampling.")
 runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
 
 

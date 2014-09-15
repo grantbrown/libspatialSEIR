@@ -534,9 +534,15 @@ void spatialSEIRModel::printAcceptanceRates()
 
         if (*(context -> S_star -> ncol) > 1)
         {
-            Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> accepted)*1.0)/
-                                              (*(context -> rho_fc -> samples)) 
-                                      << "\n"; 
+            Rcpp::Rcout << "rho:      ";
+            for (i = 0; i < *(context -> rho_fc -> varLen); i++)
+            {
+
+                Rcpp::Rcout << ((context -> rho_fc -> accepted)[i]*1.0)/
+                                                  (*(context -> rho_fc -> samples)) 
+                                          << ", "; 
+
+            }
         }
         if ((context -> config -> reinfectionMode) == 1)
         {
@@ -976,13 +982,16 @@ Rcpp::NumericVector spatialSEIRModel::getP_IR()
 
 Rcpp::NumericVector spatialSEIRModel::getRho()
 {
-
-
     if (*(context -> isPopulated))
     {
+        int i;
         int nRho = (context -> scaledDistMatrices -> size()); 
+        Rcpp::Rcout << nRho << "\n";
         Rcpp::NumericVector output(nRho);
-        memcpy(output.begin(), (context->rho), nRho*sizeof(int)); 
+        for (i = 0; i < nRho; i ++)
+        {
+           output[i] = (context -> rho)[i]; 
+        }
         return(output);
     }
     Rcpp::Rcout << "Context Not Populated\n";
@@ -1139,7 +1148,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     double rhoSum = 0.0;
     for (i = 0; i < numDistMatrices; i++)
     {
-        rho[i] = R::rgamma(0.01,0.1);
+        rho[i] = R::rgamma(0.5,0.5);
         rhoSum += rho[i];
     }
     if (rhoSum >= 0.5)
