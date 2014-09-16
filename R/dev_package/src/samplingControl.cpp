@@ -13,7 +13,11 @@ samplingControl::samplingControl()
     verbose = new int; *verbose = 0;
     debug = new int; *debug = 0;
     sliceWidths = new double[11];
-    memset(sliceWidths, 0.1, 11*sizeof(double));
+    int i;
+    for (i = 0; i < 11; i++)
+    {
+        sliceWidths[i] = 0.1;
+    }
 }
 
 void samplingControl::setIterationStride(Rcpp::IntegerVector input)
@@ -59,13 +63,21 @@ void samplingControl::setSliceWidths(NumericVector inWidths)
         Rcpp::Rcout << "Slice widths must have length 11.\n";
         throw(-1);
     }
-    memcpy(sliceWidths, inWidths.begin(), 11*sizeof(double));
+    int i;
+    for (i = 0; i < inWidths.length(); i++)
+    {
+        sliceWidths[i] = inWidths[i];
+    }
 }
 
 Rcpp::NumericVector samplingControl::getSliceWidths()
 {
     Rcpp::NumericVector output(11);
-    memcpy(output.begin(), sliceWidths, 11*sizeof(double));
+    int i;
+    for (i = 0; i < output.length(); i++)
+    {
+        output[i] = sliceWidths[i];
+    }
     return(output);
 }
 

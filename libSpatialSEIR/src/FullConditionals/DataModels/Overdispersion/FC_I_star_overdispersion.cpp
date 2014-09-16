@@ -30,7 +30,8 @@ namespace SpatialSEIR
                          double *_p_ei,
                          double *_p_ir,
                          double *_phi,
-                         double _steadyStateConstraintPrecision) 
+                         double _steadyStateConstraintPrecision,
+                         double _sliceWidth) 
     {
 
         context = new ModelContext*;
@@ -44,6 +45,7 @@ namespace SpatialSEIR
         phi = new double*;
         steadyStateConstraintPrecision = new double;
         value = new long double;
+        sliceWidth = new double;
         samples = new int;
         accepted = new int; 
         *samples = 0;
@@ -54,6 +56,7 @@ namespace SpatialSEIR
         *Y = _Y;
         *E = _E;
         *I = _I;
+        *sliceWidth = _sliceWidth;
         *R_star = _R_star;
         *p_ir = _p_ir;
         *p_ei = _p_ei;
@@ -96,6 +99,7 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
+        delete sliceWidth;
     }
 
     int FC_I_Star_overdispersed::evalCPU()

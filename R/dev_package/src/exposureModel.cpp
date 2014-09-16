@@ -50,9 +50,18 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec)
     {
         offset[i] = 1.0;
     }
-    memcpy(X, inX.begin(), xDim[0]*xDim[1]*sizeof(double));
-    memcpy(Z, inZ.begin(), zDim[0]*zDim[1]*sizeof(double));
-    memcpy(beta, initParams.begin(), (xDim[1] + zDim[1])*sizeof(double));
+    for (i = 0; i < xDim[0]*xDim[1]; i++)
+    {
+        X[i] = inX[i];
+    }
+    for (i = 0; i < zDim[0]*zDim[1]; i++)
+    {
+        Z[i] = inZ[i];
+    }
+    for (i = 0; i < (xDim[1]+zDim[1]); i++)
+    {
+        beta[i] = initParams[i]; 
+    }
 }
 
 

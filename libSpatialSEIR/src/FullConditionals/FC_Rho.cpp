@@ -26,6 +26,9 @@ namespace SpatialSEIR
                    double _sliceWidth)
     {
         context = new ModelContext*;
+        *context = _context;
+        varLen = new int;
+        *varLen = (*context) -> scaledDistMatrices -> size(); 
         E_star = new CompartmentalModelMatrix*;
         S = new CompartmentalModelMatrix*;
         A0 = new InitData*;
@@ -33,17 +36,13 @@ namespace SpatialSEIR
         p_se = new double*;
         beta = new double*;
         rho = new double*;
-        sliceWidth = new double;
+        sliceWidth = new double[*varLen];
         value = new long double;
         samples = new int;
-        accepted = new int; 
-        varLen = new int;
+        accepted = new int[*varLen]; 
         *samples = 0;
-        *accepted = 0;
+     
 
-
-        *context = _context;
-        *varLen = (*context) -> scaledDistMatrices -> size(); 
         *E_star = _E_star;
         *S = _S;
         *A0 = _A0;
@@ -51,7 +50,12 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *beta = _beta;
         *rho = _rho;
-        *sliceWidth = _sliceWidth;
+        int i;
+        for (i = 0; i < *varLen; i++)
+        {
+            sliceWidth[i] = _sliceWidth;
+            accepted[i] = 0;
+        }
         *value = -1.0;
 
         // Set up samplers

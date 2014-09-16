@@ -25,8 +25,11 @@ void distanceModel::addDistanceMatrix(NumericMatrix distMat)
         throw(-1);
     }
     double* distAlloc = new double[distMat.nrow()*distMat.ncol()];
-    memcpy(distAlloc, distMat.begin(), 
-            distMat.nrow()*distMat.ncol()*sizeof(double));
+    int i;
+    for (i = 0; i < distMat.nrow()*distMat.ncol(); i++)
+    {
+        distAlloc[i] = distMat[i];
+    }
     scaledDistArgs -> dim = numLocations;
     (scaledDistArgs -> inData).push_back(distAlloc);
     *numLocations = distMat.nrow();

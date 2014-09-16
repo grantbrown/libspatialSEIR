@@ -46,7 +46,6 @@ namespace SpatialSEIR
         double* betaWidth;
         double* betaPrsWidth;
         double* rhoWidth;
-        double* gammaWidth;
         double* gammaEiWidth;
         double* gammaIrWidth;
         double* phiWidth;

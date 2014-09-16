@@ -35,7 +35,11 @@ dataModel::dataModel(SEXP _Y, SEXP type)
         *dataModelType = 0;
     }
     Y = new int[(*nLoc)*(*nTpt)];
-    memcpy(Y, input.begin(), (*nLoc)*(*nTpt)*sizeof(int));
+    int i;
+    for (i = 0; i < (*nLoc)*(*nTpt); i++)
+    {
+        Y[i] = input[i]; 
+    }
 }
 
 void dataModel::setOverdispersionParameters(SEXP priorAlpha, SEXP priorBeta, SEXP initialValue)

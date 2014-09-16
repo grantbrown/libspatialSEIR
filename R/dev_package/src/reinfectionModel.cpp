@@ -31,8 +31,15 @@ void reinfectionModel::buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _pre
         Rcpp::Rcout << "Number of parameters does not equal the number of supplied covariates.\n";
         throw(-1);
     }
-    memcpy(beta, initValues.begin(), xDim[1]*sizeof(double));
-    memcpy(X, inX.begin(), xDim[0]*xDim[1]*sizeof(double));
+    int i;
+    for (i = 0; i < xDim[1]; i++)
+    {
+        beta[i] = initValues[i];
+    }
+    for (i = 0; i < xDim[0]*xDim[1]; i++)
+    {
+       X[i] = inX[i]; 
+    }
 }
 
 void reinfectionModel::buildDummyReinfectionModel(int nTpt)
@@ -40,7 +47,12 @@ void reinfectionModel::buildDummyReinfectionModel(int nTpt)
     xDim[0] = nTpt;
     xDim[1] = 1;
     X = new double[nTpt];
-    beta = new double(1);
+    int i;
+    for (i = 0; i < nTpt; i++)
+    {
+        X[i] = 1.0;
+    }
+    beta = new double;
     *beta = -INFINITY;
     *betaPriorPrecision=100;
 }

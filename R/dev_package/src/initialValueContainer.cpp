@@ -60,16 +60,22 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
     R_star = new int[nLoc*nTpt];
     N = new int[nLoc*nTpt];
 
-    memcpy(S0, S0_vec.begin(), nLoc*sizeof(int));
-    memcpy(E0, E0_vec.begin(), nLoc*sizeof(int));
-    memcpy(I0, I0_vec.begin(), nLoc*sizeof(int));
-    memcpy(R0, R0_vec.begin(), nLoc*sizeof(int));
-    memcpy(S_star, S_star_mat.begin(), nLoc*nTpt*sizeof(int));
-    memcpy(E_star, E_star_mat.begin(), nLoc*nTpt*sizeof(int));
-    memcpy(I_star, I_star_mat.begin(), nLoc*nTpt*sizeof(int));
-    memcpy(R_star, R_star_mat.begin(), nLoc*nTpt*sizeof(int));
-    memcpy(N, N_mat.begin(), nLoc*nTpt*sizeof(int));
-
+    int i;
+    for (i = 0; i < nLoc; i++)
+    {
+        S0[i] = S0_vec[i];
+        E0[i] = E0_vec[i];
+        I0[i] = I0_vec[i];
+        R0[i] = R0_vec[i];
+    }
+    for (i = 0; i < nLoc*nTpt; i++)
+    {
+        S_star[i] = S_star_mat[i]; 
+        E_star[i] = E_star_mat[i];
+        I_star[i] = I_star_mat[i];
+        R_star[i] = R_star_mat[i];
+        N[i] = N_mat[i];
+    }
 }
 
 

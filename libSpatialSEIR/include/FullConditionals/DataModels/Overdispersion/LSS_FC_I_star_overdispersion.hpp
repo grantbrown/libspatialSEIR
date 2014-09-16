@@ -25,7 +25,8 @@ namespace SpatialSEIR
                                     double *_p_ei,
                                     double *_p_ir,
                                     double *_phi,
-                                    double _steadyStateConstraintPrecision);
+                                    double _steadyStateConstraintPrecision,
+                                    double _sliceWidth);
             virtual int evalCPU();
             virtual int evalCPU(int i, int j);
             virtual int evalOCL();

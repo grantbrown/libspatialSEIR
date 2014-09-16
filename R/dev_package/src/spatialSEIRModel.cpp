@@ -1162,10 +1162,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     Rcpp::NumericVector phi(1);
     phi[0] = (dataModelInstance -> initialParameterValues)[0];
 
-    double* sliceParams = (samplingControlInstance -> sliceWidths);
-
-
-
+    double* sliceParams = (samplingControlInstance -> sliceWidths); 
 
     *verbose = *(samplingControlInstance -> verbose);
     *debug = *(samplingControlInstance -> debug);
