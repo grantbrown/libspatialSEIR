@@ -98,6 +98,10 @@ namespace SpatialSEIR
 
     double RandomNumberProvider::dnorm(double x, double mu, double sd)
     {
+        if (sd <= 0)
+        {
+            return(-INFINITY);
+        }
         boost::math::normal_distribution<> ndist(mu, sd);
         return(std::log(pdf(ndist, x))); 
         // No way to get the log density directly with boost?
