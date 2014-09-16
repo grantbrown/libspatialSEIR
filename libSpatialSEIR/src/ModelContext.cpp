@@ -272,20 +272,7 @@ namespace SpatialSEIR
         setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
 
         decorrelationStepTask = new PerformDecorrelationStep(this, 100);
-        std::cout << "TONS OF SLICE WIDTHS:\n";
-        std::cout <<  *(sliceWidths -> S_starWidth) << "\n";
-        std::cout <<  *(sliceWidths -> E_starWidth) << "\n";
-        std::cout <<  *(sliceWidths -> R_starWidth) << "\n";
-        std::cout << *(sliceWidths -> S0Width) << "\n";
-        std::cout << *(sliceWidths -> I0Width) << "\n";
-        std::cout << *(sliceWidths -> betaWidth) << "\n";
-        std::cout << *(sliceWidths -> betaPrsWidth) << "\n";
-        std::cout << *(sliceWidths -> rhoWidth) << "\n";
-        std::cout << *(sliceWidths -> gammaEiWidth) << "\n";
-        std::cout << *(sliceWidths -> gammaIrWidth) << "\n";
-        std::cout << *(sliceWidths -> phiWidth) << "\n";
 
-    
         // Wire up the full conditional classes 
         S0_fc = new FC_S0(this,
                           S,

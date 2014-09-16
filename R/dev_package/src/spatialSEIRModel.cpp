@@ -1143,7 +1143,6 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
 
     
     int numDistMatrices = (distanceModelInstance -> getNumDistanceMatrices());
-    Rcpp::Rcout << "Number of distance metrics: " << numDistMatrices << "\n";
     Rcpp::NumericVector rho(numDistMatrices);
     double rhoSum = 0.0;
     for (i = 0; i < numDistMatrices; i++)
@@ -1200,7 +1199,6 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     modelConfig.indexLength = std::floor(0.25*(*nTpt)*(*nLoc)); // Update 25% per iteration. 
     modelConfig.useDecorrelation = 0;
     modelConfig.dataModel = *(dataModelInstance -> dataModelType) ;
-    Rcpp::Rcout << "Setting index length to be: " << (modelConfig.indexLength) << "\n";
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];
