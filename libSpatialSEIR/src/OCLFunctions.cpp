@@ -38,19 +38,19 @@ namespace SpatialSEIR
             CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> N));
 
         cl::Buffer offsetBuffer(*context, CL_MEM_READ_ONLY |
-                CL_MEM_COPY_HOST_PTR, nTpt*sizeof(int), ctx -> offset);
+                CL_MEM_COPY_HOST_PTR, nTpt*sizeof(double), ctx -> offset);
         cl::Buffer etaBuffer(*context, CL_MEM_READ_WRITE | 
             CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> eta));
         cl::Buffer p_seBuffer(*context, CL_MEM_READ_WRITE | 
             CL_MEM_COPY_HOST_PTR, doubleBuffSize, (ctx -> p_se));
-        std::vector<cl::Buffer> distMatBuffers();
+        std::vector<cl::Buffer> distMatBuffers;
         int i;
-        for (i = 0; i < (ctx -> staledDistMatrices -> size()); i++) 
+        for (i = 0; i < (int) (ctx -> scaledDistMatrices -> size()); i++) 
         {
             distMatBuffers.push_back(
-                cl::Buffer distMatBuffer(*context, CL_MEM_WRITE_ONLY | 
+                cl::Buffer(*context, CL_MEM_WRITE_ONLY | 
                         CL_MEM_COPY_HOST_PTR, nLoc*nLoc*sizeof(double) , 
-                        ctx -> scaledDistMat -> data)
+                        (*(ctx -> scaledDistMatrices))[i] -> data)
                 );
         }
 

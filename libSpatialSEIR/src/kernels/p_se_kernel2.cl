@@ -13,7 +13,7 @@ __kernel void p_se_kernel2(int nLoc,
     size_t localId = get_local_id(0);
     size_t localSize = get_local_size(0);
     size_t totalSize = nLoc*nTpt;
-    int offset;
+    int offsetVal;
 
     if (globalId < totalSize)
     {
@@ -21,7 +21,7 @@ __kernel void p_se_kernel2(int nLoc,
         p_se_loc[localId] = p_se[globalId]; 
         offsetVal = offset[globalId % nTpt];
         p_se[globalId] = 1 - exp(-offsetVal*(p_se_components_loc[localId] 
-                    - rho*p_se_loc[localId]));  
+                    - p_se_loc[localId]));  
     }
 }
 
