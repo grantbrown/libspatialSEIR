@@ -340,10 +340,12 @@ namespace SpatialSEIR
         int nTpts = *((*R) -> nrow);
         int nLoc = *((*R) -> ncol);
 
+        /*
         if ((*context) -> config -> reinfectionMode > 2)
         {
             lssCout << "FC_R_Star currently only works with OpenCL for reinfectionMode <= 2\n";
         }
+        */
 
         double output = ((*context) -> oclProvider -> 
                 FC_R_Star(nLoc,
