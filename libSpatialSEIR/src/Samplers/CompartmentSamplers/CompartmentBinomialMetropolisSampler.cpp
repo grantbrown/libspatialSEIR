@@ -128,7 +128,6 @@ namespace SpatialSEIR
         if ((*((*compartmentFC) -> accepted)) == initAccepted)
         {
             // Keep original values
-            lssCout << "Compartment sampler did not update.\n";
             (*compartmentFC) -> calculateRelevantCompartments(); 
             (*compartmentFC) -> setValue(initVal); 
         }

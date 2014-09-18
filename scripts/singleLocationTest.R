@@ -176,7 +176,9 @@ runSimulation = function()
 
 simResults = runSimulation()
 
-DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = c(1,1))
+DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = c(10,0.1))
+#DataModel = buildDataModel(simResults$I_star, type = "identity")
+
 ExposureModel = buildExposureModel(simResults$X, simResults$Z, 
                                    beta = c(2, rep(0, ((length(simResults$beta))-1))), betaPriorPrecision = 0.1)
 ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = simResults$X_prs, 
