@@ -89,10 +89,13 @@ namespace SpatialSEIR
     double FC_Rho::evalPrior()
     {
         double rhoSum = 0.0;
+        double rhoVal;
         int i;
         for (i = 0; i < *varLen; i++)
         {
-            rhoSum += (*rho)[i];
+            rhoVal = (*rho)[i];
+            if (rhoVal < 0){return(-INFINITY);}
+            rhoSum += rhoVal; 
         }
          return(rhoSum > 0 && rhoSum < 1 ? 0 : -INFINITY); 
     }
