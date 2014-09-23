@@ -76,7 +76,7 @@ Z = Z2
 xDim = dim(X)
 zDim = dim(Z)
 dcm = as.numeric(data_list$dcm)
-DM = matrix(ifelse(dcm==0,0,dcm), nrow = nrow(data_list$dcm), ncol = ncol(data_list$dcm))
+DM = matrix(ifelse(dcm==0,0,1/sqrt(dcm)), nrow = nrow(data_list$dcm), ncol = ncol(data_list$dcm))
 
 rho = 0.05
 
@@ -151,7 +151,7 @@ true_beta_prs = betaPrs
 true_rho = rho
 
 beta = true_beta
-betaPrs = true_beta_prs*0; betaPrs[1] = -2 
+#betaPrs = true_beta_prs*0; betaPrs[1] = -2 
 
 outFileName = "./chainOutput_sim.txt"
 DataModel = buildDataModel(I_star, type="identity")
@@ -164,7 +164,7 @@ InitContainer = buildInitialValueContainer(I_star, N, S0, E0, I0,p_ir=0.3)
 
 res = buildSEIRModel(outFileName, DataModel, ExposureModel, ReinfectionModel, DistanceModel, TransitionPriors,
                      InitContainer, SamplingControl)
-# Use OpenCL:
+
 res$setRandomSeed(123123)
 
 
@@ -228,11 +228,8 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 #}
 #}
 
-#runSimulation(1000,10, printAR=TRUE)
-res$compartmentSamplingMode = 2
+res$compartmentSamplingMode = 16
 runSimulation(1000,100, printAR=TRUE, proportionChange = 0.1)
-#runSimulation(10000,1, printAR=TRUE)
-#runSimulation(10000,100, printAR=TRUE)
 runSimulation(10000000,1000, printAR=TRUE)
 
 

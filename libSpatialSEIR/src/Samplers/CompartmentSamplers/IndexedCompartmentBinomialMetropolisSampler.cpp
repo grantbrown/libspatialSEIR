@@ -86,7 +86,7 @@ namespace SpatialSEIR
         for (i = 0; i < idxLen; i++)
         {
             compIdx = (*indexList)[i];
-            loc = compIdx/(nTpt+1); 
+            loc = compIdx/(nTpt); 
             tpt = compIdx - loc*nTpt;
 
             *((*compartmentFC) -> samples) += 1;

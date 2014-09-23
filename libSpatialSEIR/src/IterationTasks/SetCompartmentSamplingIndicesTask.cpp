@@ -33,7 +33,7 @@ namespace SpatialSEIR
     {
         int i;
         int len = **indexLength;
-        int maxIdx = *((*context) -> S -> nrow)*(*((*context) -> S -> ncol));
+        int maxIdx = *((*context) -> S -> nrow)*(*((*context) -> S -> ncol)) - 1;
         for (i = 0; i < len; i++)
         {
             (*index)[i] = (*context)->random->uniform_int(0,maxIdx);
