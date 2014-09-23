@@ -86,7 +86,7 @@ namespace SpatialSEIR
         for (i = 0; i < idxLen; i++)
         {
             compIdx = (*indexList)[i];
-            loc = compIdx % nTpt; 
+            loc = compIdx/(nTpt+1); 
             tpt = compIdx - loc*nTpt;
 
             *((*compartmentFC) -> samples) += 1;
@@ -121,18 +121,16 @@ namespace SpatialSEIR
             }
         }
 
-
-
         if ((*((*compartmentFC) -> accepted)) == initAccepted)
         {
             // Keep original values
             (*compartmentFC) -> calculateRelevantCompartments(); 
-            (*compartmentFC) -> setValue(initVal); 
+            (*compartmentFC) -> evalCPU();             
         }
 
         if (! std::isfinite((*compartmentFC) -> getValue()))
         {
-            lssCout << "Impossible value selected.\n";
+            lssCout << "Impossible value selected: " << (*compartmentFC) -> getValue() << "\n";
             throw(-1);
         } 
     }
