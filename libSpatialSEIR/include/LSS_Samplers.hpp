@@ -13,6 +13,7 @@
 #define COMPARTMENT_IDX_SLICE_SAMPLER 3
 #define COMPARTMENT_BINOM_PROPOSAL_METROPOLIS_SAMPLER 14
 #define COMPARTMENT_BINOM_PROPOSAL_SLICE_SAMPLER 15
+#define COMPARTMENT_BINOM_IDX_METROPOLIS_SAMPLER 16
 #define INITCOMPARTMENT_METROPOLIS_SAMPLER 4
 #define INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER 5
 #define INITCOMPARTMENT_IDX_SLICE_SAMPLER 6
@@ -24,6 +25,7 @@
 #define COMPARTMENT_METROPOLIS_SAMPLER_OCL 11
 #define INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL 12
 #define PARAMETER_JOINT_METROPOLIS_SAMPLER_OCL 13
+
 
 namespace SpatialSEIR
 {
@@ -149,6 +151,37 @@ namespace SpatialSEIR
             double** probabilityVector;
             int* probabilityVectorLen;
     };
+
+    /** The IndexedCompartmentBinomialMetropolisSampler class is child of the Sampler class which draws samples from the 
+     * posterior distribution of the various transition compartments using a chain binomial proposal based on the parameters,
+     * and uses the ModelContext index to update only a portion of the compartment each iteration.*/
+    class IndexedCompartmentBinomialMetropolisSampler : public Sampler
+    {
+        public: 
+            IndexedCompartmentBinomialMetropolisSampler(ModelContext* context,
+                                         CompartmentFullConditional* compartmentFC,
+                                         int* compartmentData,
+                                         int* compartmentFrom, 
+                                         int* compartmentTo,
+                                         double* probabilityVector,
+                                         int probabilityVectorLen);
+            void drawSample();
+            int getSamplerType();
+            void genProposal();
+            ~IndexedCompartmentBinomialMetropolisSampler();
+
+            ModelContext** context;
+            CompartmentFullConditional** compartmentFC;
+            int** indexLength;
+            int** indexList;
+            int** compartmentData;
+            int** compartmentFrom;
+            int** compartmentTo;
+            double** probabilityVector;
+            int* probabilityVectorLen;
+    };
+
+
 
 
     /** The CompartmentBinomialSliceSampler class is child of the Sampler class which draws samples from the 

@@ -15,7 +15,7 @@
 
 namespace SpatialSEIR
 {
-    CompartmentBinomialMetropolisSampler::CompartmentBinomialMetropolisSampler(ModelContext* context_,
+    IndexedCompartmentBinomialMetropolisSampler::IndexedCompartmentBinomialMetropolisSampler(ModelContext* context_,
                                                                CompartmentFullConditional* compartmentFC_,
                                                                int* compartmentData_,
                                                                int* compartmentFrom_,
@@ -30,6 +30,8 @@ namespace SpatialSEIR
         compartmentFrom = new int*;
         probabilityVector = new double*;
         probabilityVectorLen = new int;
+        indexList = new int*;
+        indexLength = new int*;
 
         *context = context_; 
         *compartmentFC = compartmentFC_;
@@ -38,9 +40,11 @@ namespace SpatialSEIR
         *compartmentTo = compartmentTo_;
         *probabilityVector = probabilityVector_;
         *probabilityVectorLen = probabilityVectorLen_;
+        *indexLength = (*context) -> indexLength;
+        *indexList = (*context) -> indexList;
     }
 
-    CompartmentBinomialMetropolisSampler::~CompartmentBinomialMetropolisSampler()
+    IndexedCompartmentBinomialMetropolisSampler::~IndexedCompartmentBinomialMetropolisSampler()
     {
         delete compartmentFC;
         delete compartmentData;
@@ -49,27 +53,21 @@ namespace SpatialSEIR
         delete probabilityVector;
         delete probabilityVectorLen;
         delete context;
+        delete indexLength;
+        delete indexList;
     }
 
-    int CompartmentBinomialMetropolisSampler::getSamplerType()
+    int IndexedCompartmentBinomialMetropolisSampler::getSamplerType()
     {
-        return(COMPARTMENT_BINOM_PROPOSAL_METROPOLIS_SAMPLER);
+        return(COMPARTMENT_BINOM_IDX_METROPOLIS_SAMPLER);
     }
 
-    void CompartmentBinomialMetropolisSampler::drawSample()
+    void IndexedCompartmentBinomialMetropolisSampler::drawSample()
     {
         int initAccepted = *((*compartmentFC) -> accepted);
-        double initVal;
-        int i;
-        int x0, x1;
-        int nLoc = *((*context) -> S_star -> ncol);
         int nTpt = *((*context) -> S -> nrow);
-        int loc;
-        int compIdx;
-        double proposalNumerator;
-        double proposalDenominator;
-        double p;
-        int n;
+        int loc, tpt, idxLen, compIdx, x0, x1, i, n;
+        double initVal, proposalNumerator, proposalDenominator, p;
         //memcpy((*context) -> tmpContainer -> data, &((*compartmentData)[compIdx]), nTpt*sizeof(int));
         //memcpy(((*context) -> tmpContainer -> data) + nTpt*sizeof(int), &((*compartmentFrom)[compIdx]), nTpt*sizeof(int));
 
@@ -84,43 +82,42 @@ namespace SpatialSEIR
 
         proposalNumerator = 0.0;
         proposalDenominator = 0.0;
-        for (loc = 0; loc < nLoc; loc++)
+        idxLen = **indexLength;
+        for (i = 0; i < idxLen; i++)
         {
-            compIdx = loc*nTpt;
-            for (i = 0; i < (nTpt); i++)
-            { 
-                *((*compartmentFC) -> samples) += 1;
-                (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
-                (*compartmentFC) -> evalCPU(loc, i);
-                initVal = (*compartmentFC) -> getValue();
+            compIdx = (*indexList)[i];
+            loc = compIdx % nTpt; 
+            tpt = compIdx - loc*nTpt;
 
-                x0 = (*compartmentData)[compIdx];
-                n = (*compartmentFrom)[compIdx];
-                p = (*probabilityVector)[compIdx % (*probabilityVectorLen)];
-                x1 = (*context) -> random -> binom(n, p);
-                proposalNumerator = (*context) -> random -> dbinom(x0, n, p);
-                proposalDenominator = (*context) -> random -> dbinom(x1, n, p);
-                (*compartmentData)[compIdx] = x1;
+            *((*compartmentFC) -> samples) += 1;
+            (*compartmentFC) -> calculateRelevantCompartments(loc, tpt); 
+            (*compartmentFC) -> evalCPU(loc, tpt);
+            initVal = (*compartmentFC) -> getValue();
 
-                (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
-                (*compartmentFC) -> evalCPU(loc, i);
-                double newVal = (*compartmentFC) -> getValue();
-                double criterion = (newVal - initVal) + (proposalNumerator - proposalDenominator);
+            x0 = (*compartmentData)[compIdx];
+            n = (*compartmentFrom)[compIdx];
+            p = (*probabilityVector)[compIdx % (*probabilityVectorLen)];
+            x1 = (*context) -> random -> binom(n, p);
+            proposalNumerator = (*context) -> random -> dbinom(x0, n, p);
+            proposalDenominator = (*context) -> random -> dbinom(x1, n, p);
+            (*compartmentData)[compIdx] = x1;
+
+            (*compartmentFC) -> calculateRelevantCompartments(loc, tpt); 
+            (*compartmentFC) -> evalCPU(loc, tpt);
+            double newVal = (*compartmentFC) -> getValue();
+            double criterion = (newVal - initVal) + (proposalNumerator - proposalDenominator);
 
 
-                if (std::log((*context) -> random -> uniform()) < criterion)
-                {
-                    // Accept new values
-                    *((*compartmentFC) -> accepted) += 1;
-                }
-                else 
-                {
-                    (*compartmentData)[compIdx] = x0;
-                    (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
-                }
-
-                compIdx++;
-
+            if (std::log((*context) -> random -> uniform()) < criterion)
+            {
+                // Accept new values
+                *((*compartmentFC) -> accepted) += 1;
+            }
+            else 
+            {
+                (*compartmentData)[compIdx] = x0;
+                (*compartmentFC) -> calculateRelevantCompartments(loc, tpt); 
+                (*compartmentFC) -> setValue(initVal);
             }
         }
 
