@@ -440,7 +440,8 @@ namespace SpatialSEIR
         sz = iterationTasks -> size();
         for (i = 0; i < sz; i++){iterationTasks -> pop_back();}
         if  ((config -> compartmentSamplingMode) == COMPARTMENT_IDX_METROPOLIS_SAMPLER || 
-             (config -> compartmentSamplingMode) == COMPARTMENT_IDX_SLICE_SAMPLER)
+             (config -> compartmentSamplingMode) == COMPARTMENT_IDX_SLICE_SAMPLER ||
+             (config -> compartmentSamplingMode) == COMPARTMENT_BINOM_IDX_METROPOLIS_SAMPLER)
         {
             iterationTasks -> push_back(setSamplingIndicesTask);
         } 
