@@ -65,6 +65,10 @@ buildDistanceModel = function(distanceList,
 # dataModel module helper function
 buildDataModel = function(Y, type = c("identity", "overdispersion"),params=NA)
 {
+    if (class(Y) != "matrix")
+    {
+        Y = as.matrix(Y)
+    }
     type = type[1]
     if (length(params) == 1 && is.na(params) && type != "identity")
     {
@@ -106,6 +110,10 @@ buildReinfectionModel = function(reinfectMode = c("SEIR", "SEIRS", "Fixed"),X_pr
     reinfectionmod = new(reinfectionModel, integerMode);
     if (integerMode != 3)
     {
+        if (class(X_prs) != "matrix")
+        {
+            X_prs = as.matrix(X_prs)
+        }
         if (all(is.na(priorPrecision)))
         {
            priorPrecision = 0.1     
@@ -162,9 +170,19 @@ buildExposureModel = function(X,Z,beta,betaPriorPrecision,offset=NA)
 
 # initialValueContainer module helper function
 
-buildInitialValueContainer = function(I_star, N, S0=NA, E0=NA, I0=NA, reinfection =TRUE, p_ir = 0.9, p_rs = 0.05)
+buildInitialValueContainer = function(I_star, N, S0=NA, E0=NA, I0=NA, reinfection =TRUE, p_ir = 0.9, p_rs = 0.05,ensureConstantInfectious = FALSE)
 {
-    proposal = generateCompartmentProposal(I_star, N, S0, E0, I0, reinfection, p_ir, p_rs)
+    if (class(I_star) != "matrix")
+    {
+        I_star = as.matrix(I_star)
+    }
+    if (class(N) != "matrix")
+    {
+        N = as.matrix(N)
+    }
+
+
+    proposal = generateCompartmentProposal(I_star, N, S0, E0, I0, reinfection, p_ir, p_rs,ensureConstantInfectious)
     InitialValueContainer = new(initialValueContainer)
     InitialValueContainer$setInitialValues(proposal$S0, proposal$E0, proposal$I0, proposal$R0,
                                            proposal$S_star, proposal$E_star, proposal$I_star, proposal$R_star,
