@@ -121,7 +121,7 @@ namespace SpatialSEIR
     }
     double RandomNumberProvider::dbinom(int x, int n, double p)
     {
-        if (p == 0.0)
+        if (n == 0 || p == 0.0)
         {
             return((x==0 ? 0 : -INFINITY ));
         }
