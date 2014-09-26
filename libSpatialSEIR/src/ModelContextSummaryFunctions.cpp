@@ -180,14 +180,15 @@ namespace SpatialSEIR
         }
         calculateP_IR_CPU(); 
         double* outG = calculateG(j);
+        double* newG; 
         double pIR;
         double _1mpIR_cum = 1.0;
         // Need to do prediction here for later time points?
-        for (i = j+1; i < nTpt; i++)
+        for (i = j+1; ((i < nTpt) && (_1mpIR_cum >= 1e-8)); i++)
         {
+            newG = calculateG(i);
             pIR = (p_ir)[p_ir_idx];
             _1mpIR_cum *= (1-pIR);
-            double* newG = calculateG(i); 
             for (k = 0; k < nLoc*nLoc; k++)
             {
                 outG[k] += _1mpIR_cum*newG[k];
@@ -198,17 +199,17 @@ namespace SpatialSEIR
         // If we're truncated at end of time period
         // do a simple extrapolation
         i = nTpt - 1;
+        newG = calculateG(i); 
         pIR = (p_ir)[p_ir_idx];
         while (_1mpIR_cum >= 1e-8)
         {
             _1mpIR_cum *= (1-pIR);
-            double* newG = calculateG(i); 
             for (k = 0; k < nLoc*nLoc; k++)
             {
                 outG[k] += _1mpIR_cum*newG[k];
             }
-            delete[] newG;          
         }
+        delete[] newG;          
 
         return(outG);
     }
