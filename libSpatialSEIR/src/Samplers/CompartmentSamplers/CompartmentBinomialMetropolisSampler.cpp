@@ -90,10 +90,12 @@ namespace SpatialSEIR
             for (i = 0; i < (nTpt); i++)
             { 
                 *((*compartmentFC) -> samples) += 1;
+                //(*compartmentFC) -> calculateRelevantCompartments(); 
+                //(*compartmentFC) -> evalCPU();
+
                 (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
                 (*compartmentFC) -> evalCPU(loc, i);
                 initVal = (*compartmentFC) -> getValue();
-
                 x0 = (*compartmentData)[compIdx];
                 n = (*compartmentFrom)[compIdx];
                 p = (*probabilityVector)[compIdx % (*probabilityVectorLen)];
@@ -103,10 +105,11 @@ namespace SpatialSEIR
                 (*compartmentData)[compIdx] = x1;
 
                 (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
+                //(*compartmentFC) -> calculateRelevantCompartments(); 
+                //(*compartmentFC) -> evalCPU();
                 (*compartmentFC) -> evalCPU(loc, i);
                 double newVal = (*compartmentFC) -> getValue();
                 double criterion = (newVal - initVal) + (proposalNumerator - proposalDenominator);
-
 
                 if (std::log((*context) -> random -> uniform()) < criterion)
                 {
@@ -117,14 +120,14 @@ namespace SpatialSEIR
                 {
                     (*compartmentData)[compIdx] = x0;
                     (*compartmentFC) -> calculateRelevantCompartments(loc, i); 
+                    //(*compartmentFC) -> calculateRelevantCompartments(); 
+
                 }
 
                 compIdx++;
 
             }
         }
-
-
 
         if ((*((*compartmentFC) -> accepted)) == initAccepted)
         {

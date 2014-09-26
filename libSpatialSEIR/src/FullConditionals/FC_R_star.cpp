@@ -296,7 +296,7 @@ namespace SpatialSEIR
         // time points
         for (i = 0; i < nLoc; i++)
         {
-            compIdx = i*nTpts;
+            compIdx = i*nTpts + startTpt;
             for (j = startTpt; j< nTpts; j++)
             {
 

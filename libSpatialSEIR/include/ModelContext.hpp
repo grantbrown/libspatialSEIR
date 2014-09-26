@@ -98,7 +98,7 @@ namespace SpatialSEIR
                                                     */
                           double* offset, /**< Offset allows irregular spacing between time points.*/
 
-                          int* Y, /** Y is the actual observed data vector. It must be of the same dimension
+                          int* Y, /**< Y is the actual observed data vector. It must be of the same dimension
                                       as the rest of the Compartments. In the default data model, Y is 
                                       exactly equal to I_star.*/
                           compartmentArgs* S_starArgs, /**< S_starArgs is an instance of compartmentArgs
@@ -122,7 +122,7 @@ namespace SpatialSEIR
                                                                    distance matrices. 
                                                                */
                           double* rho, /**< rho gives the starting value of the spatial dependence parameter*/
-                          double* phi,
+                          double* phi, /**< starting value for overdispersion precision*/
                           double* beta,/**< beta gives the starting vector of regression parameters driving the exposure process.*/ 
                           double* gamma_ei,/**< p_ei is the starting value of the parameter driving the exposed to infectious transition probability. */
                           double* gamma_ir,/**< p_ir is the starting value of the parameter driving the infectious to removed/recovered transition probability.*/ 
