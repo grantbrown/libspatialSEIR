@@ -25,6 +25,8 @@
 #define COMPARTMENT_METROPOLIS_SAMPLER_OCL 11
 #define INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL 12
 #define PARAMETER_JOINT_METROPOLIS_SAMPLER_OCL 13
+#define PARAMETER_NULL_SAMPLER 17
+#define HYBRID_SAMPLER_BETA_P_EI 18
 
 
 namespace SpatialSEIR
@@ -47,6 +49,38 @@ namespace SpatialSEIR
             virtual ~Sampler(){};
             virtual void drawSample() = 0; 
             virtual int getSamplerType() = 0;
+    };
+
+    
+    /**
+     * The ParameterNullSampler class is a placeholder to prevent a full conditional distribution from updating. This is used if 
+     * control has been handed to a ParameterHybridSampler.
+     */
+    class ParameterNullSampler : public Sampler
+    {
+        ParameterNullSampler();
+        void drawSample();
+        int getSamplerType();
+        ~ParameterNullSampler();
+    };
+
+    /** 
+     * The ParameterHybridSampler class is an experimental approach to reducing autocorrelation by sampling parameters together.  
+     */
+    class ParameterHybridSampler : public Sampler
+    {
+        ParameterHybridSampler(ModelContext* context,
+                      std::vector<ParameterFullConditional*> parameterFullConditionals,
+                      std::vector<double*> parameters,
+                      int samplerType); 
+        void drawSample();
+        int getSamplerType();
+        ModelContext** context;
+        int* samplerType;
+
+        std::vector<ParameterFullConditional*>* parameterFullConditionals;
+        std::vector<double*>* parameters;
+        ~ParameterHybridSampler();
     };
 
     /** The CompartmentMetropolisSampler class is child of the Sampler class which draws samples from the 
