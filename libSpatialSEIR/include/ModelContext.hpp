@@ -389,10 +389,19 @@ namespace SpatialSEIR
             double estimateR0(int t);
             /** Estimates the basic reproductive number for location l and time point t*/
             double estimateR0(int l, int t);
+
+            /** Estimates the effective reproductive rate across all time periods and spatial locations*/
+            double estimateEffectiveR0();
+            /** Estimates the effective reproductive rate at time t.*/
+            double* estimateEffectiveR0(int t);
+            /** Calculates the location specific components of the effective R0 quantity at time t*/
+            double* calculateEffectiveR0Components(int t);
+
             /** Calculates the next generation matrix used */
             double* calculateG(int t);
             /** Calculates the next generation matrix used, integrated forward in time. */
             double* calculateIntegratedG(int t);
+    
 
 
 

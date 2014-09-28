@@ -171,5 +171,4 @@ namespace SpatialSEIR
         *(this -> value) = val;
     }
 
-
 }

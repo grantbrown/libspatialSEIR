@@ -214,6 +214,50 @@ namespace SpatialSEIR
         return(outG);
     }
 
+    double ModelContext::estimateEffectiveR0()
+    {
+
+        double* G; 
+        int i; 
+        int nLoc = *(S -> ncol);
+        int maxG = nLoc*nLoc;
+        int nTpt = *(S -> nrow);
+        double out = 0.0;
+        int t;
+        for (t = 0; t < nTpt; t++)
+        {
+            G = calculateEffectiveR0Components(t);
+            for (i = 0; i < maxG; i++)
+            {
+                out += G[i]; 
+            }
+            delete[] G;
+        }
+        out /= nTpt; 
+        return(out);
+    }
+
+    double* ModelContext::estimateEffectiveR0(int t)
+    {
+        double* G = calculateEffectiveR0Components(t);
+        int i; int j; 
+        int nLoc = *(S -> ncol);
+        double* outVec = new double[nLoc];
+        for (i = 0; i < nLoc; i++)
+        {
+            outVec[i] = 0.0;
+        }
+        for (i = 0; i < nLoc; i ++)
+        {
+            for (j = 0; j < nLoc; j ++ )
+            {
+                outVec[j] += G[i*nLoc + j];        
+            }
+        }
+        delete[] G;
+        return(outVec);
+    }
+
     double* ModelContext::calculateG(int j)
     {
         int i, l;
@@ -273,4 +317,59 @@ namespace SpatialSEIR
         }
         return(G);
     }
+
+    double* ModelContext::calculateEffectiveR0Components(int j)
+    {
+        int i, l;
+
+        //Update Eta
+        this -> X -> calculate_eta_CPU(eta, beta);
+
+        int iIndex, lIndex, GIndex;
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+        if (j >= nTpt)
+        {
+            lssCout << "Invalid time point: " << j << "\n";
+            throw(-1);
+        }
+
+        double* G = new double[nLoc*nLoc];
+        double component1, component2;
+        unsigned int k;
+        //Exponentiate
+        int nrowz = *(X->nrow_z);
+        for (i = 0; i < nrowz; i++)
+        {
+            eta[i] = std::exp(eta[i]);
+        }
+        // Out: rows
+        for (i = 0; i < nLoc; i++) 
+        {
+
+            // Out: columns
+            for (l = 0; l < nLoc; l++)
+            { 
+                iIndex = i*nTpt + j;
+                lIndex = l*nTpt + j;
+                GIndex = l*nLoc + i;
+                component1 = ((eta[iIndex]))*((S->data)[lIndex])/(N[lIndex]*(*gamma_ir));
+                if (i != l)
+                {
+                    component2 = 0.0;
+                    for (k = 0; k < scaledDistMatrices -> size(); k++)
+                    {
+                        component2 += ((rho)[k])*(((*scaledDistMatrices)[k] -> data)[GIndex])*component1;
+                    }
+                    G[GIndex] = component2; 
+                }
+                else
+                { 
+                    G[GIndex] = component1;
+                }
+            }
+        }
+        return(G);
+    }
+
 }
