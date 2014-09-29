@@ -77,6 +77,8 @@ namespace SpatialSEIR
         int getSamplerType();
         ModelContext** context;
         int* samplerType;
+        int* totalParamSize;
+        double* parameterCache;
 
         std::vector<ParameterFullConditional*>* parameterFullConditionals;
         std::vector<double*>* parameters;

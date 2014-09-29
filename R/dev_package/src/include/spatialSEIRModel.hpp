@@ -60,10 +60,10 @@ class spatialSEIRModel
         virtual int calculateP_SE(); 
         virtual int calculateP_SE2(int i, int j); 
         virtual int calculateP_SE_OCL();
-        virtual Rcpp::NumericVector estimateEffectiveR0(int t);
+        virtual double estimateEffectiveR0();
+        virtual Rcpp::NumericVector estimateEffectiveR02(int t);
         virtual double estimateR0();
-        virtual double estimateR02(int t);
-        virtual double estimateR03(int i, int t);
+        virtual Rcpp::NumericVector estimateR02(int t);
         virtual int calculateP_RS();
 
         

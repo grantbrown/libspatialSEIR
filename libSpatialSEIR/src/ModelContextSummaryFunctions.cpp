@@ -125,45 +125,57 @@ namespace SpatialSEIR
         }
         return(out/numTpt);
     }
-
+    
     double ModelContext::estimateR0()
     {
-        int numTpt = *(S->nrow);
-        double output = 0.0;
-        int i;
-        for (i = 0; i < numTpt; i++)
-        {
-            output += estimateR0(i);
-        }
-        return(output/numTpt);
-    }
-
-    double ModelContext::estimateR0(int j)
-    {
         double* G; 
+        int i; 
         int nLoc = *(S -> ncol);
-        G = calculateIntegratedG(j);
-        MatrixMapType Gmap(G, nLoc, nLoc);
-        Eigen::EigenSolver<Eigen::MatrixXd> Es(Gmap);
-        double output =  Es.eigenvalues()[0].real();
-        delete[] G;
-        return(output);
+        int maxG = nLoc*nLoc;
+        int nTpt = *(S -> nrow);
+        double out = 0.0;
+        int t;
+        for (t = 0; t < nTpt; t++)
+        {
+            G = calculateR0Components(t);
+            for (i = 0; i < maxG; i++)
+            {
+                out += G[i]; 
+            }
+            delete[] G;
+        }
+        out /= nTpt; 
+        return(out);
     }
 
-    double ModelContext::estimateR0(int i, int j)
-    {
-        // Column sum
-        double* G = calculateIntegratedG(j); 
-        double out = 0.0;
-        int nLoc = *(S -> ncol);
-        int k;
 
-        for (k = 0; k < nLoc; k++)
+    double* ModelContext::estimateR0(int t)
+    {
+        double* G = calculateR0Components(t);
+        int i; int j; 
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+        if (t >= nTpt)
         {
-            out += G[i*nLoc + k];
+            lssCout << "Invalid time point: " << t << "\n";
+            throw(-1);
+        }
+
+        double* outVec = new double[nLoc];
+
+        for (i = 0; i < nLoc; i++)
+        {
+            outVec[i] = 0.0;
+        }
+        for (i = 0; i < nLoc; i ++)
+        {
+            for (j = 0; j < nLoc; j ++ )
+            {
+                outVec[j] += G[i*nLoc + j];        
+            }
         }
         delete[] G;
-        return(out); 
+        return(outVec);
     }
 
     double* ModelContext::calculateIntegratedG(int j)
@@ -362,6 +374,59 @@ namespace SpatialSEIR
                 lIndex = l*nTpt + j;
                 GIndex = l*nLoc + i;
                 component1 = ((eta[iIndex]))*((S->data)[lIndex])/(N[lIndex]*(*gamma_ir));
+                if (i != l)
+                {
+                    component2 = 0.0;
+                    for (k = 0; k < scaledDistMatrices -> size(); k++)
+                    {
+                        component2 += ((rho)[k])*(((*scaledDistMatrices)[k] -> data)[GIndex])*component1;
+                    }
+                    G[GIndex] = component2; 
+                }
+                else
+                { 
+                    G[GIndex] = component1;
+                }
+            }
+        }
+        return(G);
+    }
+
+    double* ModelContext::calculateR0Components(int j)
+    {
+        int i, l;
+
+        //Update Eta
+        this -> X -> calculate_eta_CPU(eta, beta);
+
+        int iIndex, GIndex;
+        int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+        if (j >= nTpt)
+        {
+            lssCout << "Invalid time point: " << j << "\n";
+            throw(-1);
+        }
+
+        double* G = new double[nLoc*nLoc];
+        double component1, component2;
+        unsigned int k;
+        //Exponentiate
+        int nrowz = *(X->nrow_z);
+        for (i = 0; i < nrowz; i++)
+        {
+            eta[i] = std::exp(eta[i]);
+        }
+        // Out: rows
+        for (i = 0; i < nLoc; i++) 
+        {
+
+            // Out: columns
+            for (l = 0; l < nLoc; l++)
+            { 
+                iIndex = i*nTpt + j;
+                GIndex = l*nLoc + i;
+                component1 = (eta[iIndex])/(*gamma_ir);
                 if (i != l)
                 {
                     component2 = 0.0;

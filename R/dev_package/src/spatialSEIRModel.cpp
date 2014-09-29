@@ -384,7 +384,48 @@ double spatialSEIRModel::estimateR0()
     }
 }
 
-Rcpp::NumericVector spatialSEIRModel::estimateEffectiveR0(int t)
+double spatialSEIRModel::estimateEffectiveR0()
+{
+    try
+    {
+        if (*(context -> isPopulated))
+        {
+            return((context -> estimateEffectiveR0()));
+        }
+        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+        return(-1.0);
+    }
+    catch (int e)
+    {
+        Rcpp::Rcout << "Error: " << e << "\n";
+        return(-1.0);
+    }
+}
+
+Rcpp::NumericVector spatialSEIRModel::estimateR02(int t)
+{
+    try
+    {
+        if (*(context -> isPopulated))
+        {
+            int nLoc = *(context -> S -> ncol);
+            double* inVec = (context -> estimateR0(t));
+            Rcpp::NumericVector outVec (nLoc);
+            memcpy(outVec.begin(), inVec, nLoc*sizeof(double));
+            return(outVec);
+        }
+        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+        return(-1.0);
+    }
+    catch (int e)
+    {
+        Rcpp::Rcout << "Error: " << e << "\n";
+        return(-1.0);
+    }
+
+}
+
+Rcpp::NumericVector spatialSEIRModel::estimateEffectiveR02(int t)
 {
     try
     {
@@ -405,46 +446,6 @@ Rcpp::NumericVector spatialSEIRModel::estimateEffectiveR0(int t)
         return(-1.0);
     }
 
-}
-
-
-
-double spatialSEIRModel::estimateR02(int t)
-{
-    try
-    {
-        if (*(context -> isPopulated))
-        {
-            return((context -> estimateR0(t)));
-        }
-        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
-        return(-1.0);
-    }
-    catch (int e)
-    {
-        Rcpp::Rcout << "Error: " << e << "\n";
-        return(-1.0);
-    }
-
-}
-
-double spatialSEIRModel::estimateR03(int i, int t)
-{
-    try
-    {
-        if (*(context -> isPopulated))
-        {
-            return((context -> estimateR0(i, t)));
-        }
-        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
-        return(-1.0);
-    }
-     catch (int e)
-    {
-        Rcpp::Rcout << "Error: " << e << "\n";
-        return(-1.0);
-    }
-   
 }
 
 int spatialSEIRModel::calculateP_RS()
@@ -1326,9 +1327,9 @@ RCPP_MODULE(mod_spatialSEIRModel)
     .method("calculateP_SE", &spatialSEIRModel::calculateP_SE)
     .method("calculateP_SE", &spatialSEIRModel::calculateP_SE2)
     .method("calculateP_SE_OCL", &spatialSEIRModel::calculateP_SE_OCL)
-    .method("estimateR0", &spatialSEIRModel::estimateR03)
     .method("estimateR0", &spatialSEIRModel::estimateR02)
     .method("estimateR0", &spatialSEIRModel::estimateR0)
+    .method("estimateEffectiveR0", &spatialSEIRModel::estimateEffectiveR02)
     .method("estimateEffectiveR0", &spatialSEIRModel::estimateEffectiveR0)
     .method("printAcceptanceRates", &spatialSEIRModel::printAcceptanceRates)
     .method("printOCLSummary", &spatialSEIRModel::printOCLSummary)
