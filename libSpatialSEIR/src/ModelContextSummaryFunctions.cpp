@@ -242,7 +242,15 @@ namespace SpatialSEIR
         double* G = calculateEffectiveR0Components(t);
         int i; int j; 
         int nLoc = *(S -> ncol);
+        int nTpt = *(S -> nrow);
+        if (t >= nTpt)
+        {
+            lssCout << "Invalid time point: " << t << "\n";
+            throw(-1);
+        }
+
         double* outVec = new double[nLoc];
+
         for (i = 0; i < nLoc; i++)
         {
             outVec[i] = 0.0;

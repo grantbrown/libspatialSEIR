@@ -384,6 +384,31 @@ double spatialSEIRModel::estimateR0()
     }
 }
 
+Rcpp::NumericVector spatialSEIRModel::estimateEffectiveR0(int t)
+{
+    try
+    {
+        if (*(context -> isPopulated))
+        {
+            int nLoc = *(context -> S -> ncol);
+            double* inVec = (context -> estimateEffectiveR0(t));
+            Rcpp::NumericVector outVec (nLoc);
+            memcpy(outVec.begin(), inVec, nLoc*sizeof(double));
+            return(outVec);
+        }
+        Rcpp::Rcout << "Attempt to estimate R0 on a non-populated ModelContext.\n";
+        return(-1.0);
+    }
+    catch (int e)
+    {
+        Rcpp::Rcout << "Error: " << e << "\n";
+        return(-1.0);
+    }
+
+}
+
+
+
 double spatialSEIRModel::estimateR02(int t)
 {
     try
@@ -1304,6 +1329,7 @@ RCPP_MODULE(mod_spatialSEIRModel)
     .method("estimateR0", &spatialSEIRModel::estimateR03)
     .method("estimateR0", &spatialSEIRModel::estimateR02)
     .method("estimateR0", &spatialSEIRModel::estimateR0)
+    .method("estimateEffectiveR0", &spatialSEIRModel::estimateEffectiveR0)
     .method("printAcceptanceRates", &spatialSEIRModel::printAcceptanceRates)
     .method("printOCLSummary", &spatialSEIRModel::printOCLSummary)
     .method("printSamplingParameters", &spatialSEIRModel::printSamplingParameters)
