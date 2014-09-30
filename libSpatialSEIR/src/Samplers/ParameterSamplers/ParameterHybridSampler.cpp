@@ -119,10 +119,9 @@ namespace SpatialSEIR
             }
             iters ++;
         }
-
-       
-        
-    
-
+        if (iters >= 1000)
+        {
+            lssCout << "Hybrid Sampler did Not Update.\n";
+        }
     }
 }
