@@ -61,12 +61,16 @@ namespace SpatialSEIR
         int betaPrsAccepted = *((*context) -> betaPrs_fc -> accepted);
 
         *iterationCount = 0;
+        double startingSliceWidth = *((*context) -> beta_fc -> sliceWidth);
         while (*((*context) -> beta_fc -> accepted) == betaAccepted &&
                 *iterationCount < 1000)
         {
             (*context) -> beta_fc -> sample(0);
+            (*((*context) -> beta_fc -> sliceWidth)) *= 0.99;
             *iterationCount += 1;
         }
+        (*((*context) -> beta_fc -> sliceWidth)) = startingSliceWidth;
+
         if (*((*context) -> beta_fc -> accepted) == betaAccepted)
         {
             lssCout << "Decorrelation sampler did not update (beta).\n";
