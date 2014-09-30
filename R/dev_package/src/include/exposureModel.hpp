@@ -13,8 +13,8 @@ class exposureModel
     public:
         exposureModel(SEXP X, SEXP Z, SEXP initBeta, SEXP precision);
         virtual void summary();
-        virtual Rcpp::IntegerVector getOffset();
-        virtual void setOffset(Rcpp::IntegerVector offs);
+        virtual Rcpp::NumericVector getOffset();
+        virtual void setOffset(Rcpp::NumericVector offs);
         double* offset;
         int* xDim;
         int* zDim;

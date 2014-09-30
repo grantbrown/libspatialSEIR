@@ -65,20 +65,20 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec)
 }
 
 
-void exposureModel::setOffset(IntegerVector offsets)
+void exposureModel::setOffset(NumericVector offsets)
 {
     if (offsets.length() != ((zDim[0])/(xDim[0])))
     {
         Rcpp::Rcout << "Error: offsets must have length equal to the number of time points.\n";
         throw(-1);
     }
-    memcpy(offset, offsets.begin(), ((zDim[0])/(xDim[0]))*sizeof(int));
+    memcpy(offset, offsets.begin(), ((zDim[0])/(xDim[0]))*sizeof(double));
 }
 
-Rcpp::IntegerVector exposureModel::getOffset()
+Rcpp::NumericVector exposureModel::getOffset()
 {
-    Rcpp::IntegerVector output(((zDim[0])/(xDim[0])));
-    memcpy(output.begin(), offset, ((zDim[0])/(xDim[0]))*sizeof(int));
+    Rcpp::NumericVector output(((zDim[0])/(xDim[0])));
+    memcpy(output.begin(), offset, ((zDim[0])/(xDim[0]))*sizeof(double));
     return(output);
 }
 
@@ -89,6 +89,7 @@ void exposureModel::summary()
     Rcpp::Rcout << "Linear model parameter prior precision: " << *betaPriorPrecision << "\n";
 
 }
+
 exposureModel::~exposureModel()
 {
     delete[] xDim;

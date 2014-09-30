@@ -85,6 +85,7 @@ class spatialSEIRModel
         virtual Rcpp::IntegerMatrix getR_star();
 
         virtual Rcpp::IntegerMatrix getY();
+        virtual Rcpp::NumericVector getOffsets();
 
         virtual Rcpp::IntegerVector getS0();
         virtual Rcpp::IntegerVector getE0();

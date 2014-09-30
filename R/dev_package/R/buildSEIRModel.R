@@ -160,6 +160,10 @@ buildUniformTransitionPriors = function()
 # exposureModel module helper function
 buildExposureModel = function(X,Z,beta,betaPriorPrecision,offset=NA)
 {
+    if (length(offset) == 1 && is.na(offset))
+    {
+        print("Assuming equally spaced count data.")
+    }
     ExposureModel = new(exposureModel,X,Z,beta,betaPriorPrecision)
     if (!is.na(offset))
     {

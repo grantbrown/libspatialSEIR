@@ -135,6 +135,26 @@ void spatialSEIRModel::setCompartmentSamplingMode(int mode)
     Rcpp::Rcout << "Context Not populated\n";
 }
 
+Rcpp::NumericVector spatialSEIRModel::getOffsets()
+{
+    if (*(context -> isPopulated))
+    {
+        int i;
+        int nTpt = *(context -> S -> nrow);
+        Rcpp::NumericVector output(nTpt);
+
+        for (i = 0; i < nTpt; i++)
+        {
+            output[i] = (context -> offset)[i];
+        }
+        return(output);
+    }
+    Rcpp::Rcout << "ModelContext not populated.\n";
+    Rcpp::NumericVector output(1); output[0] = -1;
+    return(output);
+
+}
+
 int spatialSEIRModel::getCompartmentSamplingMode()
 {
     if (*(context -> isPopulated))
@@ -1359,6 +1379,7 @@ RCPP_MODULE(mod_spatialSEIRModel)
     .property("rho", &spatialSEIRModel::getRho, "Spatial Dependence Term")
     .property("phi", &spatialSEIRModel::getPhi, "Overdispersion Term")
     .property("Y", &spatialSEIRModel::getY, "Raw Data")
+    .property("offsets", &spatialSEIRModel::getOffsets, "vector of offsets")
     .property("parameterSamplingMode", &spatialSEIRModel::getParameterSamplingMode, 
             &spatialSEIRModel::setParameterSamplingMode, "Type of sampler used for non-compartment parameters.")
     .property("compartmentSamplingMode", &spatialSEIRModel::getCompartmentSamplingMode, 
