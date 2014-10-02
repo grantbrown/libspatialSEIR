@@ -6,12 +6,15 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
-exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec)
+exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec, SEXP _hasZ)
 {
+    int i;
     Rcpp::NumericMatrix inX(_X);
     Rcpp::NumericMatrix inZ(_Z); 
     Rcpp::NumericVector inPrecision(_prec);
     Rcpp::NumericVector initParams(_paramInit);
+    Rcpp::IntegerVector hasZVec(_hasZ);
+    int hasZ = hasZVec[0];
 
     betaPriorPrecision = new double;
     *betaPriorPrecision = *(inPrecision.begin()); 
@@ -19,10 +22,20 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec)
     zDim = new int[2];
     xDim[0] = inX.nrow();
     xDim[1] = inX.ncol();
-    zDim[0] = inZ.nrow();
-    zDim[1] = inZ.ncol();
+    if (hasZ)
+    {
+        zDim[0] = inZ.nrow();
+        zDim[1] = inZ.ncol();
+        Z = new double[zDim[0]*zDim[1]];
+    }
+    else
+    {
+        zDim[0] = inZ[0]*xDim[0];
+        zDim[1] = 0;
+        Z = new double[zDim[0]];
+        for (i = 0; i < zDim[0]; i++){Z[i] = 0.0;} 
+    }
     X = new double[xDim[0]*xDim[1]];
-    Z = new double[zDim[0]*zDim[1]];
 
     beta = new double[xDim[1] + zDim[1]];
     if (zDim[0] % xDim[0] != 0)
@@ -40,11 +53,8 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec)
         Rcpp::Rcout << "ncol(Z): " << zDim[1] << "\n";
         Rcpp::Rcout << "length(beta): " << initParams.length() << "\n";
         Rcpp::Rcout << initParams << "\n";
-
-
         throw(-1);
     }
-    int i;
     offset = new double[(zDim[0])/(xDim[0])];
     for (i = 0; i < (zDim[0])/(xDim[0]); i++)
     {
@@ -104,7 +114,7 @@ RCPP_MODULE(mod_exposureModel)
 {
     using namespace Rcpp;
     class_<exposureModel>( "exposureModel" )
-    .constructor<SEXP,SEXP,SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP,SEXP,SEXP>()
     .method("summary", &exposureModel::summary)
     .property("offsets", &exposureModel::getOffset, &exposureModel::setOffset);
 }

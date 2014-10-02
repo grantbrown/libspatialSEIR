@@ -158,14 +158,39 @@ buildUniformTransitionPriors = function()
 }
 
 # exposureModel module helper function
-buildExposureModel = function(X,Z,beta,betaPriorPrecision,offset=NA)
+buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,offset=NA,nTpt=NA)
 {
+    if (class(X) != "matrix")
+    {
+        print("Warning: X should be a matrix.")
+    }
+    if (length(beta) == 1 && is.na(beta))
+    {
+        print("Generating starting values for exposure parameters: may be unreasonable.")
+        beta = rnorm(ncol(X))
+    }
+    if (length(betaPriorPrecision) == 0 && is.na(betaPriorPrecision))
+    {
+        betaPriorPrecision = 0.1
+    }
     if (length(offset) == 1 && is.na(offset))
     {
         print("Assuming equally spaced count data.")
     }
-    ExposureModel = new(exposureModel,X,Z,beta,betaPriorPrecision)
-    if (!is.na(offset))
+    if (length(Z) == 1 && is.na(Z) && length(nTpt) == 1 && is.na(nTpt))
+    {
+        stop("If time varying covariate matrix Z is not provided, nTpt must be specified.")
+    }
+    if (length(Z) == 1 && is.na(Z))
+    {
+        Z = matrix(nTpt)
+        ExposureModel = new(exposureModel,X,Z,beta,betaPriorPrecision,FALSE) 
+    }
+    else
+    {
+        ExposureModel = new(exposureModel,X,Z,beta,betaPriorPrecision,TRUE)
+    }
+    if (all(!is.na(offset)))
     {
         ExposureModel$offsets = offset
     }

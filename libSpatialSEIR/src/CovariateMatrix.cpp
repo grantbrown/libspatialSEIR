@@ -18,7 +18,16 @@ namespace SpatialSEIR
                                            int *incol_z)
     {
         int numToAlloc_x = (*incol_x)*(*inrow_x);
-        int numToAlloc_z = (*incol_z)*(*inrow_z);
+        int numToAlloc_z;
+        if (*incol_z == 0)
+        {
+            numToAlloc_z = (*inrow_z);
+        }
+        else
+        {
+            numToAlloc_z = (*incol_z)*(*inrow_z);
+        }
+
 
         X = new double[numToAlloc_x];
         Z = new double[numToAlloc_z];
