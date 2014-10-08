@@ -10,12 +10,16 @@
 
 #define LSS_SAMPLING_INDEX_TASK_TYPE 1
 #define LSS_DECORRELATION_STEP_TASK_TYPE 2
+#define LSS_HYBRID_SE_EI_UPDATE_STEP_TASK_TYPE 3
 
 
 namespace SpatialSEIR
 {
 
     class ModelContext;
+    class FC_Gamma_EI;
+    class FC_Beta;
+    class ParameterHybridSampler;
 
     /** IterationTask instances are bits of logical code that need to 
      * execute periodically during MCMC sampling and do not fall into 
@@ -56,6 +60,22 @@ namespace SpatialSEIR
             int getTaskType();
 
             ModelContext** context;
+            int* iterationCount;
+            int* currentIteration;
+    };
+
+    class PerformHybridSE_EI_UpdateStep : public IterationTask
+    {
+        public:
+            PerformHybridSE_EI_UpdateStep(ModelContext* context,
+                                          FC_Gamma_EI* fc_gammaEI,
+                                          FC_Beta* fc_beta,
+                                          int iterationCount);
+            ~PerformHybridSE_EI_UpdateStep();
+            void executeTask();
+            int getTaskType();
+            ModelContext** context;
+            ParameterHybridSampler* sampler;
             int* iterationCount;
             int* currentIteration;
     };

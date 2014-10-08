@@ -69,20 +69,21 @@ namespace SpatialSEIR
      */
     class ParameterHybridSampler : public Sampler
     {
-        ParameterHybridSampler(ModelContext* context,
-                      std::vector<ParameterFullConditional*> parameterFullConditionals,
-                      std::vector<double*> parameters,
-                      int samplerType); 
-        void drawSample();
-        int getSamplerType();
-        ModelContext** context;
-        int* samplerType;
-        int* totalParamSize;
-        double* parameterCache;
+        public:
+            ParameterHybridSampler(ModelContext* context,
+                          std::vector<ParameterFullConditional*> parameterFullConditionals,
+                          std::vector<double*> parameters,
+                          int samplerType); 
+            void drawSample();
+            int getSamplerType();
+            ModelContext** context;
+            int* samplerType;
+            int* totalParamSize;
+            double* parameterCache;
 
-        std::vector<ParameterFullConditional*>* parameterFullConditionals;
-        std::vector<double*>* parameters;
-        ~ParameterHybridSampler();
+            std::vector<ParameterFullConditional*>* parameterFullConditionals;
+            std::vector<double*>* parameters;
+            ~ParameterHybridSampler();
     };
 
     /** The CompartmentMetropolisSampler class is child of the Sampler class which draws samples from the 
