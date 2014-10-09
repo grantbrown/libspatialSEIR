@@ -268,10 +268,6 @@ namespace SpatialSEIR
         *gamma_ei = *gamma_ei_;
         *gamma_ir = *gamma_ir_;
 
-        // Set up iteration tasks
-        setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
-
-        decorrelationStepTask = new PerformDecorrelationStep(this, 100);
 
         // Wire up the full conditional classes 
         S0_fc = new FC_S0(this,
@@ -414,6 +410,11 @@ namespace SpatialSEIR
                                                               (R_starArgs -> steadyStateConstraintPrecision),
                                                               *(sliceWidths -> E_starWidth));
         
+
+        // Set up iteration tasks
+        setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
+        performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, beta_fc,100);
+        decorrelationStepTask = new PerformDecorrelationStep(this, 100);
 
         // Calculate Compartments
         this -> calculateS_CPU();
@@ -1277,7 +1278,10 @@ namespace SpatialSEIR
             delete singleLocation;   
             // FC's have already been disposed of.
             delete model;
-            while (iterationTasks -> size() != 0){delete (*iterationTasks).back(); (iterationTasks -> pop_back());}
+            while (iterationTasks -> size() != 0){(iterationTasks -> pop_back());}
+            delete setSamplingIndicesTask;
+            delete performHybridSE_EI_UpdateTask;
+            delete decorrelationStepTask;
             while (scaledDistMatrices -> size() != 0){delete (*scaledDistMatrices).back(); (scaledDistMatrices -> pop_back());}
             delete scaledDistMatrices;
             delete iterationTasks;

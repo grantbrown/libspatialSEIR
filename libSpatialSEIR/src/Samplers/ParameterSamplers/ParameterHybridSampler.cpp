@@ -20,20 +20,22 @@ namespace SpatialSEIR
                                                    int samplerType_) 
     {
 
+
         context = new ModelContext*;
-        parameterFullConditionals = new std::vector<ParameterFullConditional*>;
-        parameters = new std::vector<double*>;
+        parameterFullConditionals = new std::vector<ParameterFullConditional*>();
+        parameters = new std::vector<double*>();
         samplerType = new int;
         *samplerType = samplerType_;
         totalParamSize = new int; *totalParamSize = 0;
 
         *context = context_;    
+
         unsigned int i;
         for (i = 0; i < parameterFullConditionals_.size(); i++)
         {
             parameterFullConditionals -> push_back(parameterFullConditionals_[i]);
             parameters -> push_back(parameters_[i]);
-            totalParamSize += *(parameterFullConditionals_[i] -> varLen);
+            (*totalParamSize) += *(parameterFullConditionals_[i] -> varLen);
         }
 
         parameterCache = new double[*totalParamSize];
