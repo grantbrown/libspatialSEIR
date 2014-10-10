@@ -66,6 +66,7 @@ namespace SpatialSEIR
         int parameterSamplingMode; 
         int indexLength;
         int useDecorrelation;
+        int performHybridStep;
         int dataModel;
     };
 

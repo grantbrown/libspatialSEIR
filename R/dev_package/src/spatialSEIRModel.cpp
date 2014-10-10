@@ -21,6 +21,28 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
+int spatialSEIRModel::getPerformHybridStep()
+{
+    if (*(context -> isPopulated))
+    {
+        return((context -> config -> performHybridStep));
+    }
+    Rcpp::Rcout << "Context Not populated\n";
+    return(-1);
+}
+
+void spatialSEIRModel::setPerformHybridStep(int val)
+{
+    if (*(context -> isPopulated))
+    {
+        ((context -> config ->performHybridStep) = val);
+        (context -> configureIterationTasks());
+        return;
+    }
+    Rcpp::Rcout << "Context Not populated\n";
+    return; 
+}
+
 int spatialSEIRModel::getUseDecorrelation()
 {
     if (*(context -> isPopulated))
@@ -1386,7 +1408,10 @@ RCPP_MODULE(mod_spatialSEIRModel)
             &spatialSEIRModel::setCompartmentSamplingMode, "Type of sampler used for disease compartments.")
     .property("debug", &spatialSEIRModel::getDebug, &spatialSEIRModel::setDebug, "Show debug level output?")
     .property("verbose", &spatialSEIRModel::getVerbose, &spatialSEIRModel::setVerbose, "Show verbose level output?")
-    .property("useDecorrelation", &spatialSEIRModel::getUseDecorrelation, &spatialSEIRModel::setUseDecorrelation, "Use decorrelation sampling?")
+    .property("useDecorrelation", &spatialSEIRModel::getUseDecorrelation, &spatialSEIRModel::setUseDecorrelation, "Perform hybrid p_se, p_ei sampling?")
+    .property("performHybridStep", &spatialSEIRModel::getPerformHybridStep, &spatialSEIRModel::setPerformHybridStep, "Peform hybrid p_se, p_ei sampling?")
+
+
     ;
 
 }

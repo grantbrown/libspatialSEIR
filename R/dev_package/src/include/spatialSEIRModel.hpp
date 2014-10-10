@@ -109,6 +109,9 @@ class spatialSEIRModel
 
         virtual int getVerbose();
         virtual void setVerbose(int verbose_);
+        
+        virtual int getPerformHybridStep();
+        virtual void setPerformHybridStep(int val);
 
         virtual int getUseDecorrelation();
         virtual void setUseDecorrelation(int val);

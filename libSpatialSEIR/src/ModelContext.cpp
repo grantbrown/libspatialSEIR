@@ -447,11 +447,17 @@ namespace SpatialSEIR
             iterationTasks -> push_back(setSamplingIndicesTask);
         } 
 
-        if  ((config -> useDecorrelation) != 0) 
+        if  ((config -> useDecorrelation) > 0) 
         {
             iterationTasks -> push_back(decorrelationStepTask);
+            *(decorrelationStepTask -> iterationCount) = (config -> useDecorrelation);
+            
         }
-
+        if (config -> performHybridStep > 0)
+        {
+            iterationTasks -> push_back(performHybridSE_EI_UpdateTask);
+             *(performHybridSE_EI_UpdateTask -> iterationCount) = (config -> performHybridStep); 
+        }
     }
 
     void ModelContext::buildModel()
