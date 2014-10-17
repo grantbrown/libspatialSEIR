@@ -3,15 +3,30 @@ cmake_minimum_required(VERSION 2.8.7)
 ####################################
 ## General Configuration Options  ##
 ####################################
+if (WIN32)
+	SET(CMAKE_C_COMPILER "gcc")
+	SET(CMAKE_CXX_COMPILER "g++")
+	SET(BOOST_LOCATION "./boost_1_56_0")
+	SET(R_INSTALL_DIRECTORY "C:/Program Files/R/R-3.1.1")
+	SET(BLAS_LOCATION "${R_INSTALL_DIRECTORY}/bin/x64")
+	SET(R_INCLUDE_DIR "${R_INSTALL_DIRECTORY}/include" )
+	SET(RCPP_INCLUDE_DIR "C:/Users/grantbrown/Documents/R/win-library/3.1/Rcpp/include")
+else()
+	SET(BOOST_LOCATION "NOT_SET")
+	SET(R_INSTALL_DIRECTORY "NOT_SET")
+	SET(BLAS_LOCATION "NOT_SET")
+	SET(R_INCLUDE_DIR "NOT_SET")
+	# Only windows users and those not using boost need to worry about the following two lines:
+	SET(RCPP_INCLUDE_DIR "/home/grantbrown/R/x86_64-pc-linux-gnu-library/3.0/Rcpp/include/")
+	SET(R_INCLUDE_DIR "/usr/share/R/include/")
+endif()
 
-# Where are R.h and Rcpp.h located? If you plan to use Boost, don't worry about this. 
-SET(RCPP_INCLUDE_DIR "/home/grantbrown/R/x86_64-pc-linux-gnu-library/3.0/Rcpp/include/")
-SET(R_INCLUDE_DIR "/usr/share/R/include/")
 
 # Compile libspatialSEIR with OpenCL support?
 SET(OPEN_CL_SUPPORT false)
 
-# Use Boost? Alternative is to fall back and try to link to R
+# Use Boost? Alternative is to fall back and try to link to R. This can be difficult, 
+# and is considerably slower. You probably want to use boost. 
 SET(USE_BOOST true)
 
 # libspatialSEIR requires the eigen3 library, so here we must 
@@ -43,26 +58,33 @@ endif()
 if (USE_BOOST)
     add_definitions( -DLSS_USE_BOOST="true" )
     ## Configure Boost
-    SET(RCPP_INCLUDE_DIR ".")
-    SET(R_INCLUDE_DIR ".")
     SET(Boost_USE_STATIC_LIBS OFF) 
     SET(Boost_USE_MULTITHREADED ON)  
     SET(Boost_USE_STATIC_RUNTIME OFF) 
-    find_package(Boost 1.49.0 COMPONENTS random REQUIRED) 
-
-    set(SpatialSEIR_Boost_LIBRARIES)
-    set(SpatialSEIR_Boost_INCLUDE_DIRS)
-    if(Boost_FOUND)
-        set(SpatialSEIR_Boost_LIBRARIES ${Boost_LIBRARIES})
-        set(SpatialSEIR_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-    else()
-        message("Error: Boost was not found on the system. If you think this 
-        is a mistake, you might try setting BOOST_ROOT etc (there are probably other 
-        messages on your screen right now to the same effect). If you think 
-        this is a mistake and are using windows, may the force be with you
-        (here be dragons).")
-    endif()
-
+	
+	if ("${BOOST_LOCATION}" STREQUAL "NOT_SET")
+		SET(RCPP_INCLUDE_DIR ".")
+		SET(R_INCLUDE_DIR ".")
+		find_package(Boost 1.49.0 COMPONENTS random REQUIRED) 
+		set(SpatialSEIR_Boost_LIBRARIES)
+		set(SpatialSEIR_Boost_INCLUDE_DIRS)
+		if(Boost_FOUND)
+			set(SpatialSEIR_Boost_LIBRARIES ${Boost_LIBRARIES})
+			set(SpatialSEIR_Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+		else()
+			message("Error: Boost was not found on the system. If you think this 
+			is a mistake, you might try setting BOOST_ROOT etc (there are probably other 
+			messages on your screen right now to the same effect). If you think 
+			this is a mistake and are using windows, please either move the boost_1_56_0 
+			folder to the libSpatialSEIR root, or update CMakeLists.txt to reflect its location.")
+		endif()
+	else()
+		message("Setting boost location manually.")
+		SET(BOOST_ROOT "${BOOST_LOCATION}")
+		SET(SpatialSEIR_Boost_LIBRARIES "${BOOST_LOCATION}/libs")
+		SET(SpatialSEIR_Boost_INCLUDE_DIRS "${BOOST_LOCATION}")
+	endif()
+   
 else()
     if ("${RCPP_INCLUDE_DIR}" STREQUAL "")
         message("ERROR: if not using boost, you must set the location of Rcpp.h via RCPP_INCLUDE_DIR")
@@ -81,13 +103,18 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 
 ## Configure BLAS
 set(BLA_STATIC OFF)
-find_package(BLAS)
-if (BLAS_FOUND)
-    message("BLAS found: ${BLAS_LIBRARIES}")  
-    message("            ${BLAS95_LIBRARIES}")
-    message("BLAS linker flags: ${BLAS_LINKER_FLAGS}")
+if ("${BLAS_LOCATION}" STREQUAL "NOT_SET")
+
+	find_package(BLAS)
+	if (BLAS_FOUND)
+		message("BLAS found: ${BLAS_LIBRARIES}")  
+		message("            ${BLAS95_LIBRARIES}")
+		message("BLAS linker flags: ${BLAS_LINKER_FLAGS}")
+	else()
+		message("Error: Blas not found.")
+	endif()
 else()
-    message("Error: Blas not found.")
+	SET(BLAS_LIBRARIES "${BLAS_LOCATION}/Rblas.dll")
 endif()
 
 ## Require Boost Message
@@ -129,7 +156,6 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/DataModels/Overdispersion/FC_Phi.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/SetCompartmentSamplingIndicesTask.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformDecorrelationStep.cpp"
-    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformHybridSE_EI_UpdateStep.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentMetropolisSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/CompartmentBinomialMetropolisSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/CompartmentSamplers/IndexedCompartmentBinomialMetropolisSampler.cpp"
