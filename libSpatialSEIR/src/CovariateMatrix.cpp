@@ -2,7 +2,12 @@
 
 #include <CovariateMatrix.hpp>
 #include <cmath>
-#include <cblas.h>
+#ifndef DLSS_USE_RBLASH
+	#include <cblas.h>
+#else
+	#include <BLAS.h>
+	#include <cblas.h>
+#endif
 #include <LSS_FullConditional.hpp>
 #include <Eigen/Core>
 #include <Eigen/LU>

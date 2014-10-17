@@ -10,7 +10,12 @@
 #include <IOProvider.hpp>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
-#include <cblas.h>
+#ifndef DLSS_USE_RBLASH
+	#include <cblas.h>
+#else
+	#include <BLAS.h>
+	#include <cblas.h>
+#endif
 
 
 #ifndef BLAS_INC
@@ -1108,7 +1113,7 @@ namespace SpatialSEIR
         for (i = 0; i < (scaledDistMatrices -> size()); i++)
         {
             DM = (*scaledDistMatrices)[i] -> data;
-            cblas_dgemm(CblasColMajor,      // order
+            LSS_CBLAS_DGEMV_NAME(CblasColMajor,      // order
                         CblasNoTrans,       // TransA
                         CblasNoTrans,       // TransB
                         *(I->nrow),         // M
@@ -1168,7 +1173,7 @@ namespace SpatialSEIR
         for (i = 0; i < (scaledDistMatrices -> size()); i++)
         {
             DM = (*scaledDistMatrices)[i] -> data;
-            cblas_dgemm(CblasColMajor,         // order
+            LSS_CBLAS_DGEMV_NAME(CblasColMajor,         // order
                         CblasNoTrans,          // TransA
                         CblasNoTrans,          // TransB
                         (*(I->nrow)-startTime),// M

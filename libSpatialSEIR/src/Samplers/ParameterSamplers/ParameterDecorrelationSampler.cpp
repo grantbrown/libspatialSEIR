@@ -1,7 +1,12 @@
 #include<math.h>
 #include<cstring>
 #include<vector>
-#include<cblas.h>
+#ifndef DLSS_USE_RBLASH
+	#include <cblas.h>
+#else
+	#include <BLAS.h>
+	#include <cblas.h>
+#endif
 #include<cmath>
 #include<algorithm>
 #include<LSS_Samplers.hpp>
@@ -72,7 +77,7 @@ namespace SpatialSEIR
             proposalCache[i] = (((*context) -> random -> normal(0, 1))); 
         }
 
-        cblas_dgemv(CblasColMajor, 
+        LSS_CBLAS_DGEMV_NAME(CblasColMajor, 
                     CblasNoTrans,
                     totalPoints,
                     totalPoints,

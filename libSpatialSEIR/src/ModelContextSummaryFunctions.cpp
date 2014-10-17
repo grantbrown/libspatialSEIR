@@ -12,7 +12,12 @@
 
 #ifndef BLAS_INC
 #define BLAS_INC
-#include<cblas.h> 
+#ifndef DLSS_USE_RBLASH
+	#include <cblas.h>
+#else
+	#include <BLAS.h>
+	#include <cblas.h>
+#endif
 #endif
 
 #include<cmath>
