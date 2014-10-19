@@ -1,7 +1,6 @@
 #include<math.h>
 #include<cstring>
 #include<vector>
-#include<cblas.h>
 #include<cmath>
 #include<algorithm>
 #include<LSS_Samplers.hpp>
@@ -15,31 +14,6 @@
 
 namespace SpatialSEIR
 {
-    /*
-     * Helper functions
-     */
-    int matMult(double* output, double * A, double * B, int Arow, int Acol, 
-            int Brow, int Bcol, bool TransA, bool TransB, int ldA, int ldB, int ldC)
-    {
-        if ((TransA ? Arow : Acol) != (TransB ? Bcol : Brow))
-        {
-            lssCout << "Invalid Matrix Dimensions: " << "\n";
-            lssCout << "A: " <<  Arow << " x " << Acol << "\n";
-            lssCout << "B: " <<  Brow << " x " << Bcol << "\n";
-            lssCout << "Transpose: " << TransA << ", " << TransB << "\n";
-            throw(-1);
-        }
-        cblas_dgemm(CblasColMajor,
-                    TransA ? CblasTrans : CblasNoTrans,
-                    TransB ? CblasTrans : CblasNoTrans,
-                    Arow, Bcol, Brow,
-                    1.0, 
-                    A, ldA,  
-                    B, ldB,  
-                    0.0, output, ldC);
-        return 0; 
-    }
-
 
     /*
      *

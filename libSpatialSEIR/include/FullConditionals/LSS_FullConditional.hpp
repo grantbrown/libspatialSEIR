@@ -51,11 +51,6 @@ namespace SpatialSEIR
         double* phiWidth;
     };
 
-    //! Wrapper for cblas::dgemm
-    int matMult(double* output, double * A, double * B, int Arow, int Acol, 
-            int Brow, int Bcol, bool TransA, bool TransB, int ldA, int ldB, int ldC);
-
-
     //! Simple class containing the starting compartment sizes. 
     class InitData
     {

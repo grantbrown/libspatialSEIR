@@ -1,10 +1,10 @@
 #include<math.h>
 #include<cstring>
 #include<vector>
-#ifndef DLSS_USE_RBLASH
+#ifndef LSS_USE_RBLASH
 	#include <cblas.h>
 #else
-	#include <BLAS.h>
+	#include <dgemv.h>
 	#include <cblas.h>
 #endif
 #include<cmath>
@@ -76,7 +76,7 @@ namespace SpatialSEIR
         {
             proposalCache[i] = (((*context) -> random -> normal(0, 1))); 
         }
-
+#ifndef LSS_USE_RBLASH
         LSS_CBLAS_DGEMV_NAME(CblasColMajor, 
                     CblasNoTrans,
                     totalPoints,
@@ -89,8 +89,27 @@ namespace SpatialSEIR
                     0.0,
                     proposalCache2,
                     1);
+#else
+		char noTrans = CblasNoTrans;
+		double alpha = 1.0;
+		int incx = 1;
+		double beta = 0.0;
+        LSS_CBLAS_DGEMV_NAME(
+                    &noTrans,
+                    &totalPoints,
+                    &totalPoints,
+                    &alpha,
+                    ((*proposalMatrix) -> decorrelationProjectionMatrix),
+                    &totalPoints,
+                    proposalCache,
+                    &incx,
+                    &beta,
+                    proposalCache2,
+                    &incx);
 
-        double proposalCacheSize = 0.;
+#endif
+					
+        double proposalCacheSize = 0.0;
         for (i = 0; i < totalPoints; i++)
         {
             proposalCacheSize += (proposalCache2[i])*(proposalCache2[i]);

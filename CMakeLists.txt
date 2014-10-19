@@ -11,7 +11,7 @@ if (WIN32)
 	SET(BLAS_LOCATION "${R_INSTALL_DIRECTORY}/bin/x64")
 	SET(R_INCLUDE_DIR "${R_INSTALL_DIRECTORY}/include" )
 	SET(RCPP_INCLUDE_DIR "C:/Users/grantbrown/Documents/R/win-library/3.1/Rcpp/include")
-	add_definitions(-D__cplusplus="true")
+	#add_definitions(-D__cplusplus="true")
 else()
 	SET(BOOST_LOCATION "NOT_SET")
 	SET(R_INSTALL_DIRECTORY "NOT_SET")
@@ -100,14 +100,18 @@ else()
 endif()
 
 
+if (WIN32)
+## Windows doesn't play nicely with long long's
+else()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
-
+endif()
 ## Configure BLAS
 set(BLA_STATIC OFF)
 if ("${BLAS_LOCATION}" STREQUAL "NOT_SET")
 
 	find_package(BLAS)
-	add_definitions(-DLSS_CBLAS_DGEMV_NAME="cblas_dgemv")
+	add_definitions(-DLSS_CBLAS_DGEMV_NAME=cblas_dgemv)
+	add_definitions(-DLSS_CBLAS_DGEMM_NAME=cblas_dgemm)
 	if (BLAS_FOUND)
 		message("BLAS found: ${BLAS_LIBRARIES}")  
 		message("            ${BLAS95_LIBRARIES}")
@@ -117,8 +121,11 @@ if ("${BLAS_LOCATION}" STREQUAL "NOT_SET")
 	endif()
 else()
 	SET(BLAS_LIBRARIES "${BLAS_LOCATION}/Rblas.dll")
-	add_definitions(-DLSS_USE_RBLASH="true")
-	add_definitions(-DLSS_CBLAS_DGEMV_NAME="dgemv")
+	message("BLAS Libraries: ${BLAS_LIBRARIES}")
+	add_definitions(-DLSS_USE_RBLASH=1)
+	add_definitions(-DLSS_CBLAS_DGEMV_NAME=dgemv)
+	add_definitions(-DLSS_CBLAS_DGEMM_NAME=dgemm)
+	
 endif()
 
 message("${SpatialSEIR_Boost_INCLUDE_DIRS}")

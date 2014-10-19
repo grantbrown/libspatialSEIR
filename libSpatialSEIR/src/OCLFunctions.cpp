@@ -9,7 +9,7 @@
 #ifndef DLSS_USE_RBLASH
 	#include <cblas.h>
 #else
-	#include <BLAS.h>
+	#include <dgemv.h>
 	#include <cblas.h>
 #endif
 #include <OCLProvider.hpp>
