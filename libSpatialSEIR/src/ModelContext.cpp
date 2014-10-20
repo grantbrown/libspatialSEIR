@@ -10,10 +10,7 @@
 #include <IOProvider.hpp>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
-#ifndef LSS_USE_RBLASH
-	#include <cblas.h>
-#else
-	#include <dgemv.h>
+#idef DLSS_USE_BLAS
 	#include <cblas.h>
 #endif
 
@@ -1114,8 +1111,8 @@ namespace SpatialSEIR
         for (i = 0; i < (scaledDistMatrices -> size()); i++)
         {
             DM = (*scaledDistMatrices)[i] -> data;
-#ifndef LSS_USE_RBLASH
-            LSS_CBLAS_DGEMM_NAME(CblasColMajor,      // order
+#ifndef LSS_USE_BLAS
+            cblas_dgemm(CblasColMajor,      // order
                         CblasNoTrans,       // TransA
                         CblasNoTrans,       // TransB
                         *(I->nrow),         // M
@@ -1130,22 +1127,7 @@ namespace SpatialSEIR
                         p_se,               // C
                         *(I->nrow));        // ldC 
 #else
-			double beta = 1.0;
-			char noTrans = CblasNoTrans;
-            LSS_CBLAS_DGEMM_NAME(
-                        &noTrans,       // TransA
-                        &noTrans,       // TransB
-                        (I->nrow),         // M
-                        (I->ncol),         // N
-                        (I->ncol),         // K
-                        (const double*) &(rho[i]),             // alpha
-                        (const double*) p_se_components,    // A 
-                        (I->nrow),         // ldA
-                        (const double*) DM,                 // B 
-                        (I-> ncol),        // ldB
-                        (const double*) &beta,                // beta
-                        p_se,               // C
-                        (I->nrow));        // ldC 
+			// Implement Eigen here
 #endif			
         }
 
@@ -1193,8 +1175,8 @@ namespace SpatialSEIR
         for (i = 0; i < (scaledDistMatrices -> size()); i++)
         {
             DM = (*scaledDistMatrices)[i] -> data;
-#ifndef LSS_USE_RBLASH
-            LSS_CBLAS_DGEMM_NAME(CblasColMajor,         // order
+#ifndef LSS_USE_BLAS
+            cblas_dgemm(CblasColMajor,         // order
                         CblasNoTrans,          // TransA
                         CblasNoTrans,          // TransB
                         (*(I->nrow)-startTime),// M
@@ -1210,23 +1192,7 @@ namespace SpatialSEIR
                         *(I->nrow));           // ldC 
 
 #else
-			double beta = 1.0;
-			int M = (*(I->nrow)-startTime);
-			char noTrans = CblasNoTrans;
-            LSS_CBLAS_DGEMM_NAME(
-                        &noTrans,          // TransA
-                        &noTrans,          // TransB
-                        &M, // M
-                        (I->ncol),            // N
-                        (I->ncol),            // K
-                        (const double*) &(rho[i]),                // alpha
-                        (const double*) &(p_se_components[startTime]),       // A 
-                        (I->nrow),            // ldA
-                        (const double*) DM,                    // B 
-                        (I-> ncol),           // ldB
-                        (const double*) &beta,                   // beta
-                        &(p_se[startTime]),                  // C
-                        (I->nrow));           // ldC 
+		// Implement Eigen here
 #endif
 
         }

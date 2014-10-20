@@ -6,10 +6,7 @@
 
 #include <CL/cl.hpp>
 #include <cmath>
-#ifndef DLSS_USE_RBLASH
-	#include <cblas.h>
-#else
-	#include <dgemv.h>
+#idef DLSS_USE_BLAS
 	#include <cblas.h>
 #endif
 #include <OCLProvider.hpp>

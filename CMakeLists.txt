@@ -7,15 +7,16 @@ if (WIN32)
 	SET(CMAKE_C_COMPILER "gcc")
 	SET(CMAKE_CXX_COMPILER "g++")
 	SET(BOOST_LOCATION "./boost_1_56_0")
+	set(USE_BLAS "false")
 	SET(R_INSTALL_DIRECTORY "C:/Program Files/R/R-3.1.1")
-	SET(BLAS_LOCATION "${R_INSTALL_DIRECTORY}/bin/x64")
 	SET(R_INCLUDE_DIR "${R_INSTALL_DIRECTORY}/include" )
 	SET(RCPP_INCLUDE_DIR "C:/Users/grantbrown/Documents/R/win-library/3.1/Rcpp/include")
 	#add_definitions(-D__cplusplus="true")
 else()
 	SET(BOOST_LOCATION "NOT_SET")
 	SET(R_INSTALL_DIRECTORY "NOT_SET")
-	SET(BLAS_LOCATION "NOT_SET")
+	set(USE_BLAS "true")
+	add_definitions(-DLSS_USE_BLAS=1)
 	SET(R_INCLUDE_DIR "NOT_SET")
 	# Only windows users and those not using boost need to worry about the following two lines:
 	SET(RCPP_INCLUDE_DIR "/home/grantbrown/R/x86_64-pc-linux-gnu-library/3.0/Rcpp/include/")
@@ -80,7 +81,7 @@ if (USE_BOOST)
 			folder to the libSpatialSEIR root, or update CMakeLists.txt to reflect its location.")
 		endif()
 	else()
-		message("Setting boost location manually.")
+		message("Setting boost location manually: ${BOOST_LOCATION}")
 		SET(BOOST_ROOT "${BOOST_LOCATION}")
 		SET(SpatialSEIR_Boost_LIBRARIES "${BOOST_LOCATION}/libs")
 		SET(SpatialSEIR_Boost_INCLUDE_DIRS "${BOOST_LOCATION}")
@@ -93,21 +94,18 @@ else()
     if ("${R_INCLUDE_DIR}" STREQUAL "")
         message("ERROR: if not using boost, you must set the location of R.h via R_INCLUDE_DIR")
     endif()
-
-
     set(SpatialSEIR_Boost_LIBRARIES ".")
     set(SpatialSEIR_Boost_INCLUDE_DIRS ".")
 endif()
 
 
 if (WIN32)
-## Windows doesn't play nicely with long long's
 else()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 endif()
 ## Configure BLAS
 set(BLA_STATIC OFF)
-if ("${BLAS_LOCATION}" STREQUAL "NOT_SET")
+if ("${USE_BLAS}" STREQUAL "true")
 
 	find_package(BLAS)
 	add_definitions(-DLSS_CBLAS_DGEMV_NAME=cblas_dgemv)
@@ -120,12 +118,7 @@ if ("${BLAS_LOCATION}" STREQUAL "NOT_SET")
 		message("Error: Blas not found.")
 	endif()
 else()
-	SET(BLAS_LIBRARIES "${BLAS_LOCATION}/Rblas.dll")
-	message("BLAS Libraries: ${BLAS_LIBRARIES}")
-	add_definitions(-DLSS_USE_RBLASH=1)
-	add_definitions(-DLSS_CBLAS_DGEMV_NAME=dgemv)
-	add_definitions(-DLSS_CBLAS_DGEMM_NAME=dgemm)
-	
+	message("BLAS Disabled: libSpatialSEIR will use Eigen")	
 endif()
 
 message("${SpatialSEIR_Boost_INCLUDE_DIRS}")
@@ -221,9 +214,8 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_Phi.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
 	"${SpatialSEIR_Boost_LIBRARIES}"
-    "${BLAS_LIBRARIES}"
 	)
-
+	
 if (OPEN_CL_SUPPORT)
     add_library(CLBLAS1 SHARED IMPORTED)
     add_library(CLBLAS2 SHARED IMPORTED)
@@ -279,7 +271,6 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_I_star_overdispersion.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_Phi.hpp"
-
             DESTINATION include)
 
 add_custom_command(TARGET SpatialSEIR PRE_BUILD
