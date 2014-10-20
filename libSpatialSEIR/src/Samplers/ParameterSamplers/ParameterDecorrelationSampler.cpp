@@ -1,7 +1,7 @@
 #include<math.h>
 #include<cstring>
 #include<vector>
-#idef DLSS_USE_BLAS
+#ifdef LSS_USE_BLAS
 	#include <cblas.h>
 #endif
 #include<cmath>
@@ -87,7 +87,14 @@ namespace SpatialSEIR
                     proposalCache2,
                     1);
 #else
-		// Implement Eigen here. 
+        
+        MatrixMapType Amat((*proposalMatrix) -> decorrelationProjectionMatrix, 
+                           totalPoints, totalPoints);
+        MatrixMapType Bmat(proposalCache, totalPoints, 1);
+        MatrixMapType Cmat(proposalCache2, totalPoints, 1);
+
+        Cmat *= 0.0;
+        Cmat.noalias() = Amat*Bmat();
 
 #endif
 					

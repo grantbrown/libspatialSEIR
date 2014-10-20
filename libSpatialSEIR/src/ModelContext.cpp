@@ -10,7 +10,7 @@
 #include <IOProvider.hpp>
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
-#idef DLSS_USE_BLAS
+#ifdef LSS_USE_BLAS
 	#include <cblas.h>
 #endif
 
@@ -1111,7 +1111,7 @@ namespace SpatialSEIR
         for (i = 0; i < (scaledDistMatrices -> size()); i++)
         {
             DM = (*scaledDistMatrices)[i] -> data;
-#ifndef LSS_USE_BLAS
+#ifdef LSS_USE_BLAS
             cblas_dgemm(CblasColMajor,      // order
                         CblasNoTrans,       // TransA
                         CblasNoTrans,       // TransB
@@ -1128,6 +1128,10 @@ namespace SpatialSEIR
                         *(I->nrow));        // ldC 
 #else
 			// Implement Eigen here
+            MatrixMapType Amap(p_se_components, *(I->nrow), *(I->ncol));
+            MatrixMapType Bmap(DM, *(I->ncol), *(I->ncol));
+            MatrixMapType seMap(p_se, *(I->nrow), *(I->ncol));
+            seMap += rho[i]*Amap*Bmap; 
 #endif			
         }
 
@@ -1175,7 +1179,7 @@ namespace SpatialSEIR
         for (i = 0; i < (scaledDistMatrices -> size()); i++)
         {
             DM = (*scaledDistMatrices)[i] -> data;
-#ifndef LSS_USE_BLAS
+#ifdef LSS_USE_BLAS
             cblas_dgemm(CblasColMajor,         // order
                         CblasNoTrans,          // TransA
                         CblasNoTrans,          // TransB
@@ -1192,7 +1196,12 @@ namespace SpatialSEIR
                         *(I->nrow));           // ldC 
 
 #else
-		// Implement Eigen here
+            Eigen::Map<MatrixType, Eigen::ColMajor, Eigen::Stride<Dynamic, Dynamic>(1, *(I->nrow))> Amap(&(p_se_components[startTime]), (*(I -> nrow) - startTime), *(I->ncol));
+            //MatrixMapType Amap(p_se_components, *(I->nrow), *(I->ncol));
+            MatrixMapType Bmap(DM, *(I->ncol), *(I->ncol));
+            Eigen::Map<MatrixType, Eigen::ColMajor, Eigen::Stride<Dynamic, Dynamic>(1, *(I->nrow))> seMap(&(p_se[startTime]), (*(I -> nrow) - startTime), *(I->ncol));
+            //MatrixMapType seMap(p_se, *(I->nrow), *(I->ncol));
+            seMap += rho[i]*Amap*Bmap; 
 #endif
 
         }
