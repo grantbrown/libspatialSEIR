@@ -1196,10 +1196,13 @@ namespace SpatialSEIR
                         *(I->nrow));           // ldC 
 
 #else
-            Eigen::Map<MatrixType, Eigen::ColMajor, Eigen::Stride<Dynamic, Dynamic>(1, *(I->nrow))> Amap(&(p_se_components[startTime]), (*(I -> nrow) - startTime), *(I->ncol));
+            Eigen::Map<MatrixType, Eigen::ColMajor, Eigen::OuterStride<> > 
+			Amap(&(p_se_components[startTime]), (*(I -> nrow) - startTime), *(I->ncol), Eigen::OuterStride<>((*(I->nrow))));
             //MatrixMapType Amap(p_se_components, *(I->nrow), *(I->ncol));
             MatrixMapType Bmap(DM, *(I->ncol), *(I->ncol));
-            Eigen::Map<MatrixType, Eigen::ColMajor, Eigen::Stride<Dynamic, Dynamic>(1, *(I->nrow))> seMap(&(p_se[startTime]), (*(I -> nrow) - startTime), *(I->ncol));
+			
+            Eigen::Map<MatrixType, Eigen::ColMajor, Eigen::OuterStride<> > 
+			seMap(&(p_se[startTime]), (*(I -> nrow) - startTime), *(I->ncol), Eigen::OuterStride<>((*(I->nrow))));
             //MatrixMapType seMap(p_se, *(I->nrow), *(I->ncol));
             seMap += rho[i]*Amap*Bmap; 
 #endif
