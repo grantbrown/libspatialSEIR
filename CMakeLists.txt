@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8.7)
 if (WIN32)
 	SET(CMAKE_C_COMPILER "gcc")
 	SET(CMAKE_CXX_COMPILER "g++")
-	SET(BOOST_LOCATION "./boost_1_56_0")
+	SET(BOOST_LOCATION "./LSS_Embedded_Boost")
 	set(USE_BLAS "false")
 	SET(R_INSTALL_DIRECTORY "C:/Program Files/R/R-3.1.1")
 	SET(R_INCLUDE_DIR "${R_INSTALL_DIRECTORY}/include" )
@@ -32,8 +32,7 @@ SET(OPEN_CL_SUPPORT false)
 SET(USE_BOOST true)
 
 # libspatialSEIR requires the eigen3 library, so here we must 
-# specify the location. 
-# TODO: Add platform specific logic here to handle default eigen location
+# specify the location. By default, Eigen is supplied as a submodule.
 SET(EIGEN3_INCLUDE_DIR "./eigen/")
 
 project(libSpatialSEIR)
