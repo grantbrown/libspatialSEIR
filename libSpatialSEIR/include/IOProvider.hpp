@@ -22,7 +22,7 @@ template <typename T>
 #endif
 #ifndef LSS_USE_STDIO
 #include <Rcpp.h>
-/*
+
 struct LSSCout {};
 extern LSSCout lssCout;
 
@@ -31,7 +31,6 @@ template <typename T>
             Rcpp::Rcout << x;
             return s;
     }
-*/
 #endif
 
 
