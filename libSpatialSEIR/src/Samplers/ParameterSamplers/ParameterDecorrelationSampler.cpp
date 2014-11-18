@@ -94,7 +94,7 @@ namespace SpatialSEIR
         MatrixMapType Cmat(proposalCache2, totalPoints, 1);
 
         Cmat *= 0.0;
-        Cmat.noalias() = Amat*Bmat();
+        Cmat.noalias() = Amat*Bmat;
 
 #endif
 					

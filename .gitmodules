@@ -4,3 +4,6 @@
 [submodule "eigen"]
 	path = eigen
 	url = https://github.com/grantbrown/eigen.git
+[submodule "LSS_Embedded_Boost"]
+	path = LSS_Embedded_Boost
+	url = https://github.com/grantbrown/LSS_Embedded_Boost.git

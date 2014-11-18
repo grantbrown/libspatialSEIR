@@ -121,6 +121,7 @@ namespace SpatialSEIR
                     R_val = ((*R) ->data)[compIdx];
                     S_val = ((*S) ->data)[compIdx];
                     p_rs_val = (*p_rs)[j];
+                    p_se_val = (*p_se)[compIdx];
 
                     if (Estar_val > S_val || 
                             Sstar_val > R_val)
@@ -158,7 +159,7 @@ namespace SpatialSEIR
                     R_val = ((*R) ->data)[compIdx];
                     S_val = ((*S) ->data)[compIdx];
                     p_rs_val = (*p_rs)[j];
-
+                    p_se_val = (*p_se)[compIdx];
                     if (Estar_val > S_val)
                     {
                         *value = -INFINITY;

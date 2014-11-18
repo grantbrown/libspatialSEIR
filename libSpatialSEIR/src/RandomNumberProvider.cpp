@@ -1,6 +1,11 @@
 #include <RandomNumberProvider.hpp>
 #include <IOProvider.hpp>
 
+// I'm not trying to use Rcpp sugar here, so go away stupid macros
+#ifdef dnorm
+	#undef dnorm 
+#endif
+
 #ifdef  LSS_USE_BOOST
 #include <boost/math/distributions/gamma.hpp>
 namespace SpatialSEIR

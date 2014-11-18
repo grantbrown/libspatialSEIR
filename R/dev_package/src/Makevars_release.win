@@ -1,0 +1,61 @@
+SOURCES1 = $(wildcard ./*.cpp) 
+SOURCES2 = $(wildcard ./LSS/FullConditionals/*.cpp) 
+SOURCES3 = $(wildcard ./LSS/FullConditionals/DataModels/Overdispersion/*.cpp) 
+SOURCES4 = $(wildcard ./LSS/IterationTasks/*.cpp) 
+SOURCES5 = $(wildcard ./LSS/Samplers/CompartmentSamplers/*.cpp) 
+SOURCES6 = $(wildcard ./LSS/Samplers/InitCompartmentSamplers/*.cpp) 
+SOURCES7 = $(wildcard ./LSS/Samplers/ParameterSamplers/*.cpp) 
+SOURCES8 = $(wildcard ./LSS/*.cpp)
+
+OBJECTS1 = $(SOURCES1:.cpp=.o)
+OBJECTS2 = $(SOURCES2:.cpp=.o)
+OBJECTS3 = $(SOURCES3:.cpp=.o)
+OBJECTS4 = $(SOURCES4:.cpp=.o)
+OBJECTS5 = $(SOURCES5:.cpp=.o)
+OBJECTS6 = $(SOURCES6:.cpp=.o)
+OBJECTS7 = $(SOURCES7:.cpp=.o)
+OBJECTS8 = $(SOURCES8:.cpp=.o)
+ 
+
+
+ROOT_DIR = .
+$(info The compilation root directory is: $(ROOT_DIR))
+$(info The name of the shared library to be created is: $(SHLIB))
+$(info The place R should look for libSpatialSEIR.so is: ./LSS)
+
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/include 
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/include/LSS
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/../../../eigen 
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/../../../LSS_Embedded_Boost
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/include/LSS/DataStructures 
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/include/LSS/FullConditionals 
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/include/LSS/FullConditionals/DataModels/Overdispersion 
+PKG_CPPFLAGS+=-DLSS_USE_BOOST="true"
+PKG_LIBS += libSpatialSEIR1.a libSpatialSEIR2.a 
+PKG_LIBS += libSpatialSEIR3.a libSpatialSEIR4.a 
+PKG_LIBS += libSpatialSEIR5.a libSpatialSEIR6.a 
+PKG_LIBS += libSpatialSEIR7.a libSpatialSEIR8.a
+
+all: $(SHLIB) 
+
+$(SHLIB): libSpatialSEIR1.a libSpatialSEIR2.a libSpatialSEIR3.a libSpatialSEIR4.a libSpatialSEIR5.a libSpatialSEIR6.a libSpatialSEIR7.a  libSpatialSEIR8.a 
+
+libSpatialSEIR1.a: $(OBJECTS1)
+libSpatialSEIR2.a: $(OBJECTS2)
+libSpatialSEIR3.a: $(OBJECTS3)
+libSpatialSEIR4.a: $(OBJECTS4)
+libSpatialSEIR5.a: $(OBJECTS5)
+libSpatialSEIR6.a: $(OBJECTS6)
+libSpatialSEIR7.a: $(OBJECTS7)
+libSpatialSEIR8.a: $(OBJECTS8)
+
+clean:
+	@rm -f $(SHLIB)
+	@rm -f $(OBJECTS1)
+	@rm -f $(OBJECTS2)
+	@rm -f $(OBJECTS3)
+	@rm -f $(OBJECTS4)
+	@rm -f $(OBJECTS5)
+	@rm -f $(OBJECTS6)
+	@rm -f $(OBJECTS7)
+	@rm -f $(OBJECTS8)

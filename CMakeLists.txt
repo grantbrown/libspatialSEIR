@@ -6,11 +6,11 @@ cmake_minimum_required(VERSION 2.8.7)
 if (WIN32)
 	SET(CMAKE_C_COMPILER "gcc")
 	SET(CMAKE_CXX_COMPILER "g++")
-	SET(BOOST_LOCATION "./boost_1_56_0")
+	SET(BOOST_LOCATION "./LSS_Embedded_Boost")
 	set(USE_BLAS "false")
 	SET(R_INSTALL_DIRECTORY "C:/Program Files/R/R-3.1.1")
 	SET(R_INCLUDE_DIR "${R_INSTALL_DIRECTORY}/include" )
-	SET(RCPP_INCLUDE_DIR "C:/Users/grantbrown/Documents/R/win-library/3.1/Rcpp/include")
+	SET(RCPP_INCLUDE_DIR "~/Documents/R/win-library/3.1/Rcpp/include")
 	#add_definitions(-D__cplusplus="true")
 else()
 	SET(BOOST_LOCATION "NOT_SET")
@@ -19,7 +19,7 @@ else()
 	add_definitions(-DLSS_USE_BLAS=1)
 	SET(R_INCLUDE_DIR "NOT_SET")
 	# Only windows users and those not using boost need to worry about the following two lines:
-	SET(RCPP_INCLUDE_DIR "/home/grantbrown/R/x86_64-pc-linux-gnu-library/3.0/Rcpp/include/")
+	SET(RCPP_INCLUDE_DIR "~/R/x86_64-pc-linux-gnu-library/3.0/Rcpp/include/")
 	SET(R_INCLUDE_DIR "/usr/share/R/include/")
 endif()
 
@@ -32,8 +32,7 @@ SET(OPEN_CL_SUPPORT false)
 SET(USE_BOOST true)
 
 # libspatialSEIR requires the eigen3 library, so here we must 
-# specify the location. 
-# TODO: Add platform specific logic here to handle default eigen location
+# specify the location. By default, Eigen is supplied as a submodule.
 SET(EIGEN3_INCLUDE_DIR "./eigen/")
 
 project(libSpatialSEIR)
@@ -42,6 +41,7 @@ project(libSpatialSEIR)
 add_definitions( -DLSS_USE_STDIO="true" )
 
 if (OPEN_CL_SUPPORT)
+	message("Building libSpatialSEIR with OpenCL Support")
     add_definitions( -DENABLE_OPEN_CL="true" )
     include(ExternalProject)
     ExternalProject_Add(clBLAS
@@ -180,6 +180,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterJointMetropolisSampler_OCL.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterJointSliceSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterDecorrelationSampler.cpp"
+	"${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformHybridSE_EI_UpdateStep.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterNullSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterHybridSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"

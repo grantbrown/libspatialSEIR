@@ -47,8 +47,6 @@ namespace SpatialSEIR
 
         *((*initCompartmentFC) -> samples) += 1;
         double initVal;
-        double initProposal = 0.0;
-        double newProposal = 0.0;
         double sliceWidth = *((*initCompartmentFC) -> sliceWidth);
         int i;
         int x0, x1;
@@ -67,14 +65,11 @@ namespace SpatialSEIR
             x0 = (*initCompartmentData)[i];
             x1 = std::floor(((*context) -> random -> normal(x0 + 0.5, sliceWidth)));
             (*initCompartmentData)[i] = x1;
-            newProposal += ((*context) -> random -> dnorm(x1, x0 + 0.5, sliceWidth));
-            initProposal += ((*context) -> random -> dnorm(x0, x1 + 0.5, sliceWidth)); 
         }
         (*initCompartmentFC) -> calculateRelevantCompartments_OCL(); 
         (*initCompartmentFC) -> evalOCL();
         double newVal = (*initCompartmentFC) -> getValue();
-        double criterion = (newVal - initVal) + (initProposal - newProposal);
-
+        double criterion = (newVal - initVal);
         if (std::log((*context) -> random -> uniform()) < criterion)
         {
             // Accept new values

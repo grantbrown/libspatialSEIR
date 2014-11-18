@@ -1,0 +1,3 @@
+ROOT_DIR = .
+PKG_CPPFLAGS+=-I$(ROOT_DIR)/../../../eigen -I$(ROOT_DIR)//include
+PKG_LIBS = -lOpenCL -lSpatialSEIR -lclBLAS -lblas 
