@@ -215,7 +215,7 @@ itrPrint = function(x, wd=8)
 
 
 imgNo = 0;
-runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0.05, proportionChange = 0.1, printAR = FALSE)
+runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0.05, proportionChange = 0.1, printAR = FALSE, adjustSamplingParams = TRUE)
 {
     tryCatch({
         for (i in 1:(N/batchSize))
@@ -226,7 +226,10 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
             {
                 res$printAcceptanceRates()
             }
-            res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
+            if (adjustSamplingParams)
+            {
+                res$updateSamplingParameters(targetRatio, targetWidth, proportionChange)
+            }
             # sleep to allow R to catch up and handle interrupts 
             Sys.sleep(0.001)
             png(filename = paste("./imgOut/single/", itrPrint(imgNo), ".png", sep =""), width = 600, height = 1200) 
@@ -240,8 +243,14 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
     })
 }
 
-res$compartmentSamplingMode = 14
-runSimulation(20000,100, printAR = FALSE, targetRatio = 0.2)
+res$compartmentSamplingMode = 1
+runSimulation(2000,10, printAR = FALSE, targetRatio = 0.2)
+runSimulation(2000,100, printAR = TRUE, targetRatio = 0.2)
+res$compartmentSamplingMode = 17
+runSimulation(100000,1000, printAR=FALSE, adjustSamplingParams = FALSE)
+
+
+
 #runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
 
 

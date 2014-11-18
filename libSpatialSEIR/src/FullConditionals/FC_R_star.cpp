@@ -81,6 +81,8 @@ namespace SpatialSEIR
                     *((*context) -> S_star -> nrow)));
         samplers -> push_back(new IndexedCompartmentBinomialMetropolisSampler(*context, this, (*R_star) -> data, (*I) -> data, (*R) -> data, *p_ir, 
                     *((*context) -> S_star -> nrow)));
+        samplers -> push_back(new CompartmentBinomialMixedSampler(*context, this, (*R_star) -> data, (*I) -> data, (*R) -> data, *p_ir, 
+                    *((*context) -> S_star -> nrow)));
         samplers -> push_back(new CompartmentBinomialSliceSampler(*context, this, (*R_star) -> data, (*I) -> data, (*R) -> data, *p_ir, 
                     *((*context) -> S_star -> nrow)));
 

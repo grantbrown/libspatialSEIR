@@ -14,6 +14,7 @@
 #define COMPARTMENT_BINOM_PROPOSAL_METROPOLIS_SAMPLER 14
 #define COMPARTMENT_BINOM_PROPOSAL_SLICE_SAMPLER 15
 #define COMPARTMENT_BINOM_IDX_METROPOLIS_SAMPLER 16
+#define COMPARTMENT_BINOM_MIXED_SAMPLER 17
 #define INITCOMPARTMENT_METROPOLIS_SAMPLER 4
 #define INITCOMPARTMENT_IDX_METROPOLIS_SAMPLER 5
 #define INITCOMPARTMENT_IDX_SLICE_SAMPLER 6
@@ -217,6 +218,39 @@ namespace SpatialSEIR
             double** probabilityVector;
             int* probabilityVectorLen;
     };
+
+    /** The CompartmentBinomialMixedSampler class alternates between indexed binomial sampling 
+     * and joint metropolis sampling, trying to combine the best of both worlds.
+     */
+    class CompartmentBinomialMixedSampler : public Sampler
+    {
+        public: 
+            CompartmentBinomialMixedSampler(ModelContext* context,
+                                     CompartmentFullConditional* compartmentFC,
+                                     int* compartmentData,
+                                     int* compartmentFrom, 
+                                     int* compartmentTo,
+                                     double* probabilityVector,
+                                     int probabilityVectorLen);
+            void drawSample();
+            void drawNormalProposalSample();
+            void drawBinomialProposalSample();
+            int getSamplerType();
+            void genProposal();
+            ~CompartmentBinomialMixedSampler();
+
+            ModelContext** context;
+            CompartmentFullConditional** compartmentFC;
+            int** indexLength;
+            int** indexList;
+            int** compartmentData;
+            int** compartmentFrom;
+            int** compartmentTo;
+            double** probabilityVector;
+            int* probabilityVectorLen;
+            int* currentSamplerType;
+    };
+
 
 
 
