@@ -5,8 +5,6 @@
 #ifdef dnorm
 	#undef dnorm 
 #endif
-
-#ifdef  LSS_USE_BOOST
 #include <boost/math/distributions/gamma.hpp>
 namespace SpatialSEIR
 {
@@ -213,98 +211,3 @@ namespace SpatialSEIR
     }
 }
 
-#endif
-#ifndef LSS_USE_BOOST
-using namespace Rcpp;
-namespace SpatialSEIR
-{
-    RandomNumberProvider::RandomNumberProvider(unsigned int seed)
-    {
-        // Do nothing, we rely on R for the seed. 
-    }
-    double RandomNumberProvider::uniform()
-    {
-        return(R::runif(0,1)); 
-    }
-    int RandomNumberProvider::uniform_int()
-    {
-        return(std::floor(R::runif(0,2)));
-    }
-    int RandomNumberProvider::uniform_int(int a, int b)
-    {
-        return(std::floor(R::runif(a,b+1)));
-    }
-    int RandomNumberProvider::poisson(int mu)
-    {
-        return(R::rpois(mu));
-    }
-    double RandomNumberProvider::normal(double mu, double sd)
-    {
-        return(R::rnorm(mu,sd));
-    }
-    double RandomNumberProvider::dnorm(double x, double mu, double sd)
-    {
-        return(R::dnorm(x,mu,sd,1));
-    }
-    double RandomNumberProvider::dpois(int x, double mu)
-    {
-        return(R::dpois(x, mu, 1));
-    }
-    double RandomNumberProvider::dbinom(int x, int n, double p)
-    {
-        return(R::dbinom(x, n, p, 1));
-    }
-    double RandomNumberProvider::dgamma(double x, double a, double b)
-    {
-        return(R::dgamma(x,a,b,1));
-    }
-    double* RandomNumberProvider::uniform(int n)
-    {
-        // We're not actually using this. Depricate.
-        throw(-1);
-        return(new double);
-    }
-    double* RandomNumberProvider::uniform(int n, double* output)
-    {
-        // We're not actually using this. Depricate.
-        throw(-1);
-        return(output);
-    }
-    double RandomNumberProvider::gamma()
-    {
-        return(R::rgamma(1.0,1.0));
-    }
-    double RandomNumberProvider::gamma(double a)
-    {
-        return(R::rgamma(a,1.0));
-    }
-
-    int RandomNumberProvider::binom(int n, double p)
-    {
-        return((int) R::rbinom((double) n, p));
-    }
-
-    double* RandomNumberProvider::gamma(int n)
-    {
-        // We're not actually using this. Depricate.
-        throw(-1);
-        return(new double);
-    }
-    double* RandomNumberProvider::gamma(int n, double* output)
-    {
-        // We're not actually using this. Depricate.
-        throw(-1);
-        return(output);
-    }
-    double RandomNumberProvider::beta(double a, double b)
-    {
-        return(R::rbeta(a, b));
-    }
-    RandomNumberProvider::~RandomNumberProvider()
-    {
-        // Do nothing
-    }
-}
-
-
-#endif

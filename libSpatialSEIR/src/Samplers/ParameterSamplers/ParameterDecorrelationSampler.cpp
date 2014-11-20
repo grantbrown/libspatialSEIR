@@ -14,7 +14,6 @@
 #include<CovariateMatrix.hpp>
 #include<RandomNumberProvider.hpp>
 #include<IOProvider.hpp>
-#include<cblas.h>
 
 namespace SpatialSEIR
 {

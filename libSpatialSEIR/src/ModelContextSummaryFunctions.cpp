@@ -10,14 +10,8 @@
 #include <Eigen/Eigenvalues>
 
 
-#ifndef BLAS_INC
-#define BLAS_INC
-#ifndef DLSS_USE_RBLASH
+#ifdef LSS_USE_BLAS
 	#include <cblas.h>
-#else
-	#include <dgemv.h>
-	#include <cblas.h>
-#endif
 #endif
 
 #include<cmath>
