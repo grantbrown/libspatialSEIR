@@ -51,6 +51,15 @@ namespace SpatialSEIR
 
     void PerformHybridSE_EI_UpdateStep::executeTask()
     {
+        int hybridEIStride = ((*context) -> config -> performHybridStep);
+        if ((*currentIteration) % hybridEIStride != 0)
+        {
+            *currentIteration += 1;
+            return;
+        }
+        *currentIteration = 1;
+        
+        (sampler -> drawSample());
     }
 
     PerformHybridSE_EI_UpdateStep::~PerformHybridSE_EI_UpdateStep()
