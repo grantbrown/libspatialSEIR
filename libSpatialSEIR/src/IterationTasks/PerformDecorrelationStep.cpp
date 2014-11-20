@@ -51,50 +51,47 @@ namespace SpatialSEIR
 
         int currentSamplingMode = (*((*context) -> beta_fc -> currentSampler)) -> getSamplerType(); 
 
-        (*context) -> beta_fc -> evalCPU();
         (*context) -> beta_fc -> setSamplerType(PARAMETER_DECORR_SAMPLER);
-        (*context) -> beta_fc -> evalCPU();
-
-
+        (*context) -> betaPrs_fc -> setSamplerType(PARAMETER_DECORR_SAMPLER);
 
         int betaAccepted = *((*context) -> beta_fc -> accepted);
         int betaPrsAccepted = *((*context) -> betaPrs_fc -> accepted);
-
-        *iterationCount = 0;
         double startingSliceWidth = *((*context) -> beta_fc -> sliceWidth);
-        while (*((*context) -> beta_fc -> accepted) == betaAccepted &&
-                *iterationCount < 1000)
+        *iterationCount = 0;
+        if (*((*context) -> beta_fc -> varLen) > 2)
         {
-            (*context) -> beta_fc -> sample(0);
-            (*((*context) -> beta_fc -> sliceWidth)) *= 0.99;
-            *iterationCount += 1;
-        }
-        (*((*context) -> beta_fc -> sliceWidth)) = startingSliceWidth;
+            while (*((*context) -> beta_fc -> accepted) == betaAccepted &&
+                    *iterationCount < 1000)
+            {
+                (*context) -> beta_fc -> sample(0);
+                (*((*context) -> beta_fc -> sliceWidth)) *= 0.99;
+                *iterationCount += 1;
+            }
+            (*((*context) -> beta_fc -> sliceWidth)) = startingSliceWidth;
 
-        if (*((*context) -> beta_fc -> accepted) == betaAccepted)
-        {
-            lssCout << "Decorrelation sampler did not update (beta).\n";
-        }
-        (*context) -> beta_fc -> setSamplerType(currentSamplingMode);
+            if (*((*context) -> beta_fc -> accepted) == betaAccepted)
+            {
+                lssCout << "Decorrelation sampler did not update (beta).\n";
+            }
 
-        (*context) -> betaPrs_fc -> setSamplerType(PARAMETER_DECORR_SAMPLER);
-        if ((*context) -> config -> reinfectionMode != 1)
-        {
-            return;
         }
 
         *iterationCount = 0;
-        while (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted &&
-                *iterationCount < 1000)
+        if (*((*context) -> beta_fc -> varLen) > 2 && (*context) -> config -> reinfectionMode == 1)
         {
-            (*context) -> betaPrs_fc -> sample(0);
-            *iterationCount += 1;
-        }
-        if (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted)
-        {
-            lssCout << "Decorrelation sampler did not update (beta_pRS).\n";
+            while (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted &&
+                    *iterationCount < 1000)
+            {
+                (*context) -> betaPrs_fc -> sample(0);
+                *iterationCount += 1;
+            }
+            if (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted)
+            {
+                lssCout << "Decorrelation sampler did not update (beta_pRS).\n";
+            }
         }
 
+        (*context) -> beta_fc -> setSamplerType(currentSamplingMode);
         (*context) -> betaPrs_fc -> setSamplerType(currentSamplingMode);
     }
 
