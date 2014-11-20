@@ -58,7 +58,7 @@ namespace SpatialSEIR
         int betaPrsAccepted = *((*context) -> betaPrs_fc -> accepted);
         double startingSliceWidth = *((*context) -> beta_fc -> sliceWidth);
         *iterationCount = 0;
-        if (*((*context) -> beta_fc -> varLen) > 2)
+        if (*((*context) -> beta_fc -> varLen) > 1)
         {
             while (*((*context) -> beta_fc -> accepted) == betaAccepted &&
                     *iterationCount < 1000)
@@ -77,7 +77,7 @@ namespace SpatialSEIR
         }
 
         *iterationCount = 0;
-        if (*((*context) -> beta_fc -> varLen) > 2 && (*context) -> config -> reinfectionMode == 1)
+        if (*((*context) -> beta_fc -> varLen) > 1 && (*context) -> config -> reinfectionMode == 1)
         {
             while (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted &&
                     *iterationCount < 1000)
