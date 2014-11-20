@@ -811,7 +811,7 @@ Rcpp::IntegerMatrix spatialSEIRModel::getY()
     Rcpp::Rcout << "Context Not Populated\n";
     Rcpp::IntegerMatrix err(0,0);
     err[0] = -1;
-
+    return(err);
 }
 
 Rcpp::IntegerMatrix spatialSEIRModel::getS_star()
@@ -1076,6 +1076,7 @@ Rcpp::NumericVector spatialSEIRModel::getRho()
     Rcpp::Rcout << "Context Not Populated\n";
     Rcpp::NumericVector output(1);
     output[0] = -1.0;
+    return(output);
 }
 
 Rcpp::NumericVector spatialSEIRModel::getPhi()
@@ -1088,6 +1089,7 @@ Rcpp::NumericVector spatialSEIRModel::getPhi()
     }
     Rcpp::Rcout << "Context Not Populated\n";
     output[0] = -1.0;
+    return(output);
 }
 
 
