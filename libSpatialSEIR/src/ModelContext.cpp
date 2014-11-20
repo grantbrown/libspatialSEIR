@@ -14,11 +14,6 @@
 	#include <cblas.h>
 #endif
 
-#ifndef BLAS_INC
-#define BLAS_INC
-#include<cblas.h> 
-#endif
-
 #include<cmath>
 #include<ctime>
 				 
