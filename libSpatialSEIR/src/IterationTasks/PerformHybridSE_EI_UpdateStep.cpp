@@ -19,7 +19,7 @@ namespace SpatialSEIR
 {
     PerformHybridSE_EI_UpdateStep::PerformHybridSE_EI_UpdateStep(ModelContext* context_,
                                                                  FC_Gamma_EI* fc_gammaEI_,
-                                                                 FC_Beta* fc_beta_,                                                                
+                                                                 FC_Beta* fc_beta_,
                                                                  int iterationCount_)
     {
         context = new ModelContext*;

@@ -11,6 +11,7 @@
 #define LSS_SAMPLING_INDEX_TASK_TYPE 1
 #define LSS_DECORRELATION_STEP_TASK_TYPE 2
 #define LSS_HYBRID_SE_EI_UPDATE_STEP_TASK_TYPE 3
+#define LSS_HYBRID_IR_RS_UPDATE_STEP_TASK_TYPE 4
 
 
 namespace SpatialSEIR
@@ -18,6 +19,8 @@ namespace SpatialSEIR
 
     class ModelContext;
     class FC_Gamma_EI;
+    class FC_Gamma_IR;
+    class FC_Beta_P_RS;
     class FC_Beta;
     class ParameterHybridSampler;
 
@@ -79,5 +82,22 @@ namespace SpatialSEIR
             int* iterationCount;
             int* currentIteration;
     };
+
+    class PerformHybridIR_RS_UpdateStep : public IterationTask
+    {
+        public:
+            PerformHybridIR_RS_UpdateStep(ModelContext* context,
+                                          FC_Gamma_IR* fc_gammaIR,
+                                          FC_Beta_P_RS* fc_betaPrs,
+                                          int iterationCount);
+            ~PerformHybridIR_RS_UpdateStep();
+            void executeTask();
+            int getTaskType();
+            ModelContext** context;
+            ParameterHybridSampler* sampler;
+            int* iterationCount;
+            int* currentIteration;
+    };
+
 }
 #endif 

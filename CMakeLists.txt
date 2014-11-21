@@ -181,6 +181,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterJointSliceSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterDecorrelationSampler.cpp"
 	"${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformHybridSE_EI_UpdateStep.cpp"
+	"${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformHybridIR_RS_UpdateStep.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterNullSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/Samplers/ParameterSamplers/ParameterHybridSampler.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/DistanceMatrix.cpp"
