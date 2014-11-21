@@ -89,11 +89,10 @@ namespace SpatialSEIR
             }
         }
 
-
-        k = 0;
         iters = 0;
         while (!success && iters < 1000)
         {
+            k = 0;
             newVal = 0.0;
             for (i = 0; i < (parameterFullConditionals -> size()); i++)
             {
@@ -101,17 +100,18 @@ namespace SpatialSEIR
                 {
                     sliceWidth = *((*parameterFullConditionals)[i] -> sliceWidth);
                     x0 = parameterCache[k];
-                    x1 = (((*context) -> random -> normal(x0, sliceWidth*0.1)));
+                    x1 = (((*context) -> random -> normal(x0, sliceWidth)));
                     ((*parameters)[i])[j] = x1;
                     k++;  
                 }
             }
             for (i = 0; i < (parameterFullConditionals -> size()); i++)
             {
+                (*parameterFullConditionals)[i] -> calculateRelevantCompartments();
                 (*parameterFullConditionals)[i] -> evalCPU();
                 newVal += (*parameterFullConditionals)[i] -> getValue();
             }
-            if (std::log(2*((*context) -> random -> uniform())) < (newVal - initVal))
+            if (std::log(((*context) -> random -> uniform())) < (newVal - initVal))
             {
                 success = true;
                 for (i = 0; i < (parameterFullConditionals -> size()); i++)
@@ -137,6 +137,7 @@ namespace SpatialSEIR
                     ((*parameters)[i])[j] = parameterCache[k];
                     k++;  
                 }
+                (*parameterFullConditionals)[i] -> calculateRelevantCompartments();
             }
         }
     }
