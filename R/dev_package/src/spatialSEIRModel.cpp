@@ -1279,6 +1279,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     modelConfig.parameterSamplingMode = PARAMETER_JOINT_METROPOLIS_SAMPLER;
     modelConfig.indexLength = std::floor(0.25*(*nTpt)*(*nLoc)); // Update 25% per iteration. 
     modelConfig.useDecorrelation = 0;
+    modelConfig.performHybridStep = 0;
     modelConfig.dataModel = *(dataModelInstance -> dataModelType) ;
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
