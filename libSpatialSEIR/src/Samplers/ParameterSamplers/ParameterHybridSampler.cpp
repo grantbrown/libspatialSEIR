@@ -94,20 +94,24 @@ namespace SpatialSEIR
         iters = 0;
         while (!success && iters < 1000)
         {
+            newVal = 0.0;
             for (i = 0; i < (parameterFullConditionals -> size()); i++)
             {
                 for (j = 0; j < *((*parameterFullConditionals)[i] -> varLen); j++)
                 {
                     sliceWidth = *((*parameterFullConditionals)[i] -> sliceWidth);
                     x0 = parameterCache[k];
-                    x1 = (((*context) -> random -> normal(x0, sliceWidth)));
+                    x1 = (((*context) -> random -> normal(x0, sliceWidth*0.1)));
                     ((*parameters)[i])[j] = x1;
                     k++;  
                 }
+            }
+            for (i = 0; i < (parameterFullConditionals -> size()); i++)
+            {
                 (*parameterFullConditionals)[i] -> evalCPU();
                 newVal += (*parameterFullConditionals)[i] -> getValue();
             }
-            if (std::log((*context) -> random -> uniform()) < (newVal - initVal))
+            if (std::log(2*((*context) -> random -> uniform())) < (newVal - initVal))
             {
                 success = true;
                 for (i = 0; i < (parameterFullConditionals -> size()); i++)
@@ -123,6 +127,17 @@ namespace SpatialSEIR
         if (iters >= 1000)
         {
             lssCout << "Hybrid Sampler did Not Update.\n";
+            k = 0;
+            // Re-set parameter values
+            for (i = 0; i < (parameterFullConditionals -> size()); i++)
+            {
+                (*((*parameterFullConditionals)[i] -> samples)) += 1;
+                for (j = 0; j < *((*parameterFullConditionals)[i] -> varLen); j++)
+                {
+                    ((*parameters)[i])[j] = parameterCache[k];
+                    k++;  
+                }
+            }
         }
     }
 }

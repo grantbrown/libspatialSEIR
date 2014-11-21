@@ -76,7 +76,7 @@ namespace SpatialSEIR
         }
 
         *iterationCount = 0;
-        if (*((*context) -> beta_fc -> varLen) > 1 && (*context) -> config -> reinfectionMode == 1)
+        if (*((*context) -> betaPrs_fc -> varLen) > 1 && (*context) -> config -> reinfectionMode == 1)
         {
             while (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted &&
                     *iterationCount < 1000)
