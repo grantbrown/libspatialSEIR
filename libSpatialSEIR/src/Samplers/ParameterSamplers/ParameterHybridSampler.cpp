@@ -89,7 +89,7 @@ namespace SpatialSEIR
             }
         }
 
-        iters = 0;
+        iters = 1;
         while (!success && iters < 1000)
         {
             k = 0;
@@ -98,7 +98,7 @@ namespace SpatialSEIR
             {
                 for (j = 0; j < *((*parameterFullConditionals)[i] -> varLen); j++)
                 {
-                    sliceWidth = *((*parameterFullConditionals)[i] -> sliceWidth);
+                    sliceWidth = *((*parameterFullConditionals)[i] -> sliceWidth)/(iters);
                     x0 = parameterCache[k];
                     x1 = (((*context) -> random -> normal(x0, sliceWidth)));
                     ((*parameters)[i])[j] = x1;
