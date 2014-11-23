@@ -458,8 +458,11 @@ namespace SpatialSEIR
             iterationTasks -> push_back(performHybridSE_EI_UpdateTask);
              *(performHybridSE_EI_UpdateTask -> iterationCount) = (config -> performHybridStep); 
 
-            iterationTasks -> push_back(performHybridIR_RS_UpdateTask);
-             *(performHybridIR_RS_UpdateTask -> iterationCount) = (config -> performHybridStep); 
+            if ((config -> reinfectionMode) == 1)
+            {
+                iterationTasks -> push_back(performHybridIR_RS_UpdateTask);
+                 *(performHybridIR_RS_UpdateTask -> iterationCount) = (config -> performHybridStep); 
+            }
         }
     }
 
