@@ -244,6 +244,9 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
 }
 
 res$compartmentSamplingMode = 1
+res$setTrace(0)
+res$performHybridStep = 10
+res$useDecorrelation = 10
 runSimulation(2000,10, printAR = FALSE, targetRatio = 0.2)
 runSimulation(2000,100, printAR = TRUE, targetRatio = 0.2)
 res$compartmentSamplingMode = 17

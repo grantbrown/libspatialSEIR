@@ -412,6 +412,7 @@ namespace SpatialSEIR
         // Set up iteration tasks
         setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
         performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, beta_fc,100);
+        performHybridIR_RS_UpdateTask = new PerformHybridIR_RS_UpdateStep(this, gamma_ir_fc, betaPrs_fc,100);
         decorrelationStepTask = new PerformDecorrelationStep(this, 100);
 
         // Calculate Compartments
@@ -456,6 +457,9 @@ namespace SpatialSEIR
         {
             iterationTasks -> push_back(performHybridSE_EI_UpdateTask);
              *(performHybridSE_EI_UpdateTask -> iterationCount) = (config -> performHybridStep); 
+
+            iterationTasks -> push_back(performHybridIR_RS_UpdateTask);
+             *(performHybridIR_RS_UpdateTask -> iterationCount) = (config -> performHybridStep); 
         }
     }
 
@@ -1307,6 +1311,7 @@ namespace SpatialSEIR
             while (iterationTasks -> size() != 0){(iterationTasks -> pop_back());}
             delete setSamplingIndicesTask;
             delete performHybridSE_EI_UpdateTask;
+            delete performHybridIR_RS_UpdateTask;
             delete decorrelationStepTask;
             while (scaledDistMatrices -> size() != 0){delete (*scaledDistMatrices).back(); (scaledDistMatrices -> pop_back());}
             delete scaledDistMatrices;

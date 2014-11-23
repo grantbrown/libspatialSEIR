@@ -25,6 +25,7 @@ namespace SpatialSEIR
     class SetCompartmentSamplingIndicesTask;
     class PerformDecorrelationStep;
     class PerformHybridSE_EI_UpdateStep;
+    class PerformHybridIR_RS_UpdateStep;
     class FC_S0;
     class FC_E0;
     class FC_I0;
@@ -447,6 +448,8 @@ namespace SpatialSEIR
             SetCompartmentSamplingIndicesTask* setSamplingIndicesTask;
             /** Pointer to the beta+gamma_ei hybrid sampling task.*/
             PerformHybridSE_EI_UpdateStep* performHybridSE_EI_UpdateTask;
+            /** Pointer to the betaP_RS+gamma_ir hybrid sampling task.*/
+            PerformHybridIR_RS_UpdateStep* performHybridIR_RS_UpdateTask;
             /** Pointer to the decorrelation step task*/
             PerformDecorrelationStep* decorrelationStepTask;
 

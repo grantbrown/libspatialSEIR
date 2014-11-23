@@ -1119,8 +1119,8 @@ spatialSEIRModel::spatialSEIRModel(SEXP outFileName)
 {
     // Create the empty ModelContext object  
     context = new ModelContext();
-    verbose = new int();
-    debug = new int(); 
+    verbose = new int;
+    debug = new int; 
     *verbose = 0;
     *debug = 0;
     chainOutputFile = new std::string(); 
