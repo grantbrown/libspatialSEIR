@@ -20,6 +20,7 @@ namespace SpatialSEIR
      *
      */    
     
+    /*TODO: make this class use E and I for steadyStateConstraintPrecision lik FC_I_Star*/
     FC_I_Star_overdispersed::FC_I_Star_overdispersed(ModelContext *_context,
                          int* _Y,
                          CompartmentalModelMatrix *_I_star,

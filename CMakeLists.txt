@@ -215,6 +215,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_I_star_overdispersion.hpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_R_star_overdispersion.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_Phi.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/IOProvider.hpp"
 	"${SpatialSEIR_Boost_LIBRARIES}"
