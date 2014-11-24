@@ -18,7 +18,8 @@ namespace SpatialSEIR
     {
         public:
             FC_Phi(ModelContext *_context,
-                   CompartmentalModelMatrix *_I_star, 
+                   /*CompartmentalModelMatrix *_I_star, */
+                   CompartmentalModelMatrix *_Compartment, 
                    double* _phi,
                    double _priorAlpha,
                    double _priorBeta,
@@ -36,7 +37,7 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments_OCL();
 
             ModelContext **context;
-            CompartmentalModelMatrix **I_star; 
+            CompartmentalModelMatrix **Compartment; 
             double** phi;
             double* priorAlpha;
             double* priorBeta;

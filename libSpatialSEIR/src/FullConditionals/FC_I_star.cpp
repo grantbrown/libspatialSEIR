@@ -205,8 +205,8 @@ namespace SpatialSEIR
         if (*steadyStateConstraintPrecision > 0)
         {
             I_star_sum = (*I_star)->marginSum(3,-1);
-            R_star_sum = (*R_star)->marginSum(3,-1);
-            aDiff = (I_star_sum > R_star_sum ? I_star_sum - R_star_sum : R_star_sum - I_star_sum)/(nTpts*nLoc);
+            E_star_sum = (*E_star)->marginSum(3,-1);
+            aDiff = (I_star_sum > E_star_sum ? I_star_sum - E_star_sum : E_star_sum - I_star_sum)/(nTpts*nLoc);
             output -= (aDiff*aDiff)*(*steadyStateConstraintPrecision);
         }
 
@@ -227,7 +227,7 @@ namespace SpatialSEIR
     int FC_I_Star::evalOCL()
     {
         // Not yet implemented
-        evalCPU();
+        return(evalCPU()); 
     }
     int FC_I_Star::calculateRelevantCompartments()
     {        

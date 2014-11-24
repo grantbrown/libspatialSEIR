@@ -15,7 +15,8 @@
 namespace SpatialSEIR
 {
     FC_Phi::FC_Phi(ModelContext *_context,
-                   CompartmentalModelMatrix *_I_star,  
+                   /*CompartmentalModelMatrix *_I_star, */ 
+                   CompartmentalModelMatrix *_Compartment,  
                    double* _phi,
                    double _priorAlpha,
                    double _priorBeta,
@@ -23,7 +24,7 @@ namespace SpatialSEIR
                    double _sliceWidth)
     {
         context = new ModelContext*;
-        I_star = new CompartmentalModelMatrix*;
+        Compartment = new CompartmentalModelMatrix*;
         phi = new double*;
         priorAlpha = new double;
         priorBeta = new double;
@@ -39,7 +40,7 @@ namespace SpatialSEIR
 
 
         *context = _context;
-        *I_star = _I_star;
+        *Compartment = _Compartment;
         *phi = _phi;
         *priorAlpha = _priorAlpha;
         *priorBeta = _priorBeta;
@@ -60,7 +61,7 @@ namespace SpatialSEIR
         while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
         delete samplers;
         delete varLen;
-        delete I_star;
+        delete Compartment;
         delete phi;
         delete priorAlpha;
         delete priorBeta;
@@ -79,14 +80,14 @@ namespace SpatialSEIR
     int FC_Phi::evalCPU()
     {
         *value = 0.0;
-        int nLoc = *((*I_star) -> ncol);
-        int nTpts = *((*I_star) -> nrow);
+        int nLoc = *((*Compartment) -> ncol);
+        int nTpts = *((*Compartment) -> nrow);
         int maxIdx = nLoc*nTpts;
         int i;
         double phi_val = **phi;
         for (i = 0; i < maxIdx; i++)    
         {
-            *value -= 0.5*std::pow((((*I_star)->data)[i] - (*Y)[i])*(phi_val), 2);
+            *value -= 0.5*std::pow((((*Compartment)->data)[i] - (*Y)[i])*(phi_val), 2);
         }
         *value += evalPrior();
         // Catch invalid values, nans etc. 

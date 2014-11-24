@@ -153,6 +153,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_R0.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_S_star.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_E_star.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_I_star.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_R_star.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Beta.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Beta_P_RS.cpp"
