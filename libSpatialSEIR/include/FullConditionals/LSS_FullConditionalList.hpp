@@ -11,6 +11,7 @@
 #include<LSS_FC_Rho.hpp>
 #include<LSS_FC_Gamma_EI.hpp>
 #include<LSS_FC_Gamma_IR.hpp>
+#include<LSS_FC_R_star_overdispersion.hpp>
 #include<LSS_FC_I_star_overdispersion.hpp>
 #include<LSS_FC_Phi.hpp>
 

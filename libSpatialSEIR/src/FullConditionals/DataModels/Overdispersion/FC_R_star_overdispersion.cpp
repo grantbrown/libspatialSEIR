@@ -4,7 +4,7 @@
 #include<cmath>
 #include<algorithm>
 #include<LSS_Samplers.hpp>
-#include<LSS_FC_R_star.hpp>
+#include<LSS_FC_R_star_overdispersion.hpp>
 #include<ModelContext.hpp>
 #include<OCLProvider.hpp>
 #include<CompartmentalModelMatrix.hpp>
@@ -32,11 +32,10 @@ namespace SpatialSEIR
                          double *_p_rs,
                          double *_p_ir,
                          double *_p_se,
-                         double *_phi;
+                         double *_phi,
                          double _steadyStateConstraintPrecision,
                          double _sliceWidth)
     {
-
         context = new ModelContext*;
         R_star = new CompartmentalModelMatrix*;
         Y = new int*;
@@ -96,7 +95,6 @@ namespace SpatialSEIR
     FC_R_Star_overdispersed::~FC_R_Star_overdispersed()
     {
         while((samplers -> size()) != 0){delete (*samplers).back(); (*samplers).pop_back();}
-
         delete samplers;
         delete Y;
         delete R_star;
@@ -355,37 +353,8 @@ namespace SpatialSEIR
     int FC_R_Star_overdispersed::evalOCL()
     {
 
-        int nTpts = *((*R) -> nrow);
-        int nLoc = *((*R) -> ncol);
-
-        /*
-        if ((*context) -> config -> reinfectionMode > 2)
-        {
-            lssCout << "FC_R_Star_overdispersed currently only works with OpenCL for reinfectionMode <= 2\n";
-        }
-        */
-
-        double output = ((*context) -> oclProvider -> 
-                FC_R_Star_overdispersed(nLoc,
-                          nTpts,
-                          ((*S_star) -> data),
-                          ((*E_star) -> data),
-                          ((*R_star) -> data),
-                          ((*S) -> data),
-                          ((*I) -> data),
-                          ((*R) -> data),
-                          (*p_se),
-                          (*p_rs),
-                          (*p_ir)
-                          ));
-        if (!std::isfinite(output))
-        {
-            *value = -INFINITY;
-            return(-1);
-        }
-        else 
-        *value = output;
-        return 0;
+        // Not implemented
+        return(evalCPU());
     }
     int FC_R_Star_overdispersed::calculateRelevantCompartments()
     {        

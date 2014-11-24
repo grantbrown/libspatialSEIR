@@ -417,8 +417,21 @@ namespace SpatialSEIR
                                                               phi,
                                                               (R_starArgs -> steadyStateConstraintPrecision),
                                                               *(sliceWidths -> E_starWidth));
-        
 
+        R_star_overdispersed_fc = new FC_R_Star_overdispersed(this,
+                                                Y,
+                                                R_star,
+                                                R,
+                                                I,
+                                                S_star,
+                                                E_star,
+                                                I_star,
+                                                S,
+                                                A0,p_rs,p_ir,p_se,phi,
+                                                (R_starArgs -> steadyStateConstraintPrecision),
+                                                *(sliceWidths -> R_starWidth));
+
+        
         // Set up iteration tasks
         setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
         performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, beta_fc,100);

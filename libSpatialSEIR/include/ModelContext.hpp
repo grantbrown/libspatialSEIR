@@ -40,6 +40,7 @@ namespace SpatialSEIR
     class FC_Beta_P_RS;
     class FC_Rho;
     class FC_I_Star_overdispersed;
+    class FC_R_Star_overdispersed;
     class FC_Phi;
     class InitData;
 
@@ -444,6 +445,8 @@ namespace SpatialSEIR
             FC_Gamma_IR *gamma_ir_fc;
             /** Pointer to FullConditional distribution for the I_star transition matrix under overdispersion*/
             FC_I_Star_overdispersed *I_star_overdispersed_fc;
+            /** Pointer to FullConditional distribution for the R_star transition matrix under overdispersion*/
+            FC_R_Star_overdispersed *R_star_overdispersed_fc;
             /** Pointer to FullConditional distribution for the overdispersion parameter for I_star*/
             FC_Phi *phi_fc;
 

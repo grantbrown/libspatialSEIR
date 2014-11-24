@@ -1,6 +1,6 @@
 #include <LSS_FullConditional.hpp>
-#ifndef FULL_CONDITIONAL_R_STAR_INC
-#define FULL_CONDITIONAL_R_STAR_INC
+#ifndef FULL_CONDITIONAL_R_STAR_OVERDISPERSED_INC
+#define FULL_CONDITIONAL_R_STAR_OVERDISPERSED_INC
 
 namespace SpatialSEIR
 {
@@ -33,7 +33,7 @@ namespace SpatialSEIR
                       double *_p_rs,
                       double *_p_ir,
                       double *_p_se,
-                      double *_phi;
+                      double *_phi,
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
             ~FC_R_Star_overdispersed();
@@ -48,7 +48,7 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments(int i, int j);
             virtual int calculateRelevantCompartments_OCL();
             ModelContext **context;
-            int* Y;
+            int** Y;
             CompartmentalModelMatrix **R_star;
             CompartmentalModelMatrix **R;
             CompartmentalModelMatrix **I;

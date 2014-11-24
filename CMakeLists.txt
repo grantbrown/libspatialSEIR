@@ -161,6 +161,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_EI.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/FC_Gamma_IR.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/DataModels/Overdispersion/FC_I_star_overdispersion.cpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/DataModels/Overdispersion/FC_R_star_overdispersion.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/FullConditionals/DataModels/Overdispersion/FC_Phi.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/SetCompartmentSamplingIndicesTask.cpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/src/IterationTasks/PerformDecorrelationStep.cpp"
@@ -208,6 +209,7 @@ add_library(SpatialSEIR SHARED
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_R0.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_S_star.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_E_star.hpp"
+    "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_I_star.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_R_star.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Beta.hpp"
     "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Beta_P_RS.hpp"
@@ -268,6 +270,7 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_R0.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_S_star.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_E_star.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_I_star.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_R_star.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Beta.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Beta_P_RS.hpp"
@@ -275,6 +278,7 @@ install (FILES
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_EI.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/LSS_FC_Gamma_IR.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_I_star_overdispersion.hpp"
+            "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_R_star_overdispersion.hpp"
             "${CMAKE_SOURCE_DIR}/libSpatialSEIR/include/FullConditionals/DataModels/Overdispersion/LSS_FC_Phi.hpp"
             DESTINATION include)
 
