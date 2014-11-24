@@ -340,6 +340,16 @@ namespace SpatialSEIR
                                   (E_starArgs -> steadyStateConstraintPrecision),
                                   *(sliceWidths -> E_starWidth));
 
+        I_star_fc = new FC_I_Star(this,
+                                  E_star,
+                                  I_star,
+                                  R_star,
+                                  E,
+                                  I,
+                                  A0,p_ei,p_ir,
+                                  (E_starArgs -> steadyStateConstraintPrecision),
+                                  *(sliceWidths -> E_starWidth));
+
         R_star_fc = new FC_R_Star(this,
                                   R_star,
                                   R,

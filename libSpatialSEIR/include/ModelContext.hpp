@@ -32,6 +32,7 @@ namespace SpatialSEIR
     class FC_R0;
     class FC_S_Star;
     class FC_E_Star;
+    class FC_I_Star;
     class FC_R_Star;
     class FC_Beta;
     class FC_Gamma_EI;
@@ -427,6 +428,8 @@ namespace SpatialSEIR
             FC_S_Star *S_star_fc;
             /** Pointer to FullConditional distribution for the transition matrix E_star*/
             FC_E_Star *E_star_fc;
+            /** Pointer to FullConditional distribution for the transition matrix I_star*/
+            FC_I_Star *I_star_fc;
             /** Pointer to FullConditional distribution for the transition matrix R_star*/
             FC_R_Star *R_star_fc;
             /** Pointer to FullConditional distribution for the regression parameters beta*/
