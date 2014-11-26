@@ -63,7 +63,7 @@ buildDistanceModel = function(distanceList,
 }
 
 # dataModel module helper function
-buildDataModel = function(Y, type = c("identity", "overdispersion"),params=NA)
+buildDataModel = function(Y, type = c("identity", "overdispersion"), compartment = c("I_star", "R_star"),params=NA)
 {
     if (class(Y) != "matrix")
     {
@@ -82,7 +82,7 @@ buildDataModel = function(Y, type = c("identity", "overdispersion"),params=NA)
     {
         stop("Non identy data model currently requires the params argument to be a numeric vector of length 2") 
     }
-    outModel = new(dataModel, Y, type)
+    outModel = new(dataModel, Y, type, compartment)
     outModel$setOverdispersionParameters(params[1], params[2], rgamma(1, params[1], params[2]))
     outModel
 }

@@ -11,7 +11,7 @@ RCPP_EXPOSED_CLASS(dataModel)
 class dataModel
 {
     public:
-        dataModel(SEXP Y, SEXP type);
+        dataModel(SEXP Y, SEXP type, SEXP compartment);
         virtual void summary();
         virtual void setOverdispersionParameters(SEXP priorAlpha, SEXP priorBeta, SEXP initialValue);
         Rcpp::IntegerVector* compartmentDimensions;
@@ -20,6 +20,7 @@ class dataModel
         int* nLoc;
         int* nTpt;
         int* dataModelType;
+        int* dataModelCompartment;
         int* Y;
         int* setMode;
 
