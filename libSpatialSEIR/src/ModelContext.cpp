@@ -507,6 +507,16 @@ namespace SpatialSEIR
             throw(-1);
         }
 
+        CompartmentFullConditional* nonDataModel;
+        if (config -> dataModelCompartment == 0) 
+        {
+            nonDataModel = I_star_fc;
+        }
+        else
+        {
+            nonDataModel = R_star_fc;
+        }
+
         // build the model here. 
         if ((config -> reinfectionMode) == 1)
         {
@@ -514,7 +524,7 @@ namespace SpatialSEIR
             model -> push_back(I0_fc);
             model -> push_back(S_star_fc);
             model -> push_back(E_star_fc);
-            model -> push_back(R_star_fc);
+            model -> push_back(nonDataModel); // I_star or R_star
             model -> push_back(beta_fc);
             model -> push_back(betaPrs_fc);
             if (!(*singleLocation))
@@ -530,7 +540,7 @@ namespace SpatialSEIR
             model -> push_back(I0_fc);
             model -> push_back(S_star_fc);
             model -> push_back(E_star_fc);
-            model -> push_back(R_star_fc);
+            model -> push_back(nonDataModel); // I_star or R_star
             model -> push_back(beta_fc);
             if (!(*singleLocation))
             {
@@ -544,7 +554,7 @@ namespace SpatialSEIR
             model -> push_back(S0_fc);
             model -> push_back(I0_fc);
             model -> push_back(E_star_fc);
-            model -> push_back(R_star_fc);
+            model -> push_back(nonDataModel); // I_star or R_star
             model -> push_back(beta_fc);
             if (!(*singleLocation))
             {
@@ -555,7 +565,19 @@ namespace SpatialSEIR
         } 
         if ((config -> dataModel) == 1)
         {
-            model -> push_back(I_star_overdispersed_fc);
+            if ((config -> dataModelCompartment) == 0)
+            {
+                model -> push_back(I_star_overdispersed_fc);
+            }
+            else if ((config -> dataModelCompartment) == 1)
+            {
+                model -> push_back(R_star_overdispersed_fc);
+            }
+            else
+            {
+                lssCout << "Invalid Data Model Compartment Index: " << (config -> dataModelCompartment) <<"\n";
+                throw(-1);
+            }
             model -> push_back(phi_fc);
         }
     }

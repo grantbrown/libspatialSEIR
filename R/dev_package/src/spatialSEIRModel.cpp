@@ -1281,6 +1281,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     modelConfig.useDecorrelation = 0;
     modelConfig.performHybridStep = 0;
     modelConfig.dataModel = *(dataModelInstance -> dataModelType) ;
+    modelConfig.dataModelCompartment = *(dataModelInstance -> dataModelCompartment);
 
     sliceParamStruct.S_starWidth = &sliceParams[0];
     sliceParamStruct.E_starWidth = &sliceParams[1];

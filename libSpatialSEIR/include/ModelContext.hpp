@@ -71,6 +71,7 @@ namespace SpatialSEIR
         int useDecorrelation;
         int performHybridStep;
         int dataModel;
+        int dataModelCompartment;
     };
 
 
