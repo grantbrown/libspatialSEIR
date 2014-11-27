@@ -142,7 +142,9 @@ namespace SpatialSEIR
                                                           the MCMC sampling mode. MCMC sampling modes are under very active development. */
                               );
 
-            /*buildModel is called at the end of the populate function to fill the ModelContext.model vector with the required 
+            /** generateCompartmentsFromPriors is a method designed to choose initial values of S_star, E_star, I_star, and R_star which are not in a region of zero probability. It could also be used to recover from sampling mistakes, but that really really shouldn't be needed, and in the case that it is there's probably an important error somewhere.  */
+            void generateCompartmentsFromPriors();
+            /**buildModel is called at the end of the populate function to fill the ModelContext.model vector with the required 
               full conditional distributions.*/
             void buildModel();
 

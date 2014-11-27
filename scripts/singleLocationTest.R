@@ -176,7 +176,7 @@ runSimulation = function()
 
 simResults = runSimulation()
 
-DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = c(10,0.1))
+DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = c(10000,10000))
 #DataModel = buildDataModel(simResults$I_star, type = "identity")
 
 ExposureModel = buildExposureModel(simResults$X, simResults$Z, 
@@ -198,9 +198,9 @@ SamplingControl = buildSamplingControl(iterationStride=1000,
                                                        0.01 # phi
                                                       ))
 DistanceModel = buildDistanceModel(list(matrix(0)))
-TransitionPriors = buildTransitionPriorsManually(2300,1000,2300,1000)
-InitContainer = buildInitialValueContainer(simResults$I_star, simResults$N, S0 = simResults$N[1]-100, 
-                                           I0 = 100, E0 = 0)
+TransitionPriors = buildTransitionPriorsManually(230,100,230,100)
+InitContainer = buildInitialValueContainer(simResults$N, S0 = simResults$N[1]-200, 
+                                           I0 = 100, E0 = 100)
 
 outFileName = "./chainOutput_single.txt"
 
