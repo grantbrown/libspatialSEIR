@@ -24,6 +24,8 @@ export(buildTransitionPriorsFromProbabilities)
 export(buildTransitionPriorsManually)
 export(buildUniformTransitionPriors)
 export(buildInitialValueContainer)
+export(buildInitialValueContainerManually)
+
 
 
 

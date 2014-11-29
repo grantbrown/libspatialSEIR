@@ -218,6 +218,19 @@ buildInitialValueContainer = function(data, N, S0=NA, E0=NA, I0=NA, reinfection=
     InitialValueContainer
 }
 
+buildInitialValueContainerManually = function(S0=NA, E0=NA, I0=NA, R0=NA, S_star=NA, E_star=NA, I_star=NA, R_star=NA, N=NA)
+{
+    if (any(is.na(S0)) || any(is.na(E0)) || any(is.na(I0)) || any(is.na(R0)) 
+        || any(is.na(S_star)) || any(is.na(E_star)) || any(is.na(I_star)) 
+        || any(is.na(R_star)) || any(is.na(N)))
+    {
+        stop("Must specify all of S0, E0, I0, R0, S_star, E_star, I_star, R_star, N")
+    }
+    InitialValueContainer = new(initialValueContainer)
+    InitialValueContainer$setInitialValues(S0, E0, I0, R0, S_star, E_star, I_star, R_star, N)
+    InitialValueContainer
+}
+
 
 # SEIRModel module helper function
 buildSEIRModel = function(outFileName,
