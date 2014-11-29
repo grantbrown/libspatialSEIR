@@ -76,7 +76,7 @@ buildDataModel = function(Y, type = c("identity", "overdispersion"), compartment
     }
     else if (length(params) ==1 && is.na(params))
     {
-        return(new(dataModel, Y, type))
+        return(new(dataModel, Y, type, compartment))
     }
     else if (class(params) != "numeric" || length(params) != 2)
     {

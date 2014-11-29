@@ -154,13 +154,13 @@ beta = true_beta
 #betaPrs = true_beta_prs*0; betaPrs[1] = -2 
 
 outFileName = "./chainOutput_sim.txt"
-DataModel = buildDataModel(I_star, type="identity")
+DataModel = buildDataModel(I_star, type="overdispersion", params = c(10000, 10))
 ExposureModel = buildExposureModel(X, Z, beta, betaPriorPrecision)
 ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = X_betaPrs, betaPrs = betaPrs, priorPrecision = betaPrsPriorPrecision)
 SamplingControl = buildSamplingControl(iterationStride=iterationStride,sliceWidths=sliceWidths)
 DistanceModel = buildDistanceModel(list(DM))
 TransitionPriors = buildTransitionPriorsManually(priorAlpha_gammaEI, priorBeta_gammaEI, priorAlpha_gammaIR, priorBeta_gammaIR)
-InitContainer = buildInitialValueContainer(I_star, N, S0, E0, I0,p_ir=0.3)
+InitContainer = buildInitialValueContainer( N,S0=S0,E0=E0,I0=I0)
 
 res = buildSEIRModel(outFileName, DataModel, ExposureModel, ReinfectionModel, DistanceModel, TransitionPriors,
                      InitContainer, SamplingControl)

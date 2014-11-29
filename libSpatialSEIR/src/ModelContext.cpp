@@ -588,11 +588,11 @@ namespace SpatialSEIR
         CompartmentFullConditional* nonDataModel;
         if (config -> dataModelCompartment == 0) 
         {
-            nonDataModel = I_star_fc;
+            nonDataModel = R_star_fc;
         }
         else
         {
-            nonDataModel = R_star_fc;
+            nonDataModel = I_star_fc;
         }
 
         // build the model here. 
