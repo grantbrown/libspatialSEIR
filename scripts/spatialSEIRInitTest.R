@@ -160,7 +160,7 @@ ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = X_betaPrs, betaPrs = b
 SamplingControl = buildSamplingControl(iterationStride=iterationStride,sliceWidths=sliceWidths)
 DistanceModel = buildDistanceModel(list(DM))
 TransitionPriors = buildTransitionPriorsManually(priorAlpha_gammaEI, priorBeta_gammaEI, priorAlpha_gammaIR, priorBeta_gammaIR)
-InitContainer = buildInitialValueContainer( N,S0=S0,E0=E0,I0=I0)
+InitContainer = buildInitialValueContainer(I_star,N,S0=S0,E0=E0,I0=I0,reinfection=TRUE,dataType="I_star")
 
 res = buildSEIRModel(outFileName, DataModel, ExposureModel, ReinfectionModel, DistanceModel, TransitionPriors,
                      InitContainer, SamplingControl)

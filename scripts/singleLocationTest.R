@@ -199,8 +199,8 @@ SamplingControl = buildSamplingControl(iterationStride=1000,
                                                       ))
 DistanceModel = buildDistanceModel(list(matrix(0)))
 TransitionPriors = buildTransitionPriorsManually(230,100,230,100)
-InitContainer = buildInitialValueContainer(simResults$N, S0 = simResults$N[1]-200, 
-                                           I0 = 100, E0 = 100)
+InitContainer = buildInitialValueContainer(simResults$I_star, simResults$N, S0 = simResults$N[1]-200, 
+                                           I0 = 100, E0 = 100, reinfection=TRUE)
 
 outFileName = "./chainOutput_single.txt"
 
@@ -251,8 +251,7 @@ runSimulation(2000,10, printAR = FALSE, targetRatio = 0.2)
 runSimulation(2000,100, printAR = TRUE, targetRatio = 0.2)
 res$compartmentSamplingMode = 17
 runSimulation(100000,1000, printAR=FALSE, adjustSamplingParams = FALSE)
-
-
+runSimulation(100000,1000, printAR=FALSE, adjustSamplingParams = FALSE)
 
 #runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
 

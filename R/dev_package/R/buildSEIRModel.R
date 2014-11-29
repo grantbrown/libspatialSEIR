@@ -198,64 +198,26 @@ buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,offset=NA,nTp
 }
 
 # initialValueContainer module helper function
-
-buildInitialValueContainer = function(N, S0=NA, E0=NA, I0=NA, R0 = NA)
+buildInitialValueContainer = function(data, N, S0=NA, E0=NA, I0=NA, reinfection=FALSE, dataType=c("I_star", "R_star"))
 {
+    if (class(data) != "matrix")
+    {
+        data = as.matrix(data)
+    }
     if (class(N) != "matrix")
     {
         N = as.matrix(N)
     }
 
-    remaining = N[1,]
-    initList =list(S0, E0, I0, R0)
-    numExcluded = 0
-    for (item in initList)
-    {
-        if (!all(is.na(item)))
-        {
-            remaining = remaining - item
-        }
-        else
-        {
-            numExcluded = numExcluded + 1
-        }
-    }
-    if (numExcluded > 3)
-    {
-        stop("Error: you must specify at least three of: S0, E0, I0, R0")
-    }
 
-    for (i in 1:length(initList))
-    {
-        item = initList[[i]]
-        if (all(is.na(item)))
-        {
-           initList[[i]] = remaining 
-        }
-    }
-    S0 = initList[[1]]
-    E0 = initList[[2]]
-    I0 = initList[[3]]
-    R0 = initList[[4]]
-
-    if (ncol(N) != length(S0))
-    {
-        stop("Error: Number of locations implied by N and S0 are different.")
-    }
-    if (length(S0) != length(E0) || length(E0) != length(I0) || length(I0) != length(R0))
-    {
-        stop("Error: S0,E0,I0,R0 not all of same length.")
-    }
-
-    print(S0)
-    print(E0)
-    print(I0)
-    print(R0)
-
+    proposal = generateCompartmentProposal2(data, N, S0, E0, I0, reinfection, dataType)
     InitialValueContainer = new(initialValueContainer)
-    InitialValueContainer$setInitialValues(S0, E0, I0, R0,N)
+    InitialValueContainer$setInitialValues(proposal$S0, proposal$E0, proposal$I0, proposal$R0,
+                                           proposal$S_star, proposal$E_star, proposal$I_star, proposal$R_star,
+                                           N)
     InitialValueContainer
 }
+
 
 # SEIRModel module helper function
 buildSEIRModel = function(outFileName,

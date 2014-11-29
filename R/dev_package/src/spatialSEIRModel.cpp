@@ -1290,24 +1290,23 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     // Create dummy transition matrix data to pass to model object
     
     int compartmentSize = (*nTpt)*(*nLoc); 
-    int* dummyCompartment = new int[compartmentSize];
-    memset(dummyCompartment, 0, compartmentSize*sizeof(int));
 
-    S_starArgs.inData = dummyCompartment; 
+
+    S_starArgs.inData = (initialValueContainerInstance -> S_star); 
     S_starArgs.inRow = nTpt;
     S_starArgs.inCol = nLoc;
     S_starArgs.steadyStateConstraintPrecision = (samplingControlInstance -> steadyStateConstraintPrecision)[0];
 
-    E_starArgs.inData = dummyCompartment;
+    E_starArgs.inData = (initialValueContainerInstance -> E_star); 
     E_starArgs.inRow = nTpt;
     E_starArgs.inCol = nLoc;
     E_starArgs.steadyStateConstraintPrecision = (samplingControlInstance -> steadyStateConstraintPrecision)[0];
 
-    I_starArgs.inData = dummyCompartment; 
+    I_starArgs.inData = (initialValueContainerInstance -> I_star);  
     I_starArgs.inRow = nTpt;
     I_starArgs.inCol = nLoc;
 
-    R_starArgs.inData = dummyCompartment;
+    R_starArgs.inData = (initialValueContainerInstance -> R_star); 
     R_starArgs.inRow = nTpt;
     R_starArgs.inCol = nLoc;
     R_starArgs.steadyStateConstraintPrecision = (samplingControlInstance -> steadyStateConstraintPrecision)[0];
@@ -1337,10 +1336,9 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
                         rho.begin(),phi.begin(),(exposureModelInstance -> beta),(transitionPriorsInstance -> gamma_ei), (transitionPriorsInstance -> gamma_ir),
                         (reinfectionModelInstance -> beta), (initialValueContainerInstance -> N),&sliceParamStruct, &priorValues,
                         modelConfig);
-    context -> generateCompartmentsFromPriors();
+
     // Set up output stream
     context -> fileProvider -> populate(context, chainOutputFile,(samplingControlInstance -> iterationStride));
-    delete[] dummyCompartment;
     return(err);
 }
 
