@@ -3,7 +3,7 @@ checkConvergence = function(fileName1,fileName2,fileName3,maxVal=2,useUpper=FALS
     dat1 = read.csv(fileName1)
     dat2 = read.csv(fileName2)
     dat3 = read.csv(fileName3)
-    maxIdx = max(nrow(dat1), nrow(dat2), nrow(dat3))
+    maxIdx = min(nrow(dat1), nrow(dat2), nrow(dat3))
     dat1_sub = dat1[1:maxIdx,]
     dat2_sub = dat2[1:maxIdx,]
     dat3_sub = dat3[1:maxIdx,]
