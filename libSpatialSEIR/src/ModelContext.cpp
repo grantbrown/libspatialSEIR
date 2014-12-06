@@ -373,7 +373,9 @@ namespace SpatialSEIR
                             E_star,
                             S,
                             A0,X,p_se,beta,rho,
-                            *(sliceWidths -> rhoWidth));
+                            *(sliceWidths -> rhoWidth),
+                            scaledDistArgs -> priorAlpha_rho,
+                            scaledDistArgs -> priorBeta_rho);
 
         betaPrs_fc = new FC_Beta_P_RS(this,S_star,R,X_pRS,A0,p_rs,betaPrs, 
                                       (priorValues->betaPrsPriorPrecision), 

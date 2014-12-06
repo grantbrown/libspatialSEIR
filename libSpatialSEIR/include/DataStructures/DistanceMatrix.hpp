@@ -25,6 +25,8 @@ namespace SpatialSEIR
         std::vector<double*> inData;
         int* dim;
         int mode;
+        double priorAlpha_rho;
+        double priorBeta_rho;
     };
 
     // Begin with a naive implementation, this should eventually 

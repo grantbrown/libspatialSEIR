@@ -25,7 +25,9 @@ namespace SpatialSEIR
                    double *_p_se, 
                    double *_beta, 
                    double *_rho,
-                   double sliceWidth
+                   double sliceWidth,
+                   double priorAlpha,
+                   double priorBeta
                    );
             ~FC_Rho();
             virtual double evalPrior(); 
@@ -45,6 +47,8 @@ namespace SpatialSEIR
             double **p_se;
             double **beta;
             double **rho;
+            double *priorAlpha;
+            double *priorBeta;
             long double* value;
     };
 

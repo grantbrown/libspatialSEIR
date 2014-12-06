@@ -22,7 +22,9 @@ namespace SpatialSEIR
                    double *_p_se,
                    double *_beta,
                    double *_rho,
-                   double _sliceWidth)
+                   double _sliceWidth,
+                   double priorAlpha_rho_,
+                   double priorBeta_rho_)
     {
         context = new ModelContext*;
         *context = _context;
@@ -39,6 +41,10 @@ namespace SpatialSEIR
         value = new long double;
         samples = new int;
         accepted = new int[*varLen]; 
+        priorAlpha = new double;
+        priorBeta = new double;
+        *priorAlpha = priorAlpha_rho_;
+        *priorBeta = priorBeta_rho_;
         *samples = 0;
      
 
@@ -83,11 +89,14 @@ namespace SpatialSEIR
         delete context;
         delete samples;
         delete accepted;
+        delete priorAlpha;
+        delete priorBeta;
     }
 
     double FC_Rho::evalPrior()
     {
         double rhoSum = 0.0;
+        double out = 0.0;
         double rhoVal;
         int i;
         for (i = 0; i < *varLen; i++)
@@ -95,8 +104,9 @@ namespace SpatialSEIR
             rhoVal = (*rho)[i];
             if (rhoVal < 0){return(-INFINITY);}
             rhoSum += rhoVal; 
+            out += (*context) -> random -> dbeta(rhoVal, *priorAlpha, *priorBeta);
         }
-         return(rhoSum > 0 && rhoSum < 1 ? 0 : -INFINITY); 
+         return(rhoSum > 0 && rhoSum < 1 ? out : -INFINITY); 
     }
 
     int FC_Rho::evalCPU()
