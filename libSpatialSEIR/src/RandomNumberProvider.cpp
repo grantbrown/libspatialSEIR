@@ -138,6 +138,12 @@ namespace SpatialSEIR
         }
         return(choose(n,x) + std::log(p)*x + (std::log(1-p))*(n-x)); 
     }
+    double RandomNumberProvider::dbeta(double x, double a, double b)
+    {
+        boost::math::beta_distribution<> betadist(a,b);
+        if (x < 0 || x >= 1){return(-INFINITY);}
+        return(std::log(pdf(betadist, x)));
+    }
     double RandomNumberProvider::dgamma(double x, double a, double b)
     {
         if (x <= 0){return(-INFINITY);}

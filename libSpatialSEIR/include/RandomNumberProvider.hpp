@@ -19,7 +19,9 @@
 #include<boost/random/poisson_distribution.hpp>
 #include<boost/random/normal_distribution.hpp>
 #include<boost/random/binomial_distribution.hpp>
-#include <boost/math/distributions/normal.hpp>
+#include<boost/math/distributions/normal.hpp>
+#include<boost/math/distributions/beta.hpp>
+
 
 
 
@@ -54,6 +56,8 @@ namespace SpatialSEIR
             double dnorm(double x, double mu, double sd);
             double dbinom(int x, int n, double p);
             double dgamma(double x, double a, double b);
+            double dbeta(double x, double a, double b);
+
 
             // Utility Functions
             double choose(int n,int k);
