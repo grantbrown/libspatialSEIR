@@ -10,6 +10,22 @@ distanceModel::distanceModel()
 {
     numLocations = new int; *numLocations = -1;
     scaledDistArgs = new scaledDistanceArgs();    
+    scaledDistArgs -> priorAlpha_rho = 1.0;
+    scaledDistArgs -> priorBeta_rho = 1.0;
+}
+
+void distanceModel::setPriorParameters(SEXP arg1, SEXP arg2)
+{
+    Rcpp::NumericVector a(arg1);
+    Rcpp::NumericVector b(arg2);
+    scaledDistArgs -> priorAlpha_rho = a[0];
+    scaledDistArgs -> priorBeta_rho = b[0];
+    if (a[0] < 0 || b[0] < 0)
+    {
+        Rcpp::Rcout << "Invalid prior values: " << a[0] << ", " << b[0] << ", " << "setting to uniform prior\n";
+        scaledDistArgs -> priorAlpha_rho = 1.0;
+        scaledDistArgs -> priorBeta_rho = 1.0;
+    }
 }
 
 void distanceModel::addDistanceMatrix(NumericMatrix distMat)
@@ -63,6 +79,7 @@ RCPP_MODULE(mod_distanceModel)
     .constructor()
     .method("addDistanceMatrix", &distanceModel::addDistanceMatrix)
     .method("summary", &distanceModel::summary)
+    .method("setPriorParameters", &distanceModel::setPriorParameters)
     .property("numMatrices", &distanceModel::getNumDistanceMatrices, "Number of distict distance matrices.");
 }
 

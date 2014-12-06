@@ -13,10 +13,13 @@ class distanceModel
     public:
         distanceModel();
         virtual void addDistanceMatrix(NumericMatrix distMat);
+        virtual void setPriorParameters(SEXP a, SEXP b);
         virtual void summary();
         virtual int getNumDistanceMatrices();
 
         int* numLocations;
+        double* priorAlpha;
+        double* priorBeta;
         scaledDistanceArgs* scaledDistArgs;
 
         ~distanceModel();

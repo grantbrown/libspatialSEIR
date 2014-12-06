@@ -1,6 +1,8 @@
 ## distanceModel module helper function
 buildDistanceModel = function(distanceList, 
-                              scaleMode = c("none","rowscale","invsqrt"))
+                              scaleMode = c("none","rowscale","invsqrt"),
+                              priorAlpha=1.0,
+                              priorBeta=1.0)
 {
     scaleMode = scaleMode[1]
     rowScale = function(mat)
@@ -59,6 +61,7 @@ buildDistanceModel = function(distanceList,
     {
         finalDistanceModel$addDistanceMatrix(distanceList[[i]])
     }
+    finalDistanceModel$setPriorParameters(priorAlpha, priorBeta);
     finalDistanceModel
 }
 
