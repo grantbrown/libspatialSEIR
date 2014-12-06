@@ -95,7 +95,8 @@ namespace SpatialSEIR
 
             x0 = (*compartmentData)[compIdx];
             n = (*compartmentFrom)[compIdx];
-            p = (*probabilityVector)[compIdx % (*probabilityVectorLen)];
+            p = std::exp(((*context) -> random -> normal(0, 0.5)));
+            p = (p/(1+p)) + (*probabilityVector)[compIdx % (*probabilityVectorLen)];
             x1 = (*context) -> random -> binom(n, p);
             proposalNumerator = (*context) -> random -> dbinom(x0, n, p);
             proposalDenominator = (*context) -> random -> dbinom(x1, n, p);
