@@ -57,9 +57,9 @@ namespace SpatialSEIR
         accepted = new int[*varLen]; 
         combinedParams = new double[*varLen];
         *samples = 0;
-        memset(accepted, 0, (*nBeta)*sizeof(int)); 
+        memset(accepted, 0, (*varLen)*sizeof(int)); 
         int i;
-        for (i = 0; i < *nBeta; i++)
+        for (i = 0; i < *varLen; i++)
         {
             sliceWidth[i] = _sliceWidth;       
         }
