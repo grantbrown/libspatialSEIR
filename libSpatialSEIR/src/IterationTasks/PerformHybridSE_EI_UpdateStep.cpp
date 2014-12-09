@@ -12,11 +12,40 @@
 #include<RandomNumberProvider.hpp>
 #include<LSS_FC_Beta.hpp>
 #include<LSS_FC_Gamma_EI.hpp>
+#include<LSS_FC_P_SE.hpp>
 #include<LSS_Samplers.hpp>
 #include<IOProvider.hpp>
 
 namespace SpatialSEIR
 {
+
+    PerformHybridSE_EI_UpdateStep::PerformHybridSE_EI_UpdateStep(ModelContext* context_,
+                                                                 FC_Gamma_EI* fc_gammaEI_,
+                                                                 FC_P_SE* fc_se_,
+                                                                 int iterationCount_)
+    {
+        context = new ModelContext*;
+        iterationCount = new int;
+        currentIteration = new int; 
+
+        std::vector<ParameterFullConditional*> fcVector;
+        std::vector<double*> params;
+
+        fcVector.push_back(fc_gammaEI_);
+        fcVector.push_back(fc_se_);
+        params.push_back(context_ -> gamma_ei);
+        params.push_back(fc_se_ -> combinedParams);
+        sampler = new ParameterHybridSampler(context_,
+                                             fcVector,
+                                             params,
+                                             HYBRID_SAMPLER_BETA_P_EI);
+
+        *context = context_;
+        *iterationCount = iterationCount_;
+        *currentIteration = 0;
+    }
+
+
     PerformHybridSE_EI_UpdateStep::PerformHybridSE_EI_UpdateStep(ModelContext* context_,
                                                                  FC_Gamma_EI* fc_gammaEI_,
                                                                  FC_Beta* fc_beta_,

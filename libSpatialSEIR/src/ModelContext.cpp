@@ -369,6 +369,15 @@ namespace SpatialSEIR
                               *(sliceWidths -> betaWidth),
                               (priorValues -> betaPriorPrecision));
 
+        p_se_fc = new FC_P_SE(this,
+                              E_star,
+                              S,
+                              A0,X,p_se,beta,rho,
+                              *(sliceWidths -> betaWidth),
+                              priorValues -> betaPriorPrecision,
+                              scaledDistArgs -> priorAlpha_rho,
+                              scaledDistArgs -> priorBeta_rho);
+
         rho_fc = new FC_Rho(this,
                             E_star,
                             S,
@@ -436,7 +445,15 @@ namespace SpatialSEIR
         
         // Set up iteration tasks
         setSamplingIndicesTask = new SetCompartmentSamplingIndicesTask(this);
-        performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, beta_fc,100);
+
+        if (!(*singleLocation))
+        {
+            performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, p_se_fc,100);
+        }
+        else
+        {
+            performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, beta_fc,100);
+        }
         performHybridIR_RS_UpdateTask = new PerformHybridIR_RS_UpdateStep(this, gamma_ir_fc, betaPrs_fc,100);
         decorrelationStepTask = new PerformDecorrelationStep(this, 100);
 
@@ -527,11 +544,15 @@ namespace SpatialSEIR
             model -> push_back(S_star_fc);
             model -> push_back(E_star_fc);
             model -> push_back(nonDataModel); // I_star or R_star
-            model -> push_back(beta_fc);
+
             model -> push_back(betaPrs_fc);
             if (!(*singleLocation))
             {
-                model -> push_back(rho_fc);
+                model -> push_back(p_se_fc);
+            }
+            else
+            {
+                model -> push_back(beta_fc);
             }
             model -> push_back(gamma_ei_fc);
             model -> push_back(gamma_ir_fc);
@@ -543,10 +564,13 @@ namespace SpatialSEIR
             model -> push_back(S_star_fc);
             model -> push_back(E_star_fc);
             model -> push_back(nonDataModel); // I_star or R_star
-            model -> push_back(beta_fc);
             if (!(*singleLocation))
             {
-                model -> push_back(rho_fc);
+                model -> push_back(p_se_fc);
+            }
+            else
+            {
+                model -> push_back(beta_fc);
             }
             model -> push_back(gamma_ei_fc);
             model -> push_back(gamma_ir_fc);
@@ -557,10 +581,13 @@ namespace SpatialSEIR
             model -> push_back(I0_fc);
             model -> push_back(E_star_fc);
             model -> push_back(nonDataModel); // I_star or R_star
-            model -> push_back(beta_fc);
             if (!(*singleLocation))
             {
-                model -> push_back(rho_fc);
+                model -> push_back(p_se_fc);
+            }
+            else
+            {
+                model -> push_back(beta_fc);
             }
             model -> push_back(gamma_ei_fc);
             model -> push_back(gamma_ir_fc);
@@ -1324,6 +1351,7 @@ namespace SpatialSEIR
             delete I_star_overdispersed_fc;
             delete betaPrs_fc;
             delete gamma_ei_fc;
+            delete p_se_fc;
             delete gamma_ir_fc;
             delete gamma_ei;
             delete gamma_ir;

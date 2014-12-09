@@ -441,6 +441,11 @@ namespace SpatialSEIR
                                           ParameterFullConditional* paramFC,
                                           double* param,
                                           CovariateMatrix* proposalMatrix);
+            ParameterDecorrelationSampler(ModelContext* context,
+                                          ParameterFullConditional* paramFC,
+                                          double* param,
+                                          CovariateMatrix* proposalMatrix,
+                                          int varLen);
             void drawSample();
             int getSamplerType();
             ~ParameterDecorrelationSampler();
@@ -448,6 +453,7 @@ namespace SpatialSEIR
             double** param;
             double* proposalCache;
             double* proposalCache2;
+            int* varLen;
             ModelContext** context;
             ParameterFullConditional** paramFC;
             CovariateMatrix** proposalMatrix;

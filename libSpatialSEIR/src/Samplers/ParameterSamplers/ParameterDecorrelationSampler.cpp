@@ -26,18 +26,42 @@ namespace SpatialSEIR
         paramFC = new ParameterFullConditional*;
         param = new double*;
         proposalMatrix = new CovariateMatrix*;
+        varLen = new int;
         *context = context_;    
         *paramFC = paramFC_;
         *param = param_;
         *proposalMatrix = proposalMatrix_;
-        proposalCache = new double[*((*paramFC) -> varLen)];
-        proposalCache2 = new double[*((*paramFC) -> varLen)];
+        *varLen = *((*paramFC) -> varLen);
+        proposalCache = new double[*varLen];
+        proposalCache2 = new double[*varLen];
+    }
+
+
+    ParameterDecorrelationSampler::ParameterDecorrelationSampler(ModelContext* context_,
+                                                                       ParameterFullConditional* paramFC_,
+                                                                       double* param_,
+                                                                       CovariateMatrix* proposalMatrix_,
+                                                                       int varLen_) 
+    {
+        context = new ModelContext*;
+        paramFC = new ParameterFullConditional*;
+        param = new double*;
+        proposalMatrix = new CovariateMatrix*;
+        varLen = new int;
+        *varLen = varLen_;
+        *context = context_;    
+        *paramFC = paramFC_;
+        *param = param_;
+        *proposalMatrix = proposalMatrix_;
+        proposalCache = new double[*varLen];
+        proposalCache2 = new double[*varLen];
     }
 
     ParameterDecorrelationSampler::~ParameterDecorrelationSampler()
     {
         delete paramFC;
         delete param;
+        delete varLen;
         delete context;
         delete proposalMatrix;
         delete[] proposalCache;
@@ -55,7 +79,7 @@ namespace SpatialSEIR
         double initVal;
         double sliceWidth = *((*paramFC) -> sliceWidth);
         int i;
-        int totalPoints = *((*paramFC) -> varLen);
+        int totalPoints = *varLen;
         memcpy((*context) -> compartmentCache, *param, totalPoints*sizeof(double));
         memset(proposalCache2, 0, totalPoints*sizeof(double));
         (*paramFC) -> calculateRelevantCompartments(); 

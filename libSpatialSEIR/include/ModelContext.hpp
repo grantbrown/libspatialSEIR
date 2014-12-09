@@ -35,6 +35,7 @@ namespace SpatialSEIR
     class FC_I_Star;
     class FC_R_Star;
     class FC_Beta;
+    class FC_P_SE;
     class FC_Gamma_EI;
     class FC_Gamma_IR;
     class FC_Beta_P_RS;
@@ -436,6 +437,8 @@ namespace SpatialSEIR
             FC_R_Star *R_star_fc;
             /** Pointer to FullConditional distribution for the regression parameters beta*/
             FC_Beta *beta_fc;
+            /** Pointer to FullConditional distribution for the combined vector of intensity parameters*/
+            FC_P_SE *p_se_fc;
             /** Pointer to FullConditional distribution for the spatial depenence parameter rho*/
             FC_Rho *rho_fc;
             /** Pointer to FullConditional distribution for the regression parameters betaP_RS*/

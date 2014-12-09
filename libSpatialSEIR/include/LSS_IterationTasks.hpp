@@ -21,6 +21,7 @@ namespace SpatialSEIR
     class FC_Gamma_EI;
     class FC_Gamma_IR;
     class FC_Beta_P_RS;
+    class FC_P_SE;
     class FC_Beta;
     class ParameterHybridSampler;
 
@@ -73,6 +74,10 @@ namespace SpatialSEIR
             PerformHybridSE_EI_UpdateStep(ModelContext* context,
                                           FC_Gamma_EI* fc_gammaEI,
                                           FC_Beta* fc_beta,
+                                          int iterationCount);
+            PerformHybridSE_EI_UpdateStep(ModelContext* context,
+                                          FC_Gamma_EI* fc_gammaEI,
+                                          FC_P_SE* fc_se,
                                           int iterationCount);
             ~PerformHybridSE_EI_UpdateStep();
             void executeTask();

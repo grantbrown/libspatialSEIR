@@ -68,6 +68,7 @@ namespace SpatialSEIR
         // Record Current Value
         for (i = 0; i < (parameterFullConditionals -> size()); i++)
         {
+            (*parameterFullConditionals)[i] -> calculateRelevantCompartments();
             (*parameterFullConditionals)[i] -> evalCPU();
             initVal += (*parameterFullConditionals)[i] -> getValue();
         }
