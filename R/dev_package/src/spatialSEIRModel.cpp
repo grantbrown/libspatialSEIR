@@ -542,14 +542,6 @@ void spatialSEIRModel::printSamplingParameters()
         Rcpp::Rcout << "E_star:   " << (*(context -> E_star_fc -> sliceWidth)) << "\n"; 
         Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> sliceWidth))<< "\n";  
 
-        Rcpp::Rcout << "beta:     ";
-        for (i = 0; i < (*(context -> beta_fc -> varLen)); i++)
-        {
-            Rcpp::Rcout << ((context -> beta_fc -> sliceWidth)[i]) << ", ";
-
-        }
-        Rcpp::Rcout << "\n"; 
-
         if ((context -> config -> reinfectionMode) == 1)
         {
             Rcpp::Rcout << "betaP_RS:     ";
@@ -563,7 +555,23 @@ void spatialSEIRModel::printSamplingParameters()
 
         if (*(context -> S_star -> ncol) > 1)
         {
-            Rcpp::Rcout << "rho:      " << (*(context -> rho_fc -> sliceWidth)) << "\n"; 
+            Rcpp::Rcout << "beta, rho:      ";
+            for (i = 0; i < (*(context -> p_se_fc -> varLen)); i++)
+            {
+                Rcpp::Rcout << ((context -> p_se_fc -> sliceWidth)[i]) << ", ";
+
+            }
+            Rcpp::Rcout << "\n"; 
+        }
+        else
+        {
+            Rcpp::Rcout << "beta:     ";
+            for (i = 0; i < (*(context -> beta_fc -> varLen)); i++)
+            {
+                Rcpp::Rcout << ((context -> beta_fc -> sliceWidth)[i]) << ", ";
+
+            }
+            Rcpp::Rcout << "\n"; 
         }
         Rcpp::Rcout << "gamma_ei: " << (*(context -> gamma_ei_fc -> sliceWidth)) << "\n"; 
         Rcpp::Rcout << "gamma_ir: " <<  (*(context -> gamma_ir_fc -> sliceWidth)) << "\n"; 
@@ -602,27 +610,29 @@ void spatialSEIRModel::printAcceptanceRates()
         Rcpp::Rcout << "R_star:   " << (*(context -> R_star_fc -> accepted)*1.0)/
                                           (*(context -> R_star_fc -> samples)) 
                                   << "\n";  
-        Rcpp::Rcout << "beta:     ";
-        for (i = 0; i < *(context -> beta_fc -> varLen); i++)
-        {
-            Rcpp::Rcout << ((context -> beta_fc -> accepted)[i]*1.0)/
-                                          (*(context -> beta_fc -> samples))
-                                          << ", "; 
-        }
-        Rcpp::Rcout << "\n"; 
 
         if (*(context -> S_star -> ncol) > 1)
         {
-            Rcpp::Rcout << "rho:      ";
-            for (i = 0; i < *(context -> rho_fc -> varLen); i++)
+            Rcpp::Rcout << "beta, rho:      ";
+            for (i = 0; i < *(context -> p_se_fc -> varLen); i++)
             {
 
-                Rcpp::Rcout << ((context -> rho_fc -> accepted)[i]*1.0)/
-                                                  (*(context -> rho_fc -> samples)) 
+                Rcpp::Rcout << ((context -> p_se_fc -> accepted)[i]*1.0)/
+                                                  (*(context -> p_se_fc -> samples)) 
                                           << ", "; 
-
             }
         }
+        else
+        {
+            Rcpp::Rcout << "beta:     ";
+            for (i = 0; i < *(context -> beta_fc -> varLen); i++)
+            {
+                Rcpp::Rcout << ((context -> beta_fc -> accepted)[i]*1.0)/
+                                              (*(context -> beta_fc -> samples))
+                                              << ", "; 
+            }
+        }
+        Rcpp::Rcout << "\n"; 
         if ((context -> config -> reinfectionMode) == 1)
         {
             Rcpp::Rcout << "betaP_RS: ";

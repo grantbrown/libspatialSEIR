@@ -172,15 +172,15 @@ namespace SpatialSEIR
     }
     int FC_P_SE::calculateRelevantCompartments()
     {
-        memcpy(combinedParams, *beta, (*nBeta)*sizeof(double));
-        memcpy((&(combinedParams[(*nBeta)])), *rho, (*nRho)*sizeof(double));
+        memcpy(*beta, combinedParams, (*nBeta)*sizeof(double));
+        memcpy(*rho, (&(combinedParams[(*nBeta)])), (*nRho)*sizeof(double));
         ((*context) -> calculateP_SE_CPU());
         return(0);
     }
     int FC_P_SE::calculateRelevantCompartments_OCL()
     {
-        memcpy(combinedParams, *beta, (*nBeta)*sizeof(double));
-        memcpy((&(combinedParams[(*nBeta)])), *rho, (*nRho)*sizeof(double));
+        memcpy(*beta, combinedParams, (*nBeta)*sizeof(double));
+        memcpy(*rho, (&(combinedParams[(*nBeta)])), (*nRho)*sizeof(double));
         ((*context) -> calculateP_SE_OCL());
         return(0);
 
@@ -188,7 +188,7 @@ namespace SpatialSEIR
 
     void FC_P_SE::sample(int verbose)
     {
-        if (verbose){lssCout << "Sampling Beta \n";}
+        if (verbose){lssCout << "Sampling Beta, Rho \n";}
         (*currentSampler) -> drawSample();
     }
 
