@@ -56,8 +56,6 @@ namespace SpatialSEIR
         samples = new int;
         accepted = new int[*varLen]; 
         combinedParams = new double[*varLen];
-        memcpy(combinedParams, *beta, (*nBeta)*sizeof(double));
-        memcpy(&(combinedParams[*nBeta]), *rho, (*nRho)*sizeof(double));
         *samples = 0;
         memset(accepted, 0, (*nBeta)*sizeof(int)); 
         int i;
@@ -77,6 +75,9 @@ namespace SpatialSEIR
         *priorPrecision = _priorPrecision;
         *priorRhoAlpha = _priorRhoAlpha;
         *priorRhoBeta = _priorRhoBeta;
+        memcpy(combinedParams, *beta, (*nBeta)*sizeof(double));
+        memcpy(&(combinedParams[*nBeta]), *rho, (*nRho)*sizeof(double));
+ 
         *value = -1.0;
 
         // Set up samplers
