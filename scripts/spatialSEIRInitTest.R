@@ -229,8 +229,8 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.25, targetWidth = 0
 #}
 
 res$compartmentSamplingMode = 16
-runSimulation(1000,100, printAR=TRUE, proportionChange = 0.1)
-runSimulation(10000000,1000, printAR=TRUE)
+runSimulation(1000,10, printAR=TRUE, proportionChange = 0.1)
+#runSimulation(10000000,1000, printAR=TRUE)
 
 
 

@@ -34,9 +34,9 @@ namespace SpatialSEIR
 
         size_t intBuffSize = nLoc*nTpt*sizeof(int);
         size_t doubleBuffSize = nLoc*nTpt*sizeof(double);
-        cl::Buffer IBuffer(*context, CL_MEM_WRITE_ONLY | 
+        cl::Buffer IBuffer(*context, CL_MEM_READ_ONLY | 
             CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> I -> data));
-        cl::Buffer NBuffer(*context, CL_MEM_WRITE_ONLY | 
+        cl::Buffer NBuffer(*context, CL_MEM_READ_ONLY | 
             CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> N));
 
         cl::Buffer offsetBuffer(*context, CL_MEM_READ_ONLY |
@@ -50,7 +50,7 @@ namespace SpatialSEIR
         for (i = 0; i < (int) (ctx -> scaledDistMatrices -> size()); i++) 
         {
             distMatBuffers.push_back(
-                cl::Buffer(*context, CL_MEM_WRITE_ONLY | 
+                cl::Buffer(*context, CL_MEM_READ_ONLY | 
                         CL_MEM_COPY_HOST_PTR, nLoc*nLoc*sizeof(double) , 
                         (*(ctx -> scaledDistMatrices))[i] -> data)
                 );
@@ -203,12 +203,12 @@ namespace SpatialSEIR
          * cl_event* events
          */
         cl_uint numCommandQueues = 1;
-        
         try
         {
             int numMatrices = (ctx -> scaledDistMatrices -> size());
             for (i = 0; i < numMatrices; i++)
             {
+                std::cout << "Matrix: " << i << "\n";
                clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
                                                clblasNoTrans,        // TransB
                                                clblasNoTrans,        // TransA
@@ -232,6 +232,7 @@ namespace SpatialSEIR
                                                &(part1Finished()),   // eventWaitList
                                                &((waitList[0])()));  // events 
                
+                cl::Event::waitForEvents(waitList); 
                 if (multErr != CL_SUCCESS)
                 { 
                     lssCout << "clBLAS Error Encountered: " << multErr << "\n";

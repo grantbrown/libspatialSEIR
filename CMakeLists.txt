@@ -25,7 +25,7 @@ endif()
 
 
 # Compile libspatialSEIR with OpenCL support?
-SET(OPEN_CL_SUPPORT false)
+SET(OPEN_CL_SUPPORT true)
 
 # Use Boost? Alternative is to fall back and try to link to R. This can be difficult, 
 # and is considerably slower. You probably want to use boost. 
