@@ -449,13 +449,15 @@ namespace SpatialSEIR
         if (!(*singleLocation))
         {
             performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, p_se_fc,100);
+            decorrelationStepTask = new PerformDecorrelationStep(this, 100, p_se_fc);
         }
         else
         {
             performHybridSE_EI_UpdateTask = new PerformHybridSE_EI_UpdateStep(this, gamma_ei_fc, beta_fc,100);
+            decorrelationStepTask = new PerformDecorrelationStep(this, 100, beta_fc);
         }
         performHybridIR_RS_UpdateTask = new PerformHybridIR_RS_UpdateStep(this, gamma_ir_fc, betaPrs_fc,100);
-        decorrelationStepTask = new PerformDecorrelationStep(this, 100);
+
 
         // Calculate Compartments
         this -> calculateS_CPU();

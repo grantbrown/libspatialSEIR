@@ -58,12 +58,14 @@ namespace SpatialSEIR
     {
         public:
             PerformDecorrelationStep(ModelContext* context, 
-                                        int iterationCount);
+                                        int iterationCount,
+                                        ParameterFullConditional* intensityFC);
             ~PerformDecorrelationStep();
             void executeTask();
             int getTaskType();
 
             ModelContext** context;
+            ParameterFullConditional** intensityFC;
             int* iterationCount;
             int* currentIteration;
     };

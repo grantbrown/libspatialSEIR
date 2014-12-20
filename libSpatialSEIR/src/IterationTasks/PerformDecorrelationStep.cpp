@@ -18,15 +18,17 @@
 namespace SpatialSEIR
 {
     PerformDecorrelationStep::PerformDecorrelationStep(ModelContext* context_,
-                                                       int iterationCount_)
+                                                       int iterationCount_,
+                                                       ParameterFullConditional* intensityFC_)
     {
         context = new ModelContext*;
         iterationCount = new int;
         currentIteration = new int;
-
+        intensityFC = new ParameterFullConditional*;
         *context = context_;
         *iterationCount = iterationCount_;
         *currentIteration = 0;
+        *intensityFC = intensityFC_;
     }
 
     int PerformDecorrelationStep::getTaskType()
@@ -48,27 +50,27 @@ namespace SpatialSEIR
         }
 
 
-        int currentSamplingMode = (*((*context) -> beta_fc -> currentSampler)) -> getSamplerType(); 
+        int currentSamplingMode = (*((*intensityFC) -> currentSampler)) -> getSamplerType(); 
 
-        (*context) -> beta_fc -> setSamplerType(PARAMETER_DECORR_SAMPLER);
+        (*intensityFC) -> setSamplerType(PARAMETER_DECORR_SAMPLER);
         (*context) -> betaPrs_fc -> setSamplerType(PARAMETER_DECORR_SAMPLER);
 
-        int betaAccepted = *((*context) -> beta_fc -> accepted);
+        int betaAccepted = *((*intensityFC) -> accepted);
         int betaPrsAccepted = *((*context) -> betaPrs_fc -> accepted);
-        double startingSliceWidth = *((*context) -> beta_fc -> sliceWidth);
+        double startingSliceWidth = *((*intensityFC) -> sliceWidth);
         *iterationCount = 0;
-        if (*((*context) -> beta_fc -> varLen) > 1)
+        if (*((*intensityFC) -> varLen) > 1)
         {
-            while (*((*context) -> beta_fc -> accepted) == betaAccepted &&
+            while (*((*intensityFC) -> accepted) == betaAccepted &&
                     *iterationCount < 1000)
             {
-                (*context) -> beta_fc -> sample(0);
-                (*((*context) -> beta_fc -> sliceWidth)) *= 0.99;
+                (*intensityFC) -> sample(0);
+                (*((*intensityFC) -> sliceWidth)) *= 0.99;
                 *iterationCount += 1;
             }
-            (*((*context) -> beta_fc -> sliceWidth)) = startingSliceWidth;
+            (*((*intensityFC) -> sliceWidth)) = startingSliceWidth;
 
-            if (*((*context) -> beta_fc -> accepted) == betaAccepted)
+            if (*((*intensityFC) -> accepted) == betaAccepted)
             {
                 lssCout << "Decorrelation sampler did not update (beta).\n";
             }
@@ -90,7 +92,7 @@ namespace SpatialSEIR
             }
         }
 
-        (*context) -> beta_fc -> setSamplerType(currentSamplingMode);
+        (*intensityFC) -> setSamplerType(currentSamplingMode);
         (*context) -> betaPrs_fc -> setSamplerType(currentSamplingMode);
     }
 
