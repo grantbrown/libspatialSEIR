@@ -125,7 +125,7 @@ namespace SpatialSEIR
     int FC_Gamma_EI::evalOCL()
     {
         //NOT IMPLEMENTED
-        return -1;
+        return(evalCPU());
     }
     int FC_Gamma_EI::calculateRelevantCompartments()
     {

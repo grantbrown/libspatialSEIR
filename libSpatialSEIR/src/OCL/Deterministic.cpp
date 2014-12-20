@@ -38,7 +38,6 @@ namespace SpatialSEIR
             CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> I -> data));
         cl::Buffer NBuffer(*context, CL_MEM_READ_ONLY | 
             CL_MEM_COPY_HOST_PTR, intBuffSize, (ctx -> N));
-
         cl::Buffer offsetBuffer(*context, CL_MEM_READ_ONLY |
                 CL_MEM_COPY_HOST_PTR, nTpt*sizeof(double), ctx -> offset);
         cl::Buffer etaBuffer(*context, CL_MEM_READ_WRITE | 
@@ -56,7 +55,6 @@ namespace SpatialSEIR
                 );
         }
 
-
         // Kernel 1
         // Input:
         // 1. Integers (4 bytes)
@@ -69,7 +67,7 @@ namespace SpatialSEIR
         int totalWorkUnits;
         int globalSize;
 
-        if (R_star_args -> totalWorkUnits == -1)
+        if (p_se_args -> totalWorkUnits == -1)
         {
             // Not populated, need to calculate kernel parameters. 
             totalWorkUnits = nLoc*nTpt;
@@ -99,6 +97,7 @@ namespace SpatialSEIR
             (p_se_args -> numWorkGroups) = numWorkGroups; 
             (p_se_args -> totalWorkUnits) = totalWorkUnits; 
             (p_se_args -> globalSize) = globalSize; 
+
 
             /*
             lssCout << "Total Work Units: " << totalWorkUnits << "\n";
@@ -208,8 +207,7 @@ namespace SpatialSEIR
             int numMatrices = (ctx -> scaledDistMatrices -> size());
             for (i = 0; i < numMatrices; i++)
             {
-                std::cout << "Matrix: " << i << "\n";
-               clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
+                clblasStatus multErr = clblasDgemm(clblasColumnMajor,   // Order
                                                clblasNoTrans,        // TransB
                                                clblasNoTrans,        // TransA
                                                nTpt,                 // M
@@ -245,6 +243,7 @@ namespace SpatialSEIR
         {
             throw(-1);
         }
+
 
         // Kernel 3
         // Input:
