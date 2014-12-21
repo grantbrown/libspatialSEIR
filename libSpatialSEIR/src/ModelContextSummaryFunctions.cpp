@@ -321,14 +321,14 @@ namespace SpatialSEIR
                         component2 += ((rho)[k])*(((*scaledDistMatrices)[k] -> data)[GIndex])*component1;
                     }
                     G[GIndex] = ((I->data)[lIndex] != 0 ?
-                                    ((((N[lIndex])/((I -> data)[lIndex]))
+                                    (((((S -> data)[lIndex])/((I -> data)[lIndex]))
                                     * (1-std::exp(-(offset[j])*component2)))) :
                                         0.0 );
                 }
                 else
                 { 
                     G[GIndex] = ((I->data)[lIndex] != 0 ?
-                                    (((N[iIndex])/((I -> data)[iIndex]))
+                                    ((((S -> data)[iIndex])/((I -> data)[iIndex]))
                                     * (1-std::exp(-(offset[j])*(((I -> data)[lIndex] * (eta[lIndex]))/N[lIndex])))) : 
                                      0.0 );
                 }
