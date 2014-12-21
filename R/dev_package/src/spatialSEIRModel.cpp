@@ -83,7 +83,7 @@ int spatialSEIRModel::simulate(int iters)
         return(0);
     }
     Rcpp::Rcout << "Context Not populated\n";
-
+    return(-1);
 }
 
 void spatialSEIRModel::setDevice(int platformId, int deviceId)
