@@ -70,7 +70,7 @@ namespace SpatialSEIR
             }
             (*((*intensityFC) -> sliceWidth)) = startingSliceWidth;
 
-            if (*((*intensityFC) -> accepted) == betaAccepted)
+            if (*((*intensityFC) -> accepted) == betaAccepted && *((*context) -> config -> verbose))
             {
                 lssCout << "Decorrelation sampler did not update (beta).\n";
             }
@@ -86,7 +86,7 @@ namespace SpatialSEIR
                 (*context) -> betaPrs_fc -> sample(0);
                 *iterationCount += 1;
             }
-            if (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted)
+            if (*((*context) -> betaPrs_fc -> accepted) == betaPrsAccepted && *((*context) -> config -> verbose))
             {
                 lssCout << "Decorrelation sampler did not update (beta_pRS).\n";
             }

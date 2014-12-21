@@ -73,6 +73,7 @@ namespace SpatialSEIR
         int performHybridStep;
         int dataModel;
         int dataModelCompartment;
+        int* verbose;
     };
 
 
