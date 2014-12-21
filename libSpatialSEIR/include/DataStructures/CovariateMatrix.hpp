@@ -47,6 +47,7 @@ namespace SpatialSEIR
             // Attributes
             double *X; // Time invariant covariates
             double *Z; // Time varying covariates
+            double *bigX; // Combined X and Z
             double *decorrelationProjectionMatrix;
             double *offset;
             int *offsetLength;

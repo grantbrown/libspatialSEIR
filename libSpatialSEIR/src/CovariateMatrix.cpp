@@ -81,7 +81,6 @@ namespace SpatialSEIR
 
         // Step 0. Create big matrix X.  
         int numVariables = (*ncol_x)+(*ncol_z);
-        double *bigX;
         int matrixRows;
         int i;
         // Case 1: X matrix only, time varying. 
@@ -143,29 +142,31 @@ namespace SpatialSEIR
         MatrixType Dmat = (Bmat * Cmat.inverse() * Bmat.transpose()); 
         MatrixType Emat = Eigen::MatrixXd::Identity(Dmat.rows(), Dmat.cols()) - Dmat;         
         outMap.noalias() = Emat;
- 
-        delete[] bigX;
+
     }
 
     int CovariateMatrix::calculate_fixed_eta_CPU(double *eta, double *beta)
     {
-        // This is a naiive, but hopefully correct implementation. 
-        // TODO: do this in LAPACK
         try
         {
-            int i; int j;
-            // Initialize eta 
-            for (i = 0; i < (*nrow_x); i++)
-            {
-                eta[i] = 0.0;
-            }
-            for (j = 0; j < (*nrow_x); j++)
-            {
-               for (i = 0; i < (*ncol_x); i++) 
-               {
-                   eta[j] += X[j + i*(*nrow_x)]*beta[i];
-               }
-            }
+#ifdef LSS_USE_BLAS
+            cblas_dgemv(CblasColMajor,
+                        CblasNoTrans,
+                        *nrow_x,
+                        *ncol_x,
+                        1.0,
+                        X,
+                        *nrow_x,
+                        beta,
+                        1,
+                        0.0,
+                        eta,
+                        1);
+#else
+            MatrixMapType Xmap(X, *(nrow_x), *(ncol_x));
+            MatrixMapType betaMap(beta, *ncol_x, 1);
+            eta = Xmap*betaMap;
+#endif
         }
         catch(int e)
         {
@@ -184,36 +185,26 @@ namespace SpatialSEIR
         // and the extra overhead is confusing. This will require API cleanup. 
         try
         {
-            int nLoc = (*nrow_x);
-            int nTpt = (*nrow_z)/(*nrow_x);
-            int compIdx;
-            int i; int j;
-            int k;
-            // Initialize eta 
-            for (i = 0; i < (*nrow_z); i++)
-            {
-                eta[i] = 0.0;
-            }
-            // Locations
-            for (i = 0; i < nLoc; i++)
-            {
-                compIdx = i*nTpt;
-                // Time points
-                for (j = 0; j < nTpt; j++)
-                {
-                    // Fixed Co-variates
-                    for (k = 0; k < (*ncol_x); k++)
-                    {
-                        eta[compIdx] += X[i + k*nLoc]*beta[k];
-                    }
-                    // Time Varying Co-variates
-                    for (k = 0; k < (*ncol_z); k++)
-                    {
-                        eta[compIdx] += Z[j + i*nTpt + k*(*nrow_z)]*beta[k + (*ncol_x)];
-                    }
-                    compIdx++;
-                }
-            }
+#ifdef LSS_USE_BLAS
+            cblas_dgemv(CblasColMajor,
+                        CblasNoTrans,
+                        *nrow_z,
+                        ((*ncol_x) 
+                         + (*ncol_z)),
+                        1.0,
+                        bigX,
+                        *nrow_z,
+                        beta,
+                        1,
+                        0.0,
+                        eta,
+                        1);
+#else
+            MatrixMapType Xmap(bigX, *(nrow_z), ((*ncol_x) + (*ncol_z)));
+            MatrixMapType betaMap(beta, ((*ncol_x) + (*ncol_z)), 1);
+            eta = Xmap*betaMap;
+#endif
+
         }
         catch(int e)
         {
@@ -228,6 +219,7 @@ namespace SpatialSEIR
         delete[] X;
         delete[] Z;
         delete[] decorrelationProjectionMatrix;
+        delete[] bigX;
         delete nrow_x;
         delete ncol_x;
         delete nrow_z;
