@@ -10,9 +10,12 @@
 #include<vector>
 #endif
 
+
 #ifndef COVARIATE_MATRIX_INC
 #define COVARIATE_MATRIX_INC
 
+#include <Eigen/Core>
+#include <Eigen/LU>
 namespace SpatialSEIR
 {
 
@@ -28,6 +31,8 @@ namespace SpatialSEIR
 
     class CovariateMatrix
     {
+        typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> MatrixType;
+        typedef Eigen::Map<MatrixType, Eigen::ColMajor> MatrixMapType;
         public:
             // Methods
         

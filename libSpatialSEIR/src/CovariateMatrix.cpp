@@ -6,9 +6,9 @@
 	#include <cblas.h>
 #endif
 #include <LSS_FullConditional.hpp>
-#include <Eigen/Core>
-#include <Eigen/LU>
 #include <IOProvider.hpp>
+
+
 
 namespace SpatialSEIR
 {
@@ -130,17 +130,16 @@ namespace SpatialSEIR
         // Step 1. Calculate A = (XX')
         double* A = bigX;
         
-        typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> MatrixType;
-        typedef Eigen::Map<MatrixType, Eigen::ColMajor> MatrixMapType;
-
-        MatrixMapType Amap(A, matrixRows, numVariables);
-        MatrixMapType outMap(decorrelationProjectionMatrix, numVariables, numVariables);
 
 
-        MatrixType Bmat = ((Amap.transpose() * Amap));
-        MatrixType Cmat = (Bmat.transpose() * Bmat);
-        MatrixType Dmat = (Bmat * Cmat.inverse() * Bmat.transpose()); 
-        MatrixType Emat = Eigen::MatrixXd::Identity(Dmat.rows(), Dmat.cols()) - Dmat;         
+        CovariateMatrix::MatrixMapType Amap(A, matrixRows, numVariables);
+        CovariateMatrix::MatrixMapType outMap(decorrelationProjectionMatrix, numVariables, numVariables);
+
+
+        CovariateMatrix::MatrixType Bmat = ((Amap.transpose() * Amap));
+        CovariateMatrix::MatrixType Cmat = (Bmat.transpose() * Bmat);
+        CovariateMatrix::MatrixType Dmat = (Bmat * Cmat.inverse() * Bmat.transpose()); 
+        CovariateMatrix::MatrixType Emat = Eigen::MatrixXd::Identity(Dmat.rows(), Dmat.cols()) - Dmat;         
         outMap.noalias() = Emat;
 
     }
@@ -163,9 +162,10 @@ namespace SpatialSEIR
                         eta,
                         1);
 #else
-            MatrixMapType Xmap(X, *(nrow_x), *(ncol_x));
-            MatrixMapType betaMap(beta, *ncol_x, 1);
-            eta = Xmap*betaMap;
+            CovariateMatrix::MatrixMapType Xmap(X, *(nrow_x), *(ncol_x));
+            CovariateMatrix::MatrixMapType betaMap(beta, *ncol_x, 1);
+            CovariateMatrix::MatrixMapType etaMap(eta, (*nrow_x), 1);
+            etaMap.noalias() = Xmap*betaMap;
 #endif
         }
         catch(int e)
@@ -200,9 +200,10 @@ namespace SpatialSEIR
                         eta,
                         1);
 #else
-            MatrixMapType Xmap(bigX, *(nrow_z), ((*ncol_x) + (*ncol_z)));
-            MatrixMapType betaMap(beta, ((*ncol_x) + (*ncol_z)), 1);
-            eta = Xmap*betaMap;
+            CovariateMatrix::MatrixMapType Xmap(bigX, *(nrow_z), ((*ncol_x) + (*ncol_z)));
+            CovariateMatrix::MatrixMapType betaMap(beta, ((*ncol_x) + (*ncol_z)), 1);
+            CovariateMatrix::MatrixMapType etaMap(eta,  *(nrow_z), 1);
+            etaMap.noalias() = Xmap*betaMap;
 #endif
 
         }
