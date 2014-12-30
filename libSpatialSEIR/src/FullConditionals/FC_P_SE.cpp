@@ -88,6 +88,7 @@ namespace SpatialSEIR
         samplers -> push_back(new ParameterJointMetropolisSampler_OCL(*context, this, combinedParams));
         // Decorrelation sampler is only partial update. 
         samplers -> push_back(new ParameterDecorrelationSampler(*context, this, combinedParams, ((*context) -> X), *nBeta));
+        samplers -> push_back(new ParameterNullSampler());
     }
 
     FC_P_SE::~FC_P_SE()

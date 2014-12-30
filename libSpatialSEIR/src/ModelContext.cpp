@@ -37,44 +37,53 @@ namespace SpatialSEIR
 
     void ModelContext::setCompartmentSamplingMode(int mode)
     {
+        int oldMode = (config -> compartmentSamplingMode); 
         (config -> compartmentSamplingMode) = mode;
         configureIterationTasks();
         unsigned int i;
-        for (i = 0; i < model -> size(); i++)
+        try
         {
-            if ((*model)[i] -> getFullConditionalType() == LSS_PARAMETER_FULL_CONDITIONAL_TYPE)
+            for (i = 0; i < model -> size(); i++)
             {
-                // Do nothing. 
-            }
-            else if ((*model)[i] -> getFullConditionalType() == LSS_INIT_COMPARTMENT_FULL_CONDITIONAL_TYPE)
-
-            {
-                switch (mode)
+                if ((*model)[i] -> getFullConditionalType() == LSS_PARAMETER_FULL_CONDITIONAL_TYPE)
                 {
-                    case COMPARTMENT_METROPOLIS_SAMPLER:
-                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
-                        break;
-                    case COMPARTMENT_IDX_METROPOLIS_SAMPLER:
-                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
-                        break;
-                    case COMPARTMENT_IDX_SLICE_SAMPLER:
-                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
-                        break;
-                    case COMPARTMENT_METROPOLIS_SAMPLER_OCL:
-                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL);
-                        break;
-                    default:
-                        (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
-                        break;
+                    // Do nothing. 
+                }
+                else if ((*model)[i] -> getFullConditionalType() == LSS_INIT_COMPARTMENT_FULL_CONDITIONAL_TYPE)
+
+                {
+                    switch (mode)
+                    {
+                        case COMPARTMENT_METROPOLIS_SAMPLER:
+                            (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
+                            break;
+                        case COMPARTMENT_IDX_METROPOLIS_SAMPLER:
+                            (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
+                            break;
+                        case COMPARTMENT_IDX_SLICE_SAMPLER:
+                            (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
+                            break;
+                        case COMPARTMENT_METROPOLIS_SAMPLER_OCL:
+                            (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER_OCL);
+                            break;
+                        default:
+                            (*model)[i] -> setSamplerType(INITCOMPARTMENT_METROPOLIS_SAMPLER);
+                            break;
+                    }
+                }
+                else if ((*model)[i] -> getFullConditionalType() == LSS_COMPARTMENT_FULL_CONDITIONAL_TYPE)
+     
+                {
+                    (*model)[i] -> setSamplerType(mode);
                 }
             }
-            else if ((*model)[i] -> getFullConditionalType() == LSS_COMPARTMENT_FULL_CONDITIONAL_TYPE)
- 
-            {
-                (*model)[i] -> setSamplerType(mode);
-            }
-            
         }
+        catch (int e){
+            lssCout << "Failed to update compartment mode. Re-setting to: " << oldMode << "\n";
+            (config -> parameterSamplingMode) = oldMode;
+            configureIterationTasks();
+            setCompartmentSamplingMode(oldMode);
+        }            
     }
 
     int ModelContext::getCompartmentSamplingMode()
@@ -84,16 +93,25 @@ namespace SpatialSEIR
 
     void ModelContext::setParameterSamplingMode(int mode)
     {
+        int oldMode = (config -> parameterSamplingMode); 
         (config -> parameterSamplingMode) = mode;
-        unsigned int i;
-        for (i = 0; i < model -> size(); i++)
-        {
-            if ((*model)[i] -> getFullConditionalType() == LSS_PARAMETER_FULL_CONDITIONAL_TYPE)
+        configureIterationTasks();
+        try{
+            unsigned int i;
+            for (i = 0; i < model -> size(); i++)
             {
-                (*model)[i] -> setSamplerType(mode);
-            } 
+                if ((*model)[i] -> getFullConditionalType() == LSS_PARAMETER_FULL_CONDITIONAL_TYPE)
+                {
+                    (*model)[i] -> setSamplerType(mode);
+                } 
+            }
         }
-
+        catch(int e){
+            lssCout << "Failed to set parameter sampling mode, resetting to: " << oldMode << "\n";
+            (config -> parameterSamplingMode) = oldMode;
+            configureIterationTasks();
+            setParameterSamplingMode(oldMode); 
+        }
     }
 
     int ModelContext::getParameterSamplingMode()

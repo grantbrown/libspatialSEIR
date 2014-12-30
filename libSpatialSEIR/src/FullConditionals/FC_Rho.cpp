@@ -69,6 +69,8 @@ namespace SpatialSEIR
         samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *rho));
         samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *rho));
         samplers -> push_back(new ParameterJointMetropolisSampler_OCL(*context, this, *rho));
+        samplers -> push_back(new ParameterNullSampler());
+
 
     }
     FC_Rho::~FC_Rho()

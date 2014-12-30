@@ -85,7 +85,7 @@ namespace SpatialSEIR
                 return;
             }
         }
-        lssCout << "Sampler type not found.\n";
+        lssCout << "Sampler type not found: " <<samplerType << "\n";
         throw(-1);
     }
 

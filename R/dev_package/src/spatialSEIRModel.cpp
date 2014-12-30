@@ -218,6 +218,10 @@ void spatialSEIRModel::setParameterSamplingMode(int mode)
         {
             Rcpp::Rcout << "Setting parameter sampling mode to joint Metropolis with OpenCL\n";
         }
+        else if (mode == PARAMETER_NULL_SAMPLER)
+        {
+            Rcpp::Rcout << "Disabling Parameter Sampling\n";
+        }
         else
         {
             Rcpp::Rcout << "Error: mode must be one of the following: \n"
@@ -226,6 +230,7 @@ void spatialSEIRModel::setParameterSamplingMode(int mode)
                         << PARAMETER_JOINT_SLICE_SAMPLER << ": Joint Slice\n   "
                         << PARAMETER_DECORR_SAMPLER << ": Decorrelation Proposal Metropolis\n   "
                         << PARAMETER_JOINT_METROPOLIS_SAMPLER_OCL << ": Joint Proposal Metropolis with OpenCL\n   "                        
+                        << PARAMETER_NULL_SAMPLER << ": Disable Parameter Sampling\n   "                        
                         ;
             return;
         }
@@ -237,7 +242,7 @@ void spatialSEIRModel::setParameterSamplingMode(int mode)
         catch (int err)
         {
             Rcpp::Rcout << "Unable to update compartment sampling mode\n";
-            setParameterSamplingMode(oldMode);
+            context -> setParameterSamplingMode(mode);
         }
         return;
     }

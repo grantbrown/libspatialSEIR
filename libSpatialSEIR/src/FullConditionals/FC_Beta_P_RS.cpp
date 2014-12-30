@@ -74,7 +74,7 @@ namespace SpatialSEIR
         samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *beta_p_rs));
         samplers -> push_back(new ParameterJointMetropolisSampler_OCL(*context, this, *beta_p_rs));
         samplers -> push_back(new ParameterDecorrelationSampler(*context, this, *beta_p_rs, (*context) -> X_pRS));
-
+        samplers -> push_back(new ParameterNullSampler());
     }
     FC_Beta_P_RS::~FC_Beta_P_RS()
     {

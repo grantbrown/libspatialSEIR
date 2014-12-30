@@ -61,10 +61,11 @@ namespace SpatialSEIR
      */
     class ParameterNullSampler : public Sampler
     {
-        ParameterNullSampler();
-        void drawSample();
-        int getSamplerType();
-        ~ParameterNullSampler();
+        public:
+            ParameterNullSampler();
+            void drawSample();
+            int getSamplerType();
+            ~ParameterNullSampler();
     };
 
     /** 

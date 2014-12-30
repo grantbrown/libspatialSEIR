@@ -52,6 +52,7 @@ namespace SpatialSEIR
         samplers = new std::vector<Sampler*>();
         currentSampler = new Sampler*;
         samplers -> push_back(new ParameterSingleMetropolisSampler(*context, this, *phi));
+        samplers -> push_back(new ParameterNullSampler());
         samplers -> push_back(new ParameterJointMetropolisSampler(*context, this, *phi));
         samplers -> push_back(new ParameterJointMetropolisSampler_OCL(*context, this, *phi));
 
