@@ -385,7 +385,8 @@ namespace SpatialSEIR
                               S,
                               A0,X,p_se,beta,rho,
                               *(sliceWidths -> betaWidth),
-                              (priorValues -> betaPriorPrecision));
+                              (priorValues -> betaPriorPrecision),
+                              (priorValues -> betaPriorMean));
 
         p_se_fc = new FC_P_SE(this,
                               E_star,
@@ -393,6 +394,7 @@ namespace SpatialSEIR
                               A0,X,p_se,beta,rho,
                               *(sliceWidths -> betaWidth),
                               priorValues -> betaPriorPrecision,
+                              priorValues -> betaPriorMean,
                               scaledDistArgs -> priorAlpha_rho,
                               scaledDistArgs -> priorBeta_rho);
 
@@ -405,8 +407,10 @@ namespace SpatialSEIR
                             scaledDistArgs -> priorBeta_rho);
 
         betaPrs_fc = new FC_Beta_P_RS(this,S_star,R,X_pRS,A0,p_rs,betaPrs, 
-                                      (priorValues->betaPrsPriorPrecision), 
-                                      *(sliceWidths -> betaPrsWidth));
+                                      *(sliceWidths -> betaPrsWidth),
+                                       (priorValues->betaPrsPriorPrecision), 
+                                       (priorValues->betaPrsPriorMean)
+                                      );
 
         gamma_ei_fc = new FC_Gamma_EI(this,
                               I_star,

@@ -1329,12 +1329,14 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
 
 
     priorControl priorValues;
-    priorValues.betaPriorPrecision = *(exposureModelInstance -> betaPriorPrecision);
+    priorValues.betaPriorPrecision = (exposureModelInstance -> betaPriorPrecision);
+    priorValues.betaPriorMean = (exposureModelInstance -> betaPriorMean);
     priorValues.P_EI_priorAlpha = (transitionPriorsInstance -> gamma_ei_params)[0];
     priorValues.P_EI_priorBeta = (transitionPriorsInstance -> gamma_ei_params)[1];
     priorValues.P_IR_priorAlpha = (transitionPriorsInstance -> gamma_ir_params)[0];
     priorValues.P_IR_priorBeta = (transitionPriorsInstance -> gamma_ir_params)[1];
-    priorValues.betaPrsPriorPrecision = *(reinfectionModelInstance -> betaPriorPrecision);
+    priorValues.betaPrsPriorPrecision = (reinfectionModelInstance -> betaPriorPrecision);
+    priorValues.betaPrsPriorMean = (reinfectionModelInstance -> betaPriorMean);
     priorValues.Phi_priorAlpha = (dataModelInstance -> priorParameters)[0];
     priorValues.Phi_priorBeta = (dataModelInstance -> priorParameters)[1];
     

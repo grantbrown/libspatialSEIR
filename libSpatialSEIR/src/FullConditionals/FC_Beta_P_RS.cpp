@@ -27,8 +27,9 @@ namespace SpatialSEIR
                      InitData *_A0,
                      double *_p_rs,
                      double *_beta_p_rs,
-                     double _tausq,
-                     double _sliceWidth)
+                     double _sliceWidth,
+                     double *_priorPrecision,
+                     double *_priorMean)
     {
 
         int nBeta = (*((_X) -> ncol_x));
@@ -40,8 +41,9 @@ namespace SpatialSEIR
         A0 = new InitData*;
         p_rs = new double*;
         beta_p_rs = new double*;
-        tausq = new double;
         sliceWidth = new double[nBeta];
+        priorPrecision = new double[nBeta];
+        priorMean = new double[nBeta];
         value = new long double;
         samples = new int; 
         accepted = new int[nBeta];
@@ -52,6 +54,8 @@ namespace SpatialSEIR
         for (i = 0; i < nBeta; i++)
         {
             sliceWidth[i] = _sliceWidth;       
+            priorMean[i] = _priorMean[i];
+            priorPrecision[i] = _priorPrecision[i];
         }
         *samples = 0;
         memset(accepted, 0, nBeta*sizeof(int)); 
@@ -63,7 +67,6 @@ namespace SpatialSEIR
         *A0 = _A0;
         *p_rs = _p_rs;
         *beta_p_rs = _beta_p_rs;
-        *tausq = _tausq;
         *sliceWidth = _sliceWidth;
         *value = -1.0;
 
@@ -86,11 +89,12 @@ namespace SpatialSEIR
         delete R;
         delete X;
         delete beta_p_rs;
-        delete tausq;
         delete A0;
         delete p_rs;
         delete value;
         delete[] sliceWidth;
+        delete[] priorPrecision;
+        delete[] priorMean;
         delete context;
         delete samples;
         delete[] accepted;
@@ -103,7 +107,7 @@ namespace SpatialSEIR
         int j;
         for (j = 0; j < nbeta; j++)
         {
-            out -= ((*tausq)/2)*pow((*beta_p_rs)[j],2);
+            out -= ((priorPrecision[j])/2)*pow((*beta_p_rs)[j] - priorMean[j],2)/2;
         }
         return(out);
     }
@@ -112,12 +116,9 @@ namespace SpatialSEIR
     {
         int j;
         long double a,b;
-        int nbeta = *((*X) -> ncol_x);
         int nTpts = *((*R) -> nrow);
         double tmp;
         long double term1 = 0.0;
-        double term2 = 0.0;
-
 
         for (j = 0; j < nTpts; j++)
         {
@@ -133,11 +134,7 @@ namespace SpatialSEIR
             term1 += std::log(1-tmp)*(b-a);
         }
 
-        for (j = 0; j < nbeta; j++)
-        {
-            term2 -= ((*tausq)/2)*pow((*beta_p_rs)[j],2);
-        }
-        *value = term1 + term2;
+        *value = term1 + evalPrior();
         if (!std::isfinite(*value))
         {
             *value = -INFINITY;

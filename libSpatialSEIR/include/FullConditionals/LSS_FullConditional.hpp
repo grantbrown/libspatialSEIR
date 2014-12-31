@@ -25,8 +25,10 @@ namespace SpatialSEIR
     //! struct containing hyperparameters for beta, betaP_RS, P_EI, and P_IR
     struct priorControl
     {
-        double betaPriorPrecision;
-        double betaPrsPriorPrecision;
+        double* betaPriorPrecision;
+        double* betaPrsPriorPrecision;
+        double* betaPriorMean;
+        double* betaPrsPriorMean;
         double P_EI_priorAlpha;
         double P_EI_priorBeta;
         double P_IR_priorAlpha;

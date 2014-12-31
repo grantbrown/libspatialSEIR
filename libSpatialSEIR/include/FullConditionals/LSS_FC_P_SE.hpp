@@ -28,7 +28,8 @@ namespace SpatialSEIR
                     double *_beta,
                     double *_rho,
                     double sliceWidth,
-                    double _priorPrecision,
+                    double *_priorPrecision,
+                    double *_priorBetaMean,
                     double _priorRhoAlpha,
                     double _priorRhoBeta); 
             ~FC_P_SE();
@@ -52,6 +53,7 @@ namespace SpatialSEIR
             double **rho;
             long double* value;
             double* priorPrecision;
+            double* priorBetaMean;
             int* nBeta;
             int* nRho;
             double* combinedParams;

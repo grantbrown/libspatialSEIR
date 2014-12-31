@@ -26,8 +26,9 @@ namespace SpatialSEIR
                     InitData *_A0,
                     double *_p_rs,
                     double *_beta_p_rs,
-                    double _tausq,
-                    double _sliceWidth
+                    double _sliceWidth,
+                    double *_priorPrecision,
+                    double *_priorMean
                     );
             ~FC_Beta_P_RS();
             virtual double evalPrior(); 
@@ -46,8 +47,9 @@ namespace SpatialSEIR
             InitData **A0;
             double **beta_p_rs;
             double **p_rs;
-            double* tausq;
             long double* value;
+            double* priorPrecision;
+            double* priorMean;
     };
 
 

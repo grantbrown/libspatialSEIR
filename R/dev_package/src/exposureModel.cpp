@@ -6,18 +6,17 @@
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
-exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec, SEXP _hasZ)
+exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _priorMean, SEXP _prec, SEXP _hasZ)
 {
     int i;
     Rcpp::NumericMatrix inX(_X);
     Rcpp::NumericMatrix inZ(_Z); 
     Rcpp::NumericVector inPrecision(_prec);
+    Rcpp::NumericVector priorMeans(_priorMean);
     Rcpp::NumericVector initParams(_paramInit);
     Rcpp::IntegerVector hasZVec(_hasZ);
     int hasZ = hasZVec[0];
 
-    betaPriorPrecision = new double;
-    *betaPriorPrecision = *(inPrecision.begin()); 
     xDim = new int[2];
     zDim = new int[2];
     xDim[0] = inX.nrow();
@@ -36,8 +35,11 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec, SEXP
         for (i = 0; i < zDim[0]; i++){Z[i] = 0.0;} 
     }
     X = new double[xDim[0]*xDim[1]];
+    int nBeta = xDim[1] + zDim[1];
+    beta = new double[nBeta];
+    betaPriorPrecision = new double[nBeta];
+    betaPriorMean = new double[nBeta];
 
-    beta = new double[xDim[1] + zDim[1]];
     if (zDim[0] % xDim[0] != 0)
     {
         Rcpp::Rcout << "Error: Covariate matrices have invalid dimensions." 
@@ -46,13 +48,14 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec, SEXP
                     <<" to the number of time points.\n";
         throw(-1);
     }
-    if (initParams.length() != xDim[1] + zDim[1])
+    if (initParams.length() != nBeta || inPrecision.length() != nBeta || priorMeans.length() != nBeta)
     {
         Rcpp::Rcout << "Initial parameters have different length then number of columns of X and Z\n";
         Rcpp::Rcout << "ncol(X): " << xDim[1] << "\n";
         Rcpp::Rcout << "ncol(Z): " << zDim[1] << "\n";
         Rcpp::Rcout << "length(beta): " << initParams.length() << "\n";
-        Rcpp::Rcout << initParams << "\n";
+        Rcpp::Rcout << "length(betaPriorMean): " << priorMeans.length() << "\n";
+        Rcpp::Rcout << "length(betaPriorPrecision): " << inPrecision.length() << "\n";
         throw(-1);
     }
     offset = new double[(zDim[0])/(xDim[0])];
@@ -71,6 +74,8 @@ exposureModel::exposureModel(SEXP _X, SEXP _Z, SEXP _paramInit, SEXP _prec, SEXP
     for (i = 0; i < (xDim[1]+zDim[1]); i++)
     {
         beta[i] = initParams[i]; 
+        betaPriorMean[i] = priorMeans[i];
+        betaPriorPrecision[i] = inPrecision[i];
     }
 }
 
@@ -96,8 +101,20 @@ void exposureModel::summary()
 {
     Rcpp::Rcout << "Time invariant covariate dimensions: " << xDim[0] << ", " << xDim[1] << "\n";
     Rcpp::Rcout << "Time varying covariate dimensions: " << zDim[0] << ", " << zDim[1] << "\n";
-    Rcpp::Rcout << "Linear model parameter prior precision: " << *betaPriorPrecision << "\n";
+    Rcpp::Rcout << "Linear model parameter prior precision: " << "\n";
+    int i;
+    for (i = 0; i < xDim[1] + zDim[1] - 1; i++)
+    {
+        Rcpp::Rcout << betaPriorPrecision[i] << ", ";
+    }
+    Rcpp::Rcout << betaPriorPrecision[i + 1] << "\n";
 
+    Rcpp::Rcout << "Linear model parameter prior mean: " << "\n";
+    for (i = 0; i < xDim[1] + zDim[1] - 1; i++)
+    {
+        Rcpp::Rcout << betaPriorMean[i] << ", ";
+    }
+    Rcpp::Rcout << betaPriorMean[i + 1] << "\n";
 }
 
 exposureModel::~exposureModel()
@@ -107,14 +124,15 @@ exposureModel::~exposureModel()
     delete[] X;
     delete[] Z;
     delete[] beta;
-    delete betaPriorPrecision;
+    delete[] betaPriorPrecision;
+    delete[] betaPriorMean;
 }
 
 RCPP_MODULE(mod_exposureModel)
 {
     using namespace Rcpp;
     class_<exposureModel>( "exposureModel" )
-    .constructor<SEXP,SEXP,SEXP,SEXP,SEXP>()
+    .constructor<SEXP,SEXP,SEXP,SEXP,SEXP,SEXP>()
     .method("summary", &exposureModel::summary)
     .property("offsets", &exposureModel::getOffset, &exposureModel::setOffset);
 }

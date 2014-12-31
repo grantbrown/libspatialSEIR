@@ -29,7 +29,8 @@ namespace SpatialSEIR
                      double *_beta, 
                      double *_rho,
                      double _sliceWidth,
-                     double _priorPrecision,
+                     double *_priorPrecision,
+                     double *_priorBetaMean,
                      double _priorRhoAlpha,
                      double _priorRhoBeta)
     {
@@ -51,7 +52,8 @@ namespace SpatialSEIR
         priorRhoAlpha = new double;
         priorRhoBeta = new double;
         sliceWidth = new double[*varLen];
-        priorPrecision = new double;
+        priorPrecision = new double[*nBeta];
+        priorBetaMean = new double[*nBeta];
         value = new long double;
         samples = new int;
         accepted = new int[*varLen]; 
@@ -63,6 +65,11 @@ namespace SpatialSEIR
         {
             sliceWidth[i] = _sliceWidth;       
         }
+        for (i = 0; i < *nBeta; i++)
+        {
+            priorPrecision[i] = _priorPrecision[i];
+            priorBetaMean[i] = _priorBetaMean[i];
+        }
 
         *context = _context;
         *E_star = _E_star;
@@ -72,7 +79,6 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *beta = _beta;
         *rho = _rho;
-        *priorPrecision = _priorPrecision;
         *priorRhoAlpha = _priorRhoAlpha;
         *priorRhoBeta = _priorRhoBeta;
         memcpy(combinedParams, *beta, (*nBeta)*sizeof(double));
@@ -108,7 +114,8 @@ namespace SpatialSEIR
         delete value;
         delete varLen;
         delete[] sliceWidth;
-        delete priorPrecision;
+        delete[] priorPrecision;
+        delete[] priorBetaMean;
         delete priorRhoAlpha;
         delete priorRhoBeta;
         delete context;
@@ -124,7 +131,7 @@ namespace SpatialSEIR
         int i;
         for (i = 0; i < *nBeta; i++)
         {
-            out -= pow((*beta)[i],2)*(*priorPrecision); // Generalize to allow different prior precisions. 
+            out -= pow((*beta)[i] - priorBetaMean[i],2)*(priorPrecision[i])/2; // Generalize to allow different prior precisions. 
         }
         for (i = 0; i < *nRho; i++)
         {

@@ -182,8 +182,9 @@ DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = 
 ExposureModel = buildExposureModel(simResults$X, simResults$Z, 
                                    beta = c(2, rep(0, ((length(simResults$beta))-1))), betaPriorPrecision = 0.1)
 ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = simResults$X_prs, 
-                                         betaPrs = -c(4, rep(0,(length(simResults$betaPrs)-1))), 
-                                         priorPrecision = 0.1)
+                                         betaPrs = -c(2.5, rep(0,(length(simResults$betaPrs)-1))), 
+                                         priorPrecision = c(1000, rep(0.1, ncol(simResults$X_prs) - 1)),
+                                         priorMean = c(-2.5, rep(0, (ncol(simResults$X_prs) - 1))))
 SamplingControl = buildSamplingControl(iterationStride=1000,
                                        sliceWidths = c(0.26,  # S_star
                                                        0.1,  # E_star
@@ -243,15 +244,19 @@ runSimulation = function(N, batchSize = 100, targetRatio = 0.15, targetWidth = 0
     })
 }
 
+res$compartmentSamplingMode=17
+res$parameterSamplingMode=17
+runSimulation(1000,100, printAR=FALSE, adjustSamplingParams = FALSE)
+
+res$parameterSamplingMode=8
 res$compartmentSamplingMode = 1
 res$setTrace(0)
 res$performHybridStep = 10
 res$useDecorrelation = 10
-runSimulation(2000,10, printAR = FALSE, targetRatio = 0.2)
-runSimulation(2000,100, printAR = TRUE, targetRatio = 0.2)
+runSimulation(1000,10, printAR = FALSE, targetRatio = 0.2)
+runSimulation(1000,100, printAR = TRUE, targetRatio = 0.2)
 res$compartmentSamplingMode = 17
-runSimulation(100000,1000, printAR=FALSE, adjustSamplingParams = FALSE)
-runSimulation(100000,1000, printAR=FALSE, adjustSamplingParams = FALSE)
+runSimulation(50000,1000, printAR=FALSE, adjustSamplingParams = FALSE)
 
 #runSimulation(10000000,10000, printAR = TRUE, targetRatio = 0.2, targetWidth = 0.05)
 

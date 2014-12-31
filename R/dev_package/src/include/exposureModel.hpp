@@ -11,7 +11,7 @@ RCPP_EXPOSED_CLASS(exposureModel)
 class exposureModel
 {
     public:
-        exposureModel(SEXP X, SEXP Z, SEXP initBeta, SEXP precision,SEXP hasZ);
+        exposureModel(SEXP X, SEXP Z, SEXP initBeta, SEXP priorMean, SEXP precision, SEXP hasZ);
         virtual void summary();
         virtual Rcpp::NumericVector getOffset();
         virtual void setOffset(Rcpp::NumericVector offs);
@@ -22,6 +22,7 @@ class exposureModel
         double* X;
         double* Z;
         double* betaPriorPrecision;
+        double* betaPriorMean;
         ~exposureModel();
 };
 

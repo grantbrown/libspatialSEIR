@@ -12,7 +12,7 @@ class reinfectionModel
 {
     public:
         reinfectionModel(SEXP reinfectionMode);
-        virtual void buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _prec);
+        virtual void buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _priorMean, SEXP _prec);
         virtual void buildDummyReinfectionModel(int nTpt);
         virtual void summary();
         int* xDim;
@@ -20,6 +20,7 @@ class reinfectionModel
         double* X;
         double* beta;
         double* betaPriorPrecision;
+        double* betaPriorMean;
         ~reinfectionModel();
 };
 

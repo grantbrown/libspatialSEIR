@@ -28,7 +28,8 @@ namespace SpatialSEIR
                     double *_beta,
                     double *_rho,
                     double sliceWidth,
-                    double _priorPrecision); 
+                    double *_priorPrecision,
+                    double *_priorMean); 
             ~FC_Beta();
 
             virtual double evalPrior();
@@ -50,6 +51,7 @@ namespace SpatialSEIR
             double **rho;
             long double* value;
             double* priorPrecision;
+            double* priorMean;
     };
 
 }

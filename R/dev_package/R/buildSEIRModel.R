@@ -92,7 +92,7 @@ buildDataModel = function(Y, type = c("identity", "overdispersion"), compartment
 
 # reinfectionModel module helper function
 buildReinfectionModel = function(reinfectMode = c("SEIR", "SEIRS", "Fixed"),X_prs = NA, 
-                                 betaPrs=NA , priorPrecision = NA)
+                                 betaPrs=NA , priorPrecision = NA, priorMean = NA)
 {
     integerMode = ifelse(reinfectMode[1] == "SEIR", 3, 
                   ifelse(reinfectMode[1] == "SEIRS", 1, 
@@ -105,9 +105,9 @@ buildReinfectionModel = function(reinfectMode = c("SEIR", "SEIRS", "Fixed"),X_pr
     {
         stop("If reinfection mode is not SEIR, X_prs and betaPrs must be supplied.")
     }
-    if (integerMode == 1 && (is.na(priorPrecision)))
+    if (integerMode == 1 && (is.na(priorPrecision) || is.na(priorMean)))
     {
-        stop("If reinfection parameters are going to be estimated, priorPrecision must be specified.")
+        stop("If reinfection parameters are going to be estimated, priorPrecision and priorMean must be specified.")
     }
 
     reinfectionmod = new(reinfectionModel, integerMode);
@@ -119,9 +119,21 @@ buildReinfectionModel = function(reinfectMode = c("SEIR", "SEIRS", "Fixed"),X_pr
         }
         if (all(is.na(priorPrecision)))
         {
-           priorPrecision = 0.1     
+           priorPrecision = rep(0.1, ncol(X_prs))     
         }
-        reinfectionmod$buildReinfectionModel(X_prs, betaPrs, priorPrecision);
+        else if (length(priorPrecision) == 1)
+        {
+            priorPrecision = rep(priorPrecision, ncol(X_prs))               
+        }
+        if (all(is.na(priorMean)))
+        {
+            priorMean = rep(0, ncol(X_prs))
+        }
+        else if (length(priorMean) == 1)
+        {
+            priorMean = rep(priorMean, ncol(X_prs))
+        }
+        reinfectionmod$buildReinfectionModel(X_prs, betaPrs, priorMean, priorPrecision);
     }
     reinfectionmod
 }
@@ -161,8 +173,11 @@ buildUniformTransitionPriors = function()
 }
 
 # exposureModel module helper function
-buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,offset=NA,nTpt=NA)
+buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
+                              betaPriorMean=NA,offset=NA,nTpt=NA)
 {
+    hasZ = !(length(Z) == 1 && is.na(Z))
+    nBeta = ncol(X) + ifelse(hasZ, ncol(Z), 0)
     if (class(X) != "matrix")
     {
         print("Warning: X should be a matrix.")
@@ -170,11 +185,23 @@ buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,offset=NA,nTp
     if (length(beta) == 1 && is.na(beta))
     {
         print("Generating starting values for exposure parameters: may be unreasonable.")
-        beta = rnorm(ncol(X))
+        beta = rnorm(nBeta)
     }
-    if (length(betaPriorPrecision) == 0 && is.na(betaPriorPrecision))
+    if (length(betaPriorPrecision) == 1 && is.na(betaPriorPrecision))
     {
-        betaPriorPrecision = 0.1
+        betaPriorPrecision = rep(0.1, nBeta)
+    }
+    else if (length(betaPriorPrecision) == 1)
+    {
+        betaPriorPrecision = rep(betaPriorPrecision, nBeta)
+    }
+    if (length(betaPriorMean) == 1 && is.na(betaPriorMean))
+    {
+        betaPriorMean = rep(0.1, nBeta)
+    }
+    else if (length(betaPriorMean) == 1)
+    {
+        betaPriorMean = rep(betaPriorMean, nBeta)
     }
     if (length(offset) == 1 && is.na(offset))
     {
@@ -187,11 +214,11 @@ buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,offset=NA,nTp
     if (length(Z) == 1 && is.na(Z))
     {
         Z = matrix(nTpt)
-        ExposureModel = new(exposureModel,X,Z,beta,betaPriorPrecision,FALSE) 
+        ExposureModel = new(exposureModel,X,Z,beta,betaPriorMean,betaPriorPrecision,FALSE) 
     }
     else
     {
-        ExposureModel = new(exposureModel,X,Z,beta,betaPriorPrecision,TRUE)
+        ExposureModel = new(exposureModel,X,Z,beta,betaPriorMean,betaPriorPrecision,TRUE)
     }
     if (all(!is.na(offset)))
     {

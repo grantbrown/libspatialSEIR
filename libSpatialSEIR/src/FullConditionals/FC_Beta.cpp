@@ -29,7 +29,8 @@ namespace SpatialSEIR
                      double *_beta, 
                      double *_rho,
                      double _sliceWidth,
-                     double _priorPrecision)
+                     double *_priorMean,
+                     double *_priorPrecision)
     {
         int nBeta = (*((_X) -> ncol_x) + *((_X) -> ncol_z));
         context = new ModelContext*;
@@ -41,7 +42,8 @@ namespace SpatialSEIR
         beta = new double*;
         rho = new double*;
         sliceWidth = new double[nBeta];
-        priorPrecision = new double;
+        priorPrecision = new double[nBeta];
+        priorMean = new double[nBeta];
         value = new long double;
         samples = new int;
         accepted = new int[nBeta]; 
@@ -53,6 +55,8 @@ namespace SpatialSEIR
         for (i = 0; i < nBeta; i++)
         {
             sliceWidth[i] = _sliceWidth;       
+            priorPrecision[i] = _priorPrecision[i];
+            priorMean[i] = _priorMean[i];
         }
 
         *context = _context;
@@ -63,7 +67,6 @@ namespace SpatialSEIR
         *p_se = _p_se;
         *beta = _beta;
         *rho = _rho;
-        *priorPrecision = _priorPrecision;
         *value = -1.0;
 
         // Set up samplers
@@ -90,7 +93,8 @@ namespace SpatialSEIR
         delete value;
         delete varLen;
         delete[] sliceWidth;
-        delete priorPrecision;
+        delete[] priorPrecision;
+        delete[] priorMean;
         delete context;
         delete samples;
         delete[] accepted;
@@ -102,7 +106,7 @@ namespace SpatialSEIR
         int i;
         for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
         {
-            out -= pow((*beta)[i],2)*(*priorPrecision); // Generalize to allow different prior precisions. 
+            out -= pow((*beta)[i] - priorMean[i],2)*(priorPrecision[i])/2;
         }
         return(out);
     }
