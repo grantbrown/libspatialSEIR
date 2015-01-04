@@ -230,6 +230,10 @@ buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
 # initialValueContainer module helper function
 buildInitialValueContainer = function(data, N, S0=NA, E0=NA, I0=NA, reinfection=FALSE, dataType=c("I_star", "R_star"))
 {
+    # get rid of any data frame nonsense
+    S0 = as.numeric(S0);
+    E0 = as.numeric(E0);
+    I0 = as.numeric(I0);
     if (class(data) != "matrix")
     {
         data = as.matrix(data)
@@ -238,7 +242,6 @@ buildInitialValueContainer = function(data, N, S0=NA, E0=NA, I0=NA, reinfection=
     {
         N = as.matrix(N)
     }
-
 
     proposal = generateCompartmentProposal2(data, N, S0, E0, I0, reinfection, dataType)
     InitialValueContainer = new(initialValueContainer)
