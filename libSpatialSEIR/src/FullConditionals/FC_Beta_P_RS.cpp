@@ -107,7 +107,7 @@ namespace SpatialSEIR
         int j;
         for (j = 0; j < nbeta; j++)
         {
-            out -= ((priorPrecision[j])/2)*pow((*beta_p_rs)[j] - priorMean[j],2)/2;
+            out -= ((priorPrecision[j])/2)*pow((*beta_p_rs)[j] - priorMean[j],2);
         }
         return(out);
     }

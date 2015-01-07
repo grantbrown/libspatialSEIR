@@ -131,7 +131,7 @@ namespace SpatialSEIR
         int i;
         for (i = 0; i < *nBeta; i++)
         {
-            out -= pow((*beta)[i] - priorBetaMean[i],2)*(priorPrecision[i])/2; // Generalize to allow different prior precisions. 
+            out -= pow((*beta)[i] - priorBetaMean[i],2)*(priorPrecision[i]);
         }
         for (i = 0; i < *nRho; i++)
         {

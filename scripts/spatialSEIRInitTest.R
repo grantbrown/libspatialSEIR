@@ -156,7 +156,8 @@ beta = true_beta
 outFileName = "./chainOutput_sim.txt"
 DataModel = buildDataModel(I_star, type="overdispersion", params = c(10000, 10))
 ExposureModel = buildExposureModel(X, Z, beta, betaPriorPrecision)
-ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = X_betaPrs, betaPrs = betaPrs, priorPrecision = betaPrsPriorPrecision)
+ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = X_betaPrs, betaPrs = betaPrs, priorPrecision = betaPrsPriorPrecision, 
+                                         priorMean = 0)
 SamplingControl = buildSamplingControl(iterationStride=iterationStride,sliceWidths=sliceWidths)
 DistanceModel = buildDistanceModel(list(DM))
 TransitionPriors = buildTransitionPriorsManually(priorAlpha_gammaEI, priorBeta_gammaEI, priorAlpha_gammaIR, priorBeta_gammaIR)
