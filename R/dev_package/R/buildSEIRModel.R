@@ -189,6 +189,7 @@ buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
     }
     if (length(betaPriorPrecision) == 1 && is.na(betaPriorPrecision))
     {
+        print("No prior precision specified, using zero.")
         betaPriorPrecision = rep(0.1, nBeta)
     }
     else if (length(betaPriorPrecision) == 1)
@@ -197,7 +198,8 @@ buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
     }
     if (length(betaPriorMean) == 1 && is.na(betaPriorMean))
     {
-        betaPriorMean = rep(0.1, nBeta)
+        print("No prior mean specified, using zero.")
+        betaPriorMean = rep(0, nBeta)
     }
     else if (length(betaPriorMean) == 1)
     {
