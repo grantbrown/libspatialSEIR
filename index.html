@@ -21,10 +21,6 @@
           <h1 id="project_title">libspatialSEIR</h1>
           <h2 id="project_tagline">A C++ and OpenCL framework for fast Bayesian spatio-temporal compartmental epidemic modeling. </h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/grantbrown/libspatialSEIR/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/grantbrown/libspatialSEIR/tarball/master">Download this project as a tar.gz file</a>
-            </section>
         </header>
     </div>
 
@@ -33,56 +29,40 @@
       <section id="main_content" class="inner">
 
 <a name="disclaimer" class="anchor" href="#disclaimer"><span class="octicon octicon-link"></span></a><h3>Disclaimer</h3>
-This software is the focus of my dissertation work, and as such is under heavy development. It is full of jagged edges, changing API's, and broken things. More than anything else, I haven't yet gotten around to using it on any platform save linux, so there are almost certainly problems on other platforms. Version 1.0 is planned for Spring 2015 and will include cross platform support, and hopefully a CRAN friendly distribution. In the meantime, I'm happy to <a href="https://github.com/grantbrown/libspatialSEIR/issues">respond to questions here.</a> 
+This software is the focus of my dissertation work, and as such is under heavy development. 
+The API's have begun to stabilize, though the process is not yet sufficiently documented, and there may be a few rough edges (particularly with generation of initial sampler states, 
+autocorrelation issues, and detection of invalid model specifications). So far, the software has been most
+thoroughly tested on Linux platforms (Ubuntu/Mint), though it has also been ported to Windows. In principle, 
+it should be usable on OSX, though I have been unable to test this and the installation is likely to be a pain. 
+I'm happy to <a href="https://github.com/grantbrown/libspatialSEIR/issues">respond to questions and provide suggestions here</a>.
 <br/>
-
 
 <a name="libspatialseir" class="anchor" href="#libspatialseir"><span class="octicon octicon-link"></span></a><h3>libspatialSEIR</h3>
 
-<p>libspatialSEIR is a C++/OpenCL based framework for fitting Bayesian spatial SEIR and SEIRS compartmental epidemic models.
-The numerical heavy lifting is all done in C++ with the optional use of OpenCL calls to multi-core CPU's and 
-GPU's to accelerate computation. The primary interface is provided via the included R package, which uses the Rcpp 
-library to access the lower level C++ API. </p>
+<p>libspatialSEIR is a C++/OpenCL based framework for fitting Bayesian spatial SEIR and SEIRS compartmental epidemic models. The model class 
+implemented by the software is described in the recently submitted manuscript: <i>"An Empirically Adjusted Approach to Reproductive Number Estimation for Stochastic 
+Compartmental Models: A Case Study of Two Ebola Outbreaks" (Brown, Oleson, Porter 2015)</i>, for which a preprint manuscript and analysis examples are
+available in <a href="https://github.com/grantbrown/EARNMC"> the associated manuscript companion 
+repository</a><br/>
+
+The numerical heavy lifting is all done in C++, with the optional use of OpenCL calls to multi-core CPU's and 
+GPU's to accelerate computation. This latter option is likely to be useful only to experts using very large data sets, and so is disabled by default. 
+The primary interface is provided via the included R package, which uses the Rcpp library to access the lower level C++ API. </p>
 
 <p>The R and C++ API's for libspatialSEIR are under heavy development, so documentation is a bit limited. 
-For an introduction to the underlying C++ structure, <a href="http://grantbrown.github.io/libspatialSEIR_DoxygenMirror/html/classes.html">doxygen class summaries</a> are available. Perhaps 
-the best current example of libspatialSEIR use from R is given by the <a href="./doc/tutorials/Ebola2014/Ebola2014.html">spatial SEIR Ebola tutorial</a>
-addressing the current outbreak of Ebola in West Africa. 
+For an introduction to the underlying C++ structure, <a href="http://grantbrown.github.io/libspatialSEIR_DoxygenMirror/html/classes.html">doxygen class summaries</a> are available. Additional 
+tutorials and documentation are under development.  
 </p>
 
-<p>Additional example R code is available in the /scripts directory on the main branch.  </p>
-
-<h3>
-<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h3>
-
-<p>While a CRAN friendly version of libspatialSEIR is tentatively planned, the project currently requires some prerequisites:</p>
-
-<ol>
-<li>Git</li>
-<li>CMake</li>
-<li>An appropriate C++ compiler </li>
-<li>Boost random &gt;= 1.4.9 </li>
-<li>R &gt;= 3.0</li>
-<li>A BLAS capable library</li>
-</ol>
-In addition, if you would like to enable OpenCL support, you must install the appropriate OpenCL SDK for your hardware. This 
-will also require that you tweak the CMakeLists.txt file present in the project root directory.
+<p>Additional example R code is available in the /scripts directory on the master branch.  </p>
 
 <h3>
 <a name="installation-nix" class="anchor" href="#installation-nix"><span class="octicon octicon-link"></span></a>Installation</h3>
 <p>The most up to date installation information is available on the <a href="https://github.com/grantbrown/libspatialSEIR/wiki/Installation">libspatialSEIR wiki</a>
 
-So far I've only used the software on Linux (Ubuntu/Mint), but installation instructions for Windows and OSX are planned. 
+So only Linux and Windows are supported, but OSX support is planned (and might work already). 
 </p>
 
-
-<p>That should be it, though as previously mentioned this is still very much a work in progress. Assuming it worked, you could try out some of
-the example scripts. </p>
-
-<pre><code>    cd ../scripts
-    R
-    &gt; source("./singleLocationTest.R")
-</code></pre>
 
 
       </section>
@@ -95,7 +75,17 @@ the example scripts. </p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+      ga('create', 'UA-58391921-2', 'auto');
+      ga('send', 'pageview');
+
+    </script>
     
 
   </body>
