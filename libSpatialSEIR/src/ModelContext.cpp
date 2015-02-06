@@ -175,9 +175,9 @@ namespace SpatialSEIR
         gamma_ir = new double;
         offset = new double[*(S_starArgs -> inRow)];
         N = new int[(*(S_starArgs -> inRow))*(*(S_starArgs -> inCol))];                                          
-        int nbeta = (*(xArgs -> inCol_x) + (*(xArgs -> inCol_z)));
-        int neta = (*(xArgs -> inRow_z));
-        int nBetaPrs = *(xPrsArgs -> inCol_x);
+        int nbeta = (xArgs -> inCol_x);
+        int neta = (xArgs -> inRow_x);
+        int nBetaPrs = (xPrsArgs -> inCol_x);
 
 
 
@@ -196,18 +196,12 @@ namespace SpatialSEIR
         // Initialize Stuff
         A0 -> populate(_A0 -> S0,_A0 -> E0,_A0 -> I0,_A0 -> R0,_A0 -> numLocations);
         X -> genFromDataStream(xArgs -> inData_x, 
-                               xArgs -> inData_z,
                                xArgs -> inRow_x,
-                               xArgs -> inCol_x,
-                               xArgs -> inRow_z,
-                               xArgs -> inCol_z); 
+                               xArgs -> inCol_x); 
 
         X_pRS -> genFromDataStream(xPrsArgs -> inData_x, 
-                                   xPrsArgs -> inData_z,
                                    xPrsArgs -> inRow_x,
-                                   xPrsArgs -> inCol_x,
-                                   xPrsArgs -> inRow_z,
-                                   xPrsArgs -> inCol_z); 
+                                   xPrsArgs -> inCol_x); 
 
         S_star -> genFromDataStream(S_starArgs -> inData,
                                     S_starArgs -> inRow,
@@ -729,10 +723,10 @@ namespace SpatialSEIR
                 break;
             }
         }
-        int nPrs = *(I_star -> nrow);
         if (config -> reinfectionMode <= 2)
         {
-            for (i = 0; i < nPrs;i++)
+            int nTpt = *(S_star -> nrow);
+            for (i = 0; i < nTpt; i++)
             {
                 if (p_rs[i] <= 0 || p_rs[i] >= 1)
                 {
@@ -1180,7 +1174,7 @@ namespace SpatialSEIR
     {
         int i;
         int neta = *(X_pRS -> nrow_x);
-        X_pRS -> calculate_fixed_eta_CPU(p_rs, betaPrs);
+        X_pRS -> calculate_eta_CPU(p_rs, betaPrs);
         for (i = 0; i < neta; i++)
         {
             p_rs[i] = 1-exp(-offset[i]*exp(p_rs[i]));
@@ -1327,8 +1321,8 @@ namespace SpatialSEIR
         this -> X -> calculate_eta_CPU(eta, beta);
 
         //Exponentiate
-        int nrowz = *(X->nrow_z);
-        for (i = 0; i < nrowz; i++)
+        int nrowx = *(X->nrow_x);
+        for (i = 0; i < nrowx; i++)
         {
             eta[i] = std::exp(eta[i]);
         }

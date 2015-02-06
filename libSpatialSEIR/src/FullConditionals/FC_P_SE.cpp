@@ -37,7 +37,7 @@ namespace SpatialSEIR
         nBeta = new int;
         nRho = new int;
         varLen = new int;
-        *nBeta = (*((_X) -> ncol_x) + *((_X) -> ncol_z));
+        *nBeta = (*((_X) -> ncol_x));
         *nRho = (_context) -> scaledDistMatrices -> size();
         *varLen = *nBeta + *nRho;
 

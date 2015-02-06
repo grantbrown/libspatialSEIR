@@ -32,7 +32,7 @@ namespace SpatialSEIR
                      double *_priorMean,
                      double *_priorPrecision)
     {
-        int nBeta = (*((_X) -> ncol_x) + *((_X) -> ncol_z));
+        int nBeta = (*((_X) -> ncol_x));
         context = new ModelContext*;
         E_star = new CompartmentalModelMatrix*;
         S = new CompartmentalModelMatrix*;
@@ -104,7 +104,7 @@ namespace SpatialSEIR
     {
         double out = 0.0;
         int i;
-        for (i = 0; i < (*((*X) -> ncol_x) + *((*X) -> ncol_z)); i++)
+        for (i = 0; i < (*((*X) -> ncol_x)); i++)
         {
             out -= pow((*beta)[i] - priorMean[i],2)*(priorPrecision[i]);
         }

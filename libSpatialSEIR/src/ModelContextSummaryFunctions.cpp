@@ -297,8 +297,8 @@ namespace SpatialSEIR
         double component1, component2;
         unsigned int k;
         //Exponentiate
-        int nrowz = *(X->nrow_z);
-        for (i = 0; i < nrowz; i++)
+        int nrowx = *(X->nrow_x);
+        for (i = 0; i < nrowx; i++)
         {
             eta[i] = std::exp(eta[i]);
         }
@@ -357,8 +357,8 @@ namespace SpatialSEIR
         double component1, component2;
         unsigned int k;
         //Exponentiate
-        int nrowz = *(X->nrow_z);
-        for (i = 0; i < nrowz; i++)
+        int nrowx = *(X->nrow_x);
+        for (i = 0; i < nrowx; i++)
         {
             eta[i] = std::exp(eta[i]);
         }
@@ -411,8 +411,8 @@ namespace SpatialSEIR
         double component1, component2;
         unsigned int k;
         //Exponentiate
-        int nrowz = *(X->nrow_z);
-        for (i = 0; i < nrowz; i++)
+        int nrowx = *(X->nrow_x);
+        for (i = 0; i < nrowx; i++)
         {
             eta[i] = std::exp(eta[i]);
         }

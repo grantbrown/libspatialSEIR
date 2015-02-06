@@ -173,14 +173,16 @@ buildUniformTransitionPriors = function()
 }
 
 # exposureModel module helper function
-buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
-                              betaPriorMean=NA,offset=NA,nTpt=NA)
+buildExposureModel = function(X,nTpt, nLoc, beta=NA,betaPriorPrecision=NA,
+                              betaPriorMean=NA,offset=NA)
 {
-    hasZ = !(length(Z) == 1 && is.na(Z))
-    nBeta = ncol(X) + ifelse(hasZ, ncol(Z), 0)
+    nBeta = ncol(X)
     if (class(X) != "matrix")
     {
         print("Warning: X should be a matrix.")
+    }
+    if (nrow(X) != nTpt * nLoc){
+        stop("Invalid data dimensions: X should be a matrix composed of nLoc row-wise blocks of dimension nTpt*p.") 
     }
     if (length(beta) == 1 && is.na(beta))
     {
@@ -209,19 +211,13 @@ buildExposureModel = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
     {
         print("Assuming equally spaced count data.")
     }
-    if (length(Z) == 1 && is.na(Z) && length(nTpt) == 1 && is.na(nTpt))
-    {
-        stop("If time varying covariate matrix Z is not provided, nTpt must be specified.")
+    else if (length(offset) == 1){
+        offset = rep(offset, nTpt)
     }
-    if (length(Z) == 1 && is.na(Z))
-    {
-        Z = matrix(nTpt)
-        ExposureModel = new(exposureModel,X,Z,beta,betaPriorMean,betaPriorPrecision,FALSE) 
+    else if (length(offset) != nTpt){
+        stop("Offset must be the of length nTpt")
     }
-    else
-    {
-        ExposureModel = new(exposureModel,X,Z,beta,betaPriorMean,betaPriorPrecision,TRUE)
-    }
+    ExposureModel = new(exposureModel,X,nTpt,nLoc,beta,betaPriorMean,betaPriorPrecision)
     if (all(!is.na(offset)))
     {
         ExposureModel$offsets = offset

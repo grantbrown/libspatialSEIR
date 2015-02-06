@@ -1012,9 +1012,9 @@ Rcpp::NumericVector spatialSEIRModel::getBeta()
         throw(-1);
     }
 
-    Rcpp::NumericVector output(((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
+    Rcpp::NumericVector output((*(context->X->ncol_x)));
     int i;
-    int numVals = (((*(context->X->ncol_x)) + (*(context->X->ncol_z))));
+    int numVals = (*(context->X->ncol_x));
     for (i = 0; i < numVals; i++) 
     {
         output[i] = (context->beta)[i]; 
@@ -1151,7 +1151,7 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
                           samplingControl& samplingControl_)
 {
     int err = 0;
-    
+    int i;
     dataModel* dataModelInstance = &dataModel_;
     exposureModel* exposureModelInstance = &exposureModel_;
     reinfectionModel* reinfectionModelInstance = &reinfectionModel_;
@@ -1161,16 +1161,18 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     samplingControl* samplingControlInstance = &samplingControl_;
 
 
-    if (*(dataModelInstance -> nLoc) != (exposureModelInstance -> xDim)[0])
+    if (*(dataModelInstance -> nLoc) != (*exposureModelInstance -> nLoc))
     {
         Rcpp::Rcout << "Exposure model and data model imply different number of locations\n";
-        Rcpp::Rcout << "Exposure model: " << (exposureModelInstance -> xDim)[0] << "\n";
+        Rcpp::Rcout << "Exposure model: " << *(exposureModelInstance -> nLoc) << "\n";
         Rcpp::Rcout << "Data model: " << *(dataModelInstance -> nLoc) << "\n";
         throw(-1);
     }
-    if (*(dataModelInstance -> nTpt) != ((exposureModelInstance -> zDim)[0])/((exposureModelInstance -> xDim)[0]))
+    if (*(dataModelInstance -> nTpt) != (*(exposureModelInstance -> nTpt)))
     {
         Rcpp::Rcout << "Exposure model and data model imply different number of time points\n";
+        Rcpp::Rcout << "Exposure model: " << *(exposureModelInstance -> nTpt) << "\n";
+        Rcpp::Rcout << "Data model: " << *(dataModelInstance -> nTpt) << "\n";
         throw(-1);
     }
     if (*(dataModelInstance -> nLoc) != (*(distanceModelInstance -> numLocations)))
@@ -1206,7 +1208,6 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
         Rcpp::Rcout << "Transition priors haven't been populated (or have invalid values)\n";
         throw(-1);
     }
-    int i;
     if (*(reinfectionModelInstance -> reinfectionMode) > 2)
     {
         int maxItr = ((*(dataModelInstance -> compartmentDimensions))[0]
@@ -1259,21 +1260,13 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     // covariate matrix
     covariateArgs xArgs;
     xArgs.inData_x = (exposureModelInstance -> X);
-    xArgs.inData_z = (exposureModelInstance -> Z);
-    xArgs.inRow_x = &((exposureModelInstance -> xDim)[0]);
-    xArgs.inCol_x = &((exposureModelInstance -> xDim)[1]);
-    xArgs.inRow_z = &((exposureModelInstance -> zDim)[0]);
-    xArgs.inCol_z = &((exposureModelInstance -> zDim)[1]);
+    xArgs.inRow_x = ((exposureModelInstance -> xDim)[0]);
+    xArgs.inCol_x = ((exposureModelInstance -> xDim)[1]);
 
     covariateArgs xPrsArgs; 
     xPrsArgs.inData_x = (reinfectionModelInstance -> X);
-    xPrsArgs.inData_z = NULL;
-    xPrsArgs.inRow_x = &((reinfectionModelInstance -> xDim)[0]);
-    xPrsArgs.inCol_x = &((reinfectionModelInstance -> xDim)[1]);
-    // Clean this up, pass values instead. 
-    int zeroVal = 0;
-    xPrsArgs.inRow_z = &zeroVal;
-    xPrsArgs.inCol_z = &zeroVal;
+    xPrsArgs.inRow_x = ((reinfectionModelInstance -> xDim)[0]);
+    xPrsArgs.inCol_x = ((reinfectionModelInstance -> xDim)[1]);
 
 
     // Gather information for the creation of the compartment matrices 

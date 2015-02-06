@@ -168,7 +168,7 @@ namespace SpatialSEIR
         // Additional data must be requested via setTrace. This should simplify the R function calls somewhat. 
 
         // Write Beta header
-        unsigned int betaLen = (*((*context) -> X -> ncol_x)) + (*((*context) -> X -> ncol_z)); 
+        unsigned int betaLen = (*((*context) -> X -> ncol_x)); 
         for (i = 0; i < betaLen; i++)
         {
             (*outFileStream) << "BetaP_SE_" << i << ", "; 
@@ -266,7 +266,7 @@ namespace SpatialSEIR
 
         // Write Beta
         int nTpt = *((*context) -> S_star -> nrow);
-        unsigned int betaLen = (*((*context) -> X -> ncol_x)) + (*((*context) -> X -> ncol_z)); 
+        unsigned int betaLen = (*((*context) -> X -> ncol_x)); 
         for (i = 0; i < betaLen; i++)
         {
             (*outFileStream) << ((*context) -> beta)[i] << ","; 
