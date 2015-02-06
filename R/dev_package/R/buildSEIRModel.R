@@ -270,14 +270,14 @@ buildExposureModel_depricated = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
   if (length(Z) == 1 && is.na(Z))
   {
     nLoc = nrow(X)
-    X = X[rep(1:nrow(X), each = nTpt),]
+    X = X[rep(1:nrow(X), each = nTpt),,drop=FALSE]
     ExposureModel = new(exposureModel,X,nTpt,nLoc,beta,betaPriorMean,betaPriorPrecision) 
   }
   else
   {
     nLoc = nrow(X)
     nTpt = floor(nrow(Z)/nrow(X))
-    X = X[rep(1:nrow(X), each = nTpt),]
+    X = X[rep(1:nrow(X), each = nTpt),,drop=FALSE]
     X = cbind(X, Z)
     ExposureModel = new(exposureModel,X,nTpt,nLoc,beta,betaPriorMean,betaPriorPrecision)
   }
