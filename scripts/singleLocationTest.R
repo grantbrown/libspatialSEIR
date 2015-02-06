@@ -179,7 +179,7 @@ simResults = runSimulation()
 DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = c(10000,10000))
 #DataModel = buildDataModel(simResults$I_star, type = "identity")
 
-ExposureModel = buildExposureModel(simResults$X, simResults$Z, 
+ExposureModel = buildExposureModel_depricated(simResults$X, simResults$Z, 
                                    beta = c(2, rep(0, ((length(simResults$beta))-1))), betaPriorPrecision = 0.1)
 ReinfectionModel = buildReinfectionModel("SEIRS", X_prs = simResults$X_prs, 
                                          betaPrs = -c(2.5, rep(0,(length(simResults$betaPrs)-1))), 

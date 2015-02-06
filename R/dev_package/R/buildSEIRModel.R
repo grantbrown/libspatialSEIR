@@ -225,6 +225,69 @@ buildExposureModel = function(X,nTpt, nLoc, beta=NA,betaPriorPrecision=NA,
     ExposureModel
 }
 
+# depricated exposure interace employing separate X and Z matrices. 
+# will be removed in a future version of the spatialSEIR R package
+buildExposureModel_depricated = function(X,Z=NA,beta=NA,betaPriorPrecision=NA,
+                                         betaPriorMean=NA,offset=NA,nTpt=NA)
+{
+  hasZ = !(length(Z) == 1 && is.na(Z))
+  nBeta = ncol(X) + ifelse(hasZ, ncol(Z), 0)
+  if (class(X) != "matrix")
+  {
+    print("Warning: X should be a matrix.")
+  }
+  if (length(beta) == 1 && is.na(beta))
+  {
+    print("Generating starting values for exposure parameters: may be unreasonable.")
+    beta = rnorm(nBeta)
+  }
+  if (length(betaPriorPrecision) == 1 && is.na(betaPriorPrecision))
+  {
+    print("No prior precision specified, using zero.")
+    betaPriorPrecision = rep(0.1, nBeta)
+  }
+  else if (length(betaPriorPrecision) == 1)
+  {
+    betaPriorPrecision = rep(betaPriorPrecision, nBeta)
+  }
+  if (length(betaPriorMean) == 1 && is.na(betaPriorMean))
+  {
+    print("No prior mean specified, using zero.")
+    betaPriorMean = rep(0, nBeta)
+  }
+  else if (length(betaPriorMean) == 1)
+  {
+    betaPriorMean = rep(betaPriorMean, nBeta)
+  }
+  if (length(offset) == 1 && is.na(offset))
+  {
+    print("Assuming equally spaced count data.")
+  }
+  if (length(Z) == 1 && is.na(Z) && length(nTpt) == 1 && is.na(nTpt))
+  {
+    stop("If time varying covariate matrix Z is not provided, nTpt must be specified.")
+  }
+  if (length(Z) == 1 && is.na(Z))
+  {
+    nLoc = nrow(X)
+    X = X[rep(1:nrow(X), each = nTpt),]
+    ExposureModel = new(exposureModel,X,nTpt,nLoc,beta,betaPriorMean,betaPriorPrecision) 
+  }
+  else
+  {
+    nLoc = nrow(X)
+    nTpt = floor(nrow(Z)/nrow(X))
+    X = X[rep(1:nrow(X), each = nTpt),]
+    X = cbind(X, Z)
+    ExposureModel = new(exposureModel,X,nTpt,nLoc,beta,betaPriorMean,betaPriorPrecision)
+  }
+  if (all(!is.na(offset)))
+  {
+    ExposureModel$offsets = offset
+  }
+  ExposureModel
+}
+
 # initialValueContainer module helper function
 buildInitialValueContainer = function(data, N, S0=NA, E0=NA, I0=NA, reinfection=FALSE, dataType=c("I_star", "R_star"))
 {
