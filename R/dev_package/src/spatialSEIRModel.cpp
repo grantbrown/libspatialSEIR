@@ -1159,7 +1159,20 @@ int spatialSEIRModel::buildSpatialSEIRModel(dataModel& dataModel_,
     transitionPriors* transitionPriorsInstance = &transitionPriors_;
     initialValueContainer* initialValueContainerInstance = &initialValueContainer_;
     samplingControl* samplingControlInstance = &samplingControl_;
+    // Make sure these pointers go to the real deal
+    err += (((dataModelInstance -> getModelComponentType()) != LSS_DATA_MODEL_TYPE) ||
+            ((exposureModelInstance -> getModelComponentType()) != LSS_EXPOSURE_MODEL_TYPE) ||
+            ((reinfectionModelInstance -> getModelComponentType()) != LSS_REINFECTION_MODEL_TYPE) ||
+            ((distanceModelInstance -> getModelComponentType()) != LSS_DISTANCE_MODEL_TYPE) ||
+            ((transitionPriorsInstance -> getModelComponentType()) != LSS_TRANSITION_MODEL_TYPE) ||
+            ((initialValueContainerInstance -> getModelComponentType()) != LSS_INIT_CONTAINER_TYPE) ||
+            ((samplingControlInstance -> getModelComponentType()) != LSS_SAMPLING_CONTROL_MODEL_TYPE));
 
+    if (err != 0)
+    {
+        Rcpp::Rcout << "Error: model components were not provided in the correct order. \n";
+        throw(-1);
+    }
 
     if (*(dataModelInstance -> nLoc) != (*exposureModelInstance -> nLoc))
     {

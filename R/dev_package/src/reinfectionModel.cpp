@@ -16,6 +16,11 @@ reinfectionModel::reinfectionModel(SEXP reinfectMode)
      xDim = new int[2]; memset(xDim, 1, 2*sizeof(int));
 }
 
+int reinfectionModel::getModelComponentType()
+{
+    return(LSS_REINFECTION_MODEL_TYPE);
+}
+
 void reinfectionModel::buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _priorMean, SEXP _prec)
 {
     Rcpp::NumericMatrix inX(_X);

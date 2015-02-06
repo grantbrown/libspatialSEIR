@@ -2,7 +2,7 @@
 #define SPATIALSEIR_INITVALUE_CONTAINER
 #include <Rcpp.h>
 #include<ModelContext.hpp>
-
+#include<modelComponent.hpp>
 
 using namespace Rcpp;
 using namespace SpatialSEIR;
@@ -15,6 +15,7 @@ class initialValueContainer
         void setInitialValues(SEXP S0, SEXP E0, SEXP I0, SEXP R0,
                               SEXP S_star, SEXP E_star, SEXP I_star, SEXP R_star,
                               SEXP N);
+        int getModelComponentType();
         int* compMatDim;
         int* S0;
         int* E0;

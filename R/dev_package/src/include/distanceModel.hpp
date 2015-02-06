@@ -2,7 +2,7 @@
 #define SPATIALSEIR_DISTANCE_MODEL
 #include <Rcpp.h>
 #include<DistanceMatrix.hpp>
-
+#include<modelComponent.hpp>
 
 using namespace Rcpp;
 using namespace SpatialSEIR;
@@ -13,6 +13,7 @@ class distanceModel
     public:
         distanceModel();
         virtual void addDistanceMatrix(NumericMatrix distMat);
+        int getModelComponentType();
         virtual void setPriorParameters(SEXP a, SEXP b);
         virtual void summary();
         virtual int getNumDistanceMatrices();

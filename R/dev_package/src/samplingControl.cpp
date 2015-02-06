@@ -20,6 +20,11 @@ samplingControl::samplingControl()
     }
 }
 
+int samplingControl::getModelComponentType()
+{
+    return(LSS_SAMPLING_CONTROL_MODEL_TYPE);
+}
+
 void samplingControl::setIterationStride(Rcpp::IntegerVector input)
 {
     *iterationStride = input[0];

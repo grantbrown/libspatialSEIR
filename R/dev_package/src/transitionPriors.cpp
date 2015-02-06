@@ -17,6 +17,11 @@ transitionPriors::transitionPriors()
     *gamma_ir = -1.0;
 }
 
+int transitionPriors::getModelComponentType()
+{
+    return(LSS_TRANSITION_MODEL_TYPE);
+}
+
 void transitionPriors::setUniformPriors()
 {
     gamma_ei_params[0] = 1.0; 

@@ -62,6 +62,11 @@ exposureModel::exposureModel(SEXP _X, SEXP _ntpt, SEXP _nloc, SEXP _paramInit, S
     }
 }
 
+int exposureModel::getModelComponentType()
+{
+    return(LSS_EXPOSURE_MODEL_TYPE);
+}
+
 
 void exposureModel::setOffset(NumericVector offsets)
 {

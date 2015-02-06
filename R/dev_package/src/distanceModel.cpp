@@ -14,6 +14,11 @@ distanceModel::distanceModel()
     scaledDistArgs -> priorBeta_rho = 1.0;
 }
 
+int distanceModel::getModelComponentType()
+{
+    return(LSS_DISTANCE_MODEL_TYPE);
+}
+
 void distanceModel::setPriorParameters(SEXP arg1, SEXP arg2)
 {
     Rcpp::NumericVector a(arg1);

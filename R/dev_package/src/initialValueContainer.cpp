@@ -10,6 +10,12 @@ initialValueContainer::initialValueContainer()
 {
     // Do nothing
 }
+
+int initialValueContainer::getModelComponentType()
+{
+    return(LSS_INIT_CONTAINER_TYPE);
+}
+
 void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP R0_,
                                              SEXP S_star_, SEXP E_star_, SEXP I_star_,SEXP R_star_, SEXP N_)
 {

@@ -71,6 +71,11 @@ void dataModel::setOverdispersionParameters(SEXP priorAlpha, SEXP priorBeta, SEX
     initialParameterValues[0] = init[0];
 }
 
+int dataModel::getModelComponentType()
+{
+    return(LSS_DATA_MODEL_TYPE);
+}
+
 void dataModel::summary()
 {
     Rcpp::Rcout << "Number of locations: " << *nLoc << "\n";

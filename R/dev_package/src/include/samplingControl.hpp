@@ -2,7 +2,7 @@
 #define SPATIALSEIR_SAMPLING_CONTROL
 #include <Rcpp.h>
 #include<ModelContext.hpp>
-
+#include<modelComponent.hpp>
 
 using namespace Rcpp;
 using namespace SpatialSEIR;
@@ -13,6 +13,7 @@ class samplingControl
     public:
         samplingControl();
         virtual void summary();
+        int getModelComponentType();
         ~samplingControl();
 
         virtual Rcpp::IntegerVector getIterationStride();
