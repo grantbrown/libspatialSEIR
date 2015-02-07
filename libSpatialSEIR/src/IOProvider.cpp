@@ -36,7 +36,6 @@ namespace SpatialSEIR
             throw(-1);
         }
 
-        std::cout << "Warning: you may be requesting a LOT of data.\n";
         int i;
         int nTpts = *((*context) -> S_star -> nrow);
         unsigned int j;
