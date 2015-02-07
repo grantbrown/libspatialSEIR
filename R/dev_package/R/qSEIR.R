@@ -231,9 +231,9 @@ fit.qSEIR = function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=
     if (verbose){
         cat(paste("Chains converged, criterion: ", conv.criterion,"\n", sep = ""))
     }
-    dat1=read.csv(filenams[1])
-    dat2=read.csv(filenams[2])
-    dat3=read.csv(filenams[3])
+    dat1=read.csv(filenames[1])
+    dat2=read.csv(filenames[2])
+    dat3=read.csv(filenames[3])
     stopCluster(cl)
     return(list(mcmc.chain.1 = dat1,
                 mcmc.chain.2 = dat2,
