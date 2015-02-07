@@ -12,6 +12,7 @@ export(spatialSEIRModel)
 # High level fitting functions
 export(qSEIR)
 export(fit.qSEIR)
+export(qSpatialSEIR)
 # Helper Functions
 export(buildDistanceModel)
 export(buildDataModel)

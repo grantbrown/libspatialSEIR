@@ -1,7 +1,6 @@
 qSEIR <- function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=NA, chainFileName=NA, seed=NA, data, offset){
   # The following is based on the built in 'lm' function, 
   # and handles the formula and data provided by the user.
-  print(offset)
   call <- match.call()
   if (verbose){
     cat("Processing user input.\n")
