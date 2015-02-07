@@ -9,6 +9,9 @@ export(reinfectionModel)
 export(transitionPriors)
 export(samplingControl)
 export(spatialSEIRModel)
+# High level fitting functions
+export(qSEIR)
+export(fit.qSEIR)
 # Helper Functions
 export(buildDistanceModel)
 export(buildDataModel)
