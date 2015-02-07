@@ -13,6 +13,7 @@ export(spatialSEIRModel)
 export(qSEIR)
 export(fit.qSEIR)
 export(qSpatialSEIR)
+export(fit.qSpatialSEIR)
 # Helper Functions
 export(buildDistanceModel)
 export(buildDataModel)
