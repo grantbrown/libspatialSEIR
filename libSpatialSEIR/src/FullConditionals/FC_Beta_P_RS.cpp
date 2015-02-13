@@ -107,7 +107,7 @@ namespace SpatialSEIR
         int j;
         for (j = 0; j < nbeta; j++)
         {
-            out -= ((priorPrecision[j])/2)*pow((*beta_p_rs)[j] - priorMean[j],2);
+            out -= ((priorPrecision[j]))*pow((*beta_p_rs)[j] - priorMean[j],2);
         }
         return(out);
     }
@@ -130,8 +130,7 @@ namespace SpatialSEIR
             }
             a = ((*S_star)-> marginSum(1,j));
             b = ((*R) -> marginSum(1,j)); 
-            term1 += std::log(tmp)*(a);
-            term1 += std::log(1-tmp)*(b-a);
+            term1 += ((*context) -> random -> dbinom(a, b, tmp));
         }
 
         *value = term1 + evalPrior();
