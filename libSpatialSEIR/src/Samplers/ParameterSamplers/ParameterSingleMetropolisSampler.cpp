@@ -53,7 +53,13 @@ namespace SpatialSEIR
 
         // Set the "value" attribute appropriately
         (*paramFC) -> evalCPU();
-   
+        initVal = ((*paramFC) -> getValue());
+        if (! std::isfinite(initVal))
+        {
+            lssCout << "Parameter sampler starting from value of zero probability.\n";
+            throw(-1);
+        }
+  
         // Main loop: 
         for (i = 0; i < varLen; i++)
         { 
