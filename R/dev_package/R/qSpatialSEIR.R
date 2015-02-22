@@ -120,7 +120,7 @@ qSpatialSEIR <- function(formula, N, spatial.factor, distance.list=NA, verbose=T
   exposureModelInstance = buildExposureModel(X=x, 
                                              nTpt=n.time.points, 
                                              n.spatial.units,
-                                             beta=c(priorBetaIntercept + rnorm(1), rnorm(ncol(x)-1)),
+                                             beta=c(priorBetaIntercept + rnorm(1), rep(0,(ncol(x)-1))),
                                              betaPriorPrecision = rep(0.1, ncol(x)),
                                              betaPriorMean = rep(0, ncol(x)),
                                              offset = offset)

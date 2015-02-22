@@ -82,7 +82,7 @@ qSEIR <- function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=NA,
   exposureModelInstance = buildExposureModel(X=x, 
                                              nTpt=nrow(x), 
                                              1,
-                                             beta=c(priorBetaIntercept + rnorm(1), rnorm(ncol(x)-1)),
+                                             beta=c(priorBetaIntercept + rnorm(1), rep(0,ncol(x)-1)),
                                              betaPriorPrecision = rep(0.1, ncol(x)),
                                              betaPriorMean = rep(0, ncol(x)),
                                              offset = offset)

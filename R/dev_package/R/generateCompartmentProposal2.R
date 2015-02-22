@@ -1,6 +1,5 @@
 generateCompartmentProposal2 = function(data, N, S0=NA, E0=NA, I0=NA, reinfection=FALSE, dataType = c("I_star", "R_star"))
 {
-    
     data = as.matrix(data)
     N = as.matrix(N)
     if (!all(dim(N) == dim(data)))
@@ -64,6 +63,19 @@ generateCompartmentProposal2 = function(data, N, S0=NA, E0=NA, I0=NA, reinfectio
     {
         cat("Error: invalid compartment generated. Is this data supposed to incorporate reinfection?\n")
         # Return anyway for debugging purposes
+    }
+    else if (any((E_star > 0) & (apply(I, 1, sum) == 0)))
+    {
+        if (dataType == "I_star")
+        {
+            cat("First proposed compartment invalid, trying secondary proposal method.\n")
+            return(generateCompartmentProposal(I_star, N, S0, E0, I0, reinfection,ensureConstantInfections = TRUE))
+        }
+        else
+        {
+            cat("Invalid compartment generated.\n")
+
+        }
     }
     else if (any(S<0) || any(E <0) || any(I<0) || any(R<0))
     {
