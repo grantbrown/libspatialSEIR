@@ -131,7 +131,9 @@ node.qSEIR = function(params){
     localModelObject$performHybridStep = 10
 }
 
-fit.qSEIR = function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=NA, seed=NA, n.cores=3, conv.criterion = 1.2, data, offset){
+fit.qSEIR = function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=NA, seed=NA, 
+                     n.cores=3, conv.criterion = 1.2, return.cluster=FALSE,
+                     data, offset){
 
     call <- match.call()
     if (verbose){
@@ -234,8 +236,16 @@ fit.qSEIR = function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=
     dat1=read.csv(filenames[1])
     dat2=read.csv(filenames[2])
     dat3=read.csv(filenames[3])
-    stopCluster(cl)
-    return(list(mcmc.chain.1 = dat1,
+    if (!return.cluster){
+        stopCluster(cl)
+        return(list(mcmc.chain.1 = dat1,
                 mcmc.chain.2 = dat2,
                 mcmc.chain.3 = dat3))
+    }
+    else {
+        return(list(mcmc.chain.1 = dat1,
+                    mcmc.chain.2 = dat2,
+                    mcmc.chain3 = dat3,
+                    cluster=cl))
+    }
 }
