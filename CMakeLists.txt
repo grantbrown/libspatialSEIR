@@ -101,7 +101,7 @@ endif()
 
 if (WIN32)
 else()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Ofast")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -O2")
 endif()
 ## Configure BLAS
 set(BLA_STATIC OFF)

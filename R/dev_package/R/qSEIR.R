@@ -120,15 +120,15 @@ node.qSEIR = function(params){
         localModelObject$simulate(10)
         localModelObject$updateSamplingParameters(0.2, 0.05, 0.01)
     }
-    for (i in 1:50)
+    for (i in 1:200)
     {
         localModelObject$simulate(100)
         localModelObject$updateSamplingParameters(0.2, 0.05, 0.01)
     }
     localModelObject$parameterSamplingMode = 7
     localModelObject$compartmentSamplingMode = 17
-    localModelObject$useDecorrelation = 10
-    localModelObject$performHybridStep = 10
+    localModelObject$useDecorrelation = 50
+    localModelObject$performHybridStep = 50
 }
 
 fit.qSEIR = function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=NA, seed=NA, 
