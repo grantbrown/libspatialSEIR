@@ -110,11 +110,37 @@ qSEIR <- function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=NA,
 
 node.qSEIR = function(params){
     set.seed(seed + params[[1]])
-    localModelObject <<- qSEIR(I_star ~x,N,
-                               verbose, p_ei,
-                               p_ir, transition_ess,
-                               filenames[params[[1]]], seed + 10*params[[1]],
-                               offset=offset)
+    chainFileName = filenames[params[[1]]]
+    
+    priorBetaIntercept = log(mean(-log(1-(I_star/N))))
+    dataModelInstance = buildDataModel(I_star, type="identity") 
+    exposureModelInstance = buildExposureModel(X=x, 
+                                               nTpt=nrow(x), 
+                                               1,
+                                               beta=c(priorBetaIntercept + rnorm(1), rep(0,ncol(x)-1)),
+                                               betaPriorPrecision = rep(0.1, ncol(x)),
+                                               betaPriorMean = rep(0, ncol(x)),
+                                               offset = offset)
+    reinfectionModelInstance = buildReinfectionModel("SEIR")
+    samplingControlInstance = buildSamplingControl(iterationStride=1000) 
+    distanceModelInstance = buildDistanceModel(list(matrix(0)))
+    
+    transitionPriorsInstance = buildTransitionPriorsFromProbabilities(p_ei, p_ir, p_ei_ess, p_ir_ess) 
+    
+    E0 = I_star[1]
+    I0 = I_star[1]
+    S0 = N - E0 - I0
+    
+    N = matrix(N, ncol = 1, nrow = NROW(I_star))
+    
+    initContainerInstance = buildInitialValueContainer(I_star, N, S0=S0,
+                                                       I0=I0,E0=E0,
+                                                       reinfection=FALSE,dataType="I_star") 
+    localModelObject <<- buildSEIRModel(chainFileName,dataModelInstance,exposureModelInstance,reinfectionModelInstance,distanceModelInstance,
+                                 transitionPriorsInstance, initContainerInstance, samplingControlInstance)
+    localModelObject$setRandomSeed(seed+1)
+    localModelObject$setTrace(0) 
+    
     for (i in 1:200)
     {
         localModelObject$simulate(10)
@@ -213,7 +239,7 @@ fit.qSEIR = function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=
     }
     filenames = c("qSEIRchain1.csv", "qSEIRchain2.csv", "qSEIRchain3.csv")
     clusterExport(cl, c("I_star", "x", "N", "verbose",
-                        "p_ei", "p_ir", "transition_ess", "offset",
+                        "p_ei", "p_ir", "p_ei_ess", "p_ir_ess", "offset",
                         "seed", "filenames"), envir=environment())
     if (verbose){
         cat("Building chains.\n")
