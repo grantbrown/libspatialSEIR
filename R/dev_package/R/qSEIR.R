@@ -242,10 +242,17 @@ fit.qSEIR = function(formula, N, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=
                 mcmc.chain.2 = dat2,
                 mcmc.chain.3 = dat3))
     }
-    else {
+    else if (conv){
         return(list(mcmc.chain.1 = dat1,
                     mcmc.chain.2 = dat2,
                     mcmc.chain3 = dat3,
                     cluster=cl))
+    }
+    else{
+        cat("Sampling ended prematurely, killing cluster.\n")
+        stopCluster(cl)
+        return(list(mcmc.chain.1 = dat1,
+                mcmc.chain.2 = dat2,
+                mcmc.chain.3 = dat3))
     }
 }

@@ -310,11 +310,18 @@ fit.qSpatialSEIR = function(formula, N, spatial.factor, distance.list=NA, verbos
                     mcmc.chain.2 = dat2,
                     mcmc.chain.3 = dat3))
     }
-    else{
+    else if (conv){
         return(list(mcmc.chain.1 = dat1,
                     mcmc.chain.2 = dat2,
                     mcmc.chain.3 = dat3,
                     cluster=cl))
-
     }
+    else{
+        cat("Sampling ended prematurely, killing cluster.\n")
+        stopCluster(cl)
+        return(list(mcmc.chain.1 = dat1,
+                    mcmc.chain.2 = dat2,
+                    mcmc.chain.3 = dat3))
+    }
+
 }

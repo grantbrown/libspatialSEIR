@@ -76,11 +76,18 @@ int spatialSEIRModel::setRandomSeed(int seedVal)
     return(-1);
 }
 int spatialSEIRModel::simulate(int iters)
-{
-    if (*(context -> isPopulated))
+{ 
+    try
     {
-        context -> runSimulation(iters,*(verbose),*(debug));
-        return(0);
+        if (*(context -> isPopulated))
+        {
+            context -> runSimulation(iters,*(verbose),*(debug));
+            return(0);
+        }
+    }
+    catch (int err)
+    {
+        ::Rf_error("sampling error");
     }
     Rcpp::Rcout << "Context Not populated\n";
     return(-1);
@@ -155,8 +162,8 @@ void spatialSEIRModel::setCompartmentSamplingMode(int mode)
         }
         catch (int err)
         {
-            Rcpp::Rcout << "Unable to update compartment sampling mode\n";
             setCompartmentSamplingMode(oldMode);
+            ::Rf_error("Unable to update compartment sampling mode");
         }
         return;
     }
@@ -241,8 +248,9 @@ void spatialSEIRModel::setParameterSamplingMode(int mode)
         }
         catch (int err)
         {
-            Rcpp::Rcout << "Unable to update compartment sampling mode\n";
             context -> setParameterSamplingMode(mode);
+            ::Rf_error("Unable to update parameter sampling mode");
+
         }
         return;
     }
@@ -293,6 +301,7 @@ int spatialSEIRModel::setTrace(int locationIndex)
         catch (int err)
         {
             Rcpp::Rcout << "Unable to set trace for location: " << locationIndex << "\n";
+            ::Rf_error("Output error");
         }
         return(0);
     }
@@ -311,8 +320,8 @@ int spatialSEIRModel::setTrace2(int locationIndex, int timeIndex)
         {
             Rcpp::Rcout << "Unable to set trace for (loc,time): (" << locationIndex 
                         << ", " << timeIndex << ")"<< "\n";
+            ::Rf_error("Output error");
         }
-
         return(0);
     }
     Rcpp::Rcout << "Attept to set trace on non-populated ModelContext.\n";
@@ -432,8 +441,7 @@ double spatialSEIRModel::estimateR0()
     }
     catch (int e)
     {
-        Rcpp::Rcout << "Error: " << e << "\n";
-        return(-1.0);
+        ::Rf_error("c++ exception (unknown reason)");
     }
 }
 
@@ -450,8 +458,7 @@ double spatialSEIRModel::estimateEffectiveR0()
     }
     catch (int e)
     {
-        Rcpp::Rcout << "Error: " << e << "\n";
-        return(-1.0);
+        ::Rf_error("c++ exception (unknown reason)");
     }
 }
 
@@ -472,8 +479,7 @@ Rcpp::NumericVector spatialSEIRModel::estimateR02(int t)
     }
     catch (int e)
     {
-        Rcpp::Rcout << "Error: " << e << "\n";
-        return(-1.0);
+        ::Rf_error("c++ exception (unknown reason)");
     }
 
 }
@@ -495,8 +501,7 @@ Rcpp::NumericVector spatialSEIRModel::estimateEffectiveR02(int t)
     }
     catch (int e)
     {
-        Rcpp::Rcout << "Error: " << e << "\n";
-        return(-1.0);
+        ::Rf_error("c++ exception (unknown reason)");
     }
 
 }
@@ -953,10 +958,7 @@ Rcpp::NumericVector spatialSEIRModel::getGenerationMatrix(int t)
     }
     catch (int e)
     {
-        Rcpp::Rcout << "Error: " << e << "\n";
-        Rcpp::NumericMatrix out(1,1);
-        out[0] = -1;
-        return(out);
+        ::Rf_error("c++ exception (unknown reason)");
     }
 }
 
