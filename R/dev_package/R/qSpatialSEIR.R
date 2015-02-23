@@ -141,7 +141,9 @@ qSpatialSEIR <- function(formula, N, spatial.factor, distance.list=NA, verbose=T
   modelObject = buildSEIRModel(chainFileName,dataModelInstance,exposureModelInstance,reinfectionModelInstance,distanceModelInstance,
                                transitionPriorsInstance, initContainerInstance, samplingControlInstance)
   modelObject$setRandomSeed(seed+1)
-  modelObject$setTrace(0) 
+  for (i in 1:ncol(I_star)){
+      modelObject$setTrace(i-1) 
+  }
   return(modelObject)
 }
 
