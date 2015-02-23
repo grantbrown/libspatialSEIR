@@ -147,13 +147,44 @@ qSpatialSEIR <- function(formula, N, spatial.factor, distance.list=NA, verbose=T
 
 node.qSpatialSEIR = function(params){
     set.seed(seed + params[[1]])
-    localModelObject <<- qSpatialSEIR(I_star ~ x,N,
-                                      spatial.factor,
-                                      distance.list,
-                                      verbose, p_ei,
-                                      p_ir, transition_ess,
-                                      filenames[params[[1]]], seed + 10*params[[1]],
-                                      offset=offset)
+    chainFileName = filenames[params[[1]]]
+    I_star_wide = matrix(0, nrow = n.time.points, ncol=n.spatial.units)
+    for (i in 1:length(levels(spatial.factor))){
+      I_star_wide[,i] = I_star[spatial.factor == levels(spatial.factor)[i]] 
+    }
+    I_star = I_star_wide
+
+    # Calculate a reasonable starting value for the intercept
+    priorBetaIntercept = log(mean(-log(1-(I_star/N))))
+      
+    dataModelInstance = buildDataModel(I_star, type="identity") 
+    exposureModelInstance = buildExposureModel(X=x, 
+                                                 nTpt=n.time.points, 
+                                                 n.spatial.units,
+                                                 beta=c(priorBetaIntercept + rnorm(1), rep(0,(ncol(x)-1))),
+                                                 betaPriorPrecision = rep(0.1, ncol(x)),
+                                                 betaPriorMean = rep(0, ncol(x)),
+                                                 offset = offset)
+    reinfectionModelInstance = buildReinfectionModel("SEIR")
+    samplingControlInstance = buildSamplingControl(iterationStride=1000) 
+    distanceModelInstance = buildDistanceModel(distance.list) 
+    transitionPriorsInstance = buildTransitionPriorsFromProbabilities(p_ei, p_ir, p_ei_ess, p_ir_ess) 
+      
+    N = matrix(N, ncol = n.spatial.units, nrow = NROW(I_star), byrow=TRUE)
+    E0 = I_star[1,]
+    I0 = I_star[1,] + I_star[2,]
+    S0 = N[1,] - E0 - I0
+      
+     
+    initContainerInstance = buildInitialValueContainer(I_star, N, S0=S0,
+                                                         I0=I0,E0=E0,
+                                                         reinfection=FALSE,dataType="I_star") 
+    localModelObject <<- buildSEIRModel(chainFileName,dataModelInstance,exposureModelInstance,
+                                        reinfectionModelInstance,distanceModelInstance,
+                                        transitionPriorsInstance, initContainerInstance, samplingControlInstance)
+    localModelObject$setRandomSeed(seed+1)
+    localModelObject$setTrace(0) 
+
     for (i in 1:200)
     {
         localModelObject$simulate(10)
@@ -170,7 +201,9 @@ node.qSpatialSEIR = function(params){
     localModelObject$performHybridStep = 10
 }
 
-fit.qSpatialSEIR = function(formula, N, spatial.factor, distance.list=NA, verbose=TRUE, p_ei=NA, p_ir=NA, transition_ess=NA, seed=NA, n.cores=3, conv.criterion = 1.2, return.cluster=FALSE, data, offset)
+fit.qSpatialSEIR = function(formula, N, spatial.factor, distance.list=NA, verbose=TRUE, p_ei=NA, 
+                            p_ir=NA, transition_ess=NA, seed=NA, n.cores=3, conv.criterion = 1.2, 
+                            return.cluster=FALSE, data, offset)
 {
     call <- match.call()
     if (verbose){
@@ -273,7 +306,7 @@ fit.qSpatialSEIR = function(formula, N, spatial.factor, distance.list=NA, verbos
     }
 
     # Build chains
-    cl = makeCluster(n.cores)
+    cl = makeCluster(n.cores, outfile="./err.txt")
     if (all(is.na(seed))){
         seed = as.numeric(System.time()) 
     }
@@ -281,7 +314,7 @@ fit.qSpatialSEIR = function(formula, N, spatial.factor, distance.list=NA, verbos
     clusterExport(cl, c("I_star", "n.time.points", "n.spatial.units", 
                         "spatial.factor",
                         "distance.list", "x", "N", "verbose",
-                        "p_ei", "p_ir", "transition_ess", "offset",
+                        "p_ei", "p_ir", "p_ei_ess", "p_ir_ess", "offset",
                         "seed", "filenames"), envir=environment())
     if (verbose){
         cat("Building chains.\n")
