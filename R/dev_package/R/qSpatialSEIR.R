@@ -185,7 +185,9 @@ node.qSpatialSEIR = function(params){
                                         reinfectionModelInstance,distanceModelInstance,
                                         transitionPriorsInstance, initContainerInstance, samplingControlInstance)
     localModelObject$setRandomSeed(seed+1)
-    localModelObject$setTrace(0) 
+    for (i in 1:ncol(I_star)){
+        modelObject$setTrace(i-1) 
+    }
 
     for (i in 1:200)
     {
