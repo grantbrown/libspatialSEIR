@@ -247,17 +247,7 @@ namespace SpatialSEIR
                 Estar_val = ((*E_star) -> data)[compIdx];
                 S_val = ((*S) -> data)[compIdx];
                 p_se_val = (*p_se)[compIdx];
-
-                if (Istar_val < 0 || Istar_val > E_val || 
-                        Rstar_val > I_val)
-                {
-                    *value = -INFINITY;
-                    return(-1);
-                }
-                else
-                {
-                    output += ((*context) -> random -> dbinom(Estar_val, S_val, p_se_val));
-                }
+                output += ((*context) -> random -> dbinom(Estar_val, S_val, p_se_val));
                 compIdx++;
             }
         }
