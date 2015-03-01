@@ -79,7 +79,7 @@ int dataModel::getModelComponentType()
 void dataModel::summary()
 {
     Rcpp::Rcout << "Number of locations: " << *nLoc << "\n";
-    Rcpp::Rcout << "Number of time points: " << *nLoc << "\n";
+    Rcpp::Rcout << "Number of time points: " << *nTpt << "\n";
     Rcpp::Rcout << "Data Model Compartment: ";
     if (*dataModelCompartment == 0)
     {
