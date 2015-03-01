@@ -25,9 +25,11 @@ namespace SpatialSEIR
                          CompartmentalModelMatrix *_R_star,
                          CompartmentalModelMatrix *_E,
                          CompartmentalModelMatrix *_I,                       
+                         CompartmentalModelMatrix *_S,                       
                          InitData *_A0,
                          double *_p_ei,
                          double *_p_ir,
+                         double *_p_se,
                          double _steadyStateConstraintPrecision,
                          double _sliceWidth)
     {
@@ -38,10 +40,12 @@ namespace SpatialSEIR
         R_star = new CompartmentalModelMatrix*;
         E = new CompartmentalModelMatrix*;
         I = new CompartmentalModelMatrix*;
+        S = new CompartmentalModelMatrix*;
 
         A0 = new InitData*;
         p_ei = new double*;
         p_ir = new double*;
+        p_se = new double*;
         sliceWidth = new double;
         steadyStateConstraintPrecision = new double;
         value = new long double;
@@ -55,10 +59,12 @@ namespace SpatialSEIR
         *R_star = _R_star;
         *E = _E;
         *I = _I;
+        *S = _S;
 
         *A0 = _A0;
         *p_ei = _p_ei;
         *p_ir = _p_ir;
+        *p_se = _p_se;
         *sliceWidth = _sliceWidth;
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
@@ -88,10 +94,12 @@ namespace SpatialSEIR
         delete R_star;
         delete E;
         delete I;
+        delete S;
         delete E_star;
         delete I_star;
         delete A0;
         delete p_ei;
+        delete p_se;
         delete p_ir;
         delete value;
         delete sliceWidth;
@@ -111,7 +119,8 @@ namespace SpatialSEIR
         
         double p_ei_val;
         double p_ir_val;
-        int Rstar_val, Istar_val, E_val, I_val;   
+        double p_se_val;
+        int Rstar_val, Istar_val, E_val, I_val, S_val, Estar_val;   
         long unsigned int I_star_sum;
         long unsigned int E_star_sum;
         int64_t aDiff; 
@@ -123,8 +132,11 @@ namespace SpatialSEIR
             {
                 Rstar_val = ((*R_star) -> data)[compIdx];
                 Istar_val = ((*I_star)->data)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S) ->data)[compIdx];
                 E_val = ((*E) ->data)[compIdx];
                 I_val = ((*I) ->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
                 p_ei_val = (*p_ei)[j];
                 p_ir_val = (*p_ir)[j];
 
@@ -136,7 +148,8 @@ namespace SpatialSEIR
                 }
                 else
                 {
-                    output += (((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)) + 
+                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) + 
+                               ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val)) + 
                                ((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val)));
                 }
                 compIdx++;
@@ -173,7 +186,8 @@ namespace SpatialSEIR
         
         double p_ei_val;
         double p_ir_val;
-        int Istar_val, Rstar_val, E_val, I_val;   
+        double p_se_val;
+        int Istar_val, Estar_val, Rstar_val, E_val, I_val, S_val;   
         long unsigned int I_star_sum;
         long unsigned int E_star_sum;
         int64_t aDiff; 
@@ -202,6 +216,30 @@ namespace SpatialSEIR
             }
             compIdx++;
         } 
+
+        for (i = 0; i < nLoc; i++)
+        {
+            compIdx = i*nTpts + startTpt;
+            for (j = startTpt; j < nTpts; j++)
+            {
+
+                Estar_val = ((*E_star)->data)[compIdx];
+                S_val = ((*S) ->data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+
+                if (Rstar_val < 0 || Istar_val > E_val || 
+                        Rstar_val > I_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)));
+                }
+                compIdx++;
+            } 
+        }
         if (*steadyStateConstraintPrecision > 0)
         {
             I_star_sum = (*I_star)->marginSum(3,-1);

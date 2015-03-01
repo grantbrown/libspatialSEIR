@@ -24,9 +24,11 @@ namespace SpatialSEIR
                       CompartmentalModelMatrix *_R_star, 
                       CompartmentalModelMatrix *_E,
                       CompartmentalModelMatrix *_I,
+                      CompartmentalModelMatrix *_S,
                       InitData *_A0,
                       double *_p_ei,
                       double *_p_ir,
+                      double *_p_se,
                       double _steadyStateConstraintPrecision,
                       double sliceWidth);
             ~FC_I_Star();
@@ -46,9 +48,11 @@ namespace SpatialSEIR
             CompartmentalModelMatrix **R_star; 
             CompartmentalModelMatrix **E; 
             CompartmentalModelMatrix **I;
+            CompartmentalModelMatrix **S;
             InitData **A0;
             double **p_ei;
             double **p_ir;
+            double **p_se;
             long double* value;
             double* steadyStateConstraintPrecision;
     };

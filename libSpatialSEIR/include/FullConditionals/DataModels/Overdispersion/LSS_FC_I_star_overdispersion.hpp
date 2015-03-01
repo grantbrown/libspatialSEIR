@@ -19,11 +19,14 @@ namespace SpatialSEIR
             FC_I_Star_overdispersed(ModelContext * _context,
                                     int* _Y,
                                     CompartmentalModelMatrix *_I_star, 
+                                    CompartmentalModelMatrix *_S,
                                     CompartmentalModelMatrix *_I, 
                                     CompartmentalModelMatrix *_E,
+                                    CompartmentalModelMatrix *_E_star,
                                     CompartmentalModelMatrix *_R_star,                                    
                                     double *_p_ei,
                                     double *_p_ir,
+                                    double *_p_se,
                                     double *_phi,
                                     double _steadyStateConstraintPrecision,
                                     double _sliceWidth);
@@ -41,12 +44,15 @@ namespace SpatialSEIR
             ModelContext **context;
             int** Y;
             CompartmentalModelMatrix **I_star; 
+            CompartmentalModelMatrix **E_star; 
             CompartmentalModelMatrix **I; 
             CompartmentalModelMatrix **E;
+            CompartmentalModelMatrix **S;
             CompartmentalModelMatrix **R_star;
             InitData **A0;
             double **p_ei;
             double **p_ir;
+            double **p_se;
             double **phi;
             long double* value;
             double* steadyStateConstraintPrecision;

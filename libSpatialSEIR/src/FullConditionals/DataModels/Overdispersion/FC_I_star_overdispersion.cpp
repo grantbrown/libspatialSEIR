@@ -24,24 +24,29 @@ namespace SpatialSEIR
     FC_I_Star_overdispersed::FC_I_Star_overdispersed(ModelContext *_context,
                          int* _Y,
                          CompartmentalModelMatrix *_I_star,
+                         CompartmentalModelMatrix *_S,  
                          CompartmentalModelMatrix *_I,  
                          CompartmentalModelMatrix *_E,
+                         CompartmentalModelMatrix *_E_star,
                          CompartmentalModelMatrix *_R_star,
                          double *_p_ei,
                          double *_p_ir,
+                         double *_p_se,
                          double *_phi,
                          double _steadyStateConstraintPrecision,
                          double _sliceWidth) 
     {
-
         context = new ModelContext*;
         I_star = new CompartmentalModelMatrix*;
         Y = new int*;
+        S = new CompartmentalModelMatrix*;
         I = new CompartmentalModelMatrix*;
         E = new CompartmentalModelMatrix*;
         R_star = new CompartmentalModelMatrix*;
+        E_star = new CompartmentalModelMatrix*;
         p_ei = new double*;
         p_ir = new double*;
+        p_se = new double*;
         phi = new double*;
         steadyStateConstraintPrecision = new double;
         value = new long double;
@@ -53,13 +58,16 @@ namespace SpatialSEIR
        
         *context = _context;
         *I_star = _I_star;
+        *R_star = _R_star;
+        *E_star = _E_star;
         *Y = _Y;
         *E = _E;
         *I = _I;
+        *S = _S;
         *sliceWidth = _sliceWidth;
-        *R_star = _R_star;
         *p_ir = _p_ir;
         *p_ei = _p_ei;
+        *p_se = _p_se;
         *phi = _phi; 
         *steadyStateConstraintPrecision = _steadyStateConstraintPrecision;
         *value = -1.0;
@@ -104,6 +112,9 @@ namespace SpatialSEIR
         delete E;
         delete I;
         delete R_star;
+        delete E_star;
+        delete S;
+        delete p_se;
         delete p_ir;
         delete p_ei;
         delete phi;
@@ -122,7 +133,8 @@ namespace SpatialSEIR
         int nLoc = *((*I) -> ncol); 
         double p_ei_val; 
         double p_ir_val;
-        int I_val, E_val, Rstar_val, Istar_val, y_val;
+        double p_se_val;
+        int I_val, S_val, E_val, Estar_val, Rstar_val, Istar_val, y_val;
         long double output = 0.0;
         long unsigned int R_star_sum, I_star_sum;
         int64_t aDiff; 
@@ -134,12 +146,15 @@ namespace SpatialSEIR
             for (j = 0; j < nTpts; j++)
             {
                 Rstar_val = ((*R_star) -> data)[compIdx];
+                Estar_val = ((*E_star) -> data)[compIdx];
                 E_val = ((*E) -> data)[compIdx];
+                S_val = ((*S) -> data)[compIdx];
                 Istar_val = ((*I_star) -> data)[compIdx];
                 I_val = ((*I) -> data)[compIdx];
                 y_val = (*Y)[compIdx];
                 p_ei_val = (*p_ei)[j];
                 p_ir_val = (*p_ir)[j]; 
+                p_se_val = (*p_se)[compIdx];
 
                 if (Istar_val < 0 || Istar_val > E_val || 
                         Rstar_val > I_val)
@@ -150,7 +165,8 @@ namespace SpatialSEIR
                 }
                 else
                 {
-                    output += (((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val)) +    
+                    output += (((*context) -> random -> dbinom(Estar_val, S_val, p_se_val)) +    
+                               ((*context) -> random -> dbinom(Rstar_val, I_val, p_ir_val)) +    
                                ((*context) -> random -> dbinom(Istar_val, E_val, p_ei_val))); 
                     output -= 0.5*std::pow((Istar_val - y_val)*phi_val, 2);
                 }
@@ -179,13 +195,15 @@ namespace SpatialSEIR
        return 0;
     }
 
-    int FC_I_Star_overdispersed::evalCPU(int i, int t)
+    int FC_I_Star_overdispersed::evalCPU(int startLoc, int t)
     {
-        int j, compIdx;
+        int i,j, compIdx;
         int nTpts = *((*I) -> nrow); 
+        int nLoc = *((*I) -> ncol); 
         double p_ei_val; 
         double p_ir_val;
-        int I_val, E_val, Rstar_val, Istar_val, y_val;
+        double p_se_val;
+        int S_val, I_val, E_val, Estar_val, Rstar_val, Istar_val, y_val;
         long double output = 0.0;
         long unsigned int R_star_sum, I_star_sum;
         int64_t aDiff; 
@@ -193,6 +211,7 @@ namespace SpatialSEIR
         phi_val = **phi;
 
 
+        i = startLoc;
         compIdx = i*nTpts + t;
         for (j = t; j < nTpts; j++)
         {
@@ -206,7 +225,6 @@ namespace SpatialSEIR
 
             if (Istar_val < 0 || Istar_val > E_val || 
                     Rstar_val > I_val)
-
             {
                 *value = -INFINITY;
                 return(-1);
@@ -219,6 +237,31 @@ namespace SpatialSEIR
             }
             compIdx++;
         }
+
+
+        for (i = 0; i<nLoc; i++)
+        {
+            compIdx = i*nTpts + t;
+            for (j = t; j < nTpts; j++)
+            {
+                Estar_val = ((*E_star) -> data)[compIdx];
+                S_val = ((*S) -> data)[compIdx];
+                p_se_val = (*p_se)[compIdx];
+
+                if (Istar_val < 0 || Istar_val > E_val || 
+                        Rstar_val > I_val)
+                {
+                    *value = -INFINITY;
+                    return(-1);
+                }
+                else
+                {
+                    output += ((*context) -> random -> dbinom(Estar_val, S_val, p_se_val));
+                }
+                compIdx++;
+            }
+        }
+
 
         if (*steadyStateConstraintPrecision > 0)
         {

@@ -358,7 +358,8 @@ namespace SpatialSEIR
                                   R_star,
                                   E,
                                   I,
-                                  A0,p_ei,p_ir,
+                                  S,
+                                  A0,p_ei,p_ir,p_se,
                                   (E_starArgs -> steadyStateConstraintPrecision),
                                   *(sliceWidths -> E_starWidth));
 
@@ -436,11 +437,14 @@ namespace SpatialSEIR
         I_star_overdispersed_fc = new FC_I_Star_overdispersed(this,
                                                               Y,
                                                               I_star,
+                                                              S,
                                                               I,
                                                               E,
+                                                              E_star,
                                                               R_star,
                                                               p_ei,
                                                               p_ir,
+                                                              p_se,
                                                               phi,
                                                               (R_starArgs -> steadyStateConstraintPrecision),
                                                               *(sliceWidths -> E_starWidth));
