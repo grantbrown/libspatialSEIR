@@ -629,7 +629,9 @@ namespace SpatialSEIR
                 lssCout << "Invalid Data Model Compartment Index: " << (config -> dataModelCompartment) <<"\n";
                 throw(-1);
             }
-            model -> push_back(phi_fc);
+            // To do: clean up references to phi_fc.
+            // For now we've just commented it out. 
+            //model -> push_back(phi_fc);
         }
     }
 

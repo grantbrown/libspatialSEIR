@@ -66,27 +66,27 @@ buildDistanceModel = function(distanceList,
 }
 
 # dataModel module helper function
-buildDataModel = function(Y, type = c("identity", "overdispersion"), compartment = c("I_star", "R_star"),params=NA)
+buildDataModel = function(Y, type = c("identity", "overdispersion"), compartment = c("I_star", "R_star"), phi = NA)
 {
     if (class(Y) != "matrix")
     {
         Y = as.matrix(Y)
     }
     type = type[1]
-    if (length(params) == 1 && is.na(params) && type != "identity")
+    if (length(phi) == 1 && is.na(phi) && type != "identity")
     {
-        stop("Non-identity data model selected without specifying parameters.")
+        stop("Must specify overdispersion parameter (phi) for non-identity data model.")
     }
-    else if (length(params) ==1 && is.na(params))
+    else if (length(phi) == 1 && is.na(phi))
     {
         return(new(dataModel, Y, type, compartment))
     }
-    else if (class(params) != "numeric" || length(params) != 2)
+    else if (class(phi) != "numeric" || length(phi) != 1)
     {
-        stop("Non identy data model currently requires the params argument to be a numeric vector of length 2") 
+        stop("Non identy data model currently requires a single overdispersion parameter") 
     }
     outModel = new(dataModel, Y, type, compartment)
-    outModel$setOverdispersionParameters(params[1], params[2], rgamma(1, params[1], params[2]))
+    outModel$setOverdispersionParameters(-1, -1, phi)
     outModel
 }
 

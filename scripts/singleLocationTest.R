@@ -176,7 +176,7 @@ runSimulation = function()
 
 simResults = runSimulation()
 
-DataModel = buildDataModel(simResults$I_star, type = "overdispersion", params = c(10000,10000))
+DataModel = buildDataModel(simResults$I_star, type = "overdispersion", phi = 1)
 #DataModel = buildDataModel(simResults$I_star, type = "identity")
 
 ExposureModel = buildExposureModel_depricated(simResults$X, simResults$Z, 
