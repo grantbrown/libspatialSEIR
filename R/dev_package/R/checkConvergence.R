@@ -14,9 +14,14 @@ checkConvergence = function(fileName1,fileName2,fileName3,maxVal=2,useUpper=FALS
 
     varNames = names(dat1)
     lastVar = which(varNames == "gamma_ir") 
-    dat1_mc = as.mcmc(dat1_sub[,1:lastVar])
-    dat2_mc = as.mcmc(dat2_sub[,1:lastVar])
-    dat3_mc = as.mcmc(dat3_sub[,1:lastVar])
+    keepIdx = 1:lastVar
+    if ("phi" %in% varNames)
+    {
+        keepIdx = keepIdx[keepIdx != which(varNames == "phi")]
+    }
+    dat1_mc = as.mcmc(dat1_sub[,keepIdx])
+    dat2_mc = as.mcmc(dat2_sub[,keepIdx])
+    dat3_mc = as.mcmc(dat3_sub[,keepIdx])
     mcl = mcmc.list(dat1_mc,dat2_mc,dat3_mc)   
 
     
