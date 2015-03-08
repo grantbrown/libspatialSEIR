@@ -95,6 +95,17 @@ namespace SpatialSEIR
         delete priorBeta;
     }
 
+    double* FC_Rho::minimumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+    double* FC_Rho::maximumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+
     double FC_Rho::evalPrior()
     {
         double rhoSum = 0.0;

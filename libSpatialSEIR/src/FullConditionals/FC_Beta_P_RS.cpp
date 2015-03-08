@@ -100,7 +100,18 @@ namespace SpatialSEIR
         delete[] accepted;
     }
 
-    double FC_Beta_P_RS::evalPrior()
+    double* FC_Beta_P_RS::minimumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+    double* FC_Beta_P_RS::maximumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+
+    double* FC_Beta_P_RS::evalPrior()
     {
         double out = 0.0;
         int nbeta = *((*X) -> ncol_x);

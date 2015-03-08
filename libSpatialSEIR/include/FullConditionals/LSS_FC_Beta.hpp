@@ -33,6 +33,8 @@ namespace SpatialSEIR
             ~FC_Beta();
 
             virtual double evalPrior();
+            virtual double* minimumValue();
+            virtual double* maximumValue();
             virtual int evalCPU();
             virtual int evalOCL();
             virtual void sample(int verbose);

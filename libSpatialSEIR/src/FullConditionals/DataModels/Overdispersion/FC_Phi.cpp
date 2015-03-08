@@ -73,6 +73,18 @@ namespace SpatialSEIR
         delete accepted;
     }
 
+    double* FC_Phi::minimumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+    double* FC_Phi::maximumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+
+
     double FC_Phi::evalPrior()
     {
         return((*context) -> random -> dgamma(**phi, *priorAlpha, 1/(*priorBeta)));

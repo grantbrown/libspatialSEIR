@@ -92,6 +92,17 @@ namespace SpatialSEIR
         delete accepted;
     }
 
+    double* FC_Gamma_IR::minimumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+    double* FC_Gamma_IR::maximumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+
     double FC_Gamma_IR::evalPrior()
     {
         return((*context) -> random -> dgamma(**gamma_ir, *priorAlpha, 1/(*priorBeta)));

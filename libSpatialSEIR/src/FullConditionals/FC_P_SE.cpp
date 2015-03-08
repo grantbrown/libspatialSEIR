@@ -123,6 +123,18 @@ namespace SpatialSEIR
         delete[] accepted;
     }
 
+    double* FC_P_SE::minimumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+    double* FC_P_SE::maximumValue()
+    {
+        // Not Implemented
+        return(new double);
+    }
+
+
     double FC_P_SE::evalPrior()
     {
         double out = 0.0;
