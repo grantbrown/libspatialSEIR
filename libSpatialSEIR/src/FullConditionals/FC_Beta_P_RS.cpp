@@ -111,7 +111,7 @@ namespace SpatialSEIR
         return(new double);
     }
 
-    double* FC_Beta_P_RS::evalPrior()
+    double FC_Beta_P_RS::evalPrior()
     {
         double out = 0.0;
         int nbeta = *((*X) -> ncol_x);

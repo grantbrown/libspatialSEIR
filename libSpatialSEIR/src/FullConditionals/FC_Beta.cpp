@@ -111,9 +111,8 @@ namespace SpatialSEIR
         return(new double);
     }
 
-    double* FC_Beta::evalPrior()
-    {
-        lssCout << "EVAL BETA PRIOR!!!\n";
+    double FC_Beta::evalPrior()
+    { 
         double out = 0.0;
         int i;
         for (i = 0; i < (*((*X) -> ncol_x)); i++)

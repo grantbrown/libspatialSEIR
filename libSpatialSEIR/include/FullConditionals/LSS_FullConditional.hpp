@@ -160,8 +160,8 @@ namespace SpatialSEIR
             virtual int calculateRelevantCompartments_OCL() = 0;
             virtual double acceptanceRatio(int i);
             virtual double evalPrior() = 0;
-            virtual double* minimumValue();
-            virtual double* maximumValue();
+            virtual double* minimumValue() = 0;
+            virtual double* maximumValue() = 0;
             void updateSamplingParameters(double desiredRatio, double targetWidth, double proportionChange);
 
             int *varLen;
