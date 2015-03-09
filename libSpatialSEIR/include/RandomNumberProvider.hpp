@@ -62,6 +62,12 @@ namespace SpatialSEIR
             // Utility Functions
             double choose(int n,int k);
             double choosePartial(int n,int k);
+            double gaussianMin(double mean, double prec);
+            double gaussianMax(double mean, double prec);
+            double gammaMin(double a, double b);
+            double gammaMax(double a, double b);
+            double betaMin(double a, double b);
+            double betaMax(double a, double b);
 
             double factorial(int k);
 

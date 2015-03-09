@@ -33,6 +33,40 @@ namespace SpatialSEIR
         return(k * std::log(k) - k);
     }
 
+    double RandomNumberProvider::gaussianMin(double mean, double prec)
+    {
+        boost::math::normal_distribution<> ndist(mean, 1.0/prec);
+        return(quantile(ndist, 1.0e-20)); 
+    }
+    
+    double RandomNumberProvider::gaussianMax(double mean, double prec)
+    {
+        boost::math::normal_distribution<> ndist(mean, 1.0/prec);
+        return(quantile(complement(ndist, 1.0e-20))); 
+    }
+
+    double RandomNumberProvider::gammaMin(double a, double b)
+    {
+        boost::math::gamma_distribution<> gammadist(a,b); 
+        return((quantile(gammadist, 1.0e-20))); 
+    }
+
+    double RandomNumberProvider::gammaMax(double a, double b)
+    {
+        boost::math::gamma_distribution<> gammadist(a,b); 
+        return((quantile(complement(gammadist, 1.0e-20)))); 
+    }
+
+    double betaMin(double a, double b){
+        boost::math::beta_distribution<> betadist(a,b);
+        return(quantile(betadist, 1.0e-20));
+    }
+
+    double betaMax(double a, double b){
+        boost::math::beta_distribution<> betadist(a,b);
+        return(quantile(complement(betadist, 1.0e-20)));
+    }
+
     double RandomNumberProvider::choose(int n, int k)
     {
         // Can we get rid of these bounds checking

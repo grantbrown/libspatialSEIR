@@ -102,13 +102,23 @@ namespace SpatialSEIR
 
     double* FC_Beta_P_RS::minimumValue()
     {
-        // Not Implemented
-        return(new double);
+        double* outMin = new double[*varLen];
+        int i;
+        for (i = 0; i < *varLen; i++)
+        {
+            outMin[i] = ((*context) -> random -> gaussianMin(priorMean[i], priorPrecision[i]));
+        }
+        return(outMin);
     }
     double* FC_Beta_P_RS::maximumValue()
     {
-        // Not Implemented
-        return(new double);
+        double* outMax = new double[*varLen];
+        int i;
+        for (i = 0; i < *varLen; i++)
+        {
+            outMax[i] = ((*context) -> random -> gaussianMax(priorMean[i], priorPrecision[i]));
+        }
+        return(outMax);
     }
 
     double FC_Beta_P_RS::evalPrior()

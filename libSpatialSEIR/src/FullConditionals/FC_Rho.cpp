@@ -97,13 +97,23 @@ namespace SpatialSEIR
 
     double* FC_Rho::minimumValue()
     {
-        // Not Implemented
-        return(new double);
+        double* outMin = new double[*varLen];
+        int i;
+        for (i = 0; i < *varLen; i++)
+        {
+            outMin[i] = ((*context) -> random -> betaMin(priorAlpha[i], priorBeta[i]));
+        }
+        return(outMin);
     }
     double* FC_Rho::maximumValue()
     {
-        // Not Implemented
-        return(new double);
+        double* outMax = new double[*varLen];
+        int i;
+        for (i = 0; i < *varLen; i++)
+        {
+            outMax[i] = ((*context) -> random -> betaMax(priorAlpha[i], priorBeta[i]));
+        }
+        return(outMax);
     }
 
     double FC_Rho::evalPrior()
