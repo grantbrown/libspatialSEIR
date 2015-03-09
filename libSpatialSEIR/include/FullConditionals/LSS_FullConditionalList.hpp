@@ -15,5 +15,6 @@
 #include<LSS_FC_R_star_overdispersion.hpp>
 #include<LSS_FC_I_star_overdispersion.hpp>
 #include<LSS_FC_Phi.hpp>
+#include<LSS_Posterior.hpp>
 
 
