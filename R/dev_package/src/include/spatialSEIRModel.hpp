@@ -19,7 +19,7 @@ class distanceModel;
 using namespace Rcpp;
 using namespace SpatialSEIR;
 
-class spatialSEIRModel : public modelComponent
+class spatialSEIRModel
 {
 
     private:

@@ -17,7 +17,6 @@ class exposureModel : public modelComponent
         virtual Rcpp::NumericVector getOffset();
         virtual void setOffset(Rcpp::NumericVector offs);
         double* offset;
-        int* isValid;
         int* xDim;
         int* nTpt;
         int* nLoc;
