@@ -8,7 +8,7 @@ using namespace Rcpp;
 using namespace SpatialSEIR;
 
 RCPP_EXPOSED_CLASS(samplingControl)
-class samplingControl
+class samplingControl : public modelComponent
 {
     public:
         samplingControl();

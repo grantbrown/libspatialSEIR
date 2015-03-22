@@ -8,7 +8,7 @@ using namespace Rcpp;
 using namespace SpatialSEIR;
 
 RCPP_EXPOSED_CLASS(exposureModel)
-class exposureModel
+class exposureModel : public modelComponent
 {
     public:
         exposureModel(SEXP X, SEXP ntpt, SEXP nloc, SEXP initBeta, SEXP priorMean, SEXP precision);
@@ -17,6 +17,7 @@ class exposureModel
         virtual Rcpp::NumericVector getOffset();
         virtual void setOffset(Rcpp::NumericVector offs);
         double* offset;
+        int* isValid;
         int* xDim;
         int* nTpt;
         int* nLoc;

@@ -34,8 +34,7 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
         E0_vec.length() != I0_vec.length() ||
         I0_vec.length() != R0_vec.length())
     {
-        Rcpp::Rcout << "Init compartment lengths do not match.\n";
-        throw(-1);
+        ::Rf_error("Init compartment lengths do not match\n");
     }
     if (S_star_mat.nrow() != E_star_mat.nrow() ||
         E_star_mat.nrow() != I_star_mat.nrow() ||
@@ -46,8 +45,7 @@ void initialValueContainer::setInitialValues(SEXP S0_, SEXP E0_, SEXP I0_, SEXP 
         I_star_mat.ncol() != R_star_mat.ncol() ||
         R_star_mat.ncol() != N_mat.ncol())
     {
-        Rcpp::Rcout << "Compartment dimensions do not match\n";
-        throw(-1);
+        ::Rf_error("Compartment dimensions do not match\n");
     }
 
     int nTpt = (S_star_mat.nrow());

@@ -9,7 +9,7 @@ using namespace Rcpp;
 using namespace SpatialSEIR;
 
 RCPP_EXPOSED_CLASS(dataModel)
-class dataModel : modelComponent
+class dataModel : public modelComponent
 {
     public:
         dataModel(SEXP Y, SEXP type, SEXP compartment);

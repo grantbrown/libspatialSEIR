@@ -37,8 +37,7 @@ void reinfectionModel::buildReinfectionModel(SEXP _X, SEXP _paramInit, SEXP _pri
         priorMeans.length() != xDim[1] || 
         inPrecision.length() != xDim[1])
     {
-        Rcpp::Rcout << "Number of parameters, prior means, or precisions does not equal the number of supplied covariates.\n";
-        throw(-1);
+        ::Rf_error("Number of parameters, prior means, or precisions does not equal the number of supplied covariates.\n");
     }
     int i;
     for (i = 0; i < xDim[1]; i++)

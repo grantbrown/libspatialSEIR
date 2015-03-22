@@ -8,7 +8,7 @@ using namespace Rcpp;
 using namespace SpatialSEIR;
 
 RCPP_EXPOSED_CLASS(transitionPriors)
-class transitionPriors
+class transitionPriors : public modelComponent
 {
     public:
         transitionPriors();

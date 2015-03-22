@@ -8,7 +8,7 @@ using namespace Rcpp;
 using namespace SpatialSEIR;
 
 RCPP_EXPOSED_CLASS(initialValueContainer)
-class initialValueContainer
+class initialValueContainer : public modelComponent
 {
     public:
         initialValueContainer();

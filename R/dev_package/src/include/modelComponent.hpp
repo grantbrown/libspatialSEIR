@@ -1,6 +1,7 @@
 #ifndef SPATIALSEIR_MODEL_COMPONENT
 #define SPATIALSEIR_MODEL_COMPONENT
 
+#define LSS_INVALID_CONTAINER 0
 #define LSS_DATA_MODEL_TYPE 1
 #define LSS_EXPOSURE_MODEL_TYPE 2
 #define LSS_REINFECTION_MODEL_TYPE 3
@@ -25,6 +26,7 @@ class modelComponent
     public:
         virtual ~modelComponent(){};
         virtual int getModelComponentType() = 0;
+
 };
 
 #endif

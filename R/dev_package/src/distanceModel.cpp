@@ -37,13 +37,11 @@ void distanceModel::addDistanceMatrix(NumericMatrix distMat)
 {
     if (distMat.nrow() != distMat.ncol())
     {
-        Rcpp::Rcout << "Distance matrix must be square.\n";
-        throw(-1);
+        ::Rf_error("Distance matrix must be square.\n");
     }
     else if (*numLocations != -1 && distMat.nrow() != (*numLocations))
     {
-        Rcpp::Rcout << "Dimension does not match previously added distance matrix.\n";
-        throw(-1);
+        ::Rf_error("Dimension does not match previously added distance matrix\n");
     }
     double* distAlloc = new double[distMat.nrow()*distMat.ncol()];
     int i;

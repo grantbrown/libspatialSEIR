@@ -34,7 +34,7 @@ exposureModel::exposureModel(SEXP _X, SEXP _ntpt, SEXP _nloc, SEXP _paramInit, S
     {
         Rcpp::Rcout << "Error: Covariate matrix has invalid dimensions." 
                     << " X should be (n*t) by p\n";
-        throw(-1);
+        ::Rf_error("error building exposure model");
     }
     if (initParams.length() != nBeta || inPrecision.length() != nBeta || priorMeans.length() != nBeta)
     {
@@ -43,7 +43,7 @@ exposureModel::exposureModel(SEXP _X, SEXP _ntpt, SEXP _nloc, SEXP _paramInit, S
         Rcpp::Rcout << "length(beta): " << initParams.length() << "\n";
         Rcpp::Rcout << "length(betaPriorMean): " << priorMeans.length() << "\n";
         Rcpp::Rcout << "length(betaPriorPrecision): " << inPrecision.length() << "\n";
-        throw(-1);
+        ::Rf_error("error building exposure model");
     }
     offset = new double[*nTpt];
     for (i = 0; i < *nTpt; i++)
@@ -73,7 +73,7 @@ void exposureModel::setOffset(NumericVector offsets)
     if (offsets.length() != (*nTpt))
     {
         Rcpp::Rcout << "Error: offsets must have length equal to the number of time points.\n";
-        throw(-1);
+        ::Rf_error("Invalid offsets.");
     }
     memcpy(offset, offsets.begin(), (*nTpt)*sizeof(double));
 }

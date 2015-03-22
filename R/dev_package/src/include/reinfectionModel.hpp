@@ -8,7 +8,7 @@ using namespace Rcpp;
 using namespace SpatialSEIR;
 
 RCPP_EXPOSED_CLASS(reinfectionModel)
-class reinfectionModel
+class reinfectionModel : public modelComponent
 {
     public:
         reinfectionModel(SEXP reinfectionMode);
