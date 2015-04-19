@@ -191,7 +191,7 @@ buildExposureModel = function(X,nTpt, nLoc, beta=NA,betaPriorPrecision=NA,
     }
     if (length(betaPriorPrecision) == 1 && is.na(betaPriorPrecision))
     {
-        print("No prior precision specified, using zero.")
+        print("No prior precision specified, using 0.1")
         betaPriorPrecision = rep(0.1, nBeta)
     }
     else if (length(betaPriorPrecision) == 1)
