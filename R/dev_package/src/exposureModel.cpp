@@ -92,18 +92,18 @@ void exposureModel::summary()
     Rcpp::Rcout << "Number of locations: " << *nLoc << "\n";
     Rcpp::Rcout << "Linear model parameter prior precision: " << "\n";
     int i;
-    for (i = 0; i < xDim[1] - 1; i++)
+    for (i = 0; i < xDim[1]; i++)
     {
         Rcpp::Rcout << betaPriorPrecision[i] << ", ";
     }
-    Rcpp::Rcout << betaPriorPrecision[i + 1] << "\n";
+    Rcpp::Rcout << "\n";
 
     Rcpp::Rcout << "Linear model parameter prior mean: " << "\n";
-    for (i = 0; i < xDim[1] - 1; i++)
+    for (i = 0; i < xDim[1]; i++)
     {
         Rcpp::Rcout << betaPriorMean[i] << ", ";
     }
-    Rcpp::Rcout << betaPriorMean[i + 1] << "\n";
+    Rcpp::Rcout << "\n";
 }
 
 exposureModel::~exposureModel()
